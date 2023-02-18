@@ -12,6 +12,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,400;0,700;1,400;1,700&display=swap"
         rel="stylesheet">
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text x=%2250%%22 y=%2280.00%22 font-size=%2285%22 text-anchor=%22middle%22>✨</text></svg>">
 </head>
 
 <body class="flex-col">
@@ -28,8 +30,9 @@
             <button data-insert="π">π</button>
             <button data-insert="Σ">Σ</button>
             <button data-insert="θ">θ</button>
-            <button>...</button>
+            <button id="more-symbols-button">...</button>
         </div>
+        <div class="spacer"></div>
         <div class="button-row">
             <button data-multiple-choice="a">A</button>
             <button data-multiple-choice="b">B</button>
@@ -37,12 +40,43 @@
             <button data-multiple-choice="d">D</button>
             <button data-multiple-choice="e">E</button>
         </div>
-        <button id="submit-button">Submit</button>
+        <button id="submit-button">Submit (000)</button>
     </div>
+    <div class="spacer"></div>
     <div class="flex-row">
-        <button id="code-button">000</button>
-        <button id="settings-button">Settings</button>
+        <button data-show-modal="code">000</button>
+        <button data-show-modal="settings">Settings</button>
+        <button data-show-modal="history">History</button>
     </div>
+    <!-- Modals -->
+    <dialog id="code-modal">
+        <input type="text" placeholder="000" id="code-input">
+        <button data-show-modal="code-help">Need help?</button>
+    </dialog>
+    <dialog id="code-help-modal">
+        <p>Placeholder</p>
+    </dialog>
+    <dialog id="settings-modal">
+        <button data-show-modal="code">Seat Code</button>
+        <button data-show-modal="shortcuts">Keyboard Shortcuts</button>
+        <button data-show-modal="theme">Theme</button>
+        <button data-show-modal="data">Data</button>
+    </dialog>
+    <dialog id="shortcuts-modal">
+        <p>Placeholder</p>
+    </dialog>
+    <dialog id="theme-modal">
+        <p>Placeholder</p>
+    </dialog>
+    <dialog id="data-modal">
+        <p>Placeholder</p>
+    </dialog>
+    <dialog id="history-modal">
+        <p>Placeholder</p>
+    </dialog>
+    <dialog id="multiple-choice-modal">
+        <p>Placeholder</p>
+    </dialog>
     <script src="index.js" type="module"></script>
 </body>
 

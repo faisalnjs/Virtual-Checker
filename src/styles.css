@@ -1,5 +1,5 @@
 :root {
-    color-scheme: dark;
+    color-scheme: light;
     --text-color: #242424;
     --background-color: #ffffff;
     --surface-color: #e7e7e7;
@@ -55,6 +55,7 @@ dialog {
     padding: 1rem;
     border: none;
     border-radius: 0.5rem;
+    box-shadow: 0 0 100px rgba(0, 0, 0, 0.25);
     text-align: center;
     -webkit-user-select: none;
     user-select: none;
@@ -136,11 +137,19 @@ textarea {
     align-self: center;
     justify-content: center;
     width: min(100%, 800px);
-    margin: 1rem 0;
 }
 
 .button-row {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(2.5rem, 1fr));
     gap: 0.25rem;
+}
+
+div.spacer {
+    height: 1.5rem;
+}
+
+#code-input {
+    font-size: 2em;
+    text-align: center;
 }
