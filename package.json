@@ -1,0 +1,23 @@
+{
+  "name": "virtual-clicker-2",
+  "version": "1.0.0",
+  "description": "",
+  "source": "src/index.html",
+  "scripts": {
+    "start": "parcel",
+    "build": "parcel build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/khui0/virtual-clicker-2.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/khui0/virtual-clicker-2/issues"
+  },
+  "homepage": "https://github.com/khui0/virtual-clicker-2#readme",
+  "devDependencies": {
+    "parcel": "^2.8.3"
+  }
+}

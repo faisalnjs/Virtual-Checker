@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Virtual Clicker</title>
+    <link rel="stylesheet" href="reset.css">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,400;0,700;1,400;1,700&display=swap"
+        rel="stylesheet">
+</head>
+
+<body class="flex-col">
+    <h1>Virtual Clicker</h1>
+    <div class="click-form flex-col">
+        <label for="question-input">Question</label>
+        <input type="text" id="question-input">
+        <label for="answer-input">Answer</label>
+        <textarea rows="8" id="answer-input"></textarea>
+        <div class="button-row">
+            <button data-insert="±">±</button>
+            <button data-insert="√">√</button>
+            <button data-insert="∞">∞</button>
+            <button data-insert="π">π</button>
+            <button data-insert="Σ">Σ</button>
+            <button data-insert="θ">θ</button>
+            <button>...</button>
+        </div>
+        <div class="button-row">
+            <button data-multiple-choice="a">A</button>
+            <button data-multiple-choice="b">B</button>
+            <button data-multiple-choice="c">C</button>
+            <button data-multiple-choice="d">D</button>
+            <button data-multiple-choice="e">E</button>
+        </div>
+        <button id="submit-button">Submit</button>
+    </div>
+    <div class="flex-row">
+        <button id="code-button">000</button>
+        <button id="settings-button">Settings</button>
+    </div>
+    <script src="index.js" type="module"></script>
+</body>
+
+</html>
