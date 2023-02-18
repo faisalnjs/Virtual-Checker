@@ -1,6 +1,11 @@
 import * as ui from "./ui.js";
 
 const modals = {
+    "more-symbols": () => {
+        ui.show(document.getElementById("more-symbols-modal"), "Symbols", [
+            new ui.ModalButton("Close", true)
+        ]);
+    },
     "code": () => {
         ui.show(document.getElementById("code-modal"), "Seat Code", [
             new ui.ModalButton("Cancel", true),

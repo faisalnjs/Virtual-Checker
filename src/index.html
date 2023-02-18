@@ -30,7 +30,7 @@
             <button data-insert="π">π</button>
             <button data-insert="Σ">Σ</button>
             <button data-insert="θ">θ</button>
-            <button id="more-symbols-button">...</button>
+            <button data-show-modal="more-symbols">...</button>
         </div>
         <div class="spacer"></div>
         <div class="button-row">
@@ -49,6 +49,31 @@
         <button data-show-modal="history">History</button>
     </div>
     <!-- Modals -->
+    <dialog id="more-symbols-modal">
+        <div class="button-row">
+            <button data-insert="±">±</button>
+            <button data-insert="√">√</button>
+            <button data-insert="∞">∞</button>
+            <button data-insert="π">π</button>
+            <button data-insert="Σ">Σ</button>
+            <button data-insert="θ">θ</button>
+            <button data-insert="±">±</button>
+            <button data-insert="√">√</button>
+            <button data-insert="∞">∞</button>
+            <button data-insert="π">π</button>
+            <button data-insert="Σ">Σ</button>
+            <button data-insert="θ">θ</button>
+            <button data-insert="±">±</button>
+            <button data-insert="√">√</button>
+            <button data-insert="∞">∞</button>
+            <button data-insert="π">π</button>
+            <button data-insert="Σ">Σ</button>
+            <button data-insert="θ">θ</button>
+        </div>
+    </dialog>
+    <dialog id="multiple-choice-modal">
+        <p>Placeholder</p>
+    </dialog>
     <dialog id="code-modal">
         <input type="text" placeholder="000" id="code-input">
         <button data-show-modal="code-help">Need help?</button>
@@ -72,9 +97,6 @@
         <p>Placeholder</p>
     </dialog>
     <dialog id="history-modal">
-        <p>Placeholder</p>
-    </dialog>
-    <dialog id="multiple-choice-modal">
         <p>Placeholder</p>
     </dialog>
     <script src="index.js" type="module"></script>
