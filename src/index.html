@@ -40,11 +40,11 @@
             <button data-multiple-choice="d">D</button>
             <button data-multiple-choice="e">E</button>
         </div>
-        <button id="submit-button">Submit (000)</button>
+        <button id="submit-button">Submit (<span class="code">000</span>)</button>
     </div>
     <div class="spacer"></div>
     <div class="flex-row">
-        <button data-show-modal="code">000</button>
+        <button data-show-modal="code"><span class="code">000</span></button>
         <button data-show-modal="settings">Settings</button>
         <button data-show-modal="history">History</button>
     </div>
@@ -75,7 +75,7 @@
         <p>Placeholder</p>
     </dialog>
     <dialog id="code-modal">
-        <input type="text" placeholder="000" id="code-input">
+        <input type="text" placeholder="000" maxlength="3" id="code-input">
         <button data-show-modal="code-help">Need help?</button>
     </dialog>
     <dialog id="code-help-modal">

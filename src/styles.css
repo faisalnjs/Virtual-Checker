@@ -132,6 +132,10 @@ textarea {
 
 /* Specific */
 
+span.code {
+    pointer-events: none;
+}
+
 .click-form {
     flex: 1;
     align-self: center;
