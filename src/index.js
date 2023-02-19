@@ -13,8 +13,8 @@ document.querySelectorAll("span.version").forEach(element => {
 // Modals
 
 const modals = {
-    "more-symbols": () => {
-        ui.show(document.getElementById("more-symbols-modal"), "Symbols", [
+    "symbols": () => {
+        ui.show(document.getElementById("symbols-modal"), "Symbols", [
             new ui.ModalButton("Close", true)
         ]);
     },
@@ -35,18 +35,13 @@ const modals = {
             new ui.ModalButton("Close", true)
         ]);
     },
-    "shortcuts": () => {
-        ui.show(document.getElementById("history-modal"), "Shortcuts", [
-            new ui.ModalButton("Close", true)
-        ]);
-    },
     "theme": () => {
-        ui.show(document.getElementById("history-modal"), "Theme", [
+        ui.show(document.getElementById("theme-modal"), "Theme", [
             new ui.ModalButton("Close", true)
         ]);
     },
     "data": () => {
-        ui.show(document.getElementById("history-modal"), "Data", [
+        ui.show(document.getElementById("data-modal"), "Data", [
             new ui.ModalButton("Close", true)
         ]);
     },

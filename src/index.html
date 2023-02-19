@@ -30,7 +30,7 @@
             <button data-insert="π">π</button>
             <button data-insert="Σ">Σ</button>
             <button data-insert="θ">θ</button>
-            <button data-show-modal="more-symbols">...</button>
+            <button data-show-modal="symbols">...</button>
         </div>
         <div class="spacer"></div>
         <div class="button-grid">
@@ -49,11 +49,8 @@
         <button data-show-modal="history">History</button>
     </div>
     <!-- Modals -->
-    <dialog id="more-symbols-modal">
+    <dialog id="symbols-modal">
         <div class="button-grid"></div>
-    </dialog>
-    <dialog id="multiple-choice-modal">
-        <p>Placeholder</p>
     </dialog>
     <dialog id="code-modal">
         <input type="text" placeholder="000" maxlength="3" id="code-input">
@@ -65,15 +62,11 @@
     <dialog id="settings-modal">
         <p>Virtual Clicker <span class="version"></span></p>
         <button data-show-modal="code">Seat Code</button>
-        <button data-show-modal="shortcuts">Keyboard Shortcuts</button>
         <button data-show-modal="theme">Theme</button>
         <button data-show-modal="data">Data</button>
     </dialog>
-    <dialog id="shortcuts-modal">
-        <p>Placeholder</p>
-    </dialog>
     <dialog id="theme-modal">
-        <p>Placeholder</p>
+        <div class="theme-grid"></div>
     </dialog>
     <dialog id="data-modal">
         <p>Placeholder</p>
