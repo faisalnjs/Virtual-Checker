@@ -134,6 +134,10 @@ textarea {
 
 /* Specific */
 
+p:empty {
+    display: none;
+}
+
 ul,
 ol {
     margin: 0;

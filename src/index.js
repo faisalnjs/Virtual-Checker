@@ -1,5 +1,6 @@
 import * as ui from "./ui.js";
 import { Storage } from "./storage.js";
+import { Autocomplete } from "./autocomplete.js";
 
 const storage = new Storage("virtual-clicker-2");
 
@@ -211,3 +212,5 @@ document.querySelectorAll("[data-insert-symbol]").forEach(button => {
         answerInput.focus();
     });
 });
+
+new Autocomplete(answerInput, answerInput.nextElementSibling);
