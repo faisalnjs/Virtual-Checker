@@ -5,7 +5,8 @@
     --surface-color: #e7e7e7;
     --accent-color: #242424;
     --accent-text-color: #ffffff;
-    --error-color: #ee6779;
+    --error-color: #fa8796;
+    --error-background-color: #fdeaea;
 }
 
 :focus-visible {
@@ -149,33 +150,33 @@ ol li::before {
     content: counter(list) ". ";
 }
 
+div.spacer {
+    height: 1.5rem;
+}
+
 span.code {
     pointer-events: none;
 }
 
-.click-form {
+.button-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(2.5rem, 1fr));
+    gap: 0.25rem;
+}
+
+.attention {
+    box-shadow: 0 0 0 0.125rem var(--error-color);
+    transition: box-shadow 100ms ease-in;
+}
+
+#form {
     flex: 1;
     align-self: center;
     justify-content: center;
     width: min(100%, 800px);
 }
 
-.button-row {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(2.5rem, 1fr));
-    gap: 0.25rem;
-}
-
-div.spacer {
-    height: 1.5rem;
-}
-
 #code-input {
     font-size: 2em;
     text-align: center;
-}
-
-.attention {
-    box-shadow: 0 0 0 0.125rem var(--error-color);
-    transition: box-shadow 100ms ease-in;
 }

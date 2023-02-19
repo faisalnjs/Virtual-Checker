@@ -18,12 +18,12 @@
 
 <body class="flex-col">
     <h1>Virtual Clicker</h1>
-    <div class="click-form flex-col">
+    <div class="flex-col" id="form">
         <label for="question-input">Question</label>
         <input type="text" id="question-input">
         <label for="answer-input">Answer</label>
         <textarea rows="8" id="answer-input"></textarea>
-        <div class="button-row">
+        <div class="button-grid">
             <button data-insert="±">±</button>
             <button data-insert="√">√</button>
             <button data-insert="∞">∞</button>
@@ -33,7 +33,7 @@
             <button data-show-modal="more-symbols">...</button>
         </div>
         <div class="spacer"></div>
-        <div class="button-row">
+        <div class="button-grid">
             <button data-multiple-choice="a">A</button>
             <button data-multiple-choice="b">B</button>
             <button data-multiple-choice="c">C</button>
@@ -50,26 +50,7 @@
     </div>
     <!-- Modals -->
     <dialog id="more-symbols-modal">
-        <div class="button-row">
-            <button data-insert="±">±</button>
-            <button data-insert="√">√</button>
-            <button data-insert="∞">∞</button>
-            <button data-insert="π">π</button>
-            <button data-insert="Σ">Σ</button>
-            <button data-insert="θ">θ</button>
-            <button data-insert="±">±</button>
-            <button data-insert="√">√</button>
-            <button data-insert="∞">∞</button>
-            <button data-insert="π">π</button>
-            <button data-insert="Σ">Σ</button>
-            <button data-insert="θ">θ</button>
-            <button data-insert="±">±</button>
-            <button data-insert="√">√</button>
-            <button data-insert="∞">∞</button>
-            <button data-insert="π">π</button>
-            <button data-insert="Σ">Σ</button>
-            <button data-insert="θ">θ</button>
-        </div>
+        <div class="button-grid"></div>
     </dialog>
     <dialog id="multiple-choice-modal">
         <p>Placeholder</p>
