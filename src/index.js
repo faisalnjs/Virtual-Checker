@@ -106,9 +106,12 @@ function updateCode() {
 
 // Clicker
 
+const questionInput = document.getElementById("question-input");
+const answerInput = document.getElementById("answer-input");
+
 document.getElementById("submit-button").addEventListener("click", e => {
-    const question = document.getElementById("question-input").value?.trim();
-    const answer = document.getElementById("answer-input").value?.trim();
+    const question = questionInput.value?.trim();
+    const answer = answerInput.value?.trim();
     console.log(question, answer);
     if (storage.get("code")) {
         if (question && answer) {
@@ -116,11 +119,11 @@ document.getElementById("submit-button").addEventListener("click", e => {
             resetInputs();
         }
         if (!question) {
-            document.getElementById("question-input").classList.add("attention");
-            document.getElementById("question-input").focus();
+            questionInput.classList.add("attention");
+            questionInput.focus();
         }
         if (!answer) {
-            document.getElementById("answer-input").classList.add("attention");
+            answerInput.classList.add("attention");
         }
     }
     else {
@@ -128,11 +131,11 @@ document.getElementById("submit-button").addEventListener("click", e => {
     }
 });
 
-document.getElementById("question-input").addEventListener("input", e => {
+questionInput.addEventListener("input", e => {
     e.target.classList.remove("attention");
 });
 
-document.getElementById("answer-input").addEventListener("input", e => {
+answerInput.addEventListener("input", e => {
     e.target.classList.remove("attention");
 });
 
@@ -154,9 +157,9 @@ function submitClick(code, question, answer) {
 }
 
 function resetInputs() {
-    document.getElementById("question-input").value = "";
-    document.getElementById("answer-input").value = "";
-    document.getElementById("question-input").focus();
+    questionInput.value = "";
+    answerInput.value = "";
+    questionInput.focus();
 }
 
 // Multiple choice
@@ -171,7 +174,7 @@ const descriptions = {
 
 document.querySelectorAll("[data-multiple-choice]").forEach(button => {
     button.addEventListener("click", e => {
-        const question = document.getElementById("question-input").value?.trim();
+        const question = questionInput.value?.trim();
         const choice = e.target.getAttribute("data-multiple-choice");
         const body = `<p>Are you sure? This is the same as</p>\n${ui.createList(false, descriptions[choice])}`;
         if (storage.get("code")) {
@@ -184,12 +187,27 @@ document.querySelectorAll("[data-multiple-choice]").forEach(button => {
                 ]);
             }
             if (!question) {
-                document.getElementById("question-input").classList.add("attention");
-                document.getElementById("question-input").focus();
+                questionInput.classList.add("attention");
+                questionInput.focus();
             }
         }
         else {
             modals["code"]();
         }
+    });
+});
+
+// Symbols
+
+const symbols = require("./symbols.json");
+
+document.querySelectorAll("[data-insert-symbol]").forEach(button => {
+    const index = button.getAttribute("data-insert-symbol");
+    const symbol = Object.values(symbols)[index];
+    button.innerHTML = symbol;
+    button.addEventListener("click", e => {
+        answerInput.value += symbol;
+        answerInput.dispatchEvent(new Event("input"));
+        answerInput.focus();
     });
 });
