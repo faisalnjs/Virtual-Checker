@@ -21,7 +21,7 @@
     color-scheme: dark;
     --text-color: #ffffff;
     --background-color: #1f1f1f;
-    --surface-color: #292929;
+    --surface-color: #2c2c2c;
     --accent-color: #354f63;
     --accent-text-color: #ffffff;
 }
@@ -70,7 +70,7 @@
     color-scheme: light;
     --text-color: #242424;
     --background-color: #c3c0e5;
-    --surface-color: #b0acd7;
+    --surface-color: #aca8d4;
     --accent-color: #7e78be;
     --accent-text-color: #242424;
     --error-color: #b42222;
