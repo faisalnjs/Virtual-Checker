@@ -6,14 +6,13 @@ export function alert(title, body, callback, blur) {
 
 export function prompt(title, body, accept, decline, blur) {
     modal(title, new Element("p", body).element.outerHTML, [
-        new ModalButton("Close", true, decline),
+        new ModalButton("Cancel", true, decline),
         new ModalButton("Okay", true, accept),
     ], blur);
 }
 
 export function modal(title, body, buttons, blur) {
     const dialog = document.createElement("dialog");
-
     const buttonContainer = document.createElement("div");
     buttons.forEach(button => {
         buttonContainer.append(
@@ -56,7 +55,7 @@ export function show(dialog, title, buttons, blur) {
     dialog.append(buttonContainer);
 
     dialog.showModal();
-    
+
     blur && buttonContainer.querySelectorAll("button").forEach(button => button.blur());
 
     dialog.addEventListener("close", () => {
@@ -86,4 +85,12 @@ export class Element {
         this.onclick && element.addEventListener("click", this.onclick);
         return element;
     }
+}
+
+export function createList(ordered, items) {
+    const list = document.createElement(ordered ? "ol" : "ul");
+    items.forEach(item => {
+        list.append(new Element("li", item).element);
+    });
+    return list.outerHTML;
 }

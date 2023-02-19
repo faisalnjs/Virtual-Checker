@@ -5,6 +5,7 @@
     --surface-color: #e7e7e7;
     --accent-color: #242424;
     --accent-text-color: #ffffff;
+    --error-color: #ee6779;
 }
 
 :focus-visible {
@@ -132,6 +133,22 @@ textarea {
 
 /* Specific */
 
+ul,
+ol {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    counter-reset: list;
+}
+
+ol li {
+    counter-increment: list;
+}
+
+ol li::before {
+    content: counter(list) ". ";
+}
+
 span.code {
     pointer-events: none;
 }
@@ -156,4 +173,9 @@ div.spacer {
 #code-input {
     font-size: 2em;
     text-align: center;
+}
+
+.attention {
+    box-shadow: 0 0 0 0.125rem var(--error-color);
+    transition: box-shadow 100ms ease-in;
 }

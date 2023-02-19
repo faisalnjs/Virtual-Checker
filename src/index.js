@@ -90,9 +90,12 @@ function saveCode() {
 }
 
 function updateCode() {
-    document.querySelectorAll("span.code").forEach(element => {
-        element.innerHTML = storage.get("code");
-    });
+    if (storage.get("code")) {
+        document.querySelectorAll("span.code").forEach(element => {
+            element.innerHTML = storage.get("code");
+        });
+        document.title = `Virtual Clicker (${storage.get("code")})`;
+    }
 }
 
 // History
@@ -100,6 +103,36 @@ function updateCode() {
 
 
 // Clicker
+
+document.getElementById("submit-button").addEventListener("click", e => {
+    const question = document.getElementById("question-input").value?.trim();
+    const answer = document.getElementById("answer-input").value?.trim();
+    console.log(question, answer);
+    if (storage.get("code")) {
+        if (question && answer) {
+            submitClick(storage.get("code"), question, answer);
+            resetInputs();
+        }
+        if (!question) {
+            document.getElementById("question-input").classList.add("attention");
+            document.getElementById("question-input").focus();
+        }
+        if (!answer) {
+            document.getElementById("answer-input").classList.add("attention");
+        }
+    }
+    else {
+        modals["code"]();
+    }
+});
+
+document.getElementById("question-input").addEventListener("input", e => {
+    e.target.classList.remove("attention");
+});
+
+document.getElementById("answer-input").addEventListener("input", e => {
+    e.target.classList.remove("attention");
+});
 
 function submitClick(code, question, answer) {
     const fields = {
@@ -117,3 +150,44 @@ function submitClick(code, question, answer) {
         }
     });
 }
+
+function resetInputs() {
+    document.getElementById("question-input").value = "";
+    document.getElementById("answer-input").value = "";
+    document.getElementById("question-input").focus();
+}
+
+// Multiple choice
+
+const descriptions = {
+    "a": ["Agree", "True", "Yes"],
+    "b": ["Disagree", "False", "No"],
+    "c": ["Both", "Always"],
+    "d": ["Neither", "Never"],
+    "e": ["Sometimes", "Cannot be determined"],
+}
+
+document.querySelectorAll("[data-multiple-choice]").forEach(button => {
+    button.addEventListener("click", e => {
+        const question = document.getElementById("question-input").value?.trim();
+        const choice = e.target.getAttribute("data-multiple-choice");
+        const body = `<p>Are you sure? This is the same as</p>\n${ui.createList(false, descriptions[choice])}`;
+        if (storage.get("code")) {
+            if (question) {
+                ui.modal(`Submit choice ${choice.toUpperCase()}`, body, [
+                    new ui.ModalButton("Cancel", true),
+                    new ui.ModalButton("Submit", true, () => {
+                        submitClick(storage.get("code"), question, `CHOICE ${choice.toUpperCase()}`);
+                    }),
+                ]);
+            }
+            if (!question) {
+                document.getElementById("question-input").classList.add("attention");
+                document.getElementById("question-input").focus();
+            }
+        }
+        else {
+            modals["code"]();
+        }
+    });
+});
