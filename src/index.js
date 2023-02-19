@@ -254,3 +254,32 @@ themes.forEach(theme => {
 });
 
 // Storage
+
+const resets = {
+    "theme": () => {
+        document.body.removeAttribute("data-theme");
+        storage.delete("theme");
+    },
+    "history": () => {
+        ui.prompt("Are you sure?", "Click history will be cleared", [
+            new ui.ModalButton("Cancel", true),
+            new ui.ModalButton("Clear", true, () => {
+                
+            }),
+        ]);
+    },
+    "all": () => {
+        ui.prompt("Are you sure?", "All saved data will be erased, this cannot be reversed", [
+            new ui.ModalButton("Cancel", true),
+            new ui.ModalButton("Reset", true, () => {
+                storage.obliterate();
+            }),
+        ]);
+    },
+}
+
+document.querySelectorAll("[data-reset]").forEach(button => {
+    button.addEventListener("click", e => {
+        resets[e.target.getAttribute("data-reset")]();
+    });
+});

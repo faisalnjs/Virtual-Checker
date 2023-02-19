@@ -4,11 +4,8 @@ export function alert(title, body, callback, blur) {
     ], blur);
 }
 
-export function prompt(title, body, accept, decline, blur) {
-    modal(title, new Element("p", body).element.outerHTML, [
-        new ModalButton("Cancel", true, decline),
-        new ModalButton("Okay", true, accept),
-    ], blur);
+export function prompt(title, body, buttons, blur) {
+    modal(title, new Element("p", body).element.outerHTML, buttons, blur);
 }
 
 export function modal(title, body, buttons, blur) {
