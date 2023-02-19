@@ -6,7 +6,6 @@
     --accent-color: #242424;
     --accent-text-color: #ffffff;
     --error-color: #fa8796;
-    --error-background-color: #fdeaea;
 }
 
 :focus-visible {
@@ -110,6 +109,11 @@ textarea {
     label:hover+button {
         background-color: var(--surface-color);
     }
+
+    button[data-theme]:hover {
+        color: var(--accent-text-color);
+        background-color: var(--accent-color);
+    }
 }
 
 .flex-row {
@@ -162,15 +166,28 @@ span.code {
     pointer-events: none;
 }
 
+.attention {
+    box-shadow: 0 0 0 0.125rem var(--error-color);
+    transition: box-shadow 100ms ease-in;
+}
+
 .button-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(2.5rem, 1fr));
     gap: 0.25rem;
 }
 
-.attention {
-    box-shadow: 0 0 0 0.125rem var(--error-color);
-    transition: box-shadow 100ms ease-in;
+.theme-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.25rem;
+}
+
+button[data-theme] {
+    height: 4.5rem;
+    color: var(--text-color);
+    background-color: var(--surface-color);
+    text-transform: capitalize;
 }
 
 #form {

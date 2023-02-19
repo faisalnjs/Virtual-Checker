@@ -227,6 +227,30 @@ uniqueSymbols.forEach(symbol => {
     )
 });
 
-// Theme
+// Themes
+
+const themes = [
+    "graphite",
+    "classic",
+    "abyss",
+    "blizzard",
+    "sage",
+    "dune",
+    "rose",
+    "lavender",
+]
+
+document.body.setAttribute("data-theme", storage.get("theme") || "");
+
+themes.forEach(theme => {
+    const button = document.createElement("button");
+    button.setAttribute("data-theme", theme);
+    button.innerHTML = theme;
+    button.addEventListener("click", e => {
+        document.body.setAttribute("data-theme", theme);
+        storage.set("theme", theme);
+    });
+    document.querySelector("#theme-modal>div").append(button);
+});
 
 // Storage
