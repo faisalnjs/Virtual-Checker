@@ -200,7 +200,10 @@ document.querySelectorAll("[data-multiple-choice]").forEach(button => {
 
 // Symbols
 
+new Autocomplete(answerInput, answerInput.nextElementSibling);
+
 const symbols = require("./symbols.json");
+const uniqueSymbols = [...new Set(Object.values(symbols))];
 
 document.querySelectorAll("[data-insert-symbol]").forEach(button => {
     const index = button.getAttribute("data-insert-symbol");
@@ -213,4 +216,12 @@ document.querySelectorAll("[data-insert-symbol]").forEach(button => {
     });
 });
 
-new Autocomplete(answerInput, answerInput.nextElementSibling);
+uniqueSymbols.forEach(symbol => {
+    document.querySelector("#symbols-modal>div").append(
+        new ui.Element("button", symbol, () => {
+            answerInput.value += symbol;
+            answerInput.dispatchEvent(new Event("input"));
+            answerInput.focus();
+        }).element
+    )
+});
