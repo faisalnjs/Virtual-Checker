@@ -3,6 +3,13 @@ import { Storage } from "./storage.js";
 
 const storage = new Storage("virtual-clicker-2");
 
+// Version
+
+const VERSION = "2.0";
+document.querySelectorAll("span.version").forEach(element => {
+    element.innerHTML = VERSION;
+});
+
 // Modals
 
 const modals = {
