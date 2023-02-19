@@ -230,9 +230,9 @@ uniqueSymbols.forEach(symbol => {
 // Themes
 
 const themes = [
-    "graphite",
     "classic",
     "abyss",
+    "graphite",
     "blizzard",
     "sage",
     "dune",

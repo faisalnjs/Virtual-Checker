@@ -1,12 +1,3 @@
-[data-theme="graphite"] {
-    color-scheme: dark;
-    --text-color: #ffffff;
-    --background-color: #1f1f1f;
-    --surface-color: #292929;
-    --accent-color: #354f63;
-    --accent-text-color: #ffffff;
-}
-
 [data-theme="classic"] {
     color-scheme: dark;
     --text-color: #ffffff;
@@ -23,6 +14,15 @@
     --background-color: #000000;
     --surface-color: #18181a;
     --accent-color: #059fff;
+    --accent-text-color: #ffffff;
+}
+
+[data-theme="graphite"] {
+    color-scheme: dark;
+    --text-color: #ffffff;
+    --background-color: #1f1f1f;
+    --surface-color: #292929;
+    --accent-color: #354f63;
     --accent-text-color: #ffffff;
 }
 
