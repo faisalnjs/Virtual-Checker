@@ -41,8 +41,8 @@ const modals = {
             new ui.ModalButton("Close", true)
         ]);
     },
-    "data": () => {
-        ui.show(document.getElementById("data-modal"), "Data", [
+    "storage": () => {
+        ui.show(document.getElementById("storage-modal"), "Storage", [
             new ui.ModalButton("Close", true)
         ]);
     },
@@ -163,6 +163,11 @@ function resetInputs() {
     questionInput.focus();
 }
 
+function resetAttention() {
+    questionInput.classList.remove("attention");
+    answerInput.classList.remove("attention");
+}
+
 // Multiple choice
 
 const descriptions = {
@@ -225,3 +230,7 @@ uniqueSymbols.forEach(symbol => {
         }).element
     )
 });
+
+// Theme
+
+// Storage
