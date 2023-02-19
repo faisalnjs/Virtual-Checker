@@ -163,11 +163,6 @@ function resetInputs() {
     questionInput.focus();
 }
 
-function resetAttention() {
-    questionInput.classList.remove("attention");
-    answerInput.classList.remove("attention");
-}
-
 // Multiple choice
 
 const descriptions = {
@@ -193,6 +188,7 @@ document.querySelectorAll("[data-multiple-choice]").forEach(button => {
                 ]);
             }
             if (!question) {
+                answerInput.classList.remove("attention");
                 questionInput.classList.add("attention");
                 questionInput.focus();
             }
