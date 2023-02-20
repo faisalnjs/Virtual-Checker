@@ -114,10 +114,6 @@ for (let col = 1; col <= 5; col++) {
     }
 }
 
-// History
-
-
-
 // Clicker
 
 const questionInput = document.getElementById("question-input");
@@ -168,6 +164,7 @@ function submitClick(code, question, answer) {
             "Content-Type": "application/x-www-form-urlencoded"
         }
     });
+    storeClick(code, question, answer);
 }
 
 function resetInputs() {
@@ -211,6 +208,66 @@ document.querySelectorAll("[data-multiple-choice]").forEach(button => {
         }
     });
 });
+
+// History
+
+updateHistory();
+
+function storeClick(code, question, answer) {
+    const history = storage.get("history") || [];
+    const timestamp = Date.now();
+    history.push({
+        "code": code,
+        "question": question,
+        "answer": answer,
+        "timestamp": timestamp,
+    });
+    storage.set("history", history);
+    updateHistory();
+}
+
+function updateHistory() {
+    const history = storage.get("history") || [];
+    const feed = document.getElementById("history-feed");
+    if (history.length != 0) {
+        feed.innerHTML = "";
+        history.forEach(item => {
+            const button = document.createElement("button");
+            button.innerHTML = `<p><b>${item.question}.</b> ${timeToString(item.timestamp)} (${item.code})</p>\n<p>${item.answer}</p>`;
+            feed.prepend(button);
+            button.addEventListener("click", e => {
+                questionInput.value = item.question;
+                answerInput.value = item.answer;
+                document.getElementById("history-modal").close();
+            });
+        });
+    }
+    else {
+        feed.innerHTML = "<p>Submitted clicks will show up here!</p>";
+    }
+}
+
+function timeToString(timestamp) {
+    let date = new Date(timestamp);
+    if (timestamp) {
+        let month = date.getMonth() + 1;
+        let day = date.getDate();
+        let hours = date.getHours();
+        let minutes = date.getMinutes().toString().padStart(2, "0");
+        let period;
+        if (hours >= 12) {
+            hours %= 12;
+            period = "PM";
+        }
+        else {
+            period = "AM";
+        }
+        if (hours == 0) {
+            hours = 12;
+        }
+        return `${month}/${day} ${hours}:${minutes} ${period}`;
+    }
+}
 
 // Symbols
 
@@ -274,10 +331,10 @@ const resets = {
         storage.delete("theme");
     },
     "history": () => {
-        ui.prompt("Are you sure?", "Click history will be cleared", [
+        ui.prompt("Are you sure?", "Click history will be lost forever! (A long time!)", [
             new ui.ModalButton("Cancel", true),
             new ui.ModalButton("Clear", true, () => {
-
+                storage.delete("history");
             }),
         ]);
     },
