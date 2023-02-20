@@ -15,6 +15,7 @@
     --surface-color: #18181a;
     --accent-color: #059fff;
     --accent-text-color: #ffffff;
+    --error-color: #f84747;
 }
 
 [data-theme="graphite"] {
@@ -24,6 +25,7 @@
     --surface-color: #2c2c2c;
     --accent-color: #354f63;
     --accent-text-color: #ffffff;
+    --error-color: #f84747;
 }
 
 [data-theme="blizzard"] {
