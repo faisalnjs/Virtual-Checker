@@ -124,7 +124,6 @@ questionInput.focus();
 document.getElementById("submit-button").addEventListener("click", e => {
     const question = questionInput.value?.trim();
     const answer = answerInput.value?.trim();
-    console.log(question, answer);
     if (storage.get("code")) {
         if (question && answer) {
             submitClick(storage.get("code"), question, answer);
