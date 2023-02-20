@@ -119,6 +119,8 @@ for (let col = 1; col <= 5; col++) {
 const questionInput = document.getElementById("question-input");
 const answerInput = document.getElementById("answer-input");
 
+questionInput.focus();
+
 document.getElementById("submit-button").addEventListener("click", e => {
     const question = questionInput.value?.trim();
     const answer = answerInput.value?.trim();
@@ -239,6 +241,7 @@ function updateHistory() {
             button.addEventListener("click", e => {
                 questionInput.value = item.question;
                 answerInput.value = item.answer;
+                answerInput.dispatchEvent(new Event("input"));
                 document.getElementById("history-modal").close();
                 questionInput.focus();
             });
@@ -283,21 +286,23 @@ document.querySelectorAll("[data-insert-symbol]").forEach(button => {
     const symbol = Object.values(symbols)[index];
     button.innerHTML = symbol;
     button.addEventListener("click", e => {
-        answerInput.value += symbol;
-        answerInput.dispatchEvent(new Event("input"));
-        answerInput.focus();
+        insertSymbol(symbol);
     });
 });
 
 uniqueSymbols.forEach(symbol => {
     document.querySelector("#symbols-modal>div").append(
         new ui.Element("button", symbol, () => {
-            answerInput.value += symbol;
-            answerInput.dispatchEvent(new Event("input"));
-            answerInput.focus();
+            insertSymbol(symbol);
         }).element
     )
 });
+
+function insertSymbol(symbol) {
+    answerInput.setRangeText(symbol, answerInput.selectionStart, answerInput.selectionEnd, "end");
+    answerInput.dispatchEvent(new Event("input"));
+    answerInput.focus();
+}
 
 // Themes
 
@@ -354,4 +359,27 @@ document.querySelectorAll("[data-reset]").forEach(button => {
     button.addEventListener("click", e => {
         resets[e.target.getAttribute("data-reset")]();
     });
+});
+
+// Keyboard shortcuts
+
+document.addEventListener("keydown", e => {
+    const anyDialogOpen = Array.from(document.querySelectorAll("dialog")).some(dialog => dialog.open);
+    if (e.ctrlKey) {
+        if (e.key == "Enter" && !anyDialogOpen) {
+            document.getElementById("submit-button").click();
+        }
+        if (e.key == "," && !anyDialogOpen) {
+            modals["settings"]();
+        }
+        if (e.key == "." && !anyDialogOpen) {
+            modals["history"]();
+        }
+    }
+    else if (e.altKey) {
+        if (/[1-9]/.test(e.key)) {
+            e.preventDefault();
+            insertSymbol(uniqueSymbols[parseInt(e.key) - 1]);
+        }
+    }
 });
