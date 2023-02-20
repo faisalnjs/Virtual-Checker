@@ -14,16 +14,18 @@ export class Autocomplete {
                 e.preventDefault();
                 e.target.setRangeText(symbols[this.matches[0]], this.#start, this.#end, "end");
                 this.#start = e.target.selectionEnd;
-                this.#query = e.target.value.substring(this.#start, this.#end + 1);
             }
             if (e.key == "Escape") {
                 this.#start = e.target.selectionEnd;
-                this.#query = e.target.value.substring(this.#start, this.#end + 1);
+            }
+            if (e.key == " ") {
+                this.#start = e.target.selectionEnd;
+                this.#start++;
+                this.#end++;
             }
             if (this.#start > this.#end) {
                 this.#start = this.#end;
             }
-            this.#updateResult();
         });
 
         this.input.addEventListener("input", e => {
