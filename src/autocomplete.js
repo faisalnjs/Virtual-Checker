@@ -14,9 +14,13 @@ export class Autocomplete {
                 e.preventDefault();
                 e.target.setRangeText(symbols[this.matches[0]], this.#start, this.#end, "end");
                 this.#start = e.target.selectionEnd;
+                this.#query = e.target.value.substring(this.#start, this.#end + 1);
+                this.#updateResult();
             }
             if (e.key == "Escape") {
                 this.#start = e.target.selectionEnd;
+                this.#query = e.target.value.substring(this.#start, this.#end + 1);
+                this.#updateResult();
             }
             if (e.key == " ") {
                 this.#start = e.target.selectionEnd;
@@ -34,6 +38,14 @@ export class Autocomplete {
             this.#updateResult();
             // console.log(this.#start, this.#end, this.#query, e.target.selectionEnd, this.matches);
         });
+
+        this.input.addEventListener("focus", e => {
+            this.#updateResult();
+        });
+
+        this.input.addEventListener("blur", e => {
+            this.result.innerHTML = "";
+        });
     }
 
     get matches() {
@@ -47,7 +59,10 @@ export class Autocomplete {
 
     #updateResult() {
         if (this.matches.length != 0) {
-            this.result.innerHTML = `Press tab to insert ${symbols[this.matches[0]]} or press escape to cancel`;
+            this.result.innerHTML = `<kbd>Tab</kbd> to insert ${symbols[this.matches[0]]}`;
+        }
+        else if (this.#query?.trim()) {
+            this.result.innerHTML = "<kbd>Esc</kbd> to cancel";
         }
         else {
             this.result.innerHTML = "";
