@@ -12,7 +12,7 @@
     color-scheme: dark;
     --text-color: #ffffff;
     --background-color: #000000;
-    --surface-color: #18181a;
+    --surface-color: #1f1f22;
     --accent-color: #059fff;
     --accent-text-color: #ffffff;
     --error-color: #f84747;
@@ -22,7 +22,7 @@
     color-scheme: dark;
     --text-color: #ffffff;
     --background-color: #1f1f1f;
-    --surface-color: #2c2c2c;
+    --surface-color: #2d2f30;
     --accent-color: #354f63;
     --accent-text-color: #ffffff;
     --error-color: #f84747;
@@ -32,7 +32,7 @@
     color-scheme: light;
     --text-color: #242424;
     --background-color: #cde7f5;
-    --surface-color: #b3d5e9;
+    --surface-color: #abd0e6;
     --accent-color: #71b2d3;
     --accent-text-color: #242424;
     --error-color: #e47979;
