@@ -6,7 +6,7 @@
   "scripts": {
     "start": "parcel",
     "build": "parcel build",
-    "predeploy": "rimraf dist && parcel build",
+    "predeploy": "rimraf dist && parcel build --public-url .",
     "deploy": "gh-pages -d dist"
   },
   "repository": {
