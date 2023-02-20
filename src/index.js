@@ -293,6 +293,7 @@ document.querySelectorAll("[data-insert-symbol]").forEach(button => {
 uniqueSymbols.forEach(symbol => {
     document.querySelector("#symbols-modal>div").append(
         new ui.Element("button", symbol, () => {
+            document.getElementById("symbols-modal").close();
             insertSymbol(symbol);
         }).element
     )
