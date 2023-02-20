@@ -184,7 +184,7 @@ span.code {
 }
 
 button[data-theme] {
-    height: 4.5rem;
+    height: 4rem;
     color: var(--text-color);
     background-color: var(--surface-color);
     text-transform: capitalize;
