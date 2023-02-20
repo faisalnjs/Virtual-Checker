@@ -1,2 +1,1 @@
-# virtual-clicker-2
- 
+# Virtual Clicker 2
