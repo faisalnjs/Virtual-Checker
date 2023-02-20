@@ -101,6 +101,19 @@ function updateCode() {
     }
 }
 
+for (let col = 1; col <= 5; col++) {
+    for (let row = 6; row > 0; row--) {
+        document.getElementById("seat-grid").append(
+            new ui.Element("button", "", () => {
+                const period = document.getElementById("period-input").value;
+                const code = period + row.toString() + col.toString();
+                document.getElementById("code-input").value = code;
+                document.getElementById("code-help-modal").close();
+            }).element
+        );
+    }
+}
+
 // History
 
 
@@ -264,7 +277,7 @@ const resets = {
         ui.prompt("Are you sure?", "Click history will be cleared", [
             new ui.ModalButton("Cancel", true),
             new ui.ModalButton("Clear", true, () => {
-                
+
             }),
         ]);
     },

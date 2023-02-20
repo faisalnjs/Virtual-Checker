@@ -201,3 +201,9 @@ button[data-theme] {
     font-size: 2em;
     text-align: center;
 }
+
+#seat-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 0.25rem;
+}
