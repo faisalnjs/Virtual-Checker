@@ -5,7 +5,9 @@
   "source": "src/index.html",
   "scripts": {
     "start": "parcel",
-    "build": "parcel build"
+    "build": "parcel build",
+    "predeploy": "rimraf dist && parcel build",
+    "deploy": "gh-pages -d dist"
   },
   "repository": {
     "type": "git",
@@ -18,6 +20,8 @@
   },
   "homepage": "https://github.com/khui0/virtual-clicker-2#readme",
   "devDependencies": {
-    "parcel": "^2.8.3"
+    "gh-pages": "^5.0.0",
+    "parcel": "^2.8.3",
+    "rimraf": "^4.1.2"
   }
 }
