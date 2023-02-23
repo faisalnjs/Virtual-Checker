@@ -85,7 +85,7 @@
     --surface-color: #2b3b72;
     --accent-color: #a3773d;
     --accent-text-color: #ffffff;
-    --error-color: #bd5858;
+    --error-color: #913939;
 }
 
 [data-theme="loyalty"] {
@@ -95,7 +95,7 @@
     --surface-color: #db9d52;
     --accent-color: #3f342e;
     --accent-text-color: #ffffff;
-    --error-color: #bd5858;
+    --error-color: #923737;
 }
 
 [data-theme="cunning"] {
@@ -105,7 +105,7 @@
     --surface-color: #18534d;
     --accent-color: #9c9c9c;
     --accent-text-color: #242424;
-    --error-color: #bd5858;
+    --error-color: #923737;
 }
 
 [data-theme="bravery"] {
@@ -115,5 +115,5 @@
     --surface-color: #9e3634;
     --accent-color: #fcb255;
     --accent-text-color: #242424;
-    --error-color: #bd5858;
+    --error-color: #ff4949;
 }
