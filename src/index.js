@@ -171,6 +171,7 @@ function submitClick(code, question, answer) {
 function resetInputs() {
     questionInput.value = "";
     answerInput.value = "";
+    answerInput.dispatchEvent(new Event("input"));
     questionInput.focus();
 }
 

@@ -38,14 +38,6 @@ export class Autocomplete {
             this.#updateResult();
             // console.log(this.#start, this.#end, this.#query, e.target.selectionEnd, this.matches);
         });
-
-        this.input.addEventListener("focus", e => {
-            this.#updateResult();
-        });
-
-        this.input.addEventListener("blur", e => {
-            this.result.innerHTML = "";
-        });
     }
 
     get matches() {
