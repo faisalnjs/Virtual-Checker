@@ -316,6 +316,10 @@ const themes = [
     "dune",
     "rose",
     "lavender",
+    "wit",
+    "loyalty",
+    "cunning",
+    "bravery",
 ]
 
 document.body.setAttribute("data-theme", storage.get("theme") || "");
