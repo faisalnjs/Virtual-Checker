@@ -235,7 +235,7 @@ button[data-theme] {
 }
 
 script~:not(script) {
-    display: none;
+    display: none !important;
 }
 
 /* Scrollbar */
