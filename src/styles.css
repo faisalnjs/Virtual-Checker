@@ -234,6 +234,10 @@ button[data-theme] {
     text-overflow: ellipsis;
 }
 
+script~:not(script) {
+    display: none;
+}
+
 /* Scrollbar */
 
 ::-webkit-scrollbar {
@@ -253,8 +257,4 @@ button[data-theme] {
 
 ::-webkit-scrollbar-thumb:hover {
     background-color: var(--accent-color);
-}
-
-script+* {
-    display: none;
 }
