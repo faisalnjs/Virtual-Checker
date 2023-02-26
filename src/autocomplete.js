@@ -33,11 +33,15 @@ export class Autocomplete {
         });
 
         this.input.addEventListener("input", e => {
-            this.#end = e.target.selectionEnd;
-            this.#query = e.target.value.substring(this.#start, this.#end + 1);
-            this.#updateResult();
-            // console.log(this.#start, this.#end, this.#query, e.target.selectionEnd, this.matches);
+            this.update();
         });
+    }
+
+    update() {
+        this.#end = this.input.selectionEnd;
+        this.#query = this.input.value.substring(this.#start, this.#end + 1);
+        this.#updateResult();
+        // console.log(this.#start, this.#end, this.#query, this.input.selectionEnd, this.matches);
     }
 
     get matches() {

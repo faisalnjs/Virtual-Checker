@@ -119,6 +119,8 @@ for (let col = 1; col <= 5; col++) {
 const questionInput = document.getElementById("question-input");
 const answerInput = document.getElementById("answer-input");
 
+const autocomplete = new Autocomplete(answerInput, answerInput.nextElementSibling);
+
 questionInput.focus();
 
 document.getElementById("submit-button").addEventListener("click", e => {
@@ -171,8 +173,8 @@ function submitClick(code, question, answer) {
 function resetInputs() {
     questionInput.value = "";
     answerInput.value = "";
-    answerInput.dispatchEvent(new Event("input"));
     questionInput.focus();
+    autocomplete.update();
 }
 
 // Multiple choice
@@ -241,7 +243,7 @@ function updateHistory() {
             button.addEventListener("click", e => {
                 questionInput.value = item.question;
                 answerInput.value = item.answer;
-                answerInput.dispatchEvent(new Event("input"));
+                autocomplete.update();
                 document.getElementById("history-modal").close();
                 questionInput.focus();
             });
@@ -276,8 +278,6 @@ function timeToString(timestamp) {
 
 // Symbols
 
-new Autocomplete(answerInput, answerInput.nextElementSibling);
-
 const symbols = require("./symbols.json");
 const uniqueSymbols = [...new Set(Object.values(symbols))];
 
@@ -301,8 +301,8 @@ uniqueSymbols.forEach(symbol => {
 
 function insertSymbol(symbol) {
     answerInput.setRangeText(symbol, answerInput.selectionStart, answerInput.selectionEnd, "end");
-    answerInput.dispatchEvent(new Event("input"));
     answerInput.focus();
+    autocomplete.update();
 }
 
 // Themes
