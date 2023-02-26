@@ -243,9 +243,9 @@ function updateHistory() {
             button.addEventListener("click", e => {
                 questionInput.value = item.question;
                 answerInput.value = item.answer;
-                autocomplete.update();
                 document.getElementById("history-modal").close();
                 questionInput.focus();
+                autocomplete.update();
             });
         });
     }
