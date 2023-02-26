@@ -254,3 +254,7 @@ button[data-theme] {
 ::-webkit-scrollbar-thumb:hover {
     background-color: var(--accent-color);
 }
+
+script+* {
+    display: none;
+}
