@@ -131,12 +131,13 @@ document.getElementById("submit-button").addEventListener("click", e => {
             submitClick(storage.get("code"), question, answer);
             resetInputs();
         }
+        if (!answer) {
+            answerInput.classList.add("attention");
+            answerInput.focus();
+        }
         if (!question) {
             questionInput.classList.add("attention");
             questionInput.focus();
-        }
-        if (!answer) {
-            answerInput.classList.add("attention");
         }
     }
     else {
