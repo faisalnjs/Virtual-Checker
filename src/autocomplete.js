@@ -40,6 +40,9 @@ export class Autocomplete {
     update() {
         this.#end = this.input.selectionEnd;
         this.#query = this.input.value.substring(this.#start, this.#end + 1);
+        if (this.matches.length == 0) {
+            this.#start = this.#end;
+        }
         this.#updateResult();
         // console.log(this.#start, this.#end, this.#query, this.input.selectionEnd, this.matches);
     }
@@ -55,10 +58,10 @@ export class Autocomplete {
 
     #updateResult() {
         if (this.matches.length != 0) {
-            this.result.innerHTML = `<kbd>Tab</kbd> to insert ${symbols[this.matches[0]]}`;
+            this.result.innerHTML = `<kbd>Tab</kbd> to insert ${symbols[this.matches[0]]} <kbd>Esc</kbd> to cancel`;
         }
         else if (this.#query?.trim()) {
-            this.result.innerHTML = "<kbd>Esc</kbd> to cancel";
+            this.result.innerHTML = "";
         }
         else {
             this.result.innerHTML = "";
