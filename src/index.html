@@ -19,22 +19,23 @@
 
 <body class="flex-col">
     <h1>Virtual Clicker</h1>
-    <div class="flex-col" id="form">
+    <div class="flex-col" id="clicker">
         <label for="question-input">Question</label>
         <input type="text" autocomplete="off" id="question-input">
         <label for="answer-input">Answer</label>
-        <textarea rows="8" autocomplete="off" id="answer-input"></textarea>
-        <p></p>
-        <div class="button-grid">
-            <button data-insert-symbol="0"></button>
-            <button data-insert-symbol="1"></button>
-            <button data-insert-symbol="2"></button>
-            <button data-insert-symbol="3"></button>
-            <button data-insert-symbol="4"></button>
-            <button data-insert-symbol="5"></button>
-            <button data-show-modal="symbols">...</button>
+        <div id="answer-container">
+            <textarea rows="8" autocomplete="off" id="answer-input"></textarea>
+            <div class="button-grid">
+                <button data-insert-symbol="0"></button>
+                <button data-insert-symbol="1"></button>
+                <button data-insert-symbol="2"></button>
+                <button data-insert-symbol="3"></button>
+                <button data-insert-symbol="4"></button>
+                <button data-insert-symbol="5"></button>
+                <button data-show-modal="symbols">...</button>
+            </div>
         </div>
-        <div class="spacer"></div>
+        <p id="answer-suggestion"></p>
         <div class="button-grid">
             <button data-multiple-choice="a">A</button>
             <button data-multiple-choice="b">B</button>

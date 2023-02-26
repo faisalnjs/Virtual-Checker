@@ -5,9 +5,9 @@ export class Autocomplete {
     #end = 0;
     #query = ""
 
-    constructor(input, result) {
+    constructor(input, suggestion) {
         this.input = input;
-        this.result = result;
+        this.suggestion = suggestion;
 
         this.input.addEventListener("keydown", e => {
             if (e.key == "Tab" && this.matches.length != 0) {
@@ -15,12 +15,12 @@ export class Autocomplete {
                 e.target.setRangeText(symbols[this.matches[0]], this.#start, this.#end, "end");
                 this.#start = e.target.selectionEnd;
                 this.#query = e.target.value.substring(this.#start, this.#end + 1);
-                this.#updateResult();
+                this.#updateSuggestion();
             }
             if (e.key == "Escape") {
                 this.#start = e.target.selectionEnd;
                 this.#query = e.target.value.substring(this.#start, this.#end + 1);
-                this.#updateResult();
+                this.#updateSuggestion();
             }
             if (e.key == " ") {
                 this.#start = e.target.selectionEnd;
@@ -43,7 +43,7 @@ export class Autocomplete {
         if (this.matches.length == 0) {
             this.#start = this.#end;
         }
-        this.#updateResult();
+        this.#updateSuggestion();
         // console.log(this.#start, this.#end, this.#query, this.input.selectionEnd, this.matches);
     }
 
@@ -56,15 +56,15 @@ export class Autocomplete {
         }
     }
 
-    #updateResult() {
+    #updateSuggestion() {
         if (this.matches.length != 0) {
-            this.result.innerHTML = `<kbd>Tab</kbd> to insert ${symbols[this.matches[0]]} <kbd>Esc</kbd> to cancel`;
+            this.suggestion.innerHTML = `<kbd>Tab</kbd> to insert ${symbols[this.matches[0]]} <kbd>Esc</kbd> to cancel`;
         }
         else if (this.#query?.trim()) {
-            this.result.innerHTML = "";
+            this.suggestion.innerHTML = "";
         }
         else {
-            this.result.innerHTML = "";
+            this.suggestion.innerHTML = "";
         }
     }
 }

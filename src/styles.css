@@ -138,10 +138,6 @@ textarea {
 
 /* Specific */
 
-p:empty {
-    display: none;
-}
-
 ul,
 ol {
     margin: 0;
@@ -198,11 +194,21 @@ button[data-theme] {
     text-transform: capitalize;
 }
 
-#form {
+#clicker {
     flex: 1;
     align-self: center;
     justify-content: center;
     width: min(100%, 800px);
+}
+
+#answer-container {
+    display: flex;
+    flex-direction: column-reverse;
+    gap: 0.25rem;
+}
+
+#answer-suggestion {
+    height: 1.5rem;
 }
 
 #code-input {

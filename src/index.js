@@ -119,7 +119,7 @@ for (let col = 1; col <= 5; col++) {
 const questionInput = document.getElementById("question-input");
 const answerInput = document.getElementById("answer-input");
 
-const autocomplete = new Autocomplete(answerInput, answerInput.nextElementSibling);
+const autocomplete = new Autocomplete(answerInput, document.getElementById("answer-suggestion"));
 
 questionInput.focus();
 
