@@ -241,19 +241,12 @@ function updateHistory() {
             const button = document.createElement("button");
             button.innerHTML = `<p><b>${item.question}.</b> ${timeToString(item.timestamp)} (${item.code})</p>\n<p>${item.answer}</p>`;
             feed.prepend(button);
-            // Resubmit
             button.addEventListener("click", e => {
-                const choice = item.answer.match(/CHOICE ([A-E])/)[1];
-                if (!choice) {
-                    questionInput.value = item.question;
-                    answerInput.value = item.answer;
-                    document.getElementById("history-modal").close();
-                    questionInput.focus();
-                    autocomplete.update();
-                }
-                else {
-                    document.querySelector(`[data-multiple-choice=${choice.toLowerCase()}]`).click();
-                }
+                questionInput.value = item.question;
+                answerInput.value = item.answer;
+                document.getElementById("history-modal").close();
+                questionInput.focus();
+                autocomplete.update();
             });
         });
     }
