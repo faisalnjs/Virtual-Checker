@@ -136,6 +136,10 @@ textarea {
     justify-content: center;
 }
 
+script~:not(script) {
+    display: none !important;
+}
+
 /* Specific */
 
 ul,
@@ -238,10 +242,6 @@ button[data-theme] {
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
-}
-
-script~:not(script) {
-    display: none !important;
 }
 
 /* Scrollbar */
