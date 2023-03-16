@@ -49,7 +49,12 @@ export class Autocomplete {
 
     get matches() {
         if (this.#query?.trim()) {
-            return Object.keys(symbols).filter(string => string.startsWith(this.#query));
+            if (this.#query in symbols) {
+                return [this.#query];
+            }
+            else {
+                return Object.keys(symbols).filter(string => string.startsWith(this.#query));
+            }
         }
         else {
             return [];
