@@ -205,6 +205,10 @@ button[data-theme] {
     width: min(100%, 800px);
 }
 
+#clicker>h1 {
+    margin-bottom: -0.5rem;
+}
+
 #answer-container {
     display: flex;
     flex-direction: column-reverse;
