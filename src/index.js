@@ -6,7 +6,7 @@ const storage = new Storage("virtual-clicker-2");
 
 // Version
 
-const VERSION = "2.1.2";
+const VERSION = "2.1.5";
 document.querySelectorAll("span.version").forEach(element => {
     element.innerHTML = VERSION;
 });
