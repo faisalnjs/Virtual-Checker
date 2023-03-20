@@ -136,7 +136,7 @@ textarea {
     justify-content: center;
 }
 
-script~:not(script) {
+script~div {
     display: none !important;
 }
 
