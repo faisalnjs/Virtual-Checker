@@ -117,3 +117,13 @@
     --accent-text-color: #242424;
     --error-color: #ff4949;
 }
+
+[data-theme="cream"] {
+    color-scheme: light;
+    --text-color: #242424;
+    --background-color: #f1e8db;
+    --surface-color: #ddd3c6;
+    --accent-color: #415334;
+    --accent-text-color: #ffffff;
+    --error-color: #b42222;
+}

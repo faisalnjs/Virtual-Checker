@@ -321,6 +321,7 @@ const themes = [
     "loyalty",
     "cunning",
     "bravery",
+    "cream",
 ]
 
 document.body.setAttribute("data-theme", storage.get("theme") || "");
