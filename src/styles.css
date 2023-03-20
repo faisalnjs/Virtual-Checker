@@ -198,6 +198,15 @@ button[data-theme] {
     text-transform: capitalize;
 }
 
+#title {
+    width: fit-content;
+    transition: transform 100ms ease-in;
+}
+
+#title:active {
+    transform: rotateZ(-2deg) scale(0.9);
+}
+
 #clicker {
     flex: 1;
     align-self: center;
@@ -207,6 +216,7 @@ button[data-theme] {
 
 #clicker>h1 {
     margin-bottom: -0.5rem;
+    font-size: 1.75rem;
 }
 
 #answer-container {
@@ -246,15 +256,6 @@ button[data-theme] {
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
-}
-
-#title {
-    width: fit-content;
-    transition: transform 100ms ease-in;
-}
-
-#title:active {
-    transform: rotateZ(-2deg) scale(0.9);
 }
 
 /* Scrollbar */
