@@ -61,6 +61,17 @@ document.querySelectorAll("[data-show-modal]").forEach(button => {
 
 // Seat code
 
+// Code from URL parameter
+(() => {
+    const params = new URLSearchParams(window.location.search);
+    const input = params.get("code");
+    const regex = /^[1-9][1-6][1-5]$/;
+    if (regex.test(input)) {
+        storage.set("code", input);
+        updateCode();
+    }
+})();
+
 if (!storage.get("code")) {
     modals["code"]();
 }
