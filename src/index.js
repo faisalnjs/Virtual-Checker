@@ -97,6 +97,12 @@ function saveCode() {
         storage.set("code", input);
         updateCode();
         document.getElementById("code-modal").close();
+
+        // Update URL parameters with seat code
+        const params = new URLSearchParams(window.location.search);
+        params.set("code", input);
+        console.log(params);
+        history.replaceState({}, "", "?" + params.toString());
     }
     else {
         ui.alert("Error", "Seat code isn't possible");
