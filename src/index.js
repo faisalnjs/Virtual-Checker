@@ -216,7 +216,7 @@ document.querySelectorAll("[data-multiple-choice]").forEach(button => {
                     new ui.ModalButton("Cancel", true),
                     new ui.ModalButton("Submit", true, () => {
                         submitClick(storage.get("code"), question, `CHOICE ${choice.toUpperCase()}`);
-                        questionInput.focus();
+                        resetInputs();
                     }),
                 ]);
             }
