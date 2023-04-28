@@ -1,6 +1,7 @@
 import * as ui from "./ui.js";
 import { Storage } from "./storage.js";
 import { Autocomplete } from "./autocomplete.js";
+import Toastify from "toastify-js";
 
 const storage = new Storage("virtual-clicker-2");
 
@@ -186,6 +187,14 @@ function submitClick(code, question, answer) {
         }
     });
     storeClick(code, question, answer);
+    Toastify({
+        text: `Submitted ${question}`,
+        duration: 3000,
+        close: true,
+        gravity: "bottom",
+        position: "right",
+        onClick: modals["history"],
+    }).showToast();
 }
 
 function resetInputs() {
