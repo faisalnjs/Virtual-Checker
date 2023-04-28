@@ -292,7 +292,7 @@ button[data-theme] {
     align-items: center;
     gap: 0.5em;
     overflow: hidden;
-    min-height: 2.75em;
+    height: 2.75em;
     padding-left: 0.75em;
     border: none;
     border-radius: 0.25rem;
