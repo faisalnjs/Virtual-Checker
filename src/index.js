@@ -416,3 +416,22 @@ document.addEventListener("keydown", e => {
         }
     }
 });
+
+// Misc
+
+let titleClicked = 0;
+
+document.getElementById("title").addEventListener("click", () => {
+    titleClicked++;
+    if (titleClicked % 10 == 0) {
+        Toastify({
+            text: `hi`,
+            duration: 3000,
+            close: true,
+            gravity: "bottom",
+            position: "right",
+            destination: "https://github.com/khui0/virtual-clicker-2",
+            newWindow: true,
+        }).showToast();
+    }
+});
