@@ -52,10 +52,10 @@ dialog[open] {
 
 dialog {
     gap: 0.25rem;
-    width: min(100%, 350px);
+    width: min(100%, 450px);
     padding: 1rem;
     border: none;
-    border-radius: 0.5rem;
+    border-radius: 1rem;
     box-shadow: 0 0 100px rgba(0, 0, 0, 0.25);
     text-align: center;
     -webkit-user-select: none;
@@ -185,9 +185,15 @@ div.spacer {
     gap: 0.25rem;
 }
 
+.symbols-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 0.25rem;
+}
+
 .theme-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
     gap: 0.25rem;
 }
 
