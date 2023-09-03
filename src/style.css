@@ -131,7 +131,8 @@ textarea {
     justify-content: center;
 }
 
-script~div {
+[data-gg-chat-anchor],
+[data-gg-privacy-banner-anchor] {
     display: none !important;
 }
 
