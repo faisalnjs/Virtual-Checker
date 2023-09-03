@@ -182,6 +182,9 @@ let choiceInput = "";
 
 const autocomplete = new Autocomplete(answerInput, document.getElementById("answer-suggestion"));
 
+const submitText = document.getElementById("submit-button").innerHTML;
+let submitTimeout;
+
 questionInput.focus();
 
 document.getElementById("submit-button").addEventListener("click", e => {
@@ -192,6 +195,13 @@ document.getElementById("submit-button").addEventListener("click", e => {
             submitClick(storage.get("code"), question, answer);
             storeClick(storage.get("code"), question, answer);
             resetInputs();
+
+            // Submit feedback
+            e.target.innerHTML = `<i class="ri-check-fill"></i> Submitted`;
+            clearTimeout(submitTimeout);
+            submitTimeout = setTimeout(() => {
+                e.target.innerHTML = submitText;
+            }, 2000);
         }
         if (!answer) {
             answerInput.classList.add("attention");
