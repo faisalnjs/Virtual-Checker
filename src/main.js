@@ -24,39 +24,64 @@ document.querySelectorAll("span.version").forEach(element => {
 const modals = {
     "symbols": () => {
         ui.show(document.getElementById("symbols-modal"), "Symbols", [
-            new ui.ModalButton("Close", true)
+            {
+                text: "Close",
+                close: true,
+            },
         ]);
     },
     "code": () => {
         document.getElementById("code-input").value = storage.get("code") || "";
         ui.show(document.getElementById("code-modal"), "Seat Code", [
-            new ui.ModalButton("Cancel", true),
-            new ui.ModalButton("Save", false, saveCode),
+            {
+                text: "Cancel",
+                close: true,
+            },
+            {
+                text: "Save",
+                close: false,
+                onclick: saveCode,
+            },
         ]);
     },
     "code-help": () => {
         ui.show(document.getElementById("code-help-modal"), "Seat Code", [
-            new ui.ModalButton("Close", true)
+            {
+                text: "Close",
+                close: true,
+            },
         ]);
     },
     "settings": () => {
         ui.show(document.getElementById("settings-modal"), "Settings", [
-            new ui.ModalButton("Close", true)
+            {
+                text: "Close",
+                close: true,
+            },
         ]);
     },
     "theme": () => {
         ui.show(document.getElementById("theme-modal"), "Theme", [
-            new ui.ModalButton("Close", true)
+            {
+                text: "Close",
+                close: true,
+            },
         ]);
     },
     "storage": () => {
         ui.show(document.getElementById("storage-modal"), "Storage", [
-            new ui.ModalButton("Close", true)
+            {
+                text: "Close",
+                close: true,
+            },
         ]);
     },
     "history": () => {
         ui.show(document.getElementById("history-modal"), "History", [
-            new ui.ModalButton("Close", true)
+            {
+                text: "Close",
+                close: true,
+            },
         ]);
     },
 }
@@ -129,11 +154,13 @@ function updateCode() {
 for (let col = 1; col <= 5; col++) {
     for (let row = 6; row > 0; row--) {
         document.getElementById("seat-grid").append(
-            new ui.Element("button", "", () => {
-                const period = document.getElementById("period-input").value;
-                const code = period + row.toString() + col.toString();
-                document.getElementById("code-input").value = code;
-                document.getElementById("code-help-modal").close();
+            new ui.Element("button", "", {
+                click: () => {
+                    const period = document.getElementById("period-input").value;
+                    const code = period + row.toString() + col.toString();
+                    document.getElementById("code-input").value = code;
+                    document.getElementById("code-help-modal").close();
+                },
             }).element
         );
     }
@@ -316,9 +343,11 @@ document.querySelectorAll("[data-insert-symbol]").forEach(button => {
 
 uniqueSymbols.forEach(symbol => {
     document.querySelector("#symbols-modal>div").append(
-        new ui.Element("button", symbol, () => {
-            document.getElementById("symbols-modal").close();
-            insertSymbol(symbol);
+        new ui.Element("button", symbol, {
+            click: () => {
+                document.getElementById("symbols-modal").close();
+                insertSymbol(symbol);
+            },
         }).element
     )
 });
@@ -365,18 +394,32 @@ const resets = {
     },
     "history": () => {
         ui.prompt("Are you sure?", "Click history will be erased. This cannot be undone!", [
-            new ui.ModalButton("Cancel", true),
-            new ui.ModalButton("Clear", true, () => {
-                storage.delete("history");
-            }),
+            {
+                text: "Cancel",
+                close: true,
+            },
+            {
+                text: "Clear",
+                close: true,
+                onclick: () => {
+                    storage.delete("history");
+                },
+            },
         ]);
     },
     "all": () => {
         ui.prompt("Are you sure?", "All stored settings and data will erased. This cannot be undone!", [
-            new ui.ModalButton("Cancel", true),
-            new ui.ModalButton("Reset", true, () => {
-                storage.obliterate();
-            }),
+            {
+                text: "Cancel",
+                close: true,
+            },
+            {
+                text: "Reset",
+                close: true,
+                onclick: () => {
+                    storage.obliterate();
+                },
+            },
         ]);
     },
 }
