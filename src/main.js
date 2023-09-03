@@ -5,6 +5,7 @@ import "./themes.css";
 import * as ui from "./ui.js";
 import { Storage } from "./storage.js";
 import { Autocomplete } from "./autocomplete.js";
+
 import symbols from "./symbols.json";
 
 const storage = new Storage("virtual-clicker-2");

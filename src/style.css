@@ -25,14 +25,12 @@
     background-color: inherit;
 }
 
-html {
-    font: 16px "Poppins", sans-serif;
-}
-
 body {
+    height: 100%;
     padding: 1rem;
     color: var(--text-color);
     background-color: var(--background-color);
+    font: 16px "Poppins", sans-serif;
     line-height: 1.5;
 }
 
