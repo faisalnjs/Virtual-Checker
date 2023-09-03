@@ -35,7 +35,7 @@
     --surface-color: #abd0e6;
     --accent-color: #71b2d3;
     --accent-text-color: #242424;
-    --error-color: #e47979;
+    --error-color: #ce7474;
 }
 
 [data-theme="sage"] {
@@ -45,7 +45,7 @@
     --surface-color: #a0b395;
     --accent-color: #5c8a5b;
     --accent-text-color: #242424;
-    --error-color: #d36363;
+    --error-color: #b85f5f;
 }
 
 [data-theme="dune"] {
@@ -75,7 +75,7 @@
     --surface-color: #aca8d4;
     --accent-color: #7e78be;
     --accent-text-color: #242424;
-    --error-color: #bd5858;
+    --error-color: #b85f5f;
 }
 
 [data-theme="cream"] {
@@ -83,7 +83,7 @@
     --text-color: #242424;
     --background-color: #f1e8db;
     --surface-color: #ddd3c6;
-    --accent-color: #415334;
+    --accent-color: #505f45;
     --accent-text-color: #ffffff;
-    --error-color: #b42222;
+    --error-color: #b85f5f;
 }
