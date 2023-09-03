@@ -1,7 +1,12 @@
+import "./reset.css";
+import "./style.css";
+import "./themes.css";
+import "remixicon/fonts/remixicon.css"
+
 import * as ui from "./ui.js";
 import { Storage } from "./storage.js";
 import { Autocomplete } from "./autocomplete.js";
-import Toastify from "toastify-js";
+import symbols from "./symbols.json";
 
 const storage = new Storage("virtual-clicker-2");
 
@@ -305,7 +310,6 @@ function timeToString(timestamp) {
 
 // Symbols
 
-const symbols = require("./symbols.json");
 const uniqueSymbols = [...new Set(Object.values(symbols))];
 
 document.querySelectorAll("[data-insert-symbol]").forEach(button => {

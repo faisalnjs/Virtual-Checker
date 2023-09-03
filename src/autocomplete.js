@@ -1,4 +1,4 @@
-const symbols = require("./symbols.json");
+import symbols from "./symbols.json";
 
 export class Autocomplete {
     #start = 0;
