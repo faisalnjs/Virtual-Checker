@@ -42,7 +42,7 @@
     color-scheme: light;
     --text-color: #242424;
     --background-color: #bacbb0;
-    --surface-color: #a1b794;
+    --surface-color: #a0b395;
     --accent-color: #5c8a5b;
     --accent-text-color: #242424;
     --error-color: #d36363;
@@ -76,46 +76,6 @@
     --accent-color: #7e78be;
     --accent-text-color: #242424;
     --error-color: #bd5858;
-}
-
-[data-theme="wit"] {
-    color-scheme: dark;
-    --text-color: #ffe7c7;
-    --background-color: #222f5b;
-    --surface-color: #2b3b72;
-    --accent-color: #a3773d;
-    --accent-text-color: #ffffff;
-    --error-color: #913939;
-}
-
-[data-theme="loyalty"] {
-    color-scheme: light;
-    --text-color: #292725;
-    --background-color: #c28a45;
-    --surface-color: #db9d52;
-    --accent-color: #3f342e;
-    --accent-text-color: #ffffff;
-    --error-color: #923737;
-}
-
-[data-theme="cunning"] {
-    color-scheme: dark;
-    --text-color: #e1fffb;
-    --background-color: #0c3d37;
-    --surface-color: #18534d;
-    --accent-color: #9c9c9c;
-    --accent-text-color: #242424;
-    --error-color: #923737;
-}
-
-[data-theme="bravery"] {
-    color-scheme: light;
-    --text-color: #ffe3c1;
-    --background-color: #7d2c2b;
-    --surface-color: #9e3634;
-    --accent-color: #fcb255;
-    --accent-text-color: #242424;
-    --error-color: #ff4949;
 }
 
 [data-theme="cream"] {

@@ -339,10 +339,6 @@ const themes = [
     "dune",
     "rose",
     "lavender",
-    "wit",
-    "loyalty",
-    "cunning",
-    "bravery",
     "cream",
 ]
 
