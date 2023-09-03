@@ -1,7 +1,6 @@
 import "./reset.css";
 import "./style.css";
 import "./themes.css";
-import "remixicon/fonts/remixicon.css"
 
 import * as ui from "./ui.js";
 import { Storage } from "./storage.js";
@@ -12,7 +11,7 @@ const storage = new Storage("virtual-clicker-2");
 
 // Version
 
-const VERSION = "2.2.2";
+const VERSION = "3.0.0 BETA";
 document.querySelectorAll("span.version").forEach(element => {
     element.innerHTML = VERSION;
 });

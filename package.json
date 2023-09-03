@@ -21,8 +21,5 @@
   "devDependencies": {
     "vite": "^4.4.0",
     "vite-plugin-webfont-dl": "^3.7.6"
-  },
-  "dependencies": {
-    "remixicon": "^3.5.0"
   }
 }
