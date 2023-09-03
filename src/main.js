@@ -271,9 +271,18 @@ function updateHistory() {
             const button = document.createElement("button");
             button.innerHTML = `<p><b>${item.question}.</b> ${timeToString(item.timestamp)} (${item.code})</p>\n<p>${item.answer}</p>`;
             feed.prepend(button);
+            // Resubmit click
             button.addEventListener("click", e => {
+                const choice = item.answer.match(/^CHOICE ([A-E])$/);
                 questionInput.value = item.question;
-                answerInput.value = item.answer;
+                if (!choice) {
+                    answerInput.value = item.answer;
+                    answerMode("input");
+                }
+                else {
+                    document.querySelector(`[data-multiple-choice="${choice[1].toLowerCase()}"]`).click();
+                }
+
                 document.getElementById("history-modal").close();
                 questionInput.focus();
                 autocomplete.update();
