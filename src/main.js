@@ -199,6 +199,7 @@ function submitClick(code, question, answer) {
 function resetInputs() {
     questionInput.value = "";
     answerInput.value = "";
+    answerMode("input");
     questionInput.focus();
     autocomplete.update();
 }
