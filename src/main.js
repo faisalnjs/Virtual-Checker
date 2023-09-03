@@ -1,6 +1,7 @@
 import "./reset.css";
 import "./style.css";
 import "./themes.css";
+import "remixicon/fonts/remixicon.css";
 
 import * as ui from "./ui.js";
 import { Storage } from "./storage.js";
