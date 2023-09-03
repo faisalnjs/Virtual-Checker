@@ -221,7 +221,7 @@ document.querySelectorAll("[data-multiple-choice]").forEach(button => {
         const content = document.querySelector(`[data-answer-mode="choice"]>div`);
 
         content.innerHTML = `<p><b>Choice ${choice.toUpperCase()}</b></p>
-<p>This is the same as:</p>
+<p>Equivalent to submitting</p>
 <p>${descriptions[choice].join(", ")}</p>`;
 
         answerMode("choice");
