@@ -56,8 +56,6 @@ dialog {
     border-radius: 1rem;
     box-shadow: 0 0 100px rgba(0, 0, 0, 0.25);
     text-align: center;
-    -webkit-user-select: none;
-    user-select: none;
 }
 
 dialog::backdrop {
@@ -114,7 +112,7 @@ textarea {
     }
 }
 
-.flex-row {
+.row {
     display: flex;
     flex-direction: row;
     gap: 0.25rem;
@@ -122,13 +120,13 @@ textarea {
     flex-wrap: wrap;
 }
 
-.flex-col {
+.col {
     display: flex;
     flex-direction: column;
     gap: 0.25rem;
 }
 
-.flex-center {
+.center {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -154,10 +152,6 @@ ol li {
 
 ol li::before {
     content: counter(list) ". ";
-}
-
-span.code {
-    pointer-events: none;
 }
 
 kbd {
@@ -281,72 +275,4 @@ button[data-theme] {
 
 ::-webkit-scrollbar-thumb:hover {
     background-color: var(--accent-color);
-}
-
-/* Toastify */
-
-.toastify {
-    position: fixed;
-    z-index: 2147483647;
-    opacity: 0;
-    transition: all 500ms cubic-bezier(0.16, 1, 0.3, 1);
-
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    gap: 0.5em;
-    overflow: hidden;
-    height: 2.75em;
-    padding-left: 0.75em;
-    border: none;
-    border-radius: 0.25rem;
-    box-shadow: 0.25rem 0.25rem 0.5rem rgba(0, 0, 0, 0.2);
-    background-color: var(--surface-color);
-    font: inherit;
-}
-
-.toastify.on {
-    opacity: 1;
-}
-
-.toast-close {
-    height: 100%;
-    padding: 0 0.5em;
-    border-radius: 0;
-}
-
-.toastify-right {
-    right: 15px;
-}
-
-.toastify-left {
-    left: 15px;
-}
-
-.toastify-top {
-    top: -150px;
-}
-
-.toastify-bottom {
-    bottom: -150px;
-}
-
-.toastify-center {
-    margin-left: auto;
-    margin-right: auto;
-    left: 0;
-    right: 0;
-    max-width: fit-content;
-}
-
-@media only screen and (max-width: 360px) {
-
-    .toastify-right,
-    .toastify-left {
-        margin-left: auto;
-        margin-right: auto;
-        left: 0;
-        right: 0;
-        max-width: fit-content;
-    }
 }

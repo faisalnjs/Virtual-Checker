@@ -12,9 +12,9 @@
         rel="stylesheet">
 </head>
 
-<body class="flex-col">
+<body class="col">
     <h1>Virtual Clicker</h1>
-    <div class="flex-col" id="clicker">
+    <div class="col" id="clicker">
         <h1><span class="code">000</span></h1>
         <label for="question-input">Question</label>
         <input type="text" autocomplete="off" id="question-input">
@@ -41,7 +41,7 @@
         </div>
         <button id="submit-button">Submit</button>
     </div>
-    <div class="flex-row">
+    <div class="row">
         <button data-show-modal="code"><span class="code">000</span></button>
         <button data-show-modal="settings">Settings</button>
         <button data-show-modal="history">History</button>
@@ -87,7 +87,7 @@
         <button data-reset="all">Reset Everything</button>
     </dialog>
     <dialog id="history-modal">
-        <div class="flex-col" id="history-feed"></div>
+        <div class="col" id="history-feed"></div>
     </dialog>
     <script src="src/main.js" type="module"></script>
 </body>

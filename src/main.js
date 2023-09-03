@@ -61,7 +61,7 @@ const modals = {
 
 document.querySelectorAll("[data-show-modal]").forEach(button => {
     button.addEventListener("click", e => {
-        modals[e.target.getAttribute("data-show-modal")]();
+        modals[button.getAttribute("data-show-modal")]();
     });
 });
 
