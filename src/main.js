@@ -363,7 +363,7 @@ const resets = {
         storage.delete("theme");
     },
     "history": () => {
-        ui.prompt("Are you sure?", "Click history will be lost forever! (A long time!)", [
+        ui.prompt("Are you sure?", "Click history will be erased. This cannot be undone!", [
             new ui.ModalButton("Cancel", true),
             new ui.ModalButton("Clear", true, () => {
                 storage.delete("history");
@@ -371,7 +371,7 @@ const resets = {
         ]);
     },
     "all": () => {
-        ui.prompt("Are you sure?", "All saved data will be erased, this cannot be reversed", [
+        ui.prompt("Are you sure?", "All stored settings and data will erased. This cannot be undone!", [
             new ui.ModalButton("Cancel", true),
             new ui.ModalButton("Reset", true, () => {
                 storage.obliterate();
