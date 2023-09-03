@@ -1,13 +1,20 @@
+import "./reset.css";
+import "./style.css";
+import "./themes.css";
+import "remixicon/fonts/remixicon.css";
+
 import * as ui from "./ui.js";
+import { submitClick } from "./clicker.js";
 import { Storage } from "./storage.js";
 import { Autocomplete } from "./autocomplete.js";
-import Toastify from "toastify-js";
+
+import symbols from "./symbols.json";
 
 const storage = new Storage("virtual-clicker-2");
 
 // Version
 
-const VERSION = "2.2.2";
+const VERSION = "3.0.0 BETA";
 document.querySelectorAll("span.version").forEach(element => {
     element.innerHTML = VERSION;
 });
@@ -17,46 +24,79 @@ document.querySelectorAll("span.version").forEach(element => {
 const modals = {
     "symbols": () => {
         ui.show(document.getElementById("symbols-modal"), "Symbols", [
-            new ui.ModalButton("Close", true)
+            {
+                text: "Close",
+                close: true,
+            },
         ]);
     },
     "code": () => {
         document.getElementById("code-input").value = storage.get("code") || "";
         ui.show(document.getElementById("code-modal"), "Seat Code", [
-            new ui.ModalButton("Cancel", true),
-            new ui.ModalButton("Save", false, saveCode),
+            {
+                text: "Cancel",
+                close: true,
+            },
+            {
+                text: "Save",
+                close: false,
+                onclick: saveCode,
+            },
         ]);
     },
     "code-help": () => {
         ui.show(document.getElementById("code-help-modal"), "Seat Code", [
-            new ui.ModalButton("Close", true)
+            {
+                text: "Close",
+                close: true,
+            },
         ]);
     },
     "settings": () => {
         ui.show(document.getElementById("settings-modal"), "Settings", [
-            new ui.ModalButton("Close", true)
+            {
+                text: "Close",
+                close: true,
+            },
         ]);
     },
     "theme": () => {
         ui.show(document.getElementById("theme-modal"), "Theme", [
-            new ui.ModalButton("Close", true)
+            {
+                text: "Close",
+                close: true,
+            },
         ]);
     },
     "storage": () => {
         ui.show(document.getElementById("storage-modal"), "Storage", [
-            new ui.ModalButton("Close", true)
+            {
+                text: "Close",
+                close: true,
+            },
         ]);
     },
     "history": () => {
         ui.show(document.getElementById("history-modal"), "History", [
-            new ui.ModalButton("Close", true)
+            {
+                text: "Close",
+                close: true,
+            },
+        ]);
+    },
+    "keybinds": () => {
+        ui.show(document.getElementById("keybinds-modal"), "Keyboard Shortcuts", [
+            {
+                text: "Close",
+                close: true,
+            },
         ]);
     },
 }
 
 document.querySelectorAll("[data-show-modal]").forEach(button => {
     button.addEventListener("click", e => {
-        modals[e.target.getAttribute("data-show-modal")]();
+        modals[button.getAttribute("data-show-modal")]();
     });
 });
 
@@ -122,11 +162,13 @@ function updateCode() {
 for (let col = 1; col <= 5; col++) {
     for (let row = 6; row > 0; row--) {
         document.getElementById("seat-grid").append(
-            new ui.Element("button", "", () => {
-                const period = document.getElementById("period-input").value;
-                const code = period + row.toString() + col.toString();
-                document.getElementById("code-input").value = code;
-                document.getElementById("code-help-modal").close();
+            new ui.Element("button", "", {
+                click: () => {
+                    const period = document.getElementById("period-input").value;
+                    const code = period + row.toString() + col.toString();
+                    document.getElementById("code-input").value = code;
+                    document.getElementById("code-help-modal").close();
+                },
             }).element
         );
     }
@@ -136,18 +178,30 @@ for (let col = 1; col <= 5; col++) {
 
 const questionInput = document.getElementById("question-input");
 const answerInput = document.getElementById("answer-input");
+let choiceInput = "";
 
 const autocomplete = new Autocomplete(answerInput, document.getElementById("answer-suggestion"));
+
+const submitText = document.getElementById("submit-button").innerHTML;
+let submitTimeout;
 
 questionInput.focus();
 
 document.getElementById("submit-button").addEventListener("click", e => {
     const question = questionInput.value?.trim();
-    const answer = answerInput.value?.trim();
+    const answer = choiceInput || answerInput.value?.trim();
     if (storage.get("code")) {
         if (question && answer) {
             submitClick(storage.get("code"), question, answer);
+            storeClick(storage.get("code"), question, answer);
             resetInputs();
+
+            // Submit feedback
+            e.target.innerHTML = `<i class="ri-check-fill"></i> Submitted`;
+            clearTimeout(submitTimeout);
+            submitTimeout = setTimeout(() => {
+                e.target.innerHTML = submitText;
+            }, 2000);
         }
         if (!answer) {
             answerInput.classList.add("attention");
@@ -171,40 +225,17 @@ answerInput.addEventListener("input", e => {
     e.target.classList.remove("attention");
 });
 
-function submitClick(code, question, answer) {
-    const fields = {
-        "entry.1896388126": code,
-        "entry.1232458460": question,
-        "entry.1065046570": answer
-    }
-    const params = new URLSearchParams(fields).toString();
-    const url = "https://docs.google.com/forms/d/e/1FAIpQLSfwDCxVqO2GuB4jhk9iAl7lzoA2TsRlX6hz052XkEHbLrbryg/formResponse?";
-    fetch(url + params, {
-        method: "POST",
-        mode: "no-cors",
-        headers: {
-            "Content-Type": "application/x-www-form-urlencoded"
-        }
-    });
-    storeClick(code, question, answer);
-    Toastify({
-        text: `Submitted ${question}`,
-        duration: 3000,
-        close: true,
-        gravity: "bottom",
-        position: "right",
-        onClick: modals["history"],
-    }).showToast();
-}
-
 function resetInputs() {
     questionInput.value = "";
     answerInput.value = "";
+    answerMode("input");
     questionInput.focus();
     autocomplete.update();
 }
 
 // Multiple choice
+
+answerMode("input");
 
 const descriptions = {
     "a": ["Agree", "True", "Yes"],
@@ -216,30 +247,33 @@ const descriptions = {
 
 document.querySelectorAll("[data-multiple-choice]").forEach(button => {
     button.addEventListener("click", e => {
-        const question = questionInput.value?.trim();
         const choice = e.target.getAttribute("data-multiple-choice");
-        const body = `<p>Are you sure? This is the same as</p>\n${ui.createList(false, descriptions[choice])}`;
-        if (storage.get("code")) {
-            if (question) {
-                ui.modal(`Submit choice ${choice.toUpperCase()}`, body, [
-                    new ui.ModalButton("Cancel", true),
-                    new ui.ModalButton("Submit", true, () => {
-                        submitClick(storage.get("code"), question, `CHOICE ${choice.toUpperCase()}`);
-                        resetInputs();
-                    }),
-                ]);
-            }
-            if (!question) {
-                answerInput.classList.remove("attention");
-                questionInput.classList.add("attention");
-                questionInput.focus();
-            }
-        }
-        else {
-            modals["code"]();
-        }
+        const content = document.querySelector(`[data-answer-mode="choice"]>div`);
+
+        content.innerHTML = `<p><b>Choice ${choice.toUpperCase()}</b></p>
+<p>Equivalent to submitting</p>
+<p>${descriptions[choice].join(", ")}</p>`;
+
+        answerMode("choice");
+        choiceInput = `CHOICE ${choice.toUpperCase()}`;
     });
 });
+
+document.getElementById("remove-choice-button").addEventListener("click", e => {
+    answerMode("input");
+    choiceInput = "";
+});
+
+function answerMode(mode) {
+    document.querySelectorAll("[data-answer-mode]").forEach(item => {
+        if (item.getAttribute("data-answer-mode") == mode) {
+            item.style.removeProperty("display");
+        }
+        else {
+            item.style.display = "none";
+        }
+    });
+}
 
 // History
 
@@ -267,9 +301,18 @@ function updateHistory() {
             const button = document.createElement("button");
             button.innerHTML = `<p><b>${item.question}.</b> ${timeToString(item.timestamp)} (${item.code})</p>\n<p>${item.answer}</p>`;
             feed.prepend(button);
+            // Resubmit click
             button.addEventListener("click", e => {
+                const choice = item.answer.match(/^CHOICE ([A-E])$/);
                 questionInput.value = item.question;
-                answerInput.value = item.answer;
+                if (!choice) {
+                    answerInput.value = item.answer;
+                    answerMode("input");
+                }
+                else {
+                    document.querySelector(`[data-multiple-choice="${choice[1].toLowerCase()}"]`).click();
+                }
+
                 document.getElementById("history-modal").close();
                 questionInput.focus();
                 autocomplete.update();
@@ -305,7 +348,6 @@ function timeToString(timestamp) {
 
 // Symbols
 
-const symbols = require("./symbols.json");
 const uniqueSymbols = [...new Set(Object.values(symbols))];
 
 document.querySelectorAll("[data-insert-symbol]").forEach(button => {
@@ -319,9 +361,11 @@ document.querySelectorAll("[data-insert-symbol]").forEach(button => {
 
 uniqueSymbols.forEach(symbol => {
     document.querySelector("#symbols-modal>div").append(
-        new ui.Element("button", symbol, () => {
-            document.getElementById("symbols-modal").close();
-            insertSymbol(symbol);
+        new ui.Element("button", symbol, {
+            click: () => {
+                document.getElementById("symbols-modal").close();
+                insertSymbol(symbol);
+            },
         }).element
     )
 });
@@ -343,10 +387,6 @@ const themes = [
     "dune",
     "rose",
     "lavender",
-    "wit",
-    "loyalty",
-    "cunning",
-    "bravery",
     "cream",
 ]
 
@@ -371,19 +411,33 @@ const resets = {
         storage.delete("theme");
     },
     "history": () => {
-        ui.prompt("Are you sure?", "Click history will be lost forever! (A long time!)", [
-            new ui.ModalButton("Cancel", true),
-            new ui.ModalButton("Clear", true, () => {
-                storage.delete("history");
-            }),
+        ui.prompt("Are you sure?", "Click history will be erased. This cannot be undone!", [
+            {
+                text: "Cancel",
+                close: true,
+            },
+            {
+                text: "Clear",
+                close: true,
+                onclick: () => {
+                    storage.delete("history");
+                },
+            },
         ]);
     },
     "all": () => {
-        ui.prompt("Are you sure?", "All saved data will be erased, this cannot be reversed", [
-            new ui.ModalButton("Cancel", true),
-            new ui.ModalButton("Reset", true, () => {
-                storage.obliterate();
-            }),
+        ui.prompt("Are you sure?", "All stored settings and data will erased. This cannot be undone!", [
+            {
+                text: "Cancel",
+                close: true,
+            },
+            {
+                text: "Reset",
+                close: true,
+                onclick: () => {
+                    storage.obliterate();
+                },
+            },
         ]);
     },
 }
@@ -408,30 +462,14 @@ document.addEventListener("keydown", e => {
         if (e.key == "." && !anyDialogOpen) {
             modals["history"]();
         }
+        if (e.key == "/" && !anyDialogOpen) {
+            modals["keybinds"]();
+        }
     }
     else if (e.altKey) {
         if (/[1-9]/.test(e.key)) {
             e.preventDefault();
             insertSymbol(uniqueSymbols[parseInt(e.key) - 1]);
         }
-    }
-});
-
-// Misc
-
-let titleClicked = 0;
-
-document.getElementById("title").addEventListener("click", () => {
-    titleClicked++;
-    if (titleClicked % 10 == 0) {
-        Toastify({
-            text: `hi`,
-            duration: 3000,
-            close: true,
-            gravity: "bottom",
-            position: "right",
-            destination: "https://github.com/khui0/virtual-clicker-2",
-            newWindow: true,
-        }).showToast();
     }
 });

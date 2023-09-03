@@ -7,12 +7,6 @@
 html {
     height: 100%;
     -webkit-text-size-adjust: 100%;
-    -webkit-user-select: none;
-    user-select: none;
-}
-
-body {
-    min-height: 100%;
 }
 
 body,

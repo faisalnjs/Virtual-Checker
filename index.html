@@ -6,9 +6,6 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Virtual Clicker</title>
-    <link rel="stylesheet" href="reset.css">
-    <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="themes.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,400;0,700;1,400;1,700&display=swap"
@@ -17,15 +14,15 @@
         href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text x=%2250%%22 y=%2280.00%22 font-size=%2285%22 text-anchor=%22middle%22>✨</text></svg>">
 </head>
 
-<body class="flex-col">
-    <h1 id="title">Virtual Clicker</h1>
-    <div class="flex-col" id="clicker">
+<body class="col">
+    <h1>Virtual Clicker</h1>
+    <div class="col" id="clicker">
         <h1><span class="code">000</span></h1>
         <label for="question-input">Question</label>
         <input type="text" autocomplete="off" id="question-input">
         <label for="answer-input">Answer</label>
-        <div id="answer-container">
-            <textarea rows="8" autocomplete="off" id="answer-input"></textarea>
+        <div id="answer-container" data-answer-mode="input">
+            <textarea rows="5" autocomplete="off" id="answer-input"></textarea>
             <div class="button-grid">
                 <button data-insert-symbol="0"></button>
                 <button data-insert-symbol="1"></button>
@@ -33,8 +30,12 @@
                 <button data-insert-symbol="3"></button>
                 <button data-insert-symbol="4"></button>
                 <button data-insert-symbol="5"></button>
-                <button data-show-modal="symbols">...</button>
+                <button data-show-modal="symbols"><i class="ri-more-fill"></i></button>
             </div>
+        </div>
+        <div data-answer-mode="choice">
+            <div></div>
+            <button id="remove-choice-button"><i class="ri-close-fill"></i></button>
         </div>
         <p id="answer-suggestion"></p>
         <div class="button-grid">
@@ -46,13 +47,14 @@
         </div>
         <button id="submit-button">Submit</button>
     </div>
-    <div class="flex-row">
+    <div class="row">
         <button data-show-modal="code"><span class="code">000</span></button>
         <button data-show-modal="settings">Settings</button>
         <button data-show-modal="history">History</button>
     </div>
     <!-- Modals -->
     <dialog id="symbols-modal">
+        <p>Click to insert</p>
         <div class="symbols-grid"></div>
     </dialog>
     <dialog id="code-modal">
@@ -72,15 +74,14 @@
             <option value="8">8</option>
             <option value="9">9</option>
         </select>
-        <p>Where do you sit?</p>
-        <p>Front</p>
+        <p>Where do you sit? (This is the front)</p>
         <div id="seat-grid"></div>
-        <p>Back</p>
     </dialog>
     <dialog id="settings-modal">
         <p>Version <span class="version"></span></p>
         <button data-show-modal="code">Seat Code</button>
         <button data-show-modal="theme">Theme</button>
+        <button data-show-modal="keybinds">Keyboard Shortcuts</button>
         <button data-show-modal="storage">Storage</button>
     </dialog>
     <dialog id="theme-modal">
@@ -89,12 +90,19 @@
     </dialog>
     <dialog id="storage-modal">
         <button data-reset="history">Clear History</button>
-        <button data-reset="all">Reset Everything</button>
+        <button data-reset="all">Full Reset</button>
+    </dialog>
+    <dialog id="keybinds-modal">
+        <p><kbd>Ctrl</kbd> + <kbd>Enter</kbd> Submits click</p>
+        <p><kbd>Alt</kbd> + <kbd>1-9</kbd> Inserts nth symbol</p>
+        <p><kbd>Ctrl</kbd> + <kbd>/</kbd> Opens Keyboard Shortcuts</p>
+        <p><kbd>Ctrl</kbd> + <kbd>,</kbd> Opens Settings</p>
+        <p><kbd>Ctrl</kbd> + <kbd>.</kbd> Opens History</p>
     </dialog>
     <dialog id="history-modal">
-        <div class="flex-col" id="history-feed"></div>
+        <div class="col" id="history-feed"></div>
     </dialog>
-    <script src="index.js" type="module"></script>
+    <script src="src/main.js" type="module"></script>
 </body>
 
 </html>

@@ -1,13 +1,12 @@
 {
   "name": "virtual-clicker-2",
-  "version": "1.0.0",
-  "description": "",
-  "source": "src/index.html",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
   "scripts": {
-    "start": "parcel",
-    "build": "parcel build",
-    "predeploy": "rimraf dist && parcel build --public-url .",
-    "deploy": "gh-pages -d dist"
+    "dev": "vite --host",
+    "build": "vite build",
+    "preview": "vite preview"
   },
   "repository": {
     "type": "git",
@@ -20,11 +19,10 @@
   },
   "homepage": "https://github.com/khui0/virtual-clicker-2#readme",
   "devDependencies": {
-    "gh-pages": "^5.0.0",
-    "parcel": "^2.8.3",
-    "rimraf": "^4.1.2"
+    "vite": "^4.4.0",
+    "vite-plugin-webfont-dl": "^3.7.6"
   },
   "dependencies": {
-    "toastify-js": "^1.12.0"
+    "remixicon": "^3.5.0"
   }
 }
