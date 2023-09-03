@@ -142,6 +142,7 @@ for (let col = 1; col <= 5; col++) {
 
 const questionInput = document.getElementById("question-input");
 const answerInput = document.getElementById("answer-input");
+let choiceInput = "";
 
 const autocomplete = new Autocomplete(answerInput, document.getElementById("answer-suggestion"));
 
@@ -149,10 +150,11 @@ questionInput.focus();
 
 document.getElementById("submit-button").addEventListener("click", e => {
     const question = questionInput.value?.trim();
-    const answer = answerInput.value?.trim();
+    const answer = choiceInput || answerInput.value?.trim();
     if (storage.get("code")) {
         if (question && answer) {
             submitClick(storage.get("code"), question, answer);
+            storeClick(storage.get("code"), question, answer);
             resetInputs();
         }
         if (!answer) {
@@ -192,7 +194,6 @@ function submitClick(code, question, answer) {
             "Content-Type": "application/x-www-form-urlencoded"
         }
     });
-    storeClick(code, question, answer);
 }
 
 function resetInputs() {
@@ -224,18 +225,24 @@ document.querySelectorAll("[data-multiple-choice]").forEach(button => {
 <p>${descriptions[choice].join(", ")}</p>`;
 
         answerMode("choice");
+        choiceInput = `CHOICE ${choice.toUpperCase()}`;
     });
 });
 
 document.getElementById("remove-choice-button").addEventListener("click", e => {
     answerMode("input");
+    choiceInput = "";
 });
 
 function answerMode(mode) {
     document.querySelectorAll("[data-answer-mode]").forEach(item => {
-        item.style.display = "none";
+        if (item.getAttribute("data-answer-mode") == mode) {
+            item.style.removeProperty("display");
+        }
+        else {
+            item.style.display = "none";
+        }
     });
-    document.querySelector(`[data-answer-mode="${mode}"]`).style.removeProperty("display");
 }
 
 // History
