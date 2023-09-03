@@ -191,14 +191,6 @@ function submitClick(code, question, answer) {
         }
     });
     storeClick(code, question, answer);
-    Toastify({
-        text: `Submitted ${question}`,
-        duration: 3000,
-        close: true,
-        gravity: "bottom",
-        position: "right",
-        onClick: modals["history"],
-    }).showToast();
 }
 
 function resetInputs() {
@@ -417,24 +409,5 @@ document.addEventListener("keydown", e => {
             e.preventDefault();
             insertSymbol(uniqueSymbols[parseInt(e.key) - 1]);
         }
-    }
-});
-
-// Misc
-
-let titleClicked = 0;
-
-document.getElementById("title").addEventListener("click", () => {
-    titleClicked++;
-    if (titleClicked % 10 == 0) {
-        Toastify({
-            text: `hi`,
-            duration: 3000,
-            close: true,
-            gravity: "bottom",
-            position: "right",
-            destination: "https://github.com/khui0/virtual-clicker-2",
-            newWindow: true,
-        }).showToast();
     }
 });
