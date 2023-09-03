@@ -222,9 +222,30 @@ button[data-theme] {
     gap: 0.25rem;
 }
 
+[data-answer-mode="choice"] {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+
+    padding: 0.375em 0.5em;
+    border: none;
+    border-radius: 0.5rem;
+    background-color: var(--surface-color);
+}
+
+#remove-choice-button {
+    width: 2.25em;
+    height: 2.25em;
+    padding: 0;
+    border-radius: 50%;
+}
+
 #answer-suggestion {
     height: 1.5rem;
 }
+
+/* Modals */
 
 #code-input {
     font-size: 2em;

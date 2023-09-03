@@ -19,8 +19,8 @@
         <label for="question-input">Question</label>
         <input type="text" autocomplete="off" id="question-input">
         <label for="answer-input">Answer</label>
-        <div id="answer-container">
-            <textarea rows="8" autocomplete="off" id="answer-input"></textarea>
+        <div id="answer-container" data-answer-mode="input">
+            <textarea rows="5" autocomplete="off" id="answer-input"></textarea>
             <div class="button-grid">
                 <button data-insert-symbol="0"></button>
                 <button data-insert-symbol="1"></button>
@@ -30,6 +30,10 @@
                 <button data-insert-symbol="5"></button>
                 <button data-show-modal="symbols"><i class="ri-more-fill"></i></button>
             </div>
+        </div>
+        <div data-answer-mode="choice">
+            <div></div>
+            <button id="remove-choice-button"><i class="ri-close-fill"></i></button>
         </div>
         <p id="answer-suggestion"></p>
         <div class="button-grid">

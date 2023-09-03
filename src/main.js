@@ -204,6 +204,8 @@ function resetInputs() {
 
 // Multiple choice
 
+answerMode("input");
+
 const descriptions = {
     "a": ["Agree", "True", "Yes"],
     "b": ["Disagree", "False", "No"],
@@ -214,30 +216,27 @@ const descriptions = {
 
 document.querySelectorAll("[data-multiple-choice]").forEach(button => {
     button.addEventListener("click", e => {
-        const question = questionInput.value?.trim();
         const choice = e.target.getAttribute("data-multiple-choice");
-        const body = `<p>Are you sure? This is the same as</p>\n${ui.createList(false, descriptions[choice])}`;
-        if (storage.get("code")) {
-            if (question) {
-                ui.modal(`Submit choice ${choice.toUpperCase()}`, body, [
-                    new ui.ModalButton("Cancel", true),
-                    new ui.ModalButton("Submit", true, () => {
-                        submitClick(storage.get("code"), question, `CHOICE ${choice.toUpperCase()}`);
-                        resetInputs();
-                    }),
-                ]);
-            }
-            if (!question) {
-                answerInput.classList.remove("attention");
-                questionInput.classList.add("attention");
-                questionInput.focus();
-            }
-        }
-        else {
-            modals["code"]();
-        }
+        const content = document.querySelector(`[data-answer-mode="choice"]>div`);
+
+        content.innerHTML = `<p><b>Choice ${choice.toUpperCase()}</b></p>
+<p>This is the same as:</p>
+<p>${descriptions[choice].join(", ")}</p>`;
+
+        answerMode("choice");
     });
 });
+
+document.getElementById("remove-choice-button").addEventListener("click", e => {
+    answerMode("input");
+});
+
+function answerMode(mode) {
+    document.querySelectorAll("[data-answer-mode]").forEach(item => {
+        item.style.display = "none";
+    });
+    document.querySelector(`[data-answer-mode="${mode}"]`).style.removeProperty("display");
+}
 
 // History
 
