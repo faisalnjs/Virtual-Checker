@@ -84,6 +84,14 @@ const modals = {
             },
         ]);
     },
+    "keybinds": () => {
+        ui.show(document.getElementById("keybinds-modal"), "Keyboard Shortcuts", [
+            {
+                text: "Close",
+                close: true,
+            },
+        ]);
+    },
 }
 
 document.querySelectorAll("[data-show-modal]").forEach(button => {
@@ -443,6 +451,9 @@ document.addEventListener("keydown", e => {
         }
         if (e.key == "." && !anyDialogOpen) {
             modals["history"]();
+        }
+        if (e.key == "/" && !anyDialogOpen) {
+            modals["keybinds"]();
         }
     }
     else if (e.altKey) {

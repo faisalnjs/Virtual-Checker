@@ -79,6 +79,7 @@
         <p>Version <span class="version"></span></p>
         <button data-show-modal="code">Seat Code</button>
         <button data-show-modal="theme">Theme</button>
+        <button data-show-modal="keybinds">Keyboard Shortcuts</button>
         <button data-show-modal="storage">Storage</button>
     </dialog>
     <dialog id="theme-modal">
@@ -88,6 +89,13 @@
     <dialog id="storage-modal">
         <button data-reset="history">Clear History</button>
         <button data-reset="all">Full Reset</button>
+    </dialog>
+    <dialog id="keybinds-modal">
+        <p><kbd>Ctrl</kbd> + <kbd>Enter</kbd> Submits click</p>
+        <p><kbd>Alt</kbd> + <kbd>1-9</kbd> Inserts nth symbol</p>
+        <p><kbd>Ctrl</kbd> + <kbd>/</kbd> Opens Keyboard Shortcuts</p>
+        <p><kbd>Ctrl</kbd> + <kbd>,</kbd> Opens Settings</p>
+        <p><kbd>Ctrl</kbd> + <kbd>.</kbd> Opens History</p>
     </dialog>
     <dialog id="history-modal">
         <div class="col" id="history-feed"></div>
