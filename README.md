@@ -1,1 +1,1 @@
-# Virtual Clicker 2
+# Virtual Clicker

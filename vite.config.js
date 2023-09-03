@@ -1,7 +1,7 @@
 import webfontDownload from "vite-plugin-webfont-dl";
 
 export default {
-    base: "/virtual-clicker-2/",
+    base: "/virtual-clicker/",
     plugins: [
         webfontDownload(),
     ],

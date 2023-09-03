@@ -1,5 +1,5 @@
 {
-  "name": "virtual-clicker-2",
+  "name": "virtual-clicker",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -10,14 +10,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/khui0/virtual-clicker-2.git"
+    "url": "git+https://github.com/khui0/virtual-clicker.git"
   },
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/khui0/virtual-clicker-2/issues"
+    "url": "https://github.com/khui0/virtual-clicker/issues"
   },
-  "homepage": "https://github.com/khui0/virtual-clicker-2#readme",
+  "homepage": "https://github.com/khui0/virtual-clicker#readme",
   "devDependencies": {
     "vite": "^4.4.0",
     "vite-plugin-webfont-dl": "^3.7.6"
