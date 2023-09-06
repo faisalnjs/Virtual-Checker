@@ -92,6 +92,14 @@ const modals = {
             },
         ]);
     },
+    "storage-help": () => {
+        ui.show(document.getElementById("storage-help-modal"), "Settings keep resetting?", [
+            {
+                text: "Close",
+                close: true,
+            },
+        ]);
+    },
 }
 
 document.querySelectorAll("[data-show-modal]").forEach(button => {
