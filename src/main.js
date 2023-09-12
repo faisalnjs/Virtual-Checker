@@ -237,6 +237,7 @@ function resetInputs() {
     questionInput.value = "";
     answerInput.value = "";
     answerMode("input");
+    choiceInput = "";
     questionInput.focus();
     autocomplete.update();
 }
