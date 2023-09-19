@@ -177,6 +177,14 @@ for (let col = 1; col <= 5; col++) {
                     document.getElementById("code-input").value = code;
                     document.getElementById("code-help-modal").close();
                 },
+                mouseenter: e => {
+                    const period = document.getElementById("period-input").value;
+                    const code = period + row.toString() + col.toString();
+                    e.target.textContent = code;
+                },
+                mouseleave: e => {
+                    e.target.textContent = "";
+                },
             }).element
         );
     }
