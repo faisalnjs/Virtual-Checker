@@ -151,7 +151,6 @@ function saveCode() {
         // Update URL parameters with seat code
         const params = new URLSearchParams(window.location.search);
         params.set("code", input);
-        console.log(params);
         history.replaceState({}, "", "?" + params.toString());
     }
     else {
