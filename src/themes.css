@@ -87,3 +87,43 @@
     --accent-text-color: #ffffff;
     --error-color: #b85f5f;
 }
+
+[data-theme="ravenclaw"] {
+    color-scheme: dark;
+    --text-color: #ffffff;
+    --background-color: #202944;
+    --surface-color: #29365e;
+    --accent-color: #f0b569;
+    --accent-text-color: #242424;
+    --error-color: #b85f5f;
+}
+
+[data-theme="hufflepuff"] {
+    color-scheme: light;
+    --text-color: #242424;
+    --background-color: #dbba71;
+    --surface-color: #caa659;
+    --accent-color: #242424;
+    --accent-text-color: #ffffff;
+    --error-color: #923737;
+}
+
+[data-theme="slytherin"] {
+    color-scheme: dark;
+    --text-color: #ffffff;
+    --background-color: #1b3530;
+    --surface-color: #224941;
+    --accent-color: #cae7e1;
+    --accent-text-color: #242424;
+    --error-color: #b85f5f;
+}
+
+[data-theme="gryffindor"] {
+    color-scheme: light;
+    --text-color: #ffffff;
+    --background-color: #6b242b;
+    --surface-color: #852b34;
+    --accent-color: #f3b84b;
+    --accent-text-color: #242424;
+    --error-color: #f76161;
+}

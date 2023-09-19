@@ -199,12 +199,12 @@ div.spacer {
 
 .theme-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
     gap: 0.25rem;
 }
 
 button[data-theme] {
-    height: 4rem;
+    height: 3rem;
     color: var(--text-color);
     background-color: var(--surface-color);
     text-transform: capitalize;

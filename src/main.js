@@ -9,6 +9,7 @@ import { Storage } from "./storage.js";
 import { Autocomplete } from "./autocomplete.js";
 
 import symbols from "./symbols.json";
+import themes from "./themes.json";
 
 const storage = new Storage("virtual-clicker-2");
 
@@ -387,27 +388,18 @@ function insertSymbol(symbol) {
 
 // Themes
 
-const themes = [
-    "classic",
-    "abyss",
-    "graphite",
-    "blizzard",
-    "sage",
-    "dune",
-    "rose",
-    "lavender",
-    "cream",
-]
-
 document.body.setAttribute("data-theme", storage.get("theme") || "");
 
 themes.forEach(theme => {
+    const value = theme[0];
+    const name = theme[1] || theme[0];
+
     const button = document.createElement("button");
-    button.setAttribute("data-theme", theme);
-    button.innerHTML = theme;
+    button.setAttribute("data-theme", value);
+    button.textContent = name;
     button.addEventListener("click", e => {
-        document.body.setAttribute("data-theme", theme);
-        storage.set("theme", theme);
+        document.body.setAttribute("data-theme", value);
+        storage.set("theme", value);
     });
     document.querySelector("#theme-modal>div").append(button);
 });
