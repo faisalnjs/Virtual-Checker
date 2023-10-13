@@ -8,7 +8,7 @@
     --error-color: #fa8796;
 }
 
-body.theme-applied {
+body.enable-transitions {
     --easing: cubic-bezier(0.32, 0, 0.67, 0);
 }
 

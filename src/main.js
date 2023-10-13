@@ -400,10 +400,7 @@ function insertSymbol(symbol) {
 
 document.body.setAttribute("data-theme", storage.get("theme") || "");
 
-// ! Janky workaround
-setTimeout(() => {
-    document.body.classList.add("theme-applied");
-}, 1000);
+enableTransitions();
 
 themes.forEach(theme => {
     const value = theme[0];
@@ -413,11 +410,23 @@ themes.forEach(theme => {
     button.setAttribute("data-theme", value);
     button.textContent = name;
     button.addEventListener("click", e => {
+        disableTransitions();
         document.body.setAttribute("data-theme", value);
+        enableTransitions();
         storage.set("theme", value);
     });
     document.querySelector("#theme-modal>div").append(button);
 });
+
+function enableTransitions() {
+    setTimeout(() => {
+        document.body.classList.add("enable-transitions");
+    }, 100);
+}
+
+function disableTransitions() {
+    document.body.classList.remove("enable-transitions");
+}
 
 // Storage
 
