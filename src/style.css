@@ -6,6 +6,8 @@
     --accent-color: #242424;
     --accent-text-color: #ffffff;
     --error-color: #fa8796;
+
+    --easing: cubic-bezier(0.32, 0, 0.67, 0);
 }
 
 :focus-visible {
@@ -55,6 +57,13 @@ button {
     border-radius: 0.5rem;
     background-color: var(--surface-color);
     font: inherit;
+    transition: color 100ms var(--easing), background-color 100ms var(--easing);
+}
+
+button.icon {
+    width: 2.25em;
+    padding: 0;
+    border-radius: 50%;
 }
 
 dialog[open] {
@@ -129,7 +138,7 @@ textarea {
     display: flex;
     flex-direction: row;
     gap: 0.25rem;
-    width: fit-content;
+    /* width: fit-content; */
     flex-wrap: wrap;
 }
 
@@ -223,6 +232,10 @@ button[data-theme] {
     gap: 0.25rem;
 }
 
+[data-insert-symbol] {
+    flex: 1;
+}
+
 [data-answer-mode="choice"] {
     display: flex;
     flex-direction: row;
@@ -233,13 +246,6 @@ button[data-theme] {
     border: none;
     border-radius: 0.5rem;
     background-color: var(--surface-color);
-}
-
-#remove-choice-button {
-    width: 2.25em;
-    height: 2.25em;
-    padding: 0;
-    border-radius: 50%;
 }
 
 #answer-suggestion {

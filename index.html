@@ -23,19 +23,20 @@
         <label for="answer-input">Answer</label>
         <div id="answer-container" data-answer-mode="input">
             <textarea rows="5" autocomplete="off" id="answer-input"></textarea>
-            <div class="button-grid">
+            <div class="row">
                 <button data-insert-symbol="0"></button>
                 <button data-insert-symbol="1"></button>
                 <button data-insert-symbol="2"></button>
                 <button data-insert-symbol="3"></button>
                 <button data-insert-symbol="4"></button>
                 <button data-insert-symbol="5"></button>
-                <button data-show-modal="symbols"><i class="ri-more-fill"></i></button>
+                <button class="icon" id="more-symbols-button" data-show-modal="symbols"><i
+                        class="ri-more-fill"></i></button>
             </div>
         </div>
         <div data-answer-mode="choice">
             <div></div>
-            <button id="remove-choice-button"><i class="ri-close-fill"></i></button>
+            <button class="icon" id="remove-choice-button"><i class="ri-close-fill"></i></button>
         </div>
         <p id="answer-suggestion"></p>
         <div class="button-grid">
@@ -49,8 +50,8 @@
     </div>
     <div class="row">
         <button data-show-modal="code"><span class="code">000</span></button>
-        <button data-show-modal="settings">Settings</button>
-        <button data-show-modal="history">History</button>
+        <button class="icon" data-show-modal="settings"><i class="ri-settings-3-fill"></i></button>
+        <button class="icon" data-show-modal="history"><i class="ri-history-fill"></i></button>
     </div>
     <!-- Modals -->
     <dialog id="symbols-modal">
