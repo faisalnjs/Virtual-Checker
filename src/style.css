@@ -6,7 +6,9 @@
     --accent-color: #242424;
     --accent-text-color: #ffffff;
     --error-color: #fa8796;
+}
 
+body.theme-applied {
     --easing: cubic-bezier(0.32, 0, 0.67, 0);
 }
 

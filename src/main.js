@@ -400,6 +400,11 @@ function insertSymbol(symbol) {
 
 document.body.setAttribute("data-theme", storage.get("theme") || "");
 
+// ! Janky workaround
+setTimeout(() => {
+    document.body.classList.add("theme-applied");
+}, 1000);
+
 themes.forEach(theme => {
     const value = theme[0];
     const name = theme[1] || theme[0];
