@@ -57,7 +57,7 @@ button {
     border-radius: 0.5rem;
     background-color: var(--surface-color);
     font: inherit;
-    transition: color 100ms var(--easing), background-color 100ms var(--easing);
+    transition: 100ms color var(--easing), 100ms background-color var(--easing);
 }
 
 button.icon {
@@ -77,7 +77,7 @@ dialog {
     padding: 1rem;
     border: none;
     border-radius: 1rem;
-    box-shadow: 0 0 100px rgba(0, 0, 0, 0.25);
+    box-shadow: 0 0 2rem rgba(0, 0, 0, 0.2);
 }
 
 dialog::backdrop {
@@ -138,7 +138,6 @@ textarea {
     display: flex;
     flex-direction: row;
     gap: 0.25rem;
-    /* width: fit-content; */
     flex-wrap: wrap;
 }
 
@@ -157,130 +156,6 @@ textarea {
 [data-gg-chat-anchor],
 [data-gg-privacy-banner-anchor] {
     display: none !important;
-}
-
-/* Specific */
-
-ul,
-ol {
-    margin: 0;
-    padding: 0;
-    list-style: none;
-    counter-reset: list;
-}
-
-ol li {
-    counter-increment: list;
-}
-
-ol li::before {
-    content: counter(list) ". ";
-}
-
-kbd {
-    height: 1.5em;
-    padding: 0 0.25rem;
-    border-radius: 0.25rem;
-    background-color: var(--surface-color);
-    font: 14px "Poppins", sans-serif;
-}
-
-div.spacer {
-    height: 1.5rem;
-}
-
-.attention {
-    box-shadow: 0 0 0 0.125rem var(--error-color);
-    transition: box-shadow 100ms ease;
-}
-
-.button-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(2.5rem, 1fr));
-    gap: 0.25rem;
-}
-
-.symbols-grid {
-    display: grid;
-    grid-template-columns: repeat(6, 1fr);
-    gap: 0.25rem;
-}
-
-.theme-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-    gap: 0.25rem;
-}
-
-button[data-theme] {
-    height: 3rem;
-    color: var(--text-color);
-    background-color: var(--surface-color);
-    text-transform: capitalize;
-}
-
-#clicker {
-    flex: 1;
-    align-self: center;
-    justify-content: center;
-    width: min(100%, 800px);
-}
-
-#answer-container {
-    display: flex;
-    flex-direction: column-reverse;
-    gap: 0.25rem;
-}
-
-[data-insert-symbol] {
-    flex: 1;
-}
-
-[data-answer-mode="choice"] {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-
-    padding: 0.375em 0.5em;
-    border: none;
-    border-radius: 0.5rem;
-    background-color: var(--surface-color);
-}
-
-#answer-suggestion {
-    height: 1.5rem;
-}
-
-/* Modals */
-
-#code-input {
-    font-size: 2em;
-    text-align: center;
-}
-
-#seat-grid {
-    display: grid;
-    grid-template-columns: repeat(6, 1fr);
-    gap: 0.25rem;
-}
-
-#history-feed {
-    overflow-y: auto;
-    max-height: 400px;
-    border-radius: 0.5rem;
-}
-
-#history-feed>button {
-    height: fit-content;
-    padding: 0.375em 0.75em;
-    text-align: left;
-}
-
-#history-feed>button>p {
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
 }
 
 /* Scrollbar */

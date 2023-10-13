@@ -1,5 +1,6 @@
 import "./reset.css";
 import "./style.css";
+import "./clicker.css";
 import "./themes.css";
 import "remixicon/fonts/remixicon.css";
 
@@ -212,12 +213,12 @@ document.getElementById("submit-button").addEventListener("click", e => {
             storeClick(storage.get("code"), question, answer);
             resetInputs();
 
-            // Submit feedback
-            e.target.innerHTML = `<i class="ri-check-fill"></i> Submitted`;
+            // Submit confirmation
+            document.getElementById("submit-confirmation").classList.add("open");
             clearTimeout(submitTimeout);
             submitTimeout = setTimeout(() => {
-                e.target.innerHTML = submitText;
-            }, 2000);
+                document.getElementById("submit-confirmation").classList.remove("open");
+            }, 2500);
         }
         if (!answer) {
             answerInput.classList.add("attention");
