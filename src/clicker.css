@@ -111,6 +111,7 @@ button[data-theme] {
 
 #submit-confirmation>h2 {
     font-size: 2em;
+    font-weight: normal;
 }
 
 #submit-confirmation.open {

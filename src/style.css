@@ -63,9 +63,11 @@ button {
 }
 
 button.icon {
-    width: 2.25em;
+    width: 2em;
+    height: 2em;
     padding: 0;
     border-radius: 50%;
+    font-size: 1.125em;
 }
 
 dialog[open] {
