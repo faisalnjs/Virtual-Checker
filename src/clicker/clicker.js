@@ -10,7 +10,7 @@ answerMode("input");
 questionInput.focus();
 
 // Submit click
-document.getElementById("submit-button").addEventListener("click", e => {
+document.getElementById("submit-button").addEventListener("click", () => {
     const question = questionInput.value?.trim();
     const answer = choiceInput || answerInput.value?.trim();
     if (storage.get("code")) {
@@ -180,7 +180,7 @@ document.querySelectorAll("[data-multiple-choice]").forEach(button => {
     });
 });
 
-document.getElementById("remove-choice-button").addEventListener("click", e => {
+document.getElementById("remove-choice-button").addEventListener("click", () => {
     answerMode("input");
     choiceInput = "";
 });
@@ -222,7 +222,7 @@ function updateHistory() {
             button.innerHTML = `<p><b>${item.question}.</b> ${timeToString(item.timestamp)} (${item.code})</p>\n<p>${item.answer}</p>`;
             feed.prepend(button);
             // Resubmit click
-            button.addEventListener("click", e => {
+            button.addEventListener("click", () => {
                 const choice = item.answer.match(/^CHOICE ([A-E])$/);
                 questionInput.value = item.question;
                 if (!choice) {

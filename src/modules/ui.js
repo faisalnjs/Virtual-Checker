@@ -38,7 +38,7 @@ export function modal(options) {
 }
 
 export function show(dialog, title, buttons, blur) {
-    const modalTitle = (() => {
+    {
         const existing = dialog.querySelector("[data-modal-title]");
         if (existing) {
             existing.textContent = title;
@@ -50,7 +50,7 @@ export function show(dialog, title, buttons, blur) {
             dialog.prepend(element);
             return element;
         }
-    })();
+    }
 
     const modalButtons = (() => {
         const existing = dialog.querySelector("[data-modal-buttons]");
@@ -178,7 +178,7 @@ export class Element {
 }
 
 document.querySelectorAll("[data-modal-view]").forEach(element => {
-    element.addEventListener("click", e => {
+    element.addEventListener("click", () => {
         const path = element.getAttribute("data-modal-view");
         view(path);
     });

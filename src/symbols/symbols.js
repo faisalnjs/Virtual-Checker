@@ -33,7 +33,7 @@ class Autocomplete {
             }
         });
 
-        this.input.addEventListener("input", e => {
+        this.input.addEventListener("input", () => {
             this.update();
         });
     }
@@ -84,7 +84,7 @@ document.querySelectorAll("[data-insert-symbol]").forEach(button => {
     const index = button.getAttribute("data-insert-symbol");
     const symbol = Object.values(symbols)[index];
     button.innerHTML = symbol;
-    button.addEventListener("click", e => {
+    button.addEventListener("click", () => {
         insert(symbol);
     });
 });

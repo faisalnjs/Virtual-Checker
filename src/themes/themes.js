@@ -14,7 +14,7 @@ themes.forEach(theme => {
     const button = document.createElement("button");
     button.setAttribute("data-theme", value);
     button.textContent = name;
-    button.addEventListener("click", e => {
+    button.addEventListener("click", () => {
         disableTransitions();
         document.body.setAttribute("data-theme", value);
         enableTransitions();
@@ -23,7 +23,7 @@ themes.forEach(theme => {
     document.querySelector("#theme-grid").append(button);
 });
 
-document.getElementById("reset-theme-button").addEventListener("click", e => {
+document.getElementById("reset-theme-button").addEventListener("click", () => {
     disableTransitions();
     document.body.removeAttribute("data-theme");
     enableTransitions();
