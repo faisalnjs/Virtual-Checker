@@ -1,4 +1,4 @@
-// TODO: fix modals
+import * as ui from "/src/modules/ui.js";
 
 document.addEventListener("keydown", e => {
     const anyDialogOpen = Array.from(document.querySelectorAll("dialog")).some(dialog => dialog.open);
@@ -7,13 +7,13 @@ document.addEventListener("keydown", e => {
             document.getElementById("submit-button").click();
         }
         if (e.key == "," && !anyDialogOpen) {
-            modals["settings"]();
+            ui.view("settings");
         }
         if (e.key == "." && !anyDialogOpen) {
-            modals["history"]();
+            ui.view("history");
         }
         if (e.key == "/" && !anyDialogOpen) {
-            modals["keybinds"]();
+            ui.view("settings/keybinds");
         }
     }
     else if (e.altKey) {

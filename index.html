@@ -52,6 +52,7 @@
         <button data-show-modal="code"><span class="code">000</span></button>
         <button class="icon" data-show-modal="settings"><i class="ri-settings-3-fill"></i></button>
         <button class="icon" data-show-modal="history"><i class="ri-history-fill"></i></button>
+        <button data-modal-view="settings">test</button>
     </div>
     <div id="submit-confirmation">
         <h2><i class="ri-check-fill"></i></h2>
@@ -82,6 +83,30 @@
         </select>
         <p>Where do you sit? (This is the front)</p>
         <div id="seat-grid"></div>
+    </dialog>
+    <dialog data-modal-page="settings">
+        <p>Version <span class="version"></span></p>
+        <button data-modal-view="settings/code">Seat Code</button>
+        <button data-modal-view="settings/theme">Theme</button>
+        <button data-modal-view="settings/keybinds">Keyboard Shortcuts</button>
+        <button data-modal-view="settings/storage">Storage</button>
+        <button data-modal-view="settings/theme/test">TEST</button>
+        <div data-modal-page="code">
+            <p>settings/code</p>
+        </div>
+        <div data-modal-page="theme">
+            <p>settings/theme</p>
+            <div data-modal-page="test">
+                <p>settings/theme/test</p>
+                <button data-modal-view="settings">home</button>
+            </div>
+        </div>
+        <div data-modal-page="keybinds">
+            <p>settings/keybinds</p>
+        </div>
+        <div data-modal-page="storage">
+            <p>settings/storage</p>
+        </div>
     </dialog>
     <dialog id="settings-modal">
         <p>Version <span class="version"></span></p>

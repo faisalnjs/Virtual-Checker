@@ -1,7 +1,8 @@
 import "./ui.css";
+import storage from "/src/modules/storage.js";
 
 export function alert(title, text, callback, blur) {
-    modal({
+    return modal({
         title,
         body: new Element("p", text).element.outerHTML,
         buttons: [{
@@ -14,7 +15,7 @@ export function alert(title, text, callback, blur) {
 }
 
 export function prompt(title, text, buttons, blur) {
-    modal({
+    return modal({
         title,
         body: new Element("p", text).element.outerHTML,
         buttons,
@@ -23,43 +24,51 @@ export function prompt(title, text, buttons, blur) {
 }
 
 export function modal(options) {
+    // Create dialog element
     const dialog = document.createElement("dialog");
-
-    const buttonContainer = document.createElement("div");
-    options.buttons.forEach(button => {
-        buttonContainer.append(
-            new Element("button", button.text, {
-                click: () => {
-                    button.close && dialog.close();
-                    button.onclick && button.onclick();
-                },
-            }).element
-        );
-    });
-
-    options.title && dialog.append(new Element("h2", options.title).element);
-    dialog.innerHTML += options.body;
-    (options.buttons?.length > 0) && dialog.append(buttonContainer);
-
+    dialog.innerHTML = options.body;
+    // Append dialog element to DOM
     document.body.append(dialog);
-    dialog.showModal();
-
-    options.blur && buttonContainer.querySelectorAll("button").forEach(button => button.blur());
-
+    // Show modal
+    show(dialog, options.title, options.buttons, options.blur);
+    // Remove dialog element on close
     dialog.addEventListener("close", () => {
         dialog.remove();
     });
-
     return dialog;
 }
 
-// TODO: Clean up function
 export function show(dialog, title, buttons, blur) {
-    const titleElement = new Element("h2", title).element;
+    const modalTitle = (() => {
+        const existing = dialog.querySelector("[data-modal-title]");
+        if (existing) {
+            existing.textContent = title;
+            return existing;
+        }
+        else if (title) {
+            const element = new Element("h2", title).element;
+            element.setAttribute("data-modal-title", "");
+            dialog.prepend(element);
+            return element;
+        }
+    })();
 
-    const buttonContainer = document.createElement("div");
+    const modalButtons = (() => {
+        const existing = dialog.querySelector("[data-modal-buttons]");
+        if (existing) {
+            existing.innerHTML = "";
+            return existing;
+        }
+        else if (buttons?.length > 0) {
+            const element = document.createElement("div");
+            element.setAttribute("data-modal-buttons", "");
+            dialog.append(element);
+            return element;
+        }
+    })();
+
     buttons.forEach(button => {
-        buttonContainer.append(
+        modalButtons.append(
             new Element("button", button.text, {
                 click: () => {
                     button.close && dialog.close();
@@ -69,19 +78,9 @@ export function show(dialog, title, buttons, blur) {
         );
     });
 
-    dialog.open && dialog.close();
-
-    title && dialog.prepend(titleElement);
-    (buttons?.length > 0) && dialog.append(buttonContainer);
-
     dialog.showModal();
 
-    blur && buttonContainer.querySelectorAll("button").forEach(button => button.blur());
-
-    dialog.addEventListener("close", () => {
-        titleElement.remove();
-        buttonContainer.remove();
-    });
+    blur && modalButtons.querySelectorAll("button").forEach(button => button.blur());
 }
 
 export class Element {
@@ -121,7 +120,7 @@ const modals = {
             {
                 text: "Save",
                 close: false,
-                onclick: saveCode,
+                // onclick: saveCode,
             },
         ]);
     },
@@ -188,3 +187,35 @@ document.querySelectorAll("[data-show-modal]").forEach(button => {
         modals[button.getAttribute("data-show-modal")]();
     });
 });
+
+document.querySelectorAll("[data-modal-view]").forEach(element => {
+    element.addEventListener("click", e => {
+        const path = element.getAttribute("data-modal-view");
+        view(path);
+    });
+});
+
+export function view(path) {
+    const pages = path.split("/");
+    const target = document.querySelector(`[data-modal-page="${pages[pages.length - 1]}"]`);
+    const title = target.getAttribute("data-modal-title") || path;
+    for (let i = 0; i < pages.length; i++) {
+        const query = pages.slice(0, i + 1).map(item => `[data-modal-page="${item}"]`).join(">");
+        const element = document.querySelector(query);
+        element.querySelectorAll(":not([data-modal-title], [data-modal-buttons]").forEach(element => {
+            const page = element.getAttribute("data-modal-page");
+            if (page == pages[i + 1]) {
+                element.style.removeProperty("display");
+            }
+            else {
+                element.style.display = "none";
+            }
+        });
+    }
+    show(document.querySelector(`[data-modal-page="${pages[0]}"]`), title, [
+        {
+            text: "Close",
+            close: true,
+        },
+    ]);
+}

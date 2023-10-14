@@ -1,6 +1,8 @@
 import * as ui from "/src/modules/ui.js";
 import symbols from "./symbols.json";
 
+const uniqueSymbols = [...new Set(Object.values(symbols))];
+
 export class Autocomplete {
     #start = 0;
     #end = 0;
@@ -75,7 +77,11 @@ export class Autocomplete {
     }
 }
 
-const uniqueSymbols = [...new Set(Object.values(symbols))];
+export function insertSymbol(symbol) {
+    answerInput.setRangeText(symbol, answerInput.selectionStart, answerInput.selectionEnd, "end");
+    answerInput.focus();
+    autocomplete.update();
+}
 
 document.querySelectorAll("[data-insert-symbol]").forEach(button => {
     const index = button.getAttribute("data-insert-symbol");
@@ -96,9 +102,3 @@ uniqueSymbols.forEach(symbol => {
         }).element
     )
 });
-
-function insertSymbol(symbol) {
-    answerInput.setRangeText(symbol, answerInput.selectionStart, answerInput.selectionEnd, "end");
-    answerInput.focus();
-    autocomplete.update();
-}

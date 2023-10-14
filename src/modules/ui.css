@@ -24,7 +24,3 @@ dialog>div:last-of-type {
     justify-content: flex-end;
     padding-top: 0.5rem;
 }
-
-dialog>div:last-of-type>button {
-    flex: 1;
-}
