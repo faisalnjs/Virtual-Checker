@@ -3,10 +3,13 @@ import storage from "/src/modules/storage.js";
 
 const questionInput = document.getElementById("question-input");
 const answerInput = document.getElementById("answer-input");
+
 let choiceInput = "";
+answerMode("input");
 
 questionInput.focus();
 
+// Submit click
 document.getElementById("submit-button").addEventListener("click", e => {
     const question = questionInput.value?.trim();
     const answer = choiceInput || answerInput.value?.trim();
@@ -75,11 +78,11 @@ function submitClick(code, question, answer) {
     }
 }
 
-if (!storage.get("code")) {
-    ui.view("settings/code");
+if (storage.get("code")) {
+    updateCode();
 }
 else {
-    updateCode();
+    ui.view("settings/code");
 }
 
 document.getElementById("code-input").addEventListener("input", e => {
@@ -92,6 +95,8 @@ document.getElementById("code-input").addEventListener("keydown", e => {
         saveCode();
     }
 });
+
+document.getElementById("save-code-button").addEventListener("click", saveCode);
 
 function saveCode() {
     const input = document.getElementById("code-input").value;
@@ -113,6 +118,7 @@ function saveCode() {
 
 function updateCode() {
     if (storage.get("code")) {
+        document.getElementById("code-input").value = storage.get("code");
         document.querySelectorAll("span.code").forEach(element => {
             element.innerHTML = storage.get("code");
         });
@@ -142,8 +148,6 @@ for (let col = 1; col <= 5; col++) {
         );
     }
 }
-
-answerMode("input");
 
 const descriptions = {
     "a": ["Agree", "True", "Yes"],

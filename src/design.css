@@ -141,6 +141,11 @@ button[data-theme] {
     text-transform: capitalize;
 }
 
+.attention {
+    box-shadow: 0 0 0 0.125rem var(--error-color);
+    transition: box-shadow 100ms ease;
+}
+
 @media (hover: hover) {
     button:hover {
         color: var(--accent-text-color);

@@ -2,11 +2,6 @@ div.spacer {
     height: 1.5rem;
 }
 
-.attention {
-    box-shadow: 0 0 0 0.125rem var(--error-color);
-    transition: box-shadow 100ms ease;
-}
-
 .row {
     display: flex;
     flex-direction: row;
