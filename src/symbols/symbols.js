@@ -77,7 +77,8 @@ class Autocomplete {
 
 const uniqueSymbols = [...new Set(Object.values(symbols))];
 const answerInput = document.getElementById("answer-input");
-const autocomplete = new Autocomplete(answerInput, document.getElementById("answer-suggestion"));
+
+export const autocomplete = new Autocomplete(answerInput, document.getElementById("answer-suggestion"));
 
 // Insert symbol by index
 document.querySelectorAll("[data-insert-symbol]").forEach(button => {
