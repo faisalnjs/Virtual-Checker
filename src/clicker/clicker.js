@@ -85,6 +85,15 @@ else {
     ui.view("settings/code");
 }
 
+console.log(window.location.host);
+
+if (storage.get("created")) {
+    document.querySelector(`[data-modal-view="clear-data-fix"]`).style.display = "none";
+}
+else {
+    storage.set("created", Date.now());
+}
+
 document.getElementById("code-input").addEventListener("input", e => {
     e.target.value = parseInt(e.target.value) || "";
 });

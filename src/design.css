@@ -114,16 +114,11 @@ ul,
 ol {
     margin: 0;
     padding: 0;
-    list-style: none;
-    counter-reset: list;
+    padding-left: 2rem;
 }
 
-ol li {
-    counter-increment: list;
-}
-
-ol li::before {
-    content: counter(list) ". ";
+li {
+    word-wrap: break-word;
 }
 
 kbd {
