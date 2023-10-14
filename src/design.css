@@ -1,3 +1,8 @@
+* {
+    color: inherit;
+    background-color: inherit;
+}
+
 :root {
     color-scheme: light;
     --text-color: #242424;
@@ -6,10 +11,6 @@
     --accent-color: #242424;
     --accent-text-color: #ffffff;
     --error-color: #fa8796;
-}
-
-body.enable-transitions {
-    --easing: cubic-bezier(0.32, 0, 0.67, 0);
 }
 
 :focus-visible {
@@ -24,9 +25,23 @@ body.enable-transitions {
     opacity: 0.5;
 }
 
-* {
-    color: inherit;
-    background-color: inherit;
+::-webkit-scrollbar {
+    width: 1rem;
+}
+
+::-webkit-scrollbar-track {
+    background-color: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    border-radius: 0.5rem;
+    border: 0.25rem solid transparent;
+    background-color: var(--surface-color);
+    background-clip: content-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background-color: var(--accent-color);
 }
 
 body {
@@ -36,6 +51,10 @@ body {
     background-color: var(--background-color);
     font: 16px "Poppins", sans-serif;
     line-height: 1.5;
+}
+
+body.enable-transitions {
+    --easing: cubic-bezier(0.32, 0, 0.67, 0);
 }
 
 h1 {
@@ -68,6 +87,10 @@ button.icon {
     padding: 0;
     border-radius: 50%;
     font-size: 1.125em;
+}
+
+button.pill {
+    border-radius: 100vh;
 }
 
 input,
@@ -111,32 +134,6 @@ kbd {
     font: 14px "Poppins", sans-serif;
 }
 
-[data-gg-chat-anchor],
-[data-gg-privacy-banner-anchor] {
-    display: none !important;
-}
-
-/* Scrollbar */
-
-::-webkit-scrollbar {
-    width: 1rem;
-}
-
-::-webkit-scrollbar-track {
-    background-color: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-    border-radius: 0.5rem;
-    border: 0.25rem solid transparent;
-    background-color: var(--surface-color);
-    background-clip: content-box;
-}
-
-::-webkit-scrollbar-thumb:hover {
-    background-color: var(--accent-color);
-}
-
 button[data-theme] {
     height: 3rem;
     color: var(--text-color);
@@ -158,4 +155,9 @@ button[data-theme] {
         color: var(--accent-text-color);
         background-color: var(--accent-color);
     }
+}
+
+[data-gg-chat-anchor],
+[data-gg-privacy-banner-anchor] {
+    display: none !important;
 }
