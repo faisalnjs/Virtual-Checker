@@ -244,10 +244,6 @@ function updateHistory() {
 }
 
 const resets = {
-    "theme": () => {
-        document.body.removeAttribute("data-theme");
-        storage.delete("theme");
-    },
     "history": () => {
         ui.prompt("Clear history?", "This action cannot be reversed!", [
             {

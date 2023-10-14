@@ -23,12 +23,18 @@ themes.forEach(theme => {
     document.querySelector("#theme-grid").append(button);
 });
 
-function enableTransitions() {
-    setTimeout(() => {
-        document.body.classList.add("enable-transitions");
-    }, 100);
-}
+document.getElementById("reset-theme-button").addEventListener("click", e => {
+    disableTransitions();
+    document.body.removeAttribute("data-theme");
+    enableTransitions();
+    storage.delete("theme");
+});
 
 function disableTransitions() {
-    document.body.classList.remove("enable-transitions");
+    document.body.classList.add("disable-transitions");
+}
+
+function enableTransitions() {
+    document.body.offsetHeight;
+    document.body.classList.remove("disable-transitions");
 }
