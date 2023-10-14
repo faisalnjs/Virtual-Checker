@@ -104,7 +104,7 @@ function saveCode() {
     if (regex.test(input)) {
         storage.set("code", input);
         updateCode();
-        document.getElementById("code-modal").close();
+        ui.view("");
 
         // Update URL parameters with seat code
         const params = new URLSearchParams(window.location.search);
