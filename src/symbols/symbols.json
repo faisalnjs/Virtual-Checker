@@ -29,5 +29,6 @@
     "degrees": "°",
     "infinity": "∞",
     "radical": "√",
-    "root": "√"
+    "root": "√",
+    "approx": "≈"
 }

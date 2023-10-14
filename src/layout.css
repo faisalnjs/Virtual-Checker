@@ -1,0 +1,99 @@
+div.spacer {
+    height: 1.5rem;
+}
+
+.row {
+    display: flex;
+    flex-direction: row;
+    gap: 0.25rem;
+    flex-wrap: wrap;
+}
+
+.col {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.button-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(2.5rem, 1fr));
+    gap: 0.25rem;
+}
+
+#clicker {
+    flex: 1;
+    align-self: center;
+    justify-content: center;
+    width: min(100%, 800px);
+}
+
+#answer-container {
+    display: flex;
+    flex-direction: column-reverse;
+    gap: 0.25rem;
+}
+
+#insert-row {
+    flex: 1;
+    overflow: hidden;
+    height: 2.25em;
+}
+
+#answer-suggestion {
+    height: 1.5rem;
+}
+
+[data-answer-mode="choice"] {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+
+    padding: 0.375em 0.5em;
+    border: none;
+    border-radius: 0.5rem;
+    background-color: var(--surface-color);
+}
+
+#symbols-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 0.25rem;
+}
+
+#theme-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 0.25rem;
+}
+
+#seat-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 0.25rem;
+}
+
+#history-feed {
+    overflow-y: auto;
+    max-height: 400px;
+    border-radius: 0.5rem;
+}
+
+#history-feed>button {
+    height: fit-content;
+    padding: 0.375em 0.75em;
+    text-align: left;
+}
+
+#history-feed>button>p {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}

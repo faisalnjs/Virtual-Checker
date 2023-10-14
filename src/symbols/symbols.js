@@ -1,6 +1,7 @@
+import * as ui from "/src/modules/ui.js";
 import symbols from "./symbols.json";
 
-export class Autocomplete {
+class Autocomplete {
     #start = 0;
     #end = 0;
     #query = ""
@@ -32,7 +33,7 @@ export class Autocomplete {
             }
         });
 
-        this.input.addEventListener("input", e => {
+        this.input.addEventListener("input", () => {
             this.update();
         });
     }
@@ -72,4 +73,45 @@ export class Autocomplete {
             this.suggestion.innerHTML = "";
         }
     }
+}
+
+const uniqueSymbols = [...new Set(Object.values(symbols))];
+const answerInput = document.getElementById("answer-input");
+
+export const autocomplete = new Autocomplete(answerInput, document.getElementById("answer-suggestion"));
+
+// Insert symbol by index
+document.querySelectorAll("[data-insert-symbol]").forEach(button => {
+    const index = button.getAttribute("data-insert-symbol");
+    const symbol = Object.values(symbols)[index];
+    button.innerHTML = symbol;
+    button.addEventListener("click", () => {
+        insert(symbol);
+    });
+});
+
+// Loop through unique symbols and append them to DOM
+uniqueSymbols.forEach(symbol => {
+    document.querySelector("#symbols-grid").append(
+        new ui.Element("button", symbol, {
+            click: () => {
+                // Close the modal
+                ui.view("");
+                // Insert symbol
+                insert(symbol);
+            },
+        }).element
+    );
+});
+
+// Insert symbol at cursor position
+function insert(symbol) {
+    answerInput.setRangeText(symbol, answerInput.selectionStart, answerInput.selectionEnd, "end");
+    answerInput.focus();
+    autocomplete.update();
+}
+
+// Insert symbol from index
+export function insertFromIndex(index) {
+    insert(uniqueSymbols[index]);
 }
