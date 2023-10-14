@@ -38,3 +38,15 @@ function enableTransitions() {
     document.body.offsetHeight;
     document.body.classList.add("enable-transitions");
 }
+
+if (Date.now() < new Date("2023-10-23").getTime()) {
+    document.getElementById("halloween-theme").style.display = "none";
+}
+
+document.getElementById("halloween-theme").addEventListener("click", () => {
+    const theme = "halloween-2023";
+    disableTransitions();
+    document.body.setAttribute("data-theme", theme);
+    enableTransitions();
+    storage.set("theme", theme);
+});
