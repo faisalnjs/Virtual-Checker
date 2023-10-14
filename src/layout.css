@@ -27,18 +27,6 @@ div.spacer {
     gap: 0.25rem;
 }
 
-#symbols-grid {
-    display: grid;
-    grid-template-columns: repeat(6, 1fr);
-    gap: 0.25rem;
-}
-
-#theme-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-    gap: 0.25rem;
-}
-
 #clicker {
     flex: 1;
     align-self: center;
@@ -52,8 +40,18 @@ div.spacer {
     gap: 0.25rem;
 }
 
+#insert-row {
+    flex: 1;
+    overflow: hidden;
+    height: 2.25em;
+}
+
 [data-insert-symbol] {
     flex: 1;
+}
+
+#answer-suggestion {
+    height: 1.5rem;
 }
 
 [data-answer-mode="choice"] {
@@ -68,8 +66,16 @@ div.spacer {
     background-color: var(--surface-color);
 }
 
-#answer-suggestion {
-    height: 1.5rem;
+#symbols-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 0.25rem;
+}
+
+#theme-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 0.25rem;
 }
 
 #seat-grid {
