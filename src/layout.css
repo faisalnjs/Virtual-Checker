@@ -1,27 +1,3 @@
-ul,
-ol {
-    margin: 0;
-    padding: 0;
-    list-style: none;
-    counter-reset: list;
-}
-
-ol li {
-    counter-increment: list;
-}
-
-ol li::before {
-    content: counter(list) ". ";
-}
-
-kbd {
-    height: 1.5em;
-    padding: 0 0.25rem;
-    border-radius: 0.25rem;
-    background-color: var(--surface-color);
-    font: 14px "Poppins", sans-serif;
-}
-
 div.spacer {
     height: 1.5rem;
 }
@@ -29,6 +5,25 @@ div.spacer {
 .attention {
     box-shadow: 0 0 0 0.125rem var(--error-color);
     transition: box-shadow 100ms ease;
+}
+
+.row {
+    display: flex;
+    flex-direction: row;
+    gap: 0.25rem;
+    flex-wrap: wrap;
+}
+
+.col {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .button-grid {
@@ -47,13 +42,6 @@ div.spacer {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
     gap: 0.25rem;
-}
-
-button[data-theme] {
-    height: 3rem;
-    color: var(--text-color);
-    background-color: var(--surface-color);
-    text-transform: capitalize;
 }
 
 #clicker {
@@ -117,8 +105,6 @@ button[data-theme] {
 #submit-confirmation.open {
     opacity: 1;
 }
-
-/* Modals */
 
 #code-input {
     font-size: 2em;

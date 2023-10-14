@@ -1,16 +1,16 @@
 import "./reset.css";
 import "./style.css";
 import "./clicker.css";
-import "./themes.css";
+import "./modules/themes/themes.css";
 import "remixicon/fonts/remixicon.css";
 
-import * as ui from "./ui.js";
-import { submitClick } from "./clicker.js";
-import { Storage } from "./storage.js";
-import { Autocomplete } from "./autocomplete.js";
+import * as ui from "./modules/ui/ui.js";
+import { submitClick } from "./modules/clicker/clicker.js";
+import { Storage } from "./modules/storage/storage.js";
+import { Autocomplete } from "./modules/suggestions/autocomplete.js";
 
-import symbols from "./symbols.json";
-import themes from "./themes.json";
+import symbols from "./modules/suggestions/symbols.json";
+import themes from "./modules/themes/themes.json";
 
 const storage = new Storage("virtual-clicker-2");
 

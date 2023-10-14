@@ -70,37 +70,6 @@ button.icon {
     font-size: 1.125em;
 }
 
-dialog[open] {
-    display: flex;
-    flex-direction: column;
-}
-
-dialog {
-    gap: 0.25rem;
-    width: min(100%, 450px);
-    padding: 1rem;
-    border: none;
-    border-radius: 1rem;
-    box-shadow: 0 0 2rem rgba(0, 0, 0, 0.2);
-}
-
-dialog::backdrop {
-    background-color: #000000;
-    opacity: 0.25;
-}
-
-dialog>div:last-of-type {
-    display: flex;
-    flex-direction: row;
-    gap: 0.25rem;
-    justify-content: flex-end;
-    padding-top: 0.5rem;
-}
-
-dialog>div:last-of-type>button {
-    flex: 1;
-}
-
 input,
 select {
     height: 2.25em;
@@ -108,10 +77,6 @@ select {
     border: none;
     border-radius: 0.5rem;
     background-color: var(--surface-color);
-}
-
-input[type="color"] {
-    width: 3.5rem;
 }
 
 textarea {
@@ -122,39 +87,28 @@ textarea {
     resize: none;
 }
 
-@media (hover: hover) {
-    button:hover {
-        color: var(--accent-text-color);
-        background-color: var(--accent-color);
-    }
-
-    label:hover+button {
-        background-color: var(--surface-color);
-    }
-
-    button[data-theme]:hover {
-        color: var(--accent-text-color);
-        background-color: var(--accent-color);
-    }
+ul,
+ol {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    counter-reset: list;
 }
 
-.row {
-    display: flex;
-    flex-direction: row;
-    gap: 0.25rem;
-    flex-wrap: wrap;
+ol li {
+    counter-increment: list;
 }
 
-.col {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
+ol li::before {
+    content: counter(list) ". ";
 }
 
-.center {
-    display: flex;
-    align-items: center;
-    justify-content: center;
+kbd {
+    height: 1.5em;
+    padding: 0 0.25rem;
+    border-radius: 0.25rem;
+    background-color: var(--surface-color);
+    font: 14px "Poppins", sans-serif;
 }
 
 [data-gg-chat-anchor],
@@ -181,4 +135,27 @@ textarea {
 
 ::-webkit-scrollbar-thumb:hover {
     background-color: var(--accent-color);
+}
+
+button[data-theme] {
+    height: 3rem;
+    color: var(--text-color);
+    background-color: var(--surface-color);
+    text-transform: capitalize;
+}
+
+@media (hover: hover) {
+    button:hover {
+        color: var(--accent-text-color);
+        background-color: var(--accent-color);
+    }
+
+    label:hover+button {
+        background-color: var(--surface-color);
+    }
+
+    button[data-theme]:hover {
+        color: var(--accent-text-color);
+        background-color: var(--accent-color);
+    }
 }

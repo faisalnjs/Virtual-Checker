@@ -1,3 +1,5 @@
+import "./ui.css";
+
 export function alert(title, text, callback, blur) {
     modal({
         title,
