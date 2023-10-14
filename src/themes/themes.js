@@ -31,10 +31,10 @@ document.getElementById("reset-theme-button").addEventListener("click", e => {
 });
 
 function disableTransitions() {
-    document.body.classList.add("disable-transitions");
+    document.body.classList.remove("enable-transitions");
 }
 
 function enableTransitions() {
     document.body.offsetHeight;
-    document.body.classList.remove("disable-transitions");
+    document.body.classList.add("enable-transitions");
 }

@@ -53,8 +53,8 @@ body {
     line-height: 1.5;
 }
 
-body.disable-transitions * {
-    transition: none !important;
+body.enable-transitions {
+    --easing: cubic-bezier(0.32, 0, 0.67, 0);
 }
 
 h1 {
