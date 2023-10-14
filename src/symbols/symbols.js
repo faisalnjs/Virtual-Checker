@@ -1,9 +1,7 @@
 import * as ui from "/src/modules/ui.js";
 import symbols from "./symbols.json";
 
-const uniqueSymbols = [...new Set(Object.values(symbols))];
-
-export class Autocomplete {
+class Autocomplete {
     #start = 0;
     #end = 0;
     #query = ""
@@ -77,28 +75,36 @@ export class Autocomplete {
     }
 }
 
-export function insertSymbol(symbol) {
-    answerInput.setRangeText(symbol, answerInput.selectionStart, answerInput.selectionEnd, "end");
-    answerInput.focus();
-    autocomplete.update();
-}
+const answerInput = document.getElementById("answer-input");
+const autocomplete = new Autocomplete(answerInput, document.getElementById("answer-suggestion"));
 
+// Insert symbol by index
 document.querySelectorAll("[data-insert-symbol]").forEach(button => {
     const index = button.getAttribute("data-insert-symbol");
     const symbol = Object.values(symbols)[index];
     button.innerHTML = symbol;
     button.addEventListener("click", e => {
-        insertSymbol(symbol);
+        insert(symbol);
     });
 });
 
-uniqueSymbols.forEach(symbol => {
-    document.querySelector("#symbols-modal>div").append(
+// Loop through unique symbols and append them to DOM
+[...new Set(Object.values(symbols))].forEach(symbol => {
+    document.querySelector("#symbols-grid").append(
         new ui.Element("button", symbol, {
             click: () => {
-                document.getElementById("symbols-modal").close();
-                insertSymbol(symbol);
+                // Close the modal
+                ui.view("");
+                // Insert symbol
+                insert(symbol);
             },
         }).element
     )
 });
+
+// Insert symbol at cursor position
+export function insert(symbol) {
+    answerInput.setRangeText(symbol, answerInput.selectionStart, answerInput.selectionEnd, "end");
+    answerInput.focus();
+    autocomplete.update();
+}

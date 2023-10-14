@@ -74,7 +74,7 @@ export function show(dialog, title, buttons, blur) {
                     button.close && dialog.close();
                     button.onclick && button.onclick();
                 },
-            }).element
+            }, button.class).element
         );
     });
 
@@ -83,122 +83,14 @@ export function show(dialog, title, buttons, blur) {
     blur && modalButtons.querySelectorAll("button").forEach(button => button.blur());
 }
 
-export class Element {
-    constructor(tag, text, events) {
-        this.tag = tag;
-        this.text = text;
-        this.events = events;
-    }
-
-    get element() {
-        const element = document.createElement(this.tag);
-        element.textContent = this.text;
-        this.events && Object.keys(this.events).forEach(type => {
-            const listener = this.events[type];
-            element.addEventListener(type, listener);
-        });
-        return element;
-    }
-}
-
-const modals = {
-    "symbols": () => {
-        show(document.getElementById("symbols-modal"), "Symbols", [
-            {
-                text: "Close",
-                close: true,
-            },
-        ]);
-    },
-    "code": () => {
-        document.getElementById("code-input").value = storage.get("code") || "";
-        show(document.getElementById("code-modal"), "Seat Code", [
-            {
-                text: "Cancel",
-                close: true,
-            },
-            {
-                text: "Save",
-                close: false,
-                // onclick: saveCode,
-            },
-        ]);
-    },
-    "code-help": () => {
-        show(document.getElementById("code-help-modal"), "Seat Code", [
-            {
-                text: "Close",
-                close: true,
-            },
-        ]);
-    },
-    "settings": () => {
-        show(document.getElementById("settings-modal"), "Settings", [
-            {
-                text: "Close",
-                close: true,
-            },
-        ]);
-    },
-    "theme": () => {
-        show(document.getElementById("theme-modal"), "Theme", [
-            {
-                text: "Close",
-                close: true,
-            },
-        ]);
-    },
-    "storage": () => {
-        show(document.getElementById("storage-modal"), "Storage", [
-            {
-                text: "Close",
-                close: true,
-            },
-        ]);
-    },
-    "history": () => {
-        show(document.getElementById("history-modal"), "History", [
-            {
-                text: "Close",
-                close: true,
-            },
-        ]);
-    },
-    "keybinds": () => {
-        show(document.getElementById("keybinds-modal"), "Keyboard Shortcuts", [
-            {
-                text: "Close",
-                close: true,
-            },
-        ]);
-    },
-    "storage-help": () => {
-        show(document.getElementById("storage-help-modal"), "Settings keep resetting?", [
-            {
-                text: "Close",
-                close: true,
-            },
-        ]);
-    },
-}
-
-document.querySelectorAll("[data-show-modal]").forEach(button => {
-    button.addEventListener("click", e => {
-        modals[button.getAttribute("data-show-modal")]();
-    });
-});
-
-document.querySelectorAll("[data-modal-view]").forEach(element => {
-    element.addEventListener("click", e => {
-        const path = element.getAttribute("data-modal-view");
-        view(path);
-    });
-});
-
 export function view(path) {
+    if (!path) {
+        document.querySelectorAll("dialog[open]").forEach(dialog => dialog.close());
+        return;
+    }
     const pages = path.split("/");
     const target = document.querySelector(`[data-modal-page="${pages[pages.length - 1]}"]`);
-    const title = target.getAttribute("data-modal-title") || path;
+    const title = target.getAttribute("data-page-title") || path;
     for (let i = 0; i < pages.length; i++) {
         const query = pages.slice(0, i + 1).map(item => `[data-modal-page="${item}"]`).join(">");
         const element = document.querySelector(query);
@@ -212,10 +104,43 @@ export function view(path) {
             }
         });
     }
+    const previous = pages.slice(0, pages.length - 1).join("/");
+    const icon = previous ? `<i class="ri-arrow-left-s-line"></i>` : `<i class="ri-close-fill"></i>`;
     show(document.querySelector(`[data-modal-page="${pages[0]}"]`), title, [
         {
-            text: "Close",
-            close: true,
+            text: icon,
+            class: "icon",
+            close: !previous,
+            onclick: () => {
+                previous && view(previous);
+            },
         },
     ]);
 }
+
+export class Element {
+    constructor(tag, text, events, className) {
+        this.tag = tag;
+        this.text = text;
+        this.events = events;
+        this.className = className;
+    }
+
+    get element() {
+        const element = document.createElement(this.tag);
+        element.innerHTML = this.text;
+        element.className = this.className;
+        this.events && Object.keys(this.events).forEach(type => {
+            const listener = this.events[type];
+            element.addEventListener(type, listener);
+        });
+        return element;
+    }
+}
+
+document.querySelectorAll("[data-modal-view]").forEach(element => {
+    element.addEventListener("click", e => {
+        const path = element.getAttribute("data-modal-view");
+        view(path);
+    });
+});

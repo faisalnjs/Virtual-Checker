@@ -32,13 +32,13 @@ div.spacer {
     gap: 0.25rem;
 }
 
-.symbols-grid {
+#symbols-grid {
     display: grid;
     grid-template-columns: repeat(6, 1fr);
     gap: 0.25rem;
 }
 
-.theme-grid {
+#theme-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
     gap: 0.25rem;

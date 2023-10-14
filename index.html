@@ -30,7 +30,7 @@
                 <button data-insert-symbol="3"></button>
                 <button data-insert-symbol="4"></button>
                 <button data-insert-symbol="5"></button>
-                <button class="icon" id="more-symbols-button" data-show-modal="symbols"><i
+                <button class="icon" id="more-symbols-button" data-modal-view="symbols"><i
                         class="ri-more-fill"></i></button>
             </div>
         </div>
@@ -49,90 +49,64 @@
         <button id="submit-button">Submit</button>
     </div>
     <div class="row">
-        <button data-show-modal="code"><span class="code">000</span></button>
-        <button class="icon" data-show-modal="settings"><i class="ri-settings-3-fill"></i></button>
-        <button class="icon" data-show-modal="history"><i class="ri-history-fill"></i></button>
-        <button data-modal-view="settings">test</button>
+        <button data-modal-view="settings/code"><span class="code">000</span></button>
+        <button class="icon" data-modal-view="settings"><i class="ri-settings-3-fill"></i></button>
+        <button class="icon" data-modal-view="history"><i class="ri-history-fill"></i></button>
     </div>
     <div id="submit-confirmation">
         <h2><i class="ri-check-fill"></i></h2>
         <p>Submitted!</p>
     </div>
     <!-- Modals -->
-    <dialog id="symbols-modal">
+    <dialog id="symbols-modal" data-modal-page="symbols">
         <p>Click to insert</p>
-        <div class="symbols-grid"></div>
+        <div id="symbols-grid"></div>
     </dialog>
-    <dialog id="code-modal">
-        <input type="text" inputmode="numeric" placeholder="000" maxlength="3" id="code-input">
-        <button data-show-modal="code-help">Need help?</button>
-        <button data-show-modal="storage-help">Settings keep resetting?</button>
+    <dialog id="history-modal" data-modal-page="history">
+        <div class="col" id="history-feed"></div>
     </dialog>
-    <dialog id="code-help-modal">
-        <label for="period-input">Period</label>
-        <select id="period-input">
-            <option value="1">1</option>
-            <option value="2">2</option>
-            <option value="3">3</option>
-            <option value="4">4</option>
-            <option value="5">5</option>
-            <option value="6">6</option>
-            <option value="7">7</option>
-            <option value="8">8</option>
-            <option value="9">9</option>
-        </select>
-        <p>Where do you sit? (This is the front)</p>
-        <div id="seat-grid"></div>
-    </dialog>
-    <dialog data-modal-page="settings">
+    <dialog data-modal-page="settings" data-page-title="Settings">
         <p>Version <span class="version"></span></p>
         <button data-modal-view="settings/code">Seat Code</button>
         <button data-modal-view="settings/theme">Theme</button>
         <button data-modal-view="settings/keybinds">Keyboard Shortcuts</button>
-        <button data-modal-view="settings/storage">Storage</button>
-        <button data-modal-view="settings/theme/test">TEST</button>
-        <div data-modal-page="code">
-            <p>settings/code</p>
-        </div>
-        <div data-modal-page="theme">
-            <p>settings/theme</p>
-            <div data-modal-page="test">
-                <p>settings/theme/test</p>
-                <button data-modal-view="settings">home</button>
+        <button data-modal-view="settings/reset">Reset</button>
+        <div data-modal-page="code" data-page-title="Seat Code">
+            <input type="text" inputmode="numeric" placeholder="000" maxlength="3" id="code-input">
+            <button data-modal-view="settings/code/help">Need help?</button>
+            <button class="pill">Save</button>
+            <div data-modal-page="help">
+                <label for="period-input">Period</label>
+                <select id="period-input">
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                    <option value="7">7</option>
+                    <option value="8">8</option>
+                    <option value="9">9</option>
+                </select>
+                <p>Where do you sit? (This is the front)</p>
+                <div id="seat-grid"></div>
             </div>
         </div>
-        <div data-modal-page="keybinds">
-            <p>settings/keybinds</p>
+        <div data-modal-page="theme" data-page-title="Theme">
+            <div id="theme-grid"></div>
+            <button data-reset="theme">Reset</button>
         </div>
-        <div data-modal-page="storage">
-            <p>settings/storage</p>
+        <div data-modal-page="keybinds" data-page-title="Keyboard Shortcuts">
+            <p><kbd>Ctrl</kbd> + <kbd>Enter</kbd> Submits click</p>
+            <p><kbd>Alt</kbd> + <kbd>1-9</kbd> Inserts nth symbol</p>
+            <p><kbd>Ctrl</kbd> + <kbd>/</kbd> Opens Keyboard Shortcuts</p>
+            <p><kbd>Ctrl</kbd> + <kbd>,</kbd> Opens Settings</p>
+            <p><kbd>Ctrl</kbd> + <kbd>.</kbd> Opens History</p>
         </div>
-    </dialog>
-    <dialog id="settings-modal">
-        <p>Version <span class="version"></span></p>
-        <button data-show-modal="storage-help">Settings keep resetting?</button>
-        <button data-show-modal="code">Seat Code</button>
-        <button data-show-modal="theme">Theme</button>
-        <button data-show-modal="keybinds">Keyboard Shortcuts</button>
-        <button data-show-modal="storage">Storage</button>
-    </dialog>
-    <dialog id="theme-modal">
-        <div class="theme-grid"></div>
-        <button data-reset="theme">Reset</button>
-    </dialog>
-    <dialog id="storage-modal">
-        <button data-reset="history">Clear History</button>
-        <button data-reset="all">Full Reset</button>
-    </dialog>
-    <dialog id="keybinds-modal">
-        <p><kbd>Ctrl</kbd> + <kbd>Enter</kbd> Submits click</p>
-        <p><kbd>Alt</kbd> + <kbd>1-9</kbd> Inserts nth symbol</p>
-        <p><kbd>Ctrl</kbd> + <kbd>/</kbd> Opens Keyboard Shortcuts</p>
-        <p><kbd>Ctrl</kbd> + <kbd>,</kbd> Opens Settings</p>
-        <p><kbd>Ctrl</kbd> + <kbd>.</kbd> Opens History</p>
-    </dialog>
-    <dialog id="history-modal">
-        <div class="col" id="history-feed"></div>
+        <div data-modal-page="reset" data-page-title="Reset">
+            <button data-reset="history">Clear History</button>
+            <button data-reset="all">Reset All Settings</button>
+        </div>
     </dialog>
     <dialog id="storage-help-modal">
         <ol>

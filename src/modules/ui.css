@@ -17,10 +17,20 @@ dialog::backdrop {
     opacity: 0.25;
 }
 
-dialog>div:last-of-type {
+div[data-modal-page] {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+div[data-modal-buttons] {
     display: flex;
     flex-direction: row;
     gap: 0.25rem;
     justify-content: flex-end;
     padding-top: 0.5rem;
+}
+
+dialog button[data-modal-view]:not(.icon) {
+    text-align: unset;
 }

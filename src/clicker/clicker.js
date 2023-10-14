@@ -1,13 +1,9 @@
 import * as ui from "/src/modules/ui.js";
 import storage from "/src/modules/storage.js";
 
-import { Autocomplete } from "/src/symbols/symbols.js";
-
 const questionInput = document.getElementById("question-input");
 const answerInput = document.getElementById("answer-input");
 let choiceInput = "";
-
-const autocomplete = new Autocomplete(answerInput, document.getElementById("answer-suggestion"));
 
 let submitTimeout;
 
@@ -57,7 +53,6 @@ function resetInputs() {
     answerMode("input");
     choiceInput = "";
     questionInput.focus();
-    autocomplete.update();
 }
 
 function submitClick(code, question, answer) {
@@ -140,7 +135,7 @@ for (let col = 1; col <= 5; col++) {
                     const period = document.getElementById("period-input").value;
                     const code = period + row.toString() + col.toString();
                     document.getElementById("code-input").value = code;
-                    document.getElementById("code-help-modal").close();
+                    ui.view("settings/code");
                 },
                 mouseenter: e => {
                     const period = document.getElementById("period-input").value;
@@ -234,7 +229,6 @@ function updateHistory() {
 
                 document.getElementById("history-modal").close();
                 questionInput.focus();
-                autocomplete.update();
             });
         });
 
@@ -244,3 +238,46 @@ function updateHistory() {
         feed.innerHTML = "<p>Submitted clicks will show up here!</p>";
     }
 }
+
+const resets = {
+    "theme": () => {
+        document.body.removeAttribute("data-theme");
+        storage.delete("theme");
+    },
+    "history": () => {
+        ui.prompt("Clear history?", "This action cannot be reversed!", [
+            {
+                text: "Cancel",
+                close: true,
+            },
+            {
+                text: "Clear",
+                close: true,
+                onclick: () => {
+                    storage.delete("history");
+                },
+            },
+        ]);
+    },
+    "all": () => {
+        ui.prompt("Reset all settings?", "This action cannot be reversed!", [
+            {
+                text: "Cancel",
+                close: true,
+            },
+            {
+                text: "Reset",
+                close: true,
+                onclick: () => {
+                    storage.obliterate();
+                },
+            },
+        ]);
+    },
+}
+
+document.querySelectorAll("[data-reset]").forEach(button => {
+    button.addEventListener("click", e => {
+        resets[e.target.getAttribute("data-reset")]();
+    });
+});

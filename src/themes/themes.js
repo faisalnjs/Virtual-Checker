@@ -20,7 +20,7 @@ themes.forEach(theme => {
         enableTransitions();
         storage.set("theme", value);
     });
-    document.querySelector("#theme-modal>div").append(button);
+    document.querySelector("#theme-grid").append(button);
 });
 
 function enableTransitions() {
