@@ -104,14 +104,20 @@ export function view(path) {
         });
     }
     const previous = pages.slice(0, pages.length - 1).join("/");
-    const icon = previous ? `<i class="ri-arrow-left-s-line"></i>` : `<i class="ri-close-fill"></i>`;
-    show(document.querySelector(`[data-modal-page="${pages[0]}"]`), title, [
+    const buttons = [
         {
-            text: icon,
+            text: `<i class="ri-close-fill"></i>`,
+            class: "icon",
+            close: true,
+        },
+    ];
+    if (previous) {
+        buttons.unshift({
+            text: `<i class="ri-arrow-left-s-line"></i>`,
             class: "icon",
             close: false,
             onclick: () => {
-                previous && view(previous);
+                view(previous);
             },
         });
     }
