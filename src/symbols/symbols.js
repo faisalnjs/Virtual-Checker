@@ -75,6 +75,7 @@ class Autocomplete {
     }
 }
 
+const uniqueSymbols = [...new Set(Object.values(symbols))];
 const answerInput = document.getElementById("answer-input");
 const autocomplete = new Autocomplete(answerInput, document.getElementById("answer-suggestion"));
 
@@ -89,7 +90,7 @@ document.querySelectorAll("[data-insert-symbol]").forEach(button => {
 });
 
 // Loop through unique symbols and append them to DOM
-[...new Set(Object.values(symbols))].forEach(symbol => {
+uniqueSymbols.forEach(symbol => {
     document.querySelector("#symbols-grid").append(
         new ui.Element("button", symbol, {
             click: () => {
@@ -99,12 +100,17 @@ document.querySelectorAll("[data-insert-symbol]").forEach(button => {
                 insert(symbol);
             },
         }).element
-    )
+    );
 });
 
 // Insert symbol at cursor position
-export function insert(symbol) {
+function insert(symbol) {
     answerInput.setRangeText(symbol, answerInput.selectionStart, answerInput.selectionEnd, "end");
     answerInput.focus();
     autocomplete.update();
+}
+
+// Insert symbol from index
+export function insertFromIndex(index) {
+    insert(uniqueSymbols[index]);
 }

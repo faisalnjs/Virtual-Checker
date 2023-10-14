@@ -28,7 +28,7 @@ document.getElementById("submit-button").addEventListener("click", e => {
         }
     }
     else {
-        modals["code"]();
+        ui.view("settings/code");
     }
 });
 
@@ -76,7 +76,7 @@ function submitClick(code, question, answer) {
 }
 
 if (!storage.get("code")) {
-    modals["code"]();
+    ui.view("settings/code");
 }
 else {
     updateCode();

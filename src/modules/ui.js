@@ -1,5 +1,4 @@
 import "./ui.css";
-import storage from "/src/modules/storage.js";
 
 export function alert(title, text, callback, blur) {
     return modal({

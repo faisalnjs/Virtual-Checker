@@ -1,5 +1,7 @@
 import * as ui from "/src/modules/ui.js";
 
+import { insertFromIndex } from "/src/symbols/symbols.js";
+
 document.addEventListener("keydown", e => {
     const anyDialogOpen = Array.from(document.querySelectorAll("dialog")).some(dialog => dialog.open);
     if (e.ctrlKey) {
@@ -19,7 +21,7 @@ document.addEventListener("keydown", e => {
     else if (e.altKey) {
         if (/[1-9]/.test(e.key)) {
             e.preventDefault();
-            insertSymbol(uniqueSymbols[parseInt(e.key) - 1]);
+            insertFromIndex(parseInt(e.key) - 1);
         }
     }
 });
