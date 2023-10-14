@@ -106,15 +106,15 @@ export function view(path) {
     const previous = pages.slice(0, pages.length - 1).join("/");
     const buttons = [
         {
-            text: `<i class="ri-close-fill"></i>`,
-            class: "icon",
+            text: `<i class="ri-close-fill"></i> Close`,
+            class: "pill",
             close: true,
         },
     ];
     if (previous) {
         buttons.unshift({
-            text: `<i class="ri-arrow-left-s-line"></i>`,
-            class: "icon",
+            text: `<i class="ri-arrow-left-s-line"></i> Back`,
+            class: "pill",
             close: false,
             onclick: () => {
                 view(previous);
