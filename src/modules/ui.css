@@ -51,7 +51,7 @@ div.modeless {
     pointer-events: none;
 }
 
-div.modeless>h2 {
+div.modeless > h2 {
     font-size: 2em;
     font-weight: normal;
 }

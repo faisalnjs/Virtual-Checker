@@ -19,6 +19,7 @@
   },
   "homepage": "https://github.com/khui0/virtual-clicker#readme",
   "devDependencies": {
+    "prettier": "3.0.3",
     "vite": "^4.4.0",
     "vite-plugin-webfont-dl": "^3.7.6"
   },

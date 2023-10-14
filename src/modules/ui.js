@@ -4,11 +4,13 @@ export function alert(title, text, callback, blur) {
     return modal({
         title,
         body: new Element("p", text).element.outerHTML,
-        buttons: [{
-            text: "Close",
-            close: true,
-            onclick: callback,
-        }],
+        buttons: [
+            {
+                text: "Close",
+                close: true,
+                onclick: callback,
+            },
+        ],
         blur,
     });
 }
@@ -43,8 +45,7 @@ export function show(dialog, title, buttons, blur) {
         if (existing) {
             existing.textContent = title;
             return existing;
-        }
-        else if (title) {
+        } else if (title) {
             const element = new Element("h2", title).element;
             element.setAttribute("data-modal-title", "");
             dialog.prepend(element);
@@ -57,8 +58,7 @@ export function show(dialog, title, buttons, blur) {
         if (existing) {
             existing.innerHTML = "";
             return existing;
-        }
-        else if (buttons?.length > 0) {
+        } else if (buttons?.length > 0) {
             const element = document.createElement("div");
             element.setAttribute("data-modal-buttons", "");
             dialog.append(element);
@@ -66,45 +66,63 @@ export function show(dialog, title, buttons, blur) {
         }
     })();
 
-    buttons.forEach(button => {
+    buttons.forEach((button) => {
         modalButtons.append(
-            new Element("button", button.text, {
-                click: () => {
-                    button.close && dialog.close();
-                    button.onclick && button.onclick();
+            new Element(
+                "button",
+                button.text,
+                {
+                    click: () => {
+                        button.close && dialog.close();
+                        button.onclick && button.onclick();
+                    },
                 },
-            }, button.class).element
+                button.class,
+            ).element,
         );
     });
 
     dialog.showModal();
 
-    blur && modalButtons.querySelectorAll("button").forEach(button => button.blur());
+    blur &&
+        modalButtons
+            .querySelectorAll("button")
+            .forEach((button) => button.blur());
 }
 
 export function view(path) {
     if (!path) {
-        document.querySelectorAll("dialog[open]").forEach(dialog => dialog.close());
+        document
+            .querySelectorAll("dialog[open]")
+            .forEach((dialog) => dialog.close());
         return;
     }
     const pages = path.split("/");
-    const target = document.querySelector(`[data-modal-page="${pages[pages.length - 1]}"]`);
+    const target = document.querySelector(
+        `[data-modal-page="${pages[pages.length - 1]}"]`,
+    );
     const title = target.getAttribute("data-page-title") || path;
     for (let i = 0; i < pages.length; i++) {
-        const query = pages.slice(0, i + 1).map(item => `[data-modal-page="${item}"]`).join(">");
+        const query = pages
+            .slice(0, i + 1)
+            .map((item) => `[data-modal-page="${item}"]`)
+            .join(">");
         const element = document.querySelector(query);
-        element.querySelectorAll(":not([data-modal-title], [data-modal-buttons]").forEach(element => {
-            const page = element.getAttribute("data-modal-page");
-            if (page == pages[i + 1]) {
-                element.style.removeProperty("display");
-            }
-            else {
-                element.style.display = "none";
-            }
-        });
+        element
+            .querySelectorAll(":not([data-modal-title], [data-modal-buttons]")
+            .forEach((element) => {
+                const page = element.getAttribute("data-modal-page");
+                if (page == pages[i + 1]) {
+                    element.style.removeProperty("display");
+                } else {
+                    element.style.display = "none";
+                }
+            });
     }
     const previous = pages.slice(0, pages.length - 1).join("/");
-    const icon = previous ? `<i class="ri-arrow-left-s-line"></i>` : `<i class="ri-close-fill"></i>`;
+    const icon = previous
+        ? `<i class="ri-arrow-left-s-line"></i>`
+        : `<i class="ri-close-fill"></i>`;
     show(document.querySelector(`[data-modal-page="${pages[0]}"]`), title, [
         {
             text: icon,
@@ -120,10 +138,7 @@ export function view(path) {
 export function modeless(icon, message) {
     document.querySelector("div.modeless")?.remove();
     const element = document.createElement("div");
-    const keyframes = [
-        { opacity: 0 },
-        { opacity: 1 },
-    ];
+    const keyframes = [{ opacity: 0 }, { opacity: 1 }];
     element.className = "modeless";
     element.append(
         new Element("h2", icon).element,
@@ -158,16 +173,17 @@ export class Element {
         const element = document.createElement(this.tag);
         element.innerHTML = this.text;
         element.className = this.className;
-        this.events && Object.keys(this.events).forEach(type => {
-            const listener = this.events[type];
-            element.addEventListener(type, listener);
-        });
+        this.events &&
+            Object.keys(this.events).forEach((type) => {
+                const listener = this.events[type];
+                element.addEventListener(type, listener);
+            });
         return element;
     }
 }
 
-document.querySelectorAll("[data-modal-view]").forEach(element => {
-    element.addEventListener("click", e => {
+document.querySelectorAll("[data-modal-view]").forEach((element) => {
+    element.addEventListener("click", (e) => {
         const path = element.getAttribute("data-modal-view");
         view(path);
     });

@@ -1,118 +1,155 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Virtual Clicker</title>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,400;0,700;1,400;1,700&display=swap"
+            rel="stylesheet"
+        />
+        <link
+            rel="icon"
+            href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20100%20100%22%3E%3Ctext%20x%3D%2250%25%22%20y%3D%2280.00%22%20font-size%3D%2285%22%20text-anchor%3D%22middle%22%3E%E2%9C%A8%3C%2Ftext%3E%3C%2Fsvg%3E"
+        />
+    </head>
 
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Virtual Clicker</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,400;0,700;1,400;1,700&display=swap"
-        rel="stylesheet">
-    <link rel="icon"
-        href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20100%20100%22%3E%3Ctext%20x%3D%2250%25%22%20y%3D%2280.00%22%20font-size%3D%2285%22%20text-anchor%3D%22middle%22%3E%E2%9C%A8%3C%2Ftext%3E%3C%2Fsvg%3E">
-</head>
-
-<body class="col">
-    <h1>Virtual Clicker</h1>
-    <div class="col" id="clicker">
-        <h1><span class="code">000</span></h1>
-        <label for="question-input">Question</label>
-        <input type="text" autocomplete="off" id="question-input">
-        <label for="answer-input">Answer</label>
-        <div id="answer-container" data-answer-mode="input">
-            <textarea rows="5" autocomplete="off" id="answer-input"></textarea>
-            <div class="row">
-                <button data-insert-symbol="0"></button>
-                <button data-insert-symbol="1"></button>
-                <button data-insert-symbol="2"></button>
-                <button data-insert-symbol="3"></button>
-                <button data-insert-symbol="4"></button>
-                <button data-insert-symbol="5"></button>
-                <button class="icon" id="more-symbols-button" data-modal-view="symbols"><i
-                        class="ri-more-fill"></i></button>
+    <body class="col">
+        <h1>Virtual Clicker</h1>
+        <div class="col" id="clicker">
+            <h1><span class="code">000</span></h1>
+            <label for="question-input">Question</label>
+            <input type="text" autocomplete="off" id="question-input" />
+            <label for="answer-input">Answer</label>
+            <div id="answer-container" data-answer-mode="input">
+                <textarea
+                    rows="5"
+                    autocomplete="off"
+                    id="answer-input"
+                ></textarea>
+                <div class="row">
+                    <button data-insert-symbol="0"></button>
+                    <button data-insert-symbol="1"></button>
+                    <button data-insert-symbol="2"></button>
+                    <button data-insert-symbol="3"></button>
+                    <button data-insert-symbol="4"></button>
+                    <button data-insert-symbol="5"></button>
+                    <button
+                        class="icon"
+                        id="more-symbols-button"
+                        data-modal-view="symbols"
+                    >
+                        <i class="ri-more-fill"></i>
+                    </button>
+                </div>
             </div>
-        </div>
-        <div data-answer-mode="choice">
-            <div></div>
-            <button class="icon" id="remove-choice-button"><i class="ri-close-fill"></i></button>
-        </div>
-        <p id="answer-suggestion"></p>
-        <div class="button-grid">
-            <button data-multiple-choice="a">A</button>
-            <button data-multiple-choice="b">B</button>
-            <button data-multiple-choice="c">C</button>
-            <button data-multiple-choice="d">D</button>
-            <button data-multiple-choice="e">E</button>
-        </div>
-        <button class="pill" id="submit-button">Submit</button>
-    </div>
-    <div class="row">
-        <button data-modal-view="settings/code"><span class="code">000</span></button>
-        <button class="icon" data-modal-view="settings"><i class="ri-settings-3-fill"></i></button>
-        <button class="icon" data-modal-view="history"><i class="ri-history-fill"></i></button>
-        <button class="icon" data-modal-view="clear-data-fix"><i class="ri-alert-fill"></i></button>
-    </div>
-    <!-- Modals -->
-    <dialog data-modal-page="symbols" data-page-title="Symbols">
-        <p>Click to insert</p>
-        <div id="symbols-grid"></div>
-    </dialog>
-    <dialog data-modal-page="history" data-page-title="History">
-        <div class="col" id="history-feed"></div>
-    </dialog>
-    <dialog data-modal-page="settings" data-page-title="Settings">
-        <p>Version <span class="version"></span></p>
-        <button data-modal-view="settings/code">Seat Code</button>
-        <button data-modal-view="settings/theme">Theme</button>
-        <button data-modal-view="settings/keybinds">Keyboard Shortcuts</button>
-        <button data-modal-view="settings/reset">Reset</button>
-        <div data-modal-page="code" data-page-title="Seat Code">
-            <input type="text" inputmode="numeric" placeholder="000" maxlength="3" id="code-input">
-            <button data-modal-view="settings/code/help">Need help?</button>
-            <button class="pill" id="save-code-button">Save</button>
-            <div data-modal-page="help">
-                <label for="period-input">Period</label>
-                <select id="period-input">
-                    <option value="1">1</option>
-                    <option value="2">2</option>
-                    <option value="3">3</option>
-                    <option value="4">4</option>
-                    <option value="5">5</option>
-                    <option value="6">6</option>
-                    <option value="7">7</option>
-                    <option value="8">8</option>
-                    <option value="9">9</option>
-                </select>
-                <p>Where do you sit? (This is the front)</p>
-                <div id="seat-grid"></div>
+            <div data-answer-mode="choice">
+                <div></div>
+                <button class="icon" id="remove-choice-button">
+                    <i class="ri-close-fill"></i>
+                </button>
             </div>
+            <p id="answer-suggestion"></p>
+            <div class="button-grid">
+                <button data-multiple-choice="a">A</button>
+                <button data-multiple-choice="b">B</button>
+                <button data-multiple-choice="c">C</button>
+                <button data-multiple-choice="d">D</button>
+                <button data-multiple-choice="e">E</button>
+            </div>
+            <button class="pill" id="submit-button">Submit</button>
         </div>
-        <div data-modal-page="theme" data-page-title="Theme">
-            <div id="theme-grid"></div>
-            <button data-reset="theme">Reset</button>
+        <div class="row">
+            <button data-modal-view="settings/code">
+                <span class="code">000</span>
+            </button>
+            <button class="icon" data-modal-view="settings">
+                <i class="ri-settings-3-fill"></i>
+            </button>
+            <button class="icon" data-modal-view="history">
+                <i class="ri-history-fill"></i>
+            </button>
+            <button class="icon" data-modal-view="clear-data-fix">
+                <i class="ri-alert-fill"></i>
+            </button>
         </div>
-        <div data-modal-page="keybinds" data-page-title="Keyboard Shortcuts">
-            <p><kbd>Ctrl</kbd> + <kbd>Enter</kbd> Submits click</p>
-            <p><kbd>Alt</kbd> + <kbd>1-9</kbd> Inserts nth symbol</p>
-            <p><kbd>Ctrl</kbd> + <kbd>/</kbd> Opens Keyboard Shortcuts</p>
-            <p><kbd>Ctrl</kbd> + <kbd>,</kbd> Opens Settings</p>
-            <p><kbd>Ctrl</kbd> + <kbd>.</kbd> Opens History</p>
-        </div>
-        <div data-modal-page="reset" data-page-title="Reset">
-            <button data-reset="history">Clear History</button>
-            <button data-reset="all">Reset All Settings</button>
-        </div>
-    </dialog>
-    <dialog data-modal-page="clear-data-fix" data-page-title="Settings may not save">
-        <ol>
-            <li>Open "edge://settings/clearBrowsingDataOnClose" in a new tab</li>
-            <li>Click "Add" under "Cookies and other site data"</li>
-            <li>Add "khui0.github.io"</li>
-        </ol>
-    </dialog>
-    <script src="src/main.js" type="module"></script>
-</body>
-
+        <!-- Modals -->
+        <dialog data-modal-page="symbols" data-page-title="Symbols">
+            <p>Click to insert</p>
+            <div id="symbols-grid"></div>
+        </dialog>
+        <dialog data-modal-page="history" data-page-title="History">
+            <div class="col" id="history-feed"></div>
+        </dialog>
+        <dialog data-modal-page="settings" data-page-title="Settings">
+            <p>Version <span class="version"></span></p>
+            <button data-modal-view="settings/code">Seat Code</button>
+            <button data-modal-view="settings/theme">Theme</button>
+            <button data-modal-view="settings/keybinds">
+                Keyboard Shortcuts
+            </button>
+            <button data-modal-view="settings/reset">Reset</button>
+            <div data-modal-page="code" data-page-title="Seat Code">
+                <input
+                    type="text"
+                    inputmode="numeric"
+                    placeholder="000"
+                    maxlength="3"
+                    id="code-input"
+                />
+                <button data-modal-view="settings/code/help">Need help?</button>
+                <button class="pill" id="save-code-button">Save</button>
+                <div data-modal-page="help">
+                    <label for="period-input">Period</label>
+                    <select id="period-input">
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                        <option value="6">6</option>
+                        <option value="7">7</option>
+                        <option value="8">8</option>
+                        <option value="9">9</option>
+                    </select>
+                    <p>Where do you sit? (This is the front)</p>
+                    <div id="seat-grid"></div>
+                </div>
+            </div>
+            <div data-modal-page="theme" data-page-title="Theme">
+                <div id="theme-grid"></div>
+                <button data-reset="theme">Reset</button>
+            </div>
+            <div
+                data-modal-page="keybinds"
+                data-page-title="Keyboard Shortcuts"
+            >
+                <p><kbd>Ctrl</kbd> + <kbd>Enter</kbd> Submits click</p>
+                <p><kbd>Alt</kbd> + <kbd>1-9</kbd> Inserts nth symbol</p>
+                <p><kbd>Ctrl</kbd> + <kbd>/</kbd> Opens Keyboard Shortcuts</p>
+                <p><kbd>Ctrl</kbd> + <kbd>,</kbd> Opens Settings</p>
+                <p><kbd>Ctrl</kbd> + <kbd>.</kbd> Opens History</p>
+            </div>
+            <div data-modal-page="reset" data-page-title="Reset">
+                <button data-reset="history">Clear History</button>
+                <button data-reset="all">Reset All Settings</button>
+            </div>
+        </dialog>
+        <dialog
+            data-modal-page="clear-data-fix"
+            data-page-title="Settings may not save"
+        >
+            <ol>
+                <li>
+                    Open "edge://settings/clearBrowsingDataOnClose" in a new tab
+                </li>
+                <li>Click "Add" under "Cookies and other site data"</li>
+                <li>Add "khui0.github.io"</li>
+            </ol>
+        </dialog>
+        <script src="src/main.js" type="module"></script>
+    </body>
 </html>

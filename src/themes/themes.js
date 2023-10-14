@@ -7,14 +7,14 @@ document.body.setAttribute("data-theme", storage.get("theme") || "");
 
 enableTransitions();
 
-themes.forEach(theme => {
+themes.forEach((theme) => {
     const value = theme[0];
     const name = theme[1] || theme[0];
 
     const button = document.createElement("button");
     button.setAttribute("data-theme", value);
     button.textContent = name;
-    button.addEventListener("click", e => {
+    button.addEventListener("click", (e) => {
         disableTransitions();
         document.body.setAttribute("data-theme", value);
         enableTransitions();
