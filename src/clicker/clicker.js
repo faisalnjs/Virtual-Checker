@@ -231,12 +231,10 @@ function updateHistory() {
                         )
                         .click();
                 }
-
                 ui.view("");
                 questionInput.focus();
             });
         });
-
         feed.prepend(new ui.Element("p", "Click to resubmit").element);
     } else {
         feed.innerHTML = "<p>Submitted clicks will show up here!</p>";
