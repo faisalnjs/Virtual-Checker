@@ -72,11 +72,6 @@ div.spacer {
     height: 1.5rem;
 }
 
-#code-input {
-    font-size: 2em;
-    text-align: center;
-}
-
 #seat-grid {
     display: grid;
     grid-template-columns: repeat(6, 1fr);

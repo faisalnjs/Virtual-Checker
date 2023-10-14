@@ -146,6 +146,11 @@ button[data-theme] {
     transition: box-shadow 100ms ease;
 }
 
+#code-input {
+    font-size: 2em;
+    text-align: center;
+}
+
 @media (hover: hover) {
     button:hover {
         color: var(--accent-text-color);
