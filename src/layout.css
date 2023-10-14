@@ -89,13 +89,13 @@ div.spacer {
     border-radius: 0.5rem;
 }
 
-#history-feed > button {
+#history-feed>button {
     height: fit-content;
     padding: 0.375em 0.75em;
     text-align: left;
 }
 
-#history-feed > button > p {
+#history-feed>button>p {
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;

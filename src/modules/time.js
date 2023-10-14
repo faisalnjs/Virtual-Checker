@@ -9,7 +9,8 @@ export function timeToString(timestamp) {
         if (hours >= 12) {
             hours %= 12;
             period = "PM";
-        } else {
+        }
+        else {
             period = "AM";
         }
         if (hours == 0) {
