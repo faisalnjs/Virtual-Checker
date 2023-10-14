@@ -46,10 +46,6 @@ div.spacer {
     height: 2.25em;
 }
 
-[data-insert-symbol] {
-    flex: 1;
-}
-
 #answer-suggestion {
     height: 1.5rem;
 }
