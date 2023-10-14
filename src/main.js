@@ -3,9 +3,6 @@ import "./layout.css";
 import "./design.css";
 import "remixicon/fonts/remixicon.css";
 
-import * as ui from "/src/modules/ui.js";
-import storage from "/src/modules/storage.js";
-
 import "/src/clicker/clicker.js";
 import "/src/symbols/symbols.js";
 import "/src/themes/themes.js";
