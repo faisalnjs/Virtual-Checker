@@ -34,3 +34,24 @@ div[data-modal-buttons] {
 dialog button[data-modal-view]:not(.icon) {
     text-align: unset;
 }
+
+div.modeless {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 999;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1.5rem;
+    border-radius: 1rem;
+    box-shadow: 0 0 2rem rgba(0, 0, 0, 0.2);
+    pointer-events: none;
+}
+
+div.modeless>h2 {
+    font-size: 2em;
+    font-weight: normal;
+}

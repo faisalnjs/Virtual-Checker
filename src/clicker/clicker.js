@@ -5,8 +5,6 @@ const questionInput = document.getElementById("question-input");
 const answerInput = document.getElementById("answer-input");
 let choiceInput = "";
 
-let submitTimeout;
-
 questionInput.focus();
 
 document.getElementById("submit-button").addEventListener("click", e => {
@@ -17,13 +15,8 @@ document.getElementById("submit-button").addEventListener("click", e => {
             submitClick(storage.get("code"), question, answer);
             storeClick(storage.get("code"), question, answer);
             resetInputs();
-
-            // Submit confirmation
-            document.getElementById("submit-confirmation").classList.add("open");
-            clearTimeout(submitTimeout);
-            submitTimeout = setTimeout(() => {
-                document.getElementById("submit-confirmation").classList.remove("open");
-            }, 2500);
+            // Show submit confirmation
+            ui.modeless(`<i class="ri-check-fill"></i>`, "Submitted!");
         }
         if (!answer) {
             answerInput.classList.add("attention");
@@ -227,7 +220,7 @@ function updateHistory() {
                     document.querySelector(`[data-multiple-choice="${choice[1].toLowerCase()}"]`).click();
                 }
 
-                document.getElementById("history-modal").close();
+                ui.view("");
                 questionInput.focus();
             });
         });

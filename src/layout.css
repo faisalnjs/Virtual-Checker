@@ -77,35 +77,6 @@ div.spacer {
     height: 1.5rem;
 }
 
-#submit-confirmation {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 1.5rem;
-    border-radius: 1rem;
-    box-shadow: 0 0 2rem rgba(0, 0, 0, 0.2);
-    pointer-events: none;
-    opacity: 0;
-
-    z-index: 1;
-
-    transition: 100ms opacity var(--easing);
-}
-
-#submit-confirmation>h2 {
-    font-size: 2em;
-    font-weight: normal;
-}
-
-#submit-confirmation.open {
-    opacity: 1;
-}
-
 #code-input {
     font-size: 2em;
     text-align: center;

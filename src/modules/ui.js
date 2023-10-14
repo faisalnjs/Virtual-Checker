@@ -118,6 +118,35 @@ export function view(path) {
     ]);
 }
 
+export function modeless(icon, message) {
+    document.querySelector("div.modeless")?.remove();
+    const element = document.createElement("div");
+    const keyframes = [
+        { opacity: 0 },
+        { opacity: 1 },
+    ];
+    element.className = "modeless";
+    element.append(
+        new Element("h2", icon).element,
+        new Element("p", message).element,
+    );
+    element.animate(keyframes, {
+        duration: 100,
+        fill: "forwards",
+    });
+    setTimeout(() => {
+        element.animate(keyframes, {
+            duration: 100,
+            direction: "reverse",
+            fill: "forwards",
+        });
+        setTimeout(() => {
+            element.remove();
+        }, 100);
+    }, 2400);
+    document.body.append(element);
+}
+
 export class Element {
     constructor(tag, text, events, className) {
         this.tag = tag;
