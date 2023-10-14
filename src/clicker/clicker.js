@@ -85,8 +85,6 @@ else {
     ui.view("settings/code");
 }
 
-console.log(window.location.host);
-
 if (storage.get("created")) {
     document.querySelector(`[data-modal-view="clear-data-fix"]`).style.display = "none";
 }

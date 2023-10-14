@@ -38,7 +38,7 @@ export function modal(options) {
 }
 
 export function show(dialog, title, buttons, blur) {
-    {
+    (() => {
         const existing = dialog.querySelector("[data-modal-title]");
         if (existing) {
             existing.textContent = title;
@@ -50,7 +50,7 @@ export function show(dialog, title, buttons, blur) {
             dialog.prepend(element);
             return element;
         }
-    }
+    })();
 
     const modalButtons = (() => {
         const existing = dialog.querySelector("[data-modal-buttons]");
