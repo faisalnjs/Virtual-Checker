@@ -1,4 +1,4 @@
-export class Storage {
+class Storage {
     constructor(id) {
         this.id = id;
     }
@@ -29,3 +29,5 @@ export class Storage {
         return JSON.parse(localStorage.getItem(this.id)) || {};
     }
 }
+
+export default new Storage("virtual-clicker-2");

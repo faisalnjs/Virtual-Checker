@@ -101,3 +101,90 @@ export class Element {
         return element;
     }
 }
+
+const modals = {
+    "symbols": () => {
+        show(document.getElementById("symbols-modal"), "Symbols", [
+            {
+                text: "Close",
+                close: true,
+            },
+        ]);
+    },
+    "code": () => {
+        document.getElementById("code-input").value = storage.get("code") || "";
+        show(document.getElementById("code-modal"), "Seat Code", [
+            {
+                text: "Cancel",
+                close: true,
+            },
+            {
+                text: "Save",
+                close: false,
+                onclick: saveCode,
+            },
+        ]);
+    },
+    "code-help": () => {
+        show(document.getElementById("code-help-modal"), "Seat Code", [
+            {
+                text: "Close",
+                close: true,
+            },
+        ]);
+    },
+    "settings": () => {
+        show(document.getElementById("settings-modal"), "Settings", [
+            {
+                text: "Close",
+                close: true,
+            },
+        ]);
+    },
+    "theme": () => {
+        show(document.getElementById("theme-modal"), "Theme", [
+            {
+                text: "Close",
+                close: true,
+            },
+        ]);
+    },
+    "storage": () => {
+        show(document.getElementById("storage-modal"), "Storage", [
+            {
+                text: "Close",
+                close: true,
+            },
+        ]);
+    },
+    "history": () => {
+        show(document.getElementById("history-modal"), "History", [
+            {
+                text: "Close",
+                close: true,
+            },
+        ]);
+    },
+    "keybinds": () => {
+        show(document.getElementById("keybinds-modal"), "Keyboard Shortcuts", [
+            {
+                text: "Close",
+                close: true,
+            },
+        ]);
+    },
+    "storage-help": () => {
+        show(document.getElementById("storage-help-modal"), "Settings keep resetting?", [
+            {
+                text: "Close",
+                close: true,
+            },
+        ]);
+    },
+}
+
+document.querySelectorAll("[data-show-modal]").forEach(button => {
+    button.addEventListener("click", e => {
+        modals[button.getAttribute("data-show-modal")]();
+    });
+});

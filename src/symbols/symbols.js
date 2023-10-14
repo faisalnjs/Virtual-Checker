@@ -1,3 +1,4 @@
+import * as ui from "/src/modules/ui.js";
 import symbols from "./symbols.json";
 
 export class Autocomplete {
@@ -72,4 +73,32 @@ export class Autocomplete {
             this.suggestion.innerHTML = "";
         }
     }
+}
+
+const uniqueSymbols = [...new Set(Object.values(symbols))];
+
+document.querySelectorAll("[data-insert-symbol]").forEach(button => {
+    const index = button.getAttribute("data-insert-symbol");
+    const symbol = Object.values(symbols)[index];
+    button.innerHTML = symbol;
+    button.addEventListener("click", e => {
+        insertSymbol(symbol);
+    });
+});
+
+uniqueSymbols.forEach(symbol => {
+    document.querySelector("#symbols-modal>div").append(
+        new ui.Element("button", symbol, {
+            click: () => {
+                document.getElementById("symbols-modal").close();
+                insertSymbol(symbol);
+            },
+        }).element
+    )
+});
+
+function insertSymbol(symbol) {
+    answerInput.setRangeText(symbol, answerInput.selectionStart, answerInput.selectionEnd, "end");
+    answerInput.focus();
+    autocomplete.update();
 }
