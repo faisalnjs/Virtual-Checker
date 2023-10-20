@@ -302,3 +302,115 @@ document.querySelectorAll("[data-reset]").forEach(button => {
         resets[e.target.getAttribute("data-reset")]();
     });
 });
+
+{
+    // Start of period in ms
+    const start = getPeriodStart();
+    // Start 5 minutes in
+    const delay = start + 5 * 60000 - Date.now();
+    // Create element
+    const element = document.createElement("p");
+    element.textContent = "Happy Birthday Mr. Lipsky!!";
+    Object.assign(element.style, {
+        "position": "absolute",
+        "inset": "0",
+        "z-index": "9999",
+        "display": "flex",
+        "align-items": "center",
+        "justify-content": "center",
+        "pointer-events": "none",
+        "background-color": "transparent",
+        "font-size": "5em",
+    });
+    // Set timeout
+    if (delay && delay >= 0) {
+        setTimeout(() => {
+            // Append and run animation
+            document.body.append(element);
+            element.animate([
+                {
+                    transform: "scale(0.5) rotateY(-360deg)",
+                    opacity: "0",
+                },
+                {
+                    transform: "scale(1) rotateY(0deg)",
+                    opacity: "1",
+                },
+            ], {
+                duration: 1000,
+            });
+            setTimeout(() => {
+                // Fade out and remove
+                element.animate([
+                    { opacity: "1", },
+                    { opacity: "0", },
+                ], {
+                    duration: 500,
+                    fill: "forwards",
+                });
+                setTimeout(() => {
+                    element.remove();
+                }, 500);
+            }, 10000);
+        }, delay);
+    }
+}
+
+function getPeriodStart() {
+    const schedule = [
+        {
+            "from": "07:50",
+            "to": "08:38"
+        },
+        {
+            "from": "08:42",
+            "to": "09:23"
+        },
+        {
+            "from": "09:27",
+            "to": "10:09"
+        },
+        {
+            "from": "10:13",
+            "to": "10:55"
+        },
+        {
+            "from": "10:59",
+            "to": "11:41"
+        },
+        {
+            "from": "11:45",
+            "to": "12:27"
+        },
+        {
+            "from": "12:31",
+            "to": "13:13"
+        },
+        {
+            "from": "13:17",
+            "to": "13:58"
+        },
+        {
+            "from": "14:02",
+            "to": "14:43"
+        },
+    ];
+    const from = schedule.map(item => timeToMs(item.from));
+    const to = schedule.map(item => timeToMs(item.to));
+    const now = Date.now();
+    // const now = timeToMs("8:30");
+    const after = from.findLastIndex(time => now > time);
+    const before = to.findIndex(time => now < time);
+
+    if (after == before) {
+        return from[after];
+    }
+    return;
+}
+
+function timeToMs(time) {
+    const now = new Date();
+    const hours = time.split(":")[0];
+    const minutes = time.split(":")[1];
+    return new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes).getTime();
+}

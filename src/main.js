@@ -8,7 +8,7 @@ import "/src/symbols/symbols.js";
 import "/src/themes/themes.js";
 import "/src/keybinds/keybinds.js";
 
-const VERSION = "3.2.0";
+const VERSION = "3.2.1";
 document.querySelectorAll("span.version").forEach(element => {
     element.innerHTML = VERSION;
 });
