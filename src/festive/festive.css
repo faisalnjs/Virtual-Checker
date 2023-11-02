@@ -1,0 +1,46 @@
+[data-theme="festive-2023-0"] {
+    color-scheme: light;
+    --text-color: #242424;
+    --background-color: #f1e2cc;
+    --surface-color: #dbc8ab;
+    --accent-color: #f0a83c;
+    --accent-text-color: #242424;
+    --error-color: #e451da;
+
+    --red: #f75e5e;
+    --green: #42b970;
+}
+
+[data-theme="festive-2023-0"] button:nth-child(odd):not(button[data-theme]) {
+    --surface-color: var(--green);
+}
+
+[data-theme="festive-2023-0"] button:nth-child(even):not(button[data-theme]) {
+    --surface-color: var(--red);
+}
+
+[data-theme="festive-2023-0"] :is(button, input, textarea, dialog, [data-answer-mode="choice"]) {
+    border: 0.125rem solid #242424;
+}
+
+[data-theme="festive-2023-0"] #submit-button {
+    height: 2.25rem;
+    background: linear-gradient(-45deg, white 25%, var(--red) 25% 50%, white 50% 75%, var(--red) 75%);
+    background-size: 1.5rem 1.5rem;
+    font: bold 20px "Segoe Script", "Poppins", sans-serif;
+}
+
+[data-theme="festive-2023-0"] #submit-button:is(:hover, :focus) {
+    color: var(--text-color);
+    animation: scroll 500ms linear infinite forwards;
+}
+
+@keyframes scroll {
+    from {
+        background-position: 0 0;
+    }
+
+    to {
+        background-position: 1.5rem 0;
+    }
+}
