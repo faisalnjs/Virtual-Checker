@@ -26,7 +26,7 @@
 [data-theme="festive-2023"] #submit-button {
     height: 2.25rem;
     background: linear-gradient(-45deg, white 25%, var(--red) 25% 50%, white 50% 75%, var(--red) 75%);
-    background-size: 1.5rem 1.5rem;
+    background-size: 2rem 2rem;
     font: bold 16px "Segoe Script", "Poppins", sans-serif;
 }
 
@@ -41,6 +41,13 @@
     }
 
     to {
-        background-position: 1.5rem 0;
+        background-position: 2rem 0;
     }
+}
+
+img.snowflake {
+    position: absolute;
+    background-color: transparent;
+    width: 50px;
+    pointer-events: none;
 }
