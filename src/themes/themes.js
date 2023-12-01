@@ -30,11 +30,11 @@ document.getElementById("reset-theme-button").addEventListener("click", () => {
     storage.delete("theme");
 });
 
-function disableTransitions() {
+export function disableTransitions() {
     document.body.classList.remove("enable-transitions");
 }
 
-function enableTransitions() {
+export function enableTransitions() {
     document.body.offsetHeight;
     document.body.classList.add("enable-transitions");
 }
