@@ -10,7 +10,7 @@ import "/src/keybinds/keybinds.js";
 
 import "/src/festive/festive.js";
 
-const VERSION = "3.2.4";
+const VERSION = "3.2.5";
 document.querySelectorAll("span.version").forEach(element => {
     element.innerHTML = VERSION;
 });
