@@ -92,16 +92,29 @@ document.querySelectorAll("[data-insert-symbol]").forEach(button => {
 
 // Loop through unique symbols and append them to DOM
 uniqueSymbols.forEach(symbol => {
-    document.querySelector("#symbols-grid").append(
-        new ui.Element("button", symbol, {
-            click: () => {
-                // Close the modal
-                ui.view("");
-                // Insert symbol
-                insert(symbol);
-            },
-        }).element
-    );
+    const button = new ui.Element("button", symbol, {
+        click: () => {
+            // Close the modal
+            ui.view("");
+            // Insert symbol
+            insert(symbol);
+        },
+    }).element;
+    // Show symbol name
+    const keys = [];
+    Object.entries(symbols).forEach(([key, value]) => {
+        if (value == symbol) {
+            keys.push(key);
+        }
+    });
+    button.title = keys.join(", ");
+    button.addEventListener("mouseenter", () => {
+        document.querySelector("#symbols-hint").textContent = keys.join(", ");
+    });
+    button.addEventListener("mouseleave", () => {
+        document.querySelector("#symbols-hint").textContent = "Click to insert";
+    });
+    document.querySelector("#symbols-grid").append(button);
 });
 
 // Insert symbol at cursor position
