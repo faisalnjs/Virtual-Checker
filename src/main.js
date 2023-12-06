@@ -10,7 +10,10 @@ import "/src/keybinds/keybinds.js";
 
 import "/src/festive/festive.js";
 
-const VERSION = "3.2.5";
+const VERSION = "3.2.5 (vssfalcons.pairsite.com)";
 document.querySelectorAll("span.version").forEach(element => {
     element.innerHTML = VERSION;
+});
+document.querySelectorAll("span.hostname").forEach(element => {
+    element.innerHTML = window.location.hostname;
 });
