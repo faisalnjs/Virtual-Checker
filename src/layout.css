@@ -83,7 +83,6 @@ div.spacer {
 #history-feed {
     overflow-y: auto;
     max-height: 400px;
-    border-radius: 0.5rem;
 }
 
 #history-feed>button {
