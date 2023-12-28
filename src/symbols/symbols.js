@@ -109,7 +109,7 @@ uniqueSymbols.forEach(symbol => {
     });
     button.title = keys.join(", ");
     button.addEventListener("mouseenter", () => {
-        document.querySelector("#symbols-hint").textContent = keys.join(", ");
+        document.querySelector("#symbols-hint").textContent = "Click to insert: " + keys.join(", ");
     });
     button.addEventListener("mouseleave", () => {
         document.querySelector("#symbols-hint").textContent = "Click to insert";
