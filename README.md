@@ -1,6 +1,6 @@
 # Virtual Clicker
 
-Room 233's answer submitter
+Room 233's student response system
 
 ## Build
 
