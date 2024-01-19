@@ -10,7 +10,7 @@ import "/src/keybinds/keybinds.js";
 
 import "/src/festive/festive.js";
 
-const VERSION = "3.3.0";
+const VERSION = "3.4.0";
 document.querySelectorAll("span.version").forEach(element => {
     const SCHOOL_DEVICE = Boolean(document.querySelector(`[data-gg-chat-anchor], [data-gg-privacy-banner-anchor]`));
     element.innerHTML = VERSION + (SCHOOL_DEVICE ? "*" : "");
