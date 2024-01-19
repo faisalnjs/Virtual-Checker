@@ -37,7 +37,7 @@ export function modal(options) {
     return dialog;
 }
 
-export function show(dialog, title, buttons, blur) {
+export function show(dialog, title, buttons, blur, effects = true) {
     (() => {
         const existing = dialog.querySelector("[data-modal-title]");
         if (existing) {
@@ -70,7 +70,7 @@ export function show(dialog, title, buttons, blur) {
         modalButtons.append(
             new Element("button", button.text, {
                 click: () => {
-                    button.close && dialog.close();
+                    button.close && close();
                     button.onclick && button.onclick();
                 },
             }, button.class).element
@@ -78,6 +78,33 @@ export function show(dialog, title, buttons, blur) {
     });
 
     dialog.showModal();
+
+    dialog.addEventListener("cancel", e => {
+        e.preventDefault();
+        close();
+    });
+
+    effects && animate(dialog, {
+        scale: "0.9",
+        opacity: "0",
+    }, {
+        scale: "1",
+        opacity: "1",
+    }, 250);
+
+    function close() {
+        if (effects) {
+            animate(dialog, undefined, {
+                scale: "0.9",
+                opacity: "0",
+            }, 250);
+            setTimeout(() => {
+                dialog.close();
+            }, 250);
+        } else {
+            dialog.close();
+        }
+    }
 
     blur && modalButtons.querySelectorAll("button").forEach(button => button.blur());
 }

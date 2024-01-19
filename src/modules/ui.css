@@ -14,7 +14,7 @@ dialog {
 
 dialog::backdrop {
     background-color: #000000;
-    opacity: 0.25;
+    opacity: 0;
 }
 
 div[data-modal-page] {
@@ -52,7 +52,7 @@ div.modeless {
 }
 
 div.modeless>h2 {
-    font-size: 2em;
+    font-size: 3em;
     font-weight: normal;
 }
 
