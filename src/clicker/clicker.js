@@ -3,6 +3,7 @@ import storage from "/src/modules/storage.js";
 
 import { autocomplete } from "/src/symbols/symbols.js";
 import { timeToString } from "/src/modules/time.js";
+import { getPeriod } from "/src/periods/periods";
 
 const questionInput = document.getElementById("question-input");
 const answerInput = document.getElementById("answer-input");
@@ -72,11 +73,23 @@ document.getElementById("submit-button").addEventListener("click", () => {
     const answer = multipleChoice || answerInput.value?.trim();
     if (storage.get("code")) {
         if (question && answer) {
-            submitClick(storage.get("code"), question, answer);
-            storeClick(storage.get("code"), question, answer);
-            resetInputs();
-            // Show submit confirmation
-            ui.modeless(`<i class="ri-check-fill"></i>`, "Submitted!");
+            // Check if code matches current period
+            const matchesCurrentPeriod = parseInt(storage.get("code").slice(0, 1)) === getPeriod() + 1;
+            if (!matchesCurrentPeriod) {
+                ui.prompt("Are you sure you want to submit?", "Your seat code isn't for this period!", [
+                    {
+                        text: "Cancel",
+                        close: true,
+                    },
+                    {
+                        text: "Submit Anyways",
+                        close: true,
+                        onclick: submit,
+                    }
+                ]);
+            } else {
+                submit();
+            }
         }
         if (!answer) {
             answerInput.classList.add("attention");
@@ -89,6 +102,13 @@ document.getElementById("submit-button").addEventListener("click", () => {
     }
     else {
         ui.view("settings/code");
+    }
+    function submit() {
+        submitClick(storage.get("code"), question, answer);
+        storeClick(storage.get("code"), question, answer);
+        resetInputs();
+        // Show submit confirmation
+        ui.modeless(`<i class="ri-check-fill"></i>`, "Submitted!");
     }
 });
 
