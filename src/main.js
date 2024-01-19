@@ -10,9 +10,10 @@ import "/src/keybinds/keybinds.js";
 
 import "/src/festive/festive.js";
 
-const VERSION = "3.2.7";
+const VERSION = "3.3.0";
 document.querySelectorAll("span.version").forEach(element => {
-    element.innerHTML = VERSION;
+    const SCHOOL_DEVICE = Boolean(document.querySelector(`[data-gg-chat-anchor], [data-gg-privacy-banner-anchor]`));
+    element.innerHTML = VERSION + (SCHOOL_DEVICE ? "*" : "");
 });
 document.querySelectorAll("span.hostname").forEach(element => {
     element.innerHTML = window.location.hostname;
