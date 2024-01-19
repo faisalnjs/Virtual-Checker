@@ -93,7 +93,7 @@ export function view(path) {
     for (let i = 0; i < pages.length; i++) {
         const query = pages.slice(0, i + 1).map(item => `[data-modal-page="${item}"]`).join(">");
         const element = document.querySelector(query);
-        element.querySelectorAll(":not([data-modal-title], [data-modal-buttons]").forEach(element => {
+        element.querySelectorAll(":not([data-modal-title], [data-modal-buttons], .tooltip").forEach(element => {
             const page = element.getAttribute("data-modal-page");
             if (page == pages[i + 1]) {
                 element.style.removeProperty("display");
@@ -157,6 +157,52 @@ export function modeless(icon, message) {
     document.body.append(element);
 }
 
+export function addTooltip(element, text) {
+    const tooltip = document.createElement("p");
+    tooltip.textContent = text;
+    tooltip.style.opacity = "0";
+    tooltip.style.position = "absolute";
+    tooltip.classList.add("tooltip");
+
+    const parent = element.closest("dialog") || document.body;
+    parent.append(tooltip);
+
+    element.addEventListener("pointerenter", () => {
+        tooltip.style.left = element.offsetLeft + (element.offsetWidth / 2) + "px";
+        tooltip.style.top = element.offsetTop + "px";
+        animate(tooltip, {
+            translate: "-50% -90%",
+            opacity: "0",
+        }, {
+            translate: "-50% calc(-100% - 0.5rem)",
+            opacity: "1",
+        }, 250);
+    });
+
+    element.addEventListener("pointerleave", () => {
+        animate(tooltip, undefined, {
+            translate: "-50% -90%",
+            opacity: "0",
+        }, 250);
+    });
+}
+
+// From kennyhui.dev
+export function animate(element, from, to, duration) {
+    const animation = element.animate([
+        from && from,
+        to && to,
+    ], {
+        duration,
+        easing: "cubic-bezier(0.65, 0, 0.35, 1)",
+        fill: "forwards",
+    });
+    setTimeout(() => {
+        animation.cancel();
+        Object.assign(element.style, to);
+    }, duration);
+}
+
 export class Element {
     constructor(tag, text, events, className) {
         this.tag = tag;
@@ -168,7 +214,7 @@ export class Element {
     get element() {
         const element = document.createElement(this.tag);
         element.innerHTML = this.text;
-        element.className = this.className;
+        this.className && (element.className = this.className);
         this.events && Object.keys(this.events).forEach(type => {
             const listener = this.events[type];
             element.addEventListener(type, listener);

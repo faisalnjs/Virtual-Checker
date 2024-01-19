@@ -108,13 +108,8 @@ uniqueSymbols.forEach(symbol => {
         }
     });
     button.title = keys.join(", ");
-    button.addEventListener("mouseenter", () => {
-        document.querySelector("#symbols-hint").textContent = "Click to insert: " + keys.join(", ");
-    });
-    button.addEventListener("mouseleave", () => {
-        document.querySelector("#symbols-hint").textContent = "Click to insert";
-    });
     document.querySelector("#symbols-grid").append(button);
+    ui.addTooltip(button, keys.join(", "));
 });
 
 // Insert symbol at cursor position

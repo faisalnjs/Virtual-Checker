@@ -55,3 +55,11 @@ div.modeless>h2 {
     font-size: 2em;
     font-weight: normal;
 }
+
+p.tooltip {
+    pointer-events: none;
+    padding: 0.25em 0.5em;
+    border-radius: 0.5rem;
+    color: var(--accent-text-color);
+    background-color: var(--accent-color);
+}
