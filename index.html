@@ -31,6 +31,10 @@
                     <button data-insert-symbol="3"></button>
                     <button data-insert-symbol="4"></button>
                     <button data-insert-symbol="5"></button>
+                    <button data-insert-symbol="6"></button>
+                    <button data-insert-symbol="7"></button>
+                    <button data-insert-symbol="8"></button>
+                    <button data-insert-symbol="9"></button>
                 </div>
                 <button class="icon" data-modal-view="symbols"><i class="ri-more-fill"></i></button>
             </div>
@@ -95,11 +99,11 @@
             <button id="reset-theme-button">Reset</button>
         </div>
         <div data-modal-page="keybinds" data-page-title="Keyboard Shortcuts">
-            <p><kbd>Ctrl</kbd> + <kbd>Enter</kbd> Submits click</p>
-            <p><kbd>Alt</kbd> + <kbd>1-9</kbd> Inserts nth symbol</p>
-            <p><kbd>Ctrl</kbd> + <kbd>/</kbd> Opens Keyboard Shortcuts</p>
-            <p><kbd>Ctrl</kbd> + <kbd>,</kbd> Opens Settings</p>
-            <p><kbd>Ctrl</kbd> + <kbd>.</kbd> Opens History</p>
+            <p><kbd>Ctrl</kbd> + <kbd>Enter</kbd> Submit click</p>
+            <p><kbd>Alt</kbd> + <kbd>1-9</kbd> Insert nth symbol</p>
+            <p><kbd>Ctrl</kbd> + <kbd>/</kbd> Open Keyboard Shortcuts</p>
+            <p><kbd>Ctrl</kbd> + <kbd>,</kbd> Open Settings</p>
+            <p><kbd>Ctrl</kbd> + <kbd>.</kbd> Open History</p>
         </div>
         <div data-modal-page="reset" data-page-title="Reset">
             <button data-reset="history">Clear History</button>
@@ -107,11 +111,11 @@
         </div>
     </dialog>
     <dialog data-modal-page="clear-data-fix" data-page-title="Settings may not save">
-        <p>VSCHSD enforces a setting which clears site settings every time you close your browser&mdash;resulting in
-            themes and history resetting</p>
-        <p>To fix this</p>
+        <p>VSCHSD has enabled a setting which clears site settings when you close your browser&mdash;resulting in
+            themes and history being reset each time</p>
+        <p>To fix this, add an exception for this site:</p>
         <ol>
-            <li>Open "edge://settings/clearBrowsingDataOnClose" in a new tab</li>
+            <li>In a new tab, open "edge://settings/clearBrowsingDataOnClose"</li>
             <li>Click "Add" under "Cookies and other site data"</li>
             <li>Add "<span class="hostname"></span>"</li>
         </ol>
