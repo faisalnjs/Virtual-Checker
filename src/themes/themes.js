@@ -13,7 +13,7 @@ themes.forEach(theme => {
     document.querySelector("#theme-selector").append(option);
 });
 
-if (storage.get("custom-theme")) {
+if (storage.get("theme") == "custom") {
     // Custom theme
     applyCustomTheme();
     document.getElementById("theme-selector").value = "";
@@ -89,6 +89,7 @@ document.querySelectorAll("#theme-editor :is(input, select)").forEach(input => {
 
 document.getElementById("editor-apply").addEventListener("click", () => {
     storage.set("custom-theme", customTheme);
+    storage.set("theme", "custom");
     applyCustomTheme();
 });
 
