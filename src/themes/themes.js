@@ -11,21 +11,34 @@ themes.forEach(theme => {
     const value = theme[0];
     const name = theme[1] || theme[0];
 
-    const button = document.createElement("button");
-    button.setAttribute("data-theme", value);
-    button.textContent = name;
-    button.addEventListener("click", () => {
-        disableTransitions();
-        document.body.setAttribute("data-theme", value);
-        enableTransitions();
-        storage.set("theme", value);
-    });
-    document.querySelector("#theme-grid").append(button);
+    const option = document.createElement("option");
+    option.value = value;
+    option.textContent = name;
+    document.querySelector("#theme-selector").append(option);
 });
 
-document.getElementById("reset-theme-button").addEventListener("click", () => {
+document.getElementById("theme-preview").setAttribute("data-theme", storage.get("theme") || "");
+document.getElementById("theme-selector").value = storage.get("theme") || "";
+
+document.getElementById("theme-selector").addEventListener("input", e => {
+    const value = e.target.value;
+    disableTransitions();
+    document.getElementById("theme-preview").setAttribute("data-theme", value);
+    enableTransitions();
+})
+
+document.getElementById("theme-apply").addEventListener("click", () => {
+    const value = document.getElementById("theme-selector").value;
+    disableTransitions();
+    document.body.setAttribute("data-theme", value);
+    enableTransitions();
+    storage.set("theme", value);
+})
+
+document.getElementById("theme-reset").addEventListener("click", () => {
     disableTransitions();
     document.body.removeAttribute("data-theme");
+    document.getElementById("theme-preview").removeAttribute("data-theme");
     enableTransitions();
     storage.delete("theme");
 });

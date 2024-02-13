@@ -9,6 +9,16 @@ div.spacer {
     flex-wrap: wrap;
 }
 
+.full-row {
+    display: flex;
+    flex-direction: row;
+    gap: 0.25rem;
+}
+
+.full-row>* {
+    flex: 1;
+}
+
 .col {
     display: flex;
     flex-direction: column;

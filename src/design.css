@@ -166,3 +166,37 @@ button[data-theme] {
 [data-gg-privacy-banner-anchor] {
     display: none !important;
 }
+
+#theme-preview {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    width: min(100%, 300px);
+    margin: 1rem;
+    align-self: center;
+    padding: 1rem;
+    border-radius: 1rem;
+    background-color: var(--background-color);
+}
+
+.text-placeholder {
+    color: transparent;
+    background-color: var(--text-color);
+    width: fit-content;
+    height: 0.8em;
+    -webkit-user-select: none;
+    user-select: none;
+    border-radius: 0.25rem;
+}
+
+.control-placeholder {
+    height: 2.25em;
+    padding: 0 0.5em;
+    border: none;
+    border-radius: 0.5rem;
+    background-color: var(--surface-color);
+}
+
+.control-placeholder.pill {
+    border-radius: 100vh;
+}
