@@ -12,7 +12,7 @@ import "/src/festive/festive.js";
 
 import storage from "/src/modules/storage.js";
 
-const VERSION = "3.5.0";
+const VERSION = "3.5.1";
 updateVersionString();
 function updateVersionString() {
     document.querySelectorAll("span.version").forEach(element => {
