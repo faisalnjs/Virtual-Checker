@@ -99,6 +99,31 @@ document.getElementById("editor-reset").addEventListener("click", () => {
     updateThemeCode();
 });
 
+document.getElementById("theme-code").addEventListener("input", e => {
+    if (e.target.value?.trim()) {
+        const theme = decodeThemeCode(e.target.value);
+        theme && updateEditorPreview(theme);
+    }
+});
+
+document.getElementById("theme-code").addEventListener("blur", validateThemeCode);
+document.getElementById("theme-code").addEventListener("keydown", e => {
+    if (e.key == "Enter") {
+        validateThemeCode();
+    }
+});
+
+function validateThemeCode() {
+    const code = document.getElementById("theme-code").value;
+    const theme = decodeThemeCode(code);
+    if (theme) {
+        Object.assign(customTheme, theme);
+        updateEditorFields();
+        updateEditorPreview();
+    }
+    updateThemeCode();
+}
+
 function updateEditorFields() {
     Object.entries(customTheme).forEach(([key, value]) => {
         const event = new Event("update");
@@ -108,9 +133,9 @@ function updateEditorFields() {
     });
 }
 
-function updateEditorPreview() {
+function updateEditorPreview(theme = customTheme) {
     const preview = document.getElementById("editor-preview");
-    Object.entries(customTheme).forEach(([key, value]) => {
+    Object.entries(theme).forEach(([key, value]) => {
         const prefix = key == "color-scheme" ? "" : "--";
         preview.style.setProperty(prefix + key, value);
     });
@@ -123,6 +148,7 @@ function applyCustomTheme() {
         document.body.style.setProperty(prefix + key, value);
     });
     document.getElementById("theme-selector").value = "";
+    document.getElementById("theme-preview").removeAttribute("data-theme");
 }
 
 function removeCustomTheme() {
@@ -142,12 +168,19 @@ function encodeThemeCode(theme) {
 }
 
 function decodeThemeCode(code) {
-    const keys = Object.keys(defaultTheme);
-    const values = atob(code.substring(2)).split(",");
-    return Object.fromEntries(keys.map((key, i) => [key, values[i]]));
+    try {
+        const keys = Object.keys(defaultTheme);
+        const values = atob(code.substring(2)).split(",");
+        if (values.length != keys.length) {
+            throw new Error();
+        }
+        return Object.fromEntries(keys.map((key, i) => [key, values[i]]));
+    } catch (e) {
+        return false;
+    }
 }
 
-
+// Load theme editor
 document.querySelector(`[data-modal-page="editor"]`).addEventListener("view", () => {
     Object.assign(customTheme, storage.get("custom-theme") || defaultTheme);
     updateEditorFields();
