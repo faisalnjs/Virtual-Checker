@@ -177,6 +177,7 @@ button[data-theme] {
     padding: 1rem;
     border-radius: 1rem;
     background-color: var(--background-color);
+    transition: 200ms var(--easing);
 }
 
 .text-placeholder {
@@ -187,6 +188,7 @@ button[data-theme] {
     -webkit-user-select: none;
     user-select: none;
     border-radius: 0.25rem;
+    transition: 200ms var(--easing);
 }
 
 .control-placeholder {
@@ -195,6 +197,7 @@ button[data-theme] {
     border: none;
     border-radius: 0.5rem;
     background-color: var(--surface-color);
+    transition: 200ms var(--easing);
 }
 
 .control-placeholder.pill {

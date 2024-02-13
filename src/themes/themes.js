@@ -22,9 +22,7 @@ document.getElementById("theme-selector").value = storage.get("theme") || "";
 
 document.getElementById("theme-selector").addEventListener("input", e => {
     const value = e.target.value;
-    disableTransitions();
     document.getElementById("theme-preview").setAttribute("data-theme", value);
-    enableTransitions();
 })
 
 document.getElementById("theme-apply").addEventListener("click", () => {
