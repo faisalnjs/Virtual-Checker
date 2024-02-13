@@ -322,3 +322,14 @@ document.querySelectorAll("[data-reset]").forEach(button => {
         resets[e.target.getAttribute("data-reset")]();
     });
 });
+
+// Disable developer mode button
+if (storage.get("developer")) {
+    document.querySelector(`[data-modal-page="reset"]`).append(
+        new ui.Element("button", "Disable Developer Mode", {
+            "click": () => {
+                storage.delete("developer");
+            },
+        }).element
+    );
+}

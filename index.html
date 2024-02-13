@@ -68,7 +68,7 @@
         <div class="col" id="history-feed"></div>
     </dialog>
     <dialog data-modal-page="settings" data-page-title="Settings">
-        <p>Version <span class="version"></span></p>
+        <p id="version-string">Version <span class="version"></span></p>
         <button data-modal-view="settings/code">Seat Code</button>
         <button data-modal-view="settings/theme">Theme</button>
         <button data-modal-view="settings/keybinds">Keyboard Shortcuts</button>
@@ -155,7 +155,8 @@
                     Theme Code
                     <input type="text" id="theme-code">
                 </label>
-                <p><i class="ri-error-warning-line"></i> Use <kbd>Shift</kbd> + <kbd>R</kbd> to reset theme if you can't get back here</p>
+                <p><i class="ri-error-warning-line"></i> Use <kbd>Shift</kbd> + <kbd>R</kbd> to reset theme if you can't
+                    get back here</p>
                 <div class="full-row">
                     <button id="editor-reset">Reset</button>
                     <button id="editor-apply">Apply</button>
