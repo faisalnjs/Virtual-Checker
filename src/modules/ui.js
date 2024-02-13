@@ -256,3 +256,55 @@ document.querySelectorAll("[data-modal-view]").forEach(element => {
         view(path);
     });
 });
+
+document.querySelectorAll("[data-color-input]").forEach(element => {
+    const name = element.getAttribute("data-color-input");
+    // Create child elements
+    const colorPicker = document.createElement("input");
+    colorPicker.type = "color";
+    colorPicker.name = name;
+    colorPicker.tabIndex = "-1";
+    const colorPreview = document.createElement("div");
+    colorPreview.setAttribute("data-color-preview", "");
+    colorPreview.tabIndex = "0";
+    colorPreview.role = "button";
+    const colorCode = document.createElement("input");
+    colorCode.type = "text";
+
+    colorPicker.addEventListener("input", update);
+    colorCode.addEventListener("blur", validate);
+    colorCode.addEventListener("keydown", e => {
+        if (e.key == "Enter") {
+            validate();
+        }
+    });
+    colorPreview.addEventListener("click", () => {
+        colorPicker.focus();
+    });
+    colorPreview.addEventListener("keydown", e => {
+        if (e.key == " " || e.key == "Enter") {
+            e.preventDefault();
+            colorPicker.focus();
+        }
+    });
+
+
+    element.append(colorPicker, colorPreview, colorCode);
+    update();
+
+    function validate() {
+        const value = colorCode.value;
+        const valid = /^#[0-9a-fA-F]{6}$/.test(value);
+        if (valid) {
+            colorPicker.value = value;
+        } else {
+            colorCode.value = colorPicker.value;
+        }
+        update();
+    }
+
+    function update() {
+        colorCode.value = colorPicker.value;
+        colorPreview.style.backgroundColor = colorPicker.value;
+    }
+});

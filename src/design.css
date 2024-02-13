@@ -167,7 +167,8 @@ button[data-theme] {
     display: none !important;
 }
 
-#theme-preview {
+#theme-preview,
+#editor-preview {
     display: flex;
     flex-direction: column;
     gap: 0.25rem;
@@ -202,4 +203,9 @@ button[data-theme] {
 
 .control-placeholder.pill {
     border-radius: 100vh;
+}
+
+#theme-selector,
+#theme-selector>option {
+    text-transform: capitalize;
 }

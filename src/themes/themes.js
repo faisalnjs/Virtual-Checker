@@ -37,6 +37,7 @@ document.getElementById("theme-reset").addEventListener("click", () => {
     disableTransitions();
     document.body.removeAttribute("data-theme");
     document.getElementById("theme-preview").removeAttribute("data-theme");
+    document.getElementById("theme-selector").value = "";
     enableTransitions();
     storage.delete("theme");
 });

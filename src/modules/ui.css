@@ -63,3 +63,31 @@ p.tooltip {
     color: var(--accent-text-color);
     background-color: var(--accent-color);
 }
+
+div[data-color-input] {
+    position: relative;
+}
+
+div[data-color-input]>input {
+    padding-left: 2.25em;
+    width: 100%;
+}
+
+div[data-color-input]>input[type="color"] {
+    position: absolute;
+    pointer-events: none;
+    opacity: 0;
+}
+
+div[data-color-input]>div[data-color-preview] {
+    position: absolute;
+    width: 1.75em;
+    height: 1.75em;
+    top: 0.25em;
+    left: 0.25em;
+    border-radius: 0.25em;
+}
+
+div[data-color-input]>div[data-color-preview]:hover {
+    cursor: pointer;
+}
