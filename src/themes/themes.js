@@ -118,6 +118,7 @@ document.getElementById("theme-code").addEventListener("keydown", e => {
 function validateThemeCode() {
     const code = document.getElementById("theme-code").value;
     const theme = decodeThemeCode(code);
+    storage.get("developer") && console.log(theme);
     if (theme) {
         Object.assign(customTheme, theme);
         updateEditorFields();
@@ -173,7 +174,7 @@ function decodeThemeCode(code) {
     try {
         const keys = Object.keys(defaultTheme);
         const values = atob(code.substring(2)).split(",");
-        if (values.length != keys.length) {
+        if (values.length < keys.length) {
             throw new Error();
         }
         return Object.fromEntries(keys.map((key, i) => [key, values[i]]));
