@@ -153,6 +153,8 @@ export function view(path) {
         title,
         buttons,
     );
+    const event = new Event("view");
+    target.dispatchEvent(event);
 }
 
 export function modeless(icon, message) {
@@ -287,7 +289,7 @@ document.querySelectorAll("[data-color-input]").forEach(element => {
             colorPicker.focus();
         }
     });
-
+    colorPicker.addEventListener("update", update);
 
     element.append(colorPicker, colorPreview, colorCode);
     update();
