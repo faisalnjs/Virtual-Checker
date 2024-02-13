@@ -1,6 +1,7 @@
 import "./themes.css";
 import themes from "./themes.json";
 
+import * as ui from "/src/modules/ui.js";
 import storage from "/src/modules/storage.js";
 
 themes.forEach(theme => {
@@ -194,3 +195,20 @@ document.addEventListener("keydown", e => {
         resetTheme();
     }
 });
+
+if (storage.get("developer")) {
+    document.querySelector(`[data-modal-page="editor"]`).append(
+        new ui.Element("button", "Copy CSS", {
+            "click": copyThemeCSS,
+        }).element
+    );
+}
+
+function copyThemeCSS() {
+    const properties = Object.entries(customTheme).map(([key, value]) => {
+        const prefix = key == "color-scheme" ? "" : "--";
+        return `${prefix}${key}: ${value};`;
+    });
+    const css = `[data-theme="custom"] {\n    ${properties.join("\n    ")}\n}`;
+    navigator.clipboard.writeText(css);
+}
