@@ -13,8 +13,7 @@ dialog {
 }
 
 dialog::backdrop {
-    background-color: #000000;
-    opacity: 0;
+    display: none;
 }
 
 div[data-modal-page] {
@@ -23,12 +22,19 @@ div[data-modal-page] {
     gap: 0.25rem;
 }
 
+div[data-modal-menu] {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.25rem;
+
+}
+
 div[data-modal-buttons] {
     display: flex;
     flex-direction: row;
     gap: 0.25rem;
-    justify-content: flex-end;
-    padding-top: 0.5rem;
 }
 
 dialog button[data-modal-view]:not(.icon) {

@@ -8,10 +8,8 @@
     <title>Virtual Clicker</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,400;0,700;1,400;1,700&display=swap"
+    <link href="https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,300..900;1,300..900&display=swap"
         rel="stylesheet">
-    <link rel="icon"
-        href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20100%20100%22%3E%3Ctext%20x%3D%2250%25%22%20y%3D%2280.00%22%20font-size%3D%2285%22%20text-anchor%3D%22middle%22%3E%E2%9C%A8%3C%2Ftext%3E%3C%2Fsvg%3E">
 </head>
 
 <body class="col">
@@ -36,12 +34,12 @@
                     <button data-insert-symbol="8"></button>
                     <button data-insert-symbol="9"></button>
                 </div>
-                <button class="icon" data-modal-view="symbols"><i class="ri-more-fill"></i></button>
+                <button class="icon" data-modal-view="symbols"><i class="bi bi-three-dots"></i></button>
             </div>
         </div>
         <div data-answer-mode="choice">
             <div></div>
-            <button class="icon" id="remove-choice-button"><i class="ri-close-fill"></i></button>
+            <button class="icon" id="remove-choice-button"><i class="bi bi-x-lg"></i></button>
         </div>
         <p id="answer-suggestion"></p>
         <div class="button-grid">
@@ -55,9 +53,9 @@
     </div>
     <div class="row">
         <button data-modal-view="settings/code"><span class="code">000</span></button>
-        <button class="icon" data-modal-view="settings"><i class="ri-settings-3-fill"></i></button>
-        <button class="icon" data-modal-view="history"><i class="ri-history-fill"></i></button>
-        <button class="icon" data-modal-view="clear-data-fix"><i class="ri-alert-fill"></i></button>
+        <button class="icon" data-modal-view="settings"><i class="bi bi-gear-wide-connected"></i></button>
+        <button class="icon" data-modal-view="history"><i class="bi bi-clock-history"></i></button>
+        <button class="icon" data-modal-view="clear-data-fix"><i class="bi bi-exclamation-triangle"></i></button>
     </div>
     <!-- Modals -->
     <dialog data-modal-page="symbols" data-page-title="Symbols">
@@ -155,7 +153,7 @@
                     Theme Code
                     <input type="text" id="theme-code">
                 </label>
-                <p><i class="ri-error-warning-line"></i> Use <kbd>Shift</kbd> + <kbd>R</kbd> to reset theme if you can't
+                <p><i class="bi bi-exclamation-circle"></i> Use <kbd>Shift</kbd> + <kbd>R</kbd> to reset theme if you can't
                     get back here</p>
                 <div class="full-row">
                     <button id="editor-reset">Reset</button>

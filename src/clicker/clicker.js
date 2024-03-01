@@ -108,7 +108,7 @@ document.getElementById("submit-button").addEventListener("click", () => {
         storeClick(storage.get("code"), question, answer);
         resetInputs();
         // Show submit confirmation
-        ui.modeless(`<i class="ri-check-fill"></i>`, "Submitted!");
+        ui.modeless(`<i class="bi bi-check-lg"></i>`, "Submitted!");
     }
 });
 

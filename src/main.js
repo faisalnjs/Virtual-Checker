@@ -1,7 +1,7 @@
 import "./reset.css";
 import "./layout.css";
 import "./design.css";
-import "remixicon/fonts/remixicon.css";
+import "bootstrap-icons/font/bootstrap-icons.css";
 
 import "/src/clicker/clicker.js";
 import "/src/symbols/symbols.js";

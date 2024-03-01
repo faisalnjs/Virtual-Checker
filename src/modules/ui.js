@@ -38,51 +38,41 @@ export function modal(options) {
 }
 
 export function show(dialog, title, buttons, blur, effects = true) {
-    (() => {
-        const existing = dialog.querySelector("[data-modal-title]");
-        if (existing) {
-            existing.textContent = title;
-            return existing;
-        }
-        else if (title) {
-            const element = new Element("h2", title).element;
-            element.setAttribute("data-modal-title", "");
-            dialog.prepend(element);
-            return element;
-        }
+    // Create modal menu bar
+    const menu = dialog.querySelector("[data-modal-menu]") || (() => {
+        const div = document.createElement("div");
+        div.setAttribute("data-modal-menu", "");
+        // Create title element
+        const titleEl = new Element("h2", title, null, null, {
+            "data-modal-title": true,
+        }).element;
+        div.append(titleEl);
+        // Add menu bar to dialog
+        dialog.prepend(div);
+        return div;
     })();
 
-    const modalButtons = (() => {
-        const existing = dialog.querySelector("[data-modal-buttons]");
-        if (existing) {
-            existing.innerHTML = "";
-            return existing;
-        }
-        else if (buttons?.length > 0) {
-            const element = document.createElement("div");
-            element.setAttribute("data-modal-buttons", "");
-            dialog.append(element);
-            return element;
-        }
-    })();
-
-    buttons.forEach(button => {
-        modalButtons.append(
-            new Element("button", button.text, {
-                click: () => {
-                    button.close && close();
-                    button.onclick && button.onclick();
-                },
-            }, button.class).element
-        );
-    });
+    // Remove existing buttons
+    menu.querySelector("[data-modal-buttons]")?.remove();
+    // Create modal buttons
+    if (buttons?.length > 0) {
+        const container = document.createElement("div");
+        container.setAttribute("data-modal-buttons", "");
+        menu.append(container);
+        // Populate buttons
+        buttons.forEach(button => {
+            container.append(
+                new Element("button", button.text, {
+                    click: () => {
+                        button.close && close();
+                        button.onclick && button.onclick();
+                    },
+                }, button.class).element
+            );
+        });
+    }
 
     dialog.showModal();
-
-    dialog.addEventListener("cancel", e => {
-        e.preventDefault();
-        close();
-    });
 
     effects && animate(dialog, {
         scale: "0.9",
@@ -91,8 +81,23 @@ export function show(dialog, title, buttons, blur, effects = true) {
         scale: "1",
         opacity: "1",
     }, 250);
+    if (effects) {
+        setTimeout(() => {
+            dialog.setAttribute("data-open", "");
+        }, 250);
+    } else {
+        dialog.setAttribute("data-open", "");
+    }
+
+    dialog.addEventListener("cancel", e => {
+        e.preventDefault();
+        close();
+    });
+
+    dialog.addEventListener("triggerclose", close, { once: true });
 
     function close() {
+        dialog.removeAttribute("data-open");
         if (effects) {
             animate(dialog, undefined, {
                 scale: "0.9",
@@ -106,7 +111,7 @@ export function show(dialog, title, buttons, blur, effects = true) {
         }
     }
 
-    blur && modalButtons.querySelectorAll("button").forEach(button => button.blur());
+    blur && menu.querySelectorAll("[data-modal-buttons]>button").forEach(button => button.blur());
 }
 
 export function view(path) {
@@ -119,8 +124,7 @@ export function view(path) {
     const title = target.getAttribute("data-page-title") || path;
     for (let i = 0; i < pages.length; i++) {
         const query = pages.slice(0, i + 1).map(item => `[data-modal-page="${item}"]`).join(">");
-        const element = document.querySelector(query);
-        element.querySelectorAll(":not([data-modal-title], [data-modal-buttons], .tooltip").forEach(element => {
+        document.querySelectorAll(`${query}>:not([data-modal-menu], [data-modal-title], [data-modal-buttons], .tooltip)`).forEach(element => {
             const page = element.getAttribute("data-modal-page");
             if (page == pages[i + 1]) {
                 element.style.removeProperty("display");
@@ -133,17 +137,19 @@ export function view(path) {
     const previous = pages.slice(0, pages.length - 1).join("/");
     const buttons = [
         {
-            text: `<i class="ri-close-fill"></i> Close`,
-            class: "pill",
+            text: `<i class="bi bi-x-lg"></i>`,
+            class: "icon",
             close: true,
         },
     ];
     if (previous) {
         buttons.unshift({
-            text: `<i class="ri-arrow-left-s-line"></i> Back`,
-            class: "pill",
+            text: `<i class="bi bi-chevron-left"></i>`,
+            class: "icon",
             close: false,
             onclick: () => {
+                const dialog = document.querySelector(`[data-modal-page="${pages[0]}"]`);
+                dialog.removeAttribute("data-open");
                 view(previous);
             },
         });
@@ -233,11 +239,12 @@ export function animate(element, from, to, duration) {
 }
 
 export class Element {
-    constructor(tag, text, events, className) {
+    constructor(tag, text, events, className, attributes) {
         this.tag = tag;
         this.text = text;
         this.events = events;
         this.className = className;
+        this.attributes = attributes;
     }
 
     get element() {
@@ -248,9 +255,22 @@ export class Element {
             const listener = this.events[type];
             element.addEventListener(type, listener);
         });
+        this.attributes && Object.keys(this.attributes).forEach(attribute => {
+            const value = this.attributes[attribute];
+            element.setAttribute(attribute, value);
+        });
         return element;
     }
 }
+
+// Close modal if user clicks outside of it
+document.addEventListener("click", e => {
+    const dialog = document.querySelector("dialog[open]");
+    if (dialog?.hasAttribute("data-open") && !dialog?.contains(e.target)) {
+        const event = new Event("triggerclose");
+        dialog.dispatchEvent(event);
+    }
+});
 
 document.querySelectorAll("[data-modal-view]").forEach(element => {
     element.addEventListener("click", () => {
