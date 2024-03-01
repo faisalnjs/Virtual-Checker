@@ -43,24 +43,16 @@ let multipleChoice = "";
     // Populate seat code finder grid
     for (let col = 1; col <= 5; col++) {
         for (let row = 6; row > 0; row--) {
-            document.getElementById("seat-grid").append(
-                new ui.Element("button", "", {
-                    click: () => {
-                        const period = document.getElementById("period-input").value;
-                        const code = period + row.toString() + col.toString();
-                        document.getElementById("code-input").value = code;
-                        ui.view("settings/code");
-                    },
-                    mouseenter: e => {
-                        const period = document.getElementById("period-input").value;
-                        const code = period + row.toString() + col.toString();
-                        e.target.textContent = code;
-                    },
-                    mouseleave: e => {
-                        e.target.textContent = "";
-                    },
-                }).element
-            );
+            const period = document.getElementById("period-input").value;
+            const code = period + row.toString() + col.toString();
+            const button = new ui.Element("button", "", {
+                click: () => {
+                    document.getElementById("code-input").value = code;
+                    ui.view("settings/code");
+                },
+            }).element
+            document.getElementById("seat-grid").append(button);
+            ui.addTooltip(button, code);
         }
     }
     // Update history feed

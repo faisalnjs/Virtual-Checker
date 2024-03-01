@@ -201,6 +201,8 @@ export function addTooltip(element, text) {
     tooltip.textContent = text;
     tooltip.style.opacity = "0";
     tooltip.style.position = "absolute";
+    tooltip.style.left = "0px";
+    tooltip.style.top = "0px";
     tooltip.classList.add("tooltip");
 
     const parent = element.closest("dialog") || document.body;
@@ -222,6 +224,10 @@ export function addTooltip(element, text) {
         animate(tooltip, undefined, {
             translate: "-50% -90%",
             opacity: "0",
+        }, 250);
+        setTimeout(() => {
+            tooltip.style.left = "0px";
+            tooltip.style.top = "0px";
         }, 250);
     });
 }

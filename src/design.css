@@ -145,8 +145,10 @@ button[data-theme] {
 }
 
 #code-input {
-    font-size: 2em;
+    font-size: 2.5em;
     text-align: center;
+    height: 1.5em;
+    background-color: transparent;
 }
 
 @media (hover: hover) {
@@ -211,4 +213,12 @@ button[data-theme] {
 #theme-selector,
 #theme-selector>option {
     text-transform: capitalize;
+}
+
+.hint {
+    align-self: center;
+    text-align: center;
+    font-size: 0.8em;
+    text-transform: uppercase;
+    line-height: 1;
 }
