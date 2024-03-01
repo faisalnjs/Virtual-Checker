@@ -119,7 +119,8 @@ export function show(dialog, title, buttons, blur, effects = true) {
 
 export function view(path) {
     if (!path) {
-        document.querySelectorAll("dialog[open]").forEach(dialog => dialog.close());
+        const event = new Event("triggerclose");
+        document.querySelector("dialog[open]").dispatchEvent(event);
         return;
     }
     const pages = path.split("/");
