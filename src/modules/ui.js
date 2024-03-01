@@ -52,6 +52,9 @@ export function show(dialog, title, buttons, blur, effects = true) {
         return div;
     })();
 
+    // Update title
+    menu.querySelector("[data-modal-title]").textContent = title;
+
     // Remove existing buttons
     menu.querySelector("[data-modal-buttons]")?.remove();
     // Create modal buttons
