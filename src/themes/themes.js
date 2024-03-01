@@ -38,6 +38,8 @@ document.getElementById("theme-apply").addEventListener("click", () => {
     removeCustomTheme();
     enableTransitions();
     storage.set("theme", value);
+    // Update developer theme input
+    document.getElementById("theme-debug").value = value;
 })
 
 document.getElementById("theme-reset").addEventListener("click", resetTheme);
@@ -192,6 +194,24 @@ document.querySelector(`[data-modal-page="editor"]`).addEventListener("view", ()
 });
 
 if (storage.get("developer")) {
+    // Add developer theme input
+    document.querySelector(`[data-modal-page="theme"]`).append(
+        new ui.Element("input", null, {
+            input: e => {
+                disableTransitions();
+                document.getElementById("theme-preview").setAttribute("data-theme", e.target.value);
+                document.body.setAttribute("data-theme", e.target.value);
+                removeCustomTheme();
+                enableTransitions();
+                storage.set("theme", e.target.value);
+            },
+        }, null, {
+            id: "theme-debug",
+        }).element
+    );
+    // Populate field
+    document.getElementById("theme-debug").value = storage.get("theme") || "";
+    // Add Copy CSS button
     document.querySelector(`[data-modal-page="editor"]`).append(
         new ui.Element("button", "Copy CSS", {
             "click": copyThemeCSS,
