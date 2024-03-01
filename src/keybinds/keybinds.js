@@ -1,9 +1,13 @@
 import * as ui from "/src/modules/ui.js";
 
+import * as themes from "/src/themes/themes.js";
+
 import { insertFromIndex } from "/src/symbols/symbols.js";
 
 document.addEventListener("keydown", e => {
     const anyDialogOpen = Array.from(document.querySelectorAll("dialog")).some(dialog => dialog.open);
+    const isTyping = document.activeElement.matches("input, textarea");
+    console.log(isTyping);
     if (e.ctrlKey) {
         if (e.key == "Enter" && !anyDialogOpen) {
             document.getElementById("submit-button").click();
@@ -22,6 +26,10 @@ document.addEventListener("keydown", e => {
         if (/[1-9]/.test(e.key)) {
             e.preventDefault();
             insertFromIndex(parseInt(e.key) - 1);
+        }
+    } else if (e.shiftKey) {
+        if (e.key == "R" && !anyDialogOpen && !isTyping) {
+            themes.resetTheme();
         }
     }
 });

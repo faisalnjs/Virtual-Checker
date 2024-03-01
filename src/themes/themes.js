@@ -42,7 +42,7 @@ document.getElementById("theme-apply").addEventListener("click", () => {
 
 document.getElementById("theme-reset").addEventListener("click", resetTheme);
 
-function resetTheme() {
+export function resetTheme() {
     disableTransitions();
     document.body.removeAttribute("data-theme");
     removeCustomTheme();
@@ -189,12 +189,6 @@ document.querySelector(`[data-modal-page="editor"]`).addEventListener("view", ()
     updateEditorFields();
     updateEditorPreview();
     updateThemeCode();
-});
-
-document.addEventListener("keydown", e => {
-    if (e.shiftKey && e.key == "R") {
-        resetTheme();
-    }
 });
 
 if (storage.get("developer")) {
