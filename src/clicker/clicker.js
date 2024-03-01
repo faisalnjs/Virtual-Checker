@@ -275,7 +275,7 @@ function updateHistory() {
                 autocomplete.update();
             });
         });
-        feed.prepend(new ui.Element("p", "Click to resubmit").element);
+        // feed.prepend(new ui.Element("p", "Click to resubmit").element);
     }
     else {
         feed.innerHTML = "<p>Submitted clicks will show up here!</p>";
