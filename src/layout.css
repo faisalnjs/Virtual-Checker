@@ -37,6 +37,10 @@ div.spacer {
     gap: 0.25rem;
 }
 
+#header {
+    align-self: center;
+}
+
 #clicker {
     flex: 1;
     align-self: center;
