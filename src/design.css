@@ -223,7 +223,7 @@ button[data-theme] {
 }
 
 math-field {
-    --caret-color: var(--accent-color);
+    --caret-color: var(--text-color);
     --contains-highlight-background-color: var(--background-color);
     --text-font-family: "Figtree", sans-serif;
 
@@ -251,6 +251,10 @@ math-field::part(menu-toggle) {
 
 math-field::part(content) {
     padding: 0;
+}
+
+div.ML__keyboard {
+    background-color: transparent;
 }
 
 [data-button-select] {

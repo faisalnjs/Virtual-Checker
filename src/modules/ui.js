@@ -351,7 +351,7 @@ document.querySelectorAll("[data-button-select]").forEach(element => {
             button.setAttribute("aria-selected", false);
         }
         button.addEventListener("click", () => {
-            // Unselect all other elements
+            // Deselect all selected elements
             element.querySelectorAll(`button[aria-selected="true"]`).forEach(el => {
                 el.setAttribute("aria-selected", false);
             });
@@ -368,5 +368,16 @@ document.querySelectorAll("[data-button-select]").forEach(element => {
 export function getButtonSelectValue(element) {
     if (element.hasAttribute("data-button-select")) {
         return element.querySelector(`button[aria-selected="true"]`).getAttribute("data-value");
+    }
+}
+
+export function setButtonSelectValue(element, value) {
+    if (element.hasAttribute("data-button-select")) {
+        // Deselect all selected elements
+        element.querySelectorAll(`button[aria-selected="true"]`).forEach(el => {
+            el.setAttribute("aria-selected", false);
+        });
+        // Select target element
+        element.querySelector(`button[data-value="${value}"]`).setAttribute("aria-selected", true);
     }
 }

@@ -4,11 +4,12 @@ import storage from "/src/modules/storage.js";
 import { autocomplete } from "/src/symbols/symbols.js";
 import { timeToString } from "/src/modules/time.js";
 import { getPeriod } from "/src/periods/periods";
+import { convertLatexToAsciiMath } from "mathlive";
 
 const questionInput = document.getElementById("question-input");
 const answerInput = document.getElementById("answer-input");
 
-let multipleChoice = "";
+let multipleChoice = null;
 
 // Initialization
 {
@@ -61,8 +62,15 @@ let multipleChoice = "";
 
 // Submit click
 document.getElementById("submit-button").addEventListener("click", () => {
+    const mode = ui.getButtonSelectValue(document.getElementById("answer-mode-selector"));
     const question = questionInput.value?.trim();
-    const answer = multipleChoice || answerInput.value?.trim();
+    const answer = (() => {
+        if (mode === "input") {
+            return multipleChoice || answerInput.value?.trim();
+        } else if (mode === "math") {
+            return convertLatexToAsciiMath(document.getElementById("math-input").value);
+        }
+    })();
     if (storage.get("code")) {
         if (question && answer) {
             // Check if code matches current period
@@ -97,7 +105,11 @@ document.getElementById("submit-button").addEventListener("click", () => {
     }
     function submit() {
         submitClick(storage.get("code"), question, answer);
-        storeClick(storage.get("code"), question, answer);
+        if (mode === "math") {
+            storeClick(storage.get("code"), question, document.getElementById("math-input").value, "latex");
+        } else {
+            storeClick(storage.get("code"), question, answer, "text");
+        }
         resetInputs();
         // Show submit confirmation
         ui.modeless(`<i class="bi bi-check-lg"></i>`, "Submitted!");
@@ -116,10 +128,13 @@ answerInput.addEventListener("input", e => {
 function resetInputs() {
     questionInput.value = "";
     answerInput.value = "";
-    answerMode("input");
-    multipleChoice = "";
+    if (multipleChoice) {
+        answerMode("input");
+    }
+    multipleChoice = null;
     questionInput.focus();
     autocomplete.update();
+    document.getElementById("math-input").value = "";
 }
 
 // Submit to Google Forms
@@ -205,6 +220,7 @@ document.querySelectorAll("[data-multiple-choice]").forEach(button => {
 <p>${descriptions[choice].join(", ")}</p>`;
         // Show multiple choice card
         answerMode("choice");
+        ui.setButtonSelectValue(document.getElementById("answer-mode-selector"), "input");
         multipleChoice = `CHOICE ${choice.toUpperCase()}`;
     });
 });
@@ -212,7 +228,7 @@ document.querySelectorAll("[data-multiple-choice]").forEach(button => {
 // Hide multiple choice card
 document.getElementById("remove-choice-button").addEventListener("click", () => {
     answerMode("input");
-    multipleChoice = "";
+    multipleChoice = null;
 });
 
 // Set answer mode
@@ -228,7 +244,7 @@ function answerMode(mode) {
 }
 
 // Store click to storage and history
-function storeClick(code, question, answer) {
+function storeClick(code, question, answer, type) {
     const history = storage.get("history") || [];
     const timestamp = Date.now();
     history.push({
@@ -236,6 +252,7 @@ function storeClick(code, question, answer) {
         "question": question,
         "answer": answer,
         "timestamp": timestamp,
+        "type": type,
     });
     storage.set("history", history);
     updateHistory();
@@ -253,21 +270,28 @@ function updateHistory() {
             feed.prepend(button);
             // Resubmit click
             button.addEventListener("click", () => {
-                const choice = item.answer.match(/^CHOICE ([A-E])$/);
                 questionInput.value = item.question;
-                if (!choice) {
-                    answerInput.value = item.answer;
-                    answerMode("input");
-                }
-                else {
-                    document.querySelector(`[data-multiple-choice="${choice[1].toLowerCase()}"]`).click();
-                }
+                const latex = item.type === "latex";
                 ui.view("");
-                questionInput.focus();
-                autocomplete.update();
+                if (latex) {
+                    answerMode("math");
+                    ui.setButtonSelectValue(document.getElementById("answer-mode-selector"), "math");
+                    const mf = document.getElementById("math-input");
+                    mf.value = item.answer;
+                } else {
+                    const choice = item.answer.match(/^CHOICE ([A-E])$/);
+                    if (!choice) {
+                        answerInput.value = item.answer;
+                        answerMode("input");
+                    }
+                    else {
+                        document.querySelector(`[data-multiple-choice="${choice[1].toLowerCase()}"]`).click();
+                    }
+                    questionInput.focus();
+                    autocomplete.update();
+                }
             });
         });
-        // feed.prepend(new ui.Element("p", "Click to resubmit").element);
     }
     else {
         feed.innerHTML = "<p>Submitted clicks will show up here!</p>";
