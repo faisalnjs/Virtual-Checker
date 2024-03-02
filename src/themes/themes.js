@@ -75,8 +75,9 @@ const defaultTheme = {
     "accent-text-color": "#ffffff",
     "error-color": "#fa8796",
 };
+Object.freeze(defaultTheme);
 
-const customTheme = storage.get("custom-theme") || defaultTheme;
+const customTheme = Object.assign({}, storage.get("custom-theme") || defaultTheme);
 
 updateEditorFields();
 updateEditorPreview();
