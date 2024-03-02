@@ -12,8 +12,6 @@
     "type": "git",
     "url": "git+https://github.com/khui0/virtual-clicker.git"
   },
-  "author": "",
-  "license": "ISC",
   "bugs": {
     "url": "https://github.com/khui0/virtual-clicker/issues"
   },
@@ -24,7 +22,6 @@
     "vite-plugin-webfont-dl": "^3.7.6"
   },
   "dependencies": {
-    "bootstrap-icons": "^1.11.3",
-    "remixicon": "^3.5.0"
+    "bootstrap-icons": "^1.11.3"
   }
 }
