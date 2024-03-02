@@ -29,7 +29,7 @@ export function modal(options) {
     // Append dialog element to DOM
     document.body.append(dialog);
     // Show modal
-    show(dialog, options.title, options.buttons, options.blur);
+    show(dialog, options.title, null, options.buttons, options.blur);
     // Remove dialog element on close
     dialog.addEventListener("close", () => {
         dialog.remove();
@@ -37,7 +37,7 @@ export function modal(options) {
     return dialog;
 }
 
-export function show(dialog, title, buttons, blur, effects = true) {
+export function show(dialog, title, buttons, actions, blur, effects = true) {
     // Create modal menu bar
     const menu = dialog.querySelector("[data-modal-menu]") || (() => {
         const div = document.createElement("div");
@@ -64,6 +64,26 @@ export function show(dialog, title, buttons, blur, effects = true) {
         menu.append(container);
         // Populate buttons
         buttons.forEach(button => {
+            container.append(
+                new Element("button", button.text, {
+                    click: () => {
+                        button.close && close();
+                        button.onclick && button.onclick();
+                    },
+                }, button.class).element
+            );
+        });
+    }
+
+    // Remove existing actions
+    menu.querySelector("[data-modal-actions]")?.remove();
+    // Create modal buttons
+    if (actions?.length > 0) {
+        const container = document.createElement("div");
+        container.setAttribute("data-modal-actions", "");
+        dialog.append(container);
+        // Populate buttons
+        actions.forEach(button => {
             container.append(
                 new Element("button", button.text, {
                     click: () => {

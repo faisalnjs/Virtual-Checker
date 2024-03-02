@@ -37,6 +37,17 @@ div[data-modal-buttons] {
     gap: 0.25rem;
 }
 
+div[data-modal-actions] {
+    display: flex;
+    flex-direction: row;
+    gap: 0.25rem;
+}
+
+div[data-modal-actions]>button {
+    flex: 1;
+    margin-top: 0.5rem;
+}
+
 dialog button[data-modal-view]:not(.icon) {
     text-align: unset;
 }
