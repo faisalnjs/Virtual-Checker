@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 import "./reset.css";
 import "./layout.css";
 import "./design.css";
@@ -11,6 +12,14 @@ import "/src/keybinds/keybinds.js";
 import "/src/festive/festive.js";
 
 import storage from "/src/modules/storage.js";
+
+import "/node_modules/mathlive/dist/mathlive-fonts.css";
+import { convertLatexToAsciiMath } from "mathlive";
+
+document.getElementById("latex-input").addEventListener("input", e => {
+    const el = e.target;
+    console.log(convertLatexToAsciiMath(el.value));
+});
 
 updateVersionString();
 function updateVersionString() {

@@ -222,3 +222,24 @@ button[data-theme] {
     text-transform: uppercase;
     line-height: 1;
 }
+
+math-field {
+    padding: 0.375em 0.5em;
+    border: none;
+    border-radius: 0.5rem;
+    background-color: var(--surface-color);
+    font-size: 1.25em;
+    cursor: text;
+}
+
+math-field::part(virtual-keyboard-toggle) {
+    display: none;
+}
+
+math-field::part(menu-toggle) {
+    display: none;
+}
+
+math-field::part(content) {
+    padding: 0;
+}
