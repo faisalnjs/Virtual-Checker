@@ -12,12 +12,11 @@ import "/src/festive/festive.js";
 
 import storage from "/src/modules/storage.js";
 
-const VERSION = "3.7.0";
 updateVersionString();
 function updateVersionString() {
     document.querySelectorAll("span.version").forEach(element => {
         const DEVELOPER_MODE = storage.get("developer");
-        element.innerHTML = VERSION + (DEVELOPER_MODE ? " (DEVELOPER)" : "");
+        element.innerHTML = __APP_VERSION__ + (DEVELOPER_MODE ? " (DEVELOPER)" : "");
     });
 }
 document.querySelectorAll("span.hostname").forEach(element => {
