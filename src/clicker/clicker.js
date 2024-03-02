@@ -350,8 +350,15 @@ if (storage.get("developer")) {
     );
 }
 
+const answerLabel = document.querySelector(`label[for="answer-input"]`);
+
 // Select answer mode
 document.getElementById("answer-mode-selector").addEventListener("input", e => {
     const mode = e.detail;
     answerMode(mode);
+    if (mode === "input") {
+        answerLabel.setAttribute("for", "answer-input");
+    } else if (mode === "math") {
+        answerLabel.setAttribute("for", "math-input");
+    }
 });
