@@ -325,3 +325,9 @@ if (storage.get("developer")) {
         }).element
     );
 }
+
+// Select answer mode
+document.getElementById("answer-mode-selector").addEventListener("input", e => {
+    const mode = e.detail;
+    answerMode(mode);
+});

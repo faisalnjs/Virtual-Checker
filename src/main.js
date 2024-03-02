@@ -13,13 +13,7 @@ import "/src/festive/festive.js";
 
 import storage from "/src/modules/storage.js";
 
-import "/node_modules/mathlive/dist/mathlive-fonts.css";
-import { convertLatexToAsciiMath } from "mathlive";
-
-document.getElementById("latex-input").addEventListener("input", e => {
-    const el = e.target;
-    console.log(convertLatexToAsciiMath(el.value));
-});
+import "/src/modules/mathlive.js";
 
 updateVersionString();
 function updateVersionString() {

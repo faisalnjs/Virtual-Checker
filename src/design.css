@@ -14,7 +14,6 @@
 }
 
 :focus-visible {
-    z-index: 1;
     outline: none;
     box-shadow: 0 0 0 0.125rem var(--accent-color);
     transition: box-shadow 100ms ease;
@@ -224,12 +223,22 @@ button[data-theme] {
 }
 
 math-field {
+    --caret-color: var(--accent-color);
+    --contains-highlight-background-color: var(--background-color);
+    --text-font-family: "Figtree", sans-serif;
+
     padding: 0.375em 0.5em;
     border: none;
     border-radius: 0.5rem;
     background-color: var(--surface-color);
     font-size: 1.25em;
     cursor: text;
+}
+
+math-field:focus {
+    outline: none;
+    box-shadow: 0 0 0 0.125rem var(--accent-color);
+    transition: box-shadow 100ms ease;
 }
 
 math-field::part(virtual-keyboard-toggle) {

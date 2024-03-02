@@ -80,6 +80,10 @@ div.spacer {
     background-color: var(--surface-color);
 }
 
+[data-answer-mode="math"]>math-field {
+    width: 100%;
+}
+
 #symbols-grid {
     display: grid;
     grid-template-columns: repeat(6, 1fr);

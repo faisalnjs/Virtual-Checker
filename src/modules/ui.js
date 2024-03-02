@@ -359,7 +359,7 @@ document.querySelectorAll("[data-button-select]").forEach(element => {
             button.setAttribute("aria-selected", true);
             // Dispatch event
             const value = button.getAttribute("data-value");
-            const event = new CustomEvent("input", { value: value });
+            const event = new CustomEvent("input", { detail: value });
             element.dispatchEvent(event);
         });
     });
