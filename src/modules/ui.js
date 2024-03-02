@@ -344,3 +344,29 @@ document.querySelectorAll("[data-color-input]").forEach(element => {
         colorPreview.style.backgroundColor = colorPicker.value;
     }
 });
+
+document.querySelectorAll("[data-button-select]").forEach(element => {
+    element.querySelectorAll("button").forEach(button => {
+        if (!button.hasAttribute("aria-selected")) {
+            button.setAttribute("aria-selected", false);
+        }
+        button.addEventListener("click", () => {
+            // Unselect all other elements
+            element.querySelectorAll(`button[aria-selected="true"]`).forEach(el => {
+                el.setAttribute("aria-selected", false);
+            });
+            // Select target element
+            button.setAttribute("aria-selected", true);
+            // Dispatch event
+            const value = button.getAttribute("data-value");
+            const event = new CustomEvent("input", { value: value });
+            element.dispatchEvent(event);
+        });
+    });
+});
+
+export function getButtonSelectValue(element) {
+    if (element.hasAttribute("data-button-select")) {
+        return element.querySelector(`button[aria-selected="true"]`).getAttribute("data-value");
+    }
+}

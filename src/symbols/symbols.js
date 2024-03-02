@@ -4,7 +4,7 @@ import symbols from "./symbols.json";
 class Autocomplete {
     #start = 0;
     #end = 0;
-    #query = ""
+    #query = "";
 
     constructor(input, suggestion) {
         this.input = input;

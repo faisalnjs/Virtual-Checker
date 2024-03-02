@@ -26,6 +26,10 @@
         <label for="question-input">Question</label>
         <input type="text" autocomplete="off" id="question-input">
         <label for="answer-input">Answer</label>
+        <div id="answer-mode-selector" data-button-select>
+            <button aria-selected="true" data-value="text">Text</button>
+            <button aria-selected="false" data-value="latex">LaTeX</button>
+        </div>
         <div id="answer-container" data-answer-mode="input">
             <textarea rows="5" autocomplete="off" id="answer-input"></textarea>
             <div class="row">
@@ -48,7 +52,9 @@
             <div></div>
             <button class="icon" id="remove-choice-button"><i class="bi bi-x-lg"></i></button>
         </div>
-        <math-field id="latex-input"></math-field>
+        <div data-answer-mode="latex">
+            <math-field id="latex-input"></math-field>
+        </div>
         <p id="answer-suggestion"></p>
         <div class="button-grid">
             <button data-multiple-choice="a">A</button>

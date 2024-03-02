@@ -243,3 +243,23 @@ math-field::part(menu-toggle) {
 math-field::part(content) {
     padding: 0;
 }
+
+[data-button-select] {
+    display: flex;
+    flex-direction: row;
+    gap: 0.125rem;
+    width: fit-content;
+    padding: 0.25rem;
+    background-color: var(--surface-color);
+    border-radius: 0.5rem;
+}
+
+[data-button-select]>button {
+    height: 1.75em;
+    border-radius: 0.25rem;
+}
+
+[data-button-select]>button[aria-selected="true"] {
+    color: var(--accent-text-color);
+    background-color: var(--accent-color);
+}

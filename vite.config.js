@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 import webfontDownload from "vite-plugin-webfont-dl";
 
 export default {

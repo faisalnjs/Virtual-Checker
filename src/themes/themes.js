@@ -29,7 +29,7 @@ enableTransitions();
 document.getElementById("theme-selector").addEventListener("input", e => {
     const value = e.target.value;
     document.getElementById("theme-preview").setAttribute("data-theme", value);
-})
+});
 
 document.getElementById("theme-apply").addEventListener("click", () => {
     const value = document.getElementById("theme-selector").value;
@@ -40,7 +40,7 @@ document.getElementById("theme-apply").addEventListener("click", () => {
     storage.set("theme", value);
     // Update developer theme input
     document.getElementById("theme-debug").value = value;
-})
+});
 
 document.getElementById("theme-reset").addEventListener("click", resetTheme);
 
