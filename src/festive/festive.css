@@ -19,7 +19,7 @@
     --surface-color: var(--red);
 }
 
-[data-theme="festive-2023"] :is(button, input, textarea, dialog, [data-answer-mode="choice"]) {
+[data-theme="festive-2023"] :is(button, input, textarea, select, dialog, [data-answer-mode="choice"]) {
     border: 0.125rem solid #242424;
 }
 
