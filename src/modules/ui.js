@@ -273,14 +273,18 @@ export class Element {
     }
 }
 
-// Close modal if user clicks outside of it
-document.addEventListener("click", e => {
-    const dialog = document.querySelector("dialog[open]");
-    if (dialog?.hasAttribute("data-open") && !dialog?.contains(e.target)) {
-        const event = new Event("triggerclose");
-        dialog.dispatchEvent(event);
-    }
-});
+// Click outside modal
+(() => {
+    document.addEventListener("pointerdown", e => {
+        const dialog = document.querySelector("dialog[open]");
+        if (dialog?.hasAttribute("data-open") && !dialog?.contains(e.target)) {
+            document.addEventListener("pointerup", () => {
+                const event = new Event("triggerclose");
+                dialog.dispatchEvent(event);
+            }, { once: true });
+        }
+    });
+})();
 
 document.querySelectorAll("[data-modal-view]").forEach(element => {
     element.addEventListener("click", () => {
