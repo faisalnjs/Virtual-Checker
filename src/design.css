@@ -247,7 +247,7 @@ math-field.attention {
 }
 
 math-field::part(virtual-keyboard-toggle) {
-    display: none;
+    color: var(--text-color);
 }
 
 math-field::part(menu-toggle) {
