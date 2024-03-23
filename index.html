@@ -23,16 +23,16 @@
         <h1>Virtual Clicker</h1>
     </div>
     <div id="clicker">
-        <h1><span class="code">000</span></h1>
+        <h1><span class="code" data-modal-view="settings/code">000</span></h1>
         <label for="question-input">Question</label>
-        <input type="text" autocomplete="off" id="question-input" class="space">
-        <div id="answer-label-container">
-            <label for="answer-input">Answer</label>
+        <div class="space" id="question-container">
+            <input type="text" autocomplete="off" id="question-input">
             <div id="answer-mode-selector" data-button-select>
                 <button aria-selected="true" data-value="input">Text</button>
                 <button aria-selected="false" data-value="math">Math</button>
             </div>
         </div>
+        <label for="answer-input">Answer</label>
         <div class="space">
             <div id="answer-container" data-answer-mode="input">
                 <textarea rows="5" autocomplete="off" id="answer-input"></textarea>

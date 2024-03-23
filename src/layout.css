@@ -61,16 +61,16 @@ div.spacer {
     width: min(100%, 800px);
 }
 
-#answer-label-container {
+#question-container {
     display: flex;
     flex-direction: row;
-    align-items: flex-end;
-    justify-content: space-between;
-    background-color: transparent;
+    gap: 0.25rem;
+    flex-wrap: wrap;
+    justify-content: center;
 }
 
-#answer-mode-selector {
-    margin: 0.25rem 0;
+#question-input {
+    flex: 1;
 }
 
 #answer-container {
@@ -167,6 +167,7 @@ div.spacer {
 label {
     display: flex;
     flex-direction: column;
+    background-color: transparent;
 }
 
 #theme-editor {

@@ -263,10 +263,9 @@ div.ML__keyboard {
 }
 
 [data-button-select] {
-    display: flex;
-    flex-direction: row;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
     gap: 0.125rem;
-    width: fit-content;
     padding: 0.25rem;
     background-color: var(--surface-color);
     border-radius: 0.5rem;
