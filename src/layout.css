@@ -1,3 +1,7 @@
+body>* {
+    flex-shrink: 0;
+}
+
 div.spacer {
     height: 1.5rem;
 }
@@ -110,6 +114,15 @@ div.spacer {
 #answer-suggestion {
     height: 1.5rem;
     background-color: transparent;
+}
+
+#controls-container {
+    display: flex;
+    flex-direction: row;
+    background-color: var(--surface-color);
+    width: fit-content;
+    overflow: hidden;
+    align-self: center;
 }
 
 #symbols-grid {

@@ -15,7 +15,7 @@
 
 :focus-visible {
     outline: none;
-    box-shadow: 0 0 0 0.125rem var(--accent-color);
+    box-shadow: 0 0 0 0.125rem var(--accent-color) inset;
     transition: box-shadow 100ms ease;
 }
 
@@ -44,7 +44,7 @@
 }
 
 body {
-    height: 100%;
+    min-height: 100%;
     padding: 1rem;
     color: var(--text-color);
     background-color: var(--background-color);
@@ -87,12 +87,12 @@ button.icon {
     border-radius: 50%;
 }
 
-i.bi {
-    background-color: transparent;
+.pill {
+    border-radius: 100vh;
 }
 
-button.pill {
-    border-radius: 100vh;
+i.bi {
+    background-color: transparent;
 }
 
 input,
