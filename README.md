@@ -6,4 +6,4 @@ Room 233's student response system
 
 ```npm run build```
 
-Host the files that are generated in ```/dist```
+Serve the files that are generated in ```/dist```
