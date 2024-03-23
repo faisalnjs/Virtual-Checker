@@ -254,6 +254,14 @@ function answerMode(mode) {
             item.style.display = "none";
         }
     });
+
+    // Animate container
+    const container = document.getElementById("answer-container");
+    const target = document.querySelector(`[data-answer-mode="${mode}"]`);
+    const toHeight = target.getBoundingClientRect().height;
+    ui.animate(container, undefined, {
+        height: toHeight + "px",
+    }, 500);
 }
 
 // Store click to storage and history

@@ -73,21 +73,10 @@ div.spacer {
     flex: 1;
 }
 
-#answer-container {
+[data-answer-mode="input"] {
     display: flex;
     flex-direction: column-reverse;
     gap: 0.25rem;
-}
-
-#insert-row {
-    flex: 1;
-    overflow: hidden;
-    height: 2.25em;
-}
-
-#answer-suggestion {
-    height: 1.5rem;
-    background-color: transparent;
 }
 
 [data-answer-mode="choice"] {
@@ -110,6 +99,17 @@ div.spacer {
 
 [data-answer-mode="math"]>math-field {
     width: 100%;
+}
+
+#insert-row {
+    flex: 1;
+    overflow: hidden;
+    height: 2.25em;
+}
+
+#answer-suggestion {
+    height: 1.5rem;
+    background-color: transparent;
 }
 
 #symbols-grid {
