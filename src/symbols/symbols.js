@@ -112,6 +112,12 @@ uniqueSymbols.forEach(symbol => {
     ui.addTooltip(button, keys.join(", "));
 });
 
+// Fill missing space
+const emptySpaces = 6 - uniqueSymbols.length % 6;
+for (let i = 0; i < emptySpaces; i++) {
+    document.querySelector("#symbols-grid").append(document.createElement("div"));
+}
+
 // Insert symbol at cursor position
 function insert(symbol) {
     answerInput.setRangeText(symbol, answerInput.selectionStart, answerInput.selectionEnd, "end");

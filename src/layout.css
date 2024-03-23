@@ -25,6 +25,10 @@ div.spacer {
     gap: 0.25rem;
 }
 
+.space+.space {
+    margin-top: 0.25rem;
+}
+
 .center {
     display: flex;
     align-items: center;
@@ -51,12 +55,22 @@ div.spacer {
 #clicker {
     flex: 1;
     align-self: center;
+    display: flex;
+    flex-direction: column;
     justify-content: center;
     width: min(100%, 800px);
 }
 
+#answer-label-container {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-end;
+    justify-content: space-between;
+    background-color: transparent;
+}
+
 #answer-mode-selector {
-    align-self: center;
+    margin: 0.25rem 0;
 }
 
 #answer-container {
@@ -73,6 +87,7 @@ div.spacer {
 
 #answer-suggestion {
     height: 1.5rem;
+    background-color: transparent;
 }
 
 [data-answer-mode="choice"] {
@@ -100,7 +115,24 @@ div.spacer {
 #symbols-grid {
     display: grid;
     grid-template-columns: repeat(6, 1fr);
-    gap: 0.25rem;
+    gap: 0.125rem;
+    background-color: var(--surface-color);
+    border-radius: 0.5rem;
+    overflow: hidden;
+}
+
+#symbols-grid>button {
+    border-radius: 0;
+    font-size: 1.125em;
+    background-color: var(--background-color);
+}
+
+#symbols-grid>button:hover {
+    background-color: var(--accent-color);
+}
+
+#symbols-grid>div {
+    background-color: var(--background-color);
 }
 
 #theme-grid {

@@ -22,49 +22,53 @@
         </svg>
         <h1>Virtual Clicker</h1>
     </div>
-    <div class="col" id="clicker">
+    <div id="clicker">
         <h1><span class="code">000</span></h1>
         <label for="question-input">Question</label>
-        <input type="text" autocomplete="off" id="question-input">
-        <label for="answer-input">Answer</label>
-        <div id="answer-mode-selector" data-button-select>
-            <button aria-selected="true" data-value="input">Text</button>
-            <button aria-selected="false" data-value="math">Math</button>
-        </div>
-        <div id="answer-container" data-answer-mode="input">
-            <textarea rows="5" autocomplete="off" id="answer-input"></textarea>
-            <div class="row">
-                <div class="button-grid" id="insert-row">
-                    <button data-insert-symbol="0"></button>
-                    <button data-insert-symbol="1"></button>
-                    <button data-insert-symbol="2"></button>
-                    <button data-insert-symbol="3"></button>
-                    <button data-insert-symbol="4"></button>
-                    <button data-insert-symbol="5"></button>
-                    <button data-insert-symbol="6"></button>
-                    <button data-insert-symbol="7"></button>
-                    <button data-insert-symbol="8"></button>
-                    <button data-insert-symbol="9"></button>
-                </div>
-                <button class="icon" data-modal-view="symbols"><i class="bi bi-three-dots"></i></button>
+        <input type="text" autocomplete="off" id="question-input" class="space">
+        <div id="answer-label-container">
+            <label for="answer-input">Answer</label>
+            <div id="answer-mode-selector" data-button-select>
+                <button aria-selected="true" data-value="input">Text</button>
+                <button aria-selected="false" data-value="math">Math</button>
             </div>
         </div>
-        <div data-answer-mode="choice">
-            <div></div>
-            <button class="icon" id="remove-choice-button"><i class="bi bi-x-lg"></i></button>
+        <div class="space">
+            <div id="answer-container" data-answer-mode="input">
+                <textarea rows="5" autocomplete="off" id="answer-input"></textarea>
+                <div class="row">
+                    <div class="button-grid" id="insert-row">
+                        <button data-insert-symbol="0"></button>
+                        <button data-insert-symbol="1"></button>
+                        <button data-insert-symbol="2"></button>
+                        <button data-insert-symbol="3"></button>
+                        <button data-insert-symbol="4"></button>
+                        <button data-insert-symbol="5"></button>
+                        <button data-insert-symbol="6"></button>
+                        <button data-insert-symbol="7"></button>
+                        <button data-insert-symbol="8"></button>
+                        <button data-insert-symbol="9"></button>
+                    </div>
+                    <button class="icon" data-modal-view="symbols"><i class="bi bi-three-dots"></i></button>
+                </div>
+            </div>
+            <div data-answer-mode="choice">
+                <div></div>
+                <button class="icon" id="remove-choice-button"><i class="bi bi-x-lg"></i></button>
+            </div>
+            <div data-answer-mode="math">
+                <math-field id="math-input"></math-field>
+            </div>
         </div>
-        <div data-answer-mode="math">
-            <math-field id="math-input"></math-field>
-        </div>
-        <p id="answer-suggestion"></p>
-        <div class="button-grid">
+        <p id="answer-suggestion" class="space"></p>
+        <div class="button-grid space">
             <button data-multiple-choice="a">A</button>
             <button data-multiple-choice="b">B</button>
             <button data-multiple-choice="c">C</button>
             <button data-multiple-choice="d">D</button>
             <button data-multiple-choice="e">E</button>
         </div>
-        <button class="pill" id="submit-button">Submit</button>
+        <button class="pill space" id="submit-button">Submit</button>
     </div>
     <div class="row">
         <button data-modal-view="settings/code"><span class="code">000</span></button>
