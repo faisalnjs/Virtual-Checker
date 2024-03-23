@@ -128,6 +128,70 @@
     --error-color: #f76161;
 }
 
+[data-theme="catppuccin-latte"] {
+    color-scheme: light;
+    /* Text */
+    --text-color: #4c4f69;
+    /* Base */
+    --background-color: #eff1f5;
+    /* Surface0 */
+    --surface-color: #ccd0da;
+    /* Rosewater */
+    --accent-color: #dc8a78;
+    /* Text */
+    --accent-text-color: #4c4f69;
+    /* Red */
+    --error-color: #d20f39;
+}
+
+[data-theme="catppuccin-frappe"] {
+    color-scheme: dark;
+    /* Text */
+    --text-color: #c6d0f5;
+    /* Base */
+    --background-color: #303446;
+    /* Surface0 */
+    --surface-color: #414559;
+    /* Overlay0 */
+    --accent-color: #737994;
+    /* Text */
+    --accent-text-color: #c6d0f5;
+    /* Red */
+    --error-color: #e78284;
+}
+
+[data-theme="catppuccin-macchiato"] {
+    color-scheme: dark;
+    /* Text */
+    --text-color: #cad3f5;
+    /* Base */
+    --background-color: #24273a;
+    /* Surface0 */
+    --surface-color: #363a4f;
+    /* Overlay0 */
+    --accent-color: #6e738d;
+    /* Text */
+    --accent-text-color: #cad3f5;
+    /* Red */
+    --error-color: #ed8796;
+}
+
+[data-theme="catppuccin-mocha"] {
+    color-scheme: dark;
+    /* Text */
+    --text-color: #cdd6f4;
+    /* Base */
+    --background-color: #1e1e2e;
+    /* Surface0 */
+    --surface-color: #313244;
+    /* Overlay0 */
+    --accent-color: #6c7086;
+    /* Text */
+    --accent-text-color: #cdd6f4;
+    /* Red */
+    --error-color: #f38ba8;
+}
+
 /* Seasonal */
 
 [data-theme="halloween-2023"] {
