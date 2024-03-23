@@ -5,10 +5,10 @@
 
 :root {
     color-scheme: light;
-    --text-color: #242424;
+    --text-color: #2c2c2c;
     --background-color: #fafafa;
     --surface-color: #e7e7e7;
-    --accent-color: #242424;
+    --accent-color: #424242;
     --accent-text-color: #ffffff;
     --error-color: #fa8796;
 }
