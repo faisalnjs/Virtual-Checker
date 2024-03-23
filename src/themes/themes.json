@@ -37,5 +37,21 @@
     ],
     [
         "gryffindor"
+    ],
+    [
+        "catppuccin-latte",
+        "Catppuccin Latte"
+    ],
+    [
+        "catppuccin-frappe",
+        "Catppuccin Frappé"
+    ],
+    [
+        "catppuccin-macchiato",
+        "Catppuccin Macchiato"
+    ],
+    [
+        "catppuccin-mocha",
+        "Catppuccin Mocha"
     ]
 ]

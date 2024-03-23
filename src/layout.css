@@ -1,3 +1,7 @@
+body>* {
+    flex-shrink: 0;
+}
+
 div.spacer {
     height: 1.5rem;
 }
@@ -23,6 +27,10 @@ div.spacer {
     display: flex;
     flex-direction: column;
     gap: 0.25rem;
+}
+
+.space+.space {
+    margin-top: 0.25rem;
 }
 
 .center {
@@ -51,28 +59,28 @@ div.spacer {
 #clicker {
     flex: 1;
     align-self: center;
+    display: flex;
+    flex-direction: column;
     justify-content: center;
     width: min(100%, 800px);
 }
 
-#answer-mode-selector {
-    align-self: center;
+#question-container {
+    display: flex;
+    flex-direction: row;
+    gap: 0.25rem;
+    flex-wrap: wrap;
+    justify-content: center;
 }
 
-#answer-container {
+#question-input {
+    flex: 1;
+}
+
+[data-answer-mode="input"] {
     display: flex;
     flex-direction: column-reverse;
     gap: 0.25rem;
-}
-
-#insert-row {
-    flex: 1;
-    overflow: hidden;
-    height: 2.25em;
-}
-
-#answer-suggestion {
-    height: 1.5rem;
 }
 
 [data-answer-mode="choice"] {
@@ -87,14 +95,57 @@ div.spacer {
     background-color: var(--surface-color);
 }
 
+[data-answer-mode="math"] {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
 [data-answer-mode="math"]>math-field {
     width: 100%;
+}
+
+#insert-row {
+    flex: 1;
+    overflow: hidden;
+    height: 2.25em;
+}
+
+#answer-suggestion {
+    height: 1.5rem;
+    background-color: transparent;
+}
+
+#controls-container {
+    display: flex;
+    flex-direction: row;
+    background-color: var(--surface-color);
+    width: fit-content;
+    overflow: hidden;
+    align-self: center;
 }
 
 #symbols-grid {
     display: grid;
     grid-template-columns: repeat(6, 1fr);
-    gap: 0.25rem;
+    gap: 0.125rem;
+    background-color: var(--surface-color);
+    border-radius: 0.5rem;
+    overflow: hidden;
+}
+
+#symbols-grid>button {
+    border-radius: 0;
+    font-size: 1.125em;
+    background-color: var(--background-color);
+}
+
+#symbols-grid>button:hover {
+    background-color: var(--accent-color);
+}
+
+#symbols-grid>div {
+    background-color: var(--background-color);
 }
 
 #theme-grid {
@@ -129,6 +180,7 @@ div.spacer {
 label {
     display: flex;
     flex-direction: column;
+    background-color: transparent;
 }
 
 #theme-editor {

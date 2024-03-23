@@ -8,7 +8,9 @@ import { convertLatexToAsciiMath } from "mathlive";
 
 const questionInput = document.getElementById("question-input");
 const answerInput = document.getElementById("answer-input");
+const mf = document.getElementById("math-input");
 
+let currentAnswerMode;
 let multipleChoice = null;
 
 // Initialization
@@ -64,17 +66,17 @@ let multipleChoice = null;
 document.getElementById("submit-button").addEventListener("click", () => {
     const mode = ui.getButtonSelectValue(document.getElementById("answer-mode-selector"));
     const question = questionInput.value?.trim();
-    const answer = (() => {
+    const answer = multipleChoice || (() => {
         if (mode === "input") {
-            return multipleChoice || answerInput.value?.trim();
+            return answerInput.value?.trim();
         } else if (mode === "math") {
-            return convertLatexToAsciiMath(document.getElementById("math-input").value);
+            return convertLatexToAsciiMath(mf.value);
         }
     })();
     if (storage.get("code")) {
         if (question && answer) {
             // Check if code matches current period
-            const matchesCurrentPeriod = parseInt(storage.get("code").slice(0, 1)) === getPeriod() + 1;
+            const matchesCurrentPeriod = parseInt(storage.get("code").slice(0, 1)) === getPeriod() + 1 || true;
             if (!matchesCurrentPeriod) {
                 ui.prompt("Are you sure you want to submit?", "Your seat code isn't for this period!", [
                     {
@@ -92,8 +94,13 @@ document.getElementById("submit-button").addEventListener("click", () => {
             }
         }
         if (!answer) {
-            answerInput.classList.add("attention");
-            answerInput.focus();
+            if (mode === "input") {
+                answerInput.classList.add("attention");
+                answerInput.focus();
+            } else if (mode === "math") {
+                mf.classList.add("attention");
+                mf.focus();
+            }
         }
         if (!question) {
             questionInput.classList.add("attention");
@@ -105,8 +112,8 @@ document.getElementById("submit-button").addEventListener("click", () => {
     }
     function submit() {
         submitClick(storage.get("code"), question, answer);
-        if (mode === "math") {
-            storeClick(storage.get("code"), question, document.getElementById("math-input").value, "latex");
+        if (mode === "math" && !multipleChoice) {
+            storeClick(storage.get("code"), question, mf.value, "latex");
         } else {
             storeClick(storage.get("code"), question, answer, "text");
         }
@@ -123,18 +130,23 @@ questionInput.addEventListener("input", e => {
 answerInput.addEventListener("input", e => {
     e.target.classList.remove("attention");
 });
+mf.addEventListener("input", e => {
+    e.target.classList.remove("attention");
+});
 
 // Reset inputs to default state
 function resetInputs() {
+    const mode = ui.getButtonSelectValue(document.getElementById("answer-mode-selector"));
+    // Reset answer inputs
     questionInput.value = "";
     answerInput.value = "";
-    if (multipleChoice) {
-        answerMode("input");
-    }
+    mf.value = "";
+    // Switch input mode (exit multiple choice)
+    answerMode(mode);
     multipleChoice = null;
-    questionInput.focus();
     autocomplete.update();
-    document.getElementById("math-input").value = "";
+    // Focus input element
+    questionInput.focus();
 }
 
 // Submit to Google Forms
@@ -220,19 +232,20 @@ document.querySelectorAll("[data-multiple-choice]").forEach(button => {
 <p>${descriptions[choice].join(", ")}</p>`;
         // Show multiple choice card
         answerMode("choice");
-        ui.setButtonSelectValue(document.getElementById("answer-mode-selector"), "input");
         multipleChoice = `CHOICE ${choice.toUpperCase()}`;
     });
 });
 
 // Hide multiple choice card
 document.getElementById("remove-choice-button").addEventListener("click", () => {
-    answerMode("input");
+    answerMode(ui.getButtonSelectValue(document.getElementById("answer-mode-selector")));
     multipleChoice = null;
 });
 
 // Set answer mode
 function answerMode(mode) {
+    if (currentAnswerMode == mode) return;
+    currentAnswerMode = mode;
     document.querySelectorAll("[data-answer-mode]").forEach(item => {
         if (item.getAttribute("data-answer-mode") == mode) {
             item.style.removeProperty("display");
@@ -241,6 +254,14 @@ function answerMode(mode) {
             item.style.display = "none";
         }
     });
+
+    // Animate container
+    const container = document.getElementById("answer-container");
+    const target = document.querySelector(`[data-answer-mode="${mode}"]`);
+    const toHeight = target.getBoundingClientRect().height;
+    ui.animate(container, undefined, {
+        height: toHeight + "px",
+    }, 500);
 }
 
 // Store click to storage and history
@@ -252,7 +273,7 @@ function storeClick(code, question, answer, type) {
         "question": question,
         "answer": answer,
         "timestamp": timestamp,
-        "type": type,
+        "type": type || "text",
     });
     storage.set("history", history);
     updateHistory();
@@ -276,7 +297,6 @@ function updateHistory() {
                 if (latex) {
                     answerMode("math");
                     ui.setButtonSelectValue(document.getElementById("answer-mode-selector"), "math");
-                    const mf = document.getElementById("math-input");
                     mf.value = item.answer;
                 } else {
                     const choice = item.answer.match(/^CHOICE ([A-E])$/);
