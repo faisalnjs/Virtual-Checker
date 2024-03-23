@@ -87,6 +87,12 @@ div.spacer {
     background-color: var(--surface-color);
 }
 
+[data-answer-mode="math"] {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
 [data-answer-mode="math"]>math-field {
     width: 100%;
 }
