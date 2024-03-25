@@ -237,7 +237,7 @@ math-field {
 
 math-field:focus {
     outline: none;
-    box-shadow: 0 0 0 0.125rem var(--accent-color);
+    box-shadow: 0 0 0 0.125rem var(--accent-color) inset;
     transition: box-shadow 100ms ease;
 }
 
@@ -248,6 +248,13 @@ math-field.attention {
 
 math-field::part(virtual-keyboard-toggle) {
     color: var(--text-color);
+    background-color: var(--surface-color);
+    transition: 100ms color var(--easing), 100ms background-color var(--easing);
+}
+
+math-field::part(virtual-keyboard-toggle):hover {
+    color: var(--accent-text-color);
+    background-color: var(--accent-color);
 }
 
 math-field::part(menu-toggle) {
