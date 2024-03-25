@@ -143,6 +143,10 @@ button[data-theme] {
     transition: box-shadow 100ms ease;
 }
 
+.virtual-clicker-logo {
+    color: var(--logo-color);
+}
+
 #code-input {
     font-size: 2.5em;
     text-align: center;
