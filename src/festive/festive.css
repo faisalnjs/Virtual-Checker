@@ -27,7 +27,7 @@
     height: 2.25rem;
     background: linear-gradient(-45deg, white 25%, var(--red) 25% 50%, white 50% 75%, var(--red) 75%);
     background-size: 2rem 2rem;
-    font: bold 16px "Segoe Script", "Poppins", sans-serif;
+    font: bold 16px "Segoe Script", "Figtree", sans-serif;
 }
 
 [data-theme="festive-2023"] #submit-button:is(:hover, :focus) {

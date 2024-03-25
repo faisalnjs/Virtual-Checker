@@ -128,7 +128,7 @@ kbd {
     padding: 0 0.25rem;
     border-radius: 0.25rem;
     background-color: var(--surface-color);
-    font: 14px "Poppins", sans-serif;
+    font: 14px "Figtree", sans-serif;
 }
 
 button[data-theme] {
@@ -139,7 +139,7 @@ button[data-theme] {
 }
 
 .attention {
-    box-shadow: 0 0 0 0.125rem var(--error-color);
+    box-shadow: 0 0 0 0.125rem var(--error-color) inset;
     transition: box-shadow 100ms ease;
 }
 
@@ -242,7 +242,7 @@ math-field:focus {
 }
 
 math-field.attention {
-    box-shadow: 0 0 0 0.125rem var(--error-color);
+    box-shadow: 0 0 0 0.125rem var(--error-color) inset;
     transition: box-shadow 100ms ease;
 }
 
@@ -279,4 +279,18 @@ div.ML__keyboard {
 [data-button-select]>button[aria-selected="true"] {
     color: var(--accent-text-color);
     background-color: var(--accent-color);
+}
+
+#answer-input {
+    background-color: transparent;
+}
+
+#answer-input:focus {
+    box-shadow: none;
+}
+
+#answer-textarea-container:has(#answer-input:focus) {
+    outline: none;
+    box-shadow: 0 0 0 0.125rem var(--accent-color) inset;
+    transition: box-shadow 100ms ease;
 }

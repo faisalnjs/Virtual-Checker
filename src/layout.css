@@ -29,8 +29,12 @@ div.spacer {
     gap: 0.25rem;
 }
 
-.space+.space {
+:is(.space, .extra-space)+.space {
     margin-top: 0.25rem;
+}
+
+:is(.space, .extra-space)+.extra-space {
+    margin-top: 1.5rem;
 }
 
 .center {
@@ -77,10 +81,41 @@ div.spacer {
     flex: 1;
 }
 
+#answer-container {
+    overflow: hidden;
+    border-radius: 0.5rem;
+}
+
 [data-answer-mode="input"] {
     display: flex;
     flex-direction: column-reverse;
     gap: 0.25rem;
+}
+
+#answer-textarea-container {
+    display: flex;
+    flex-direction: column;
+    background-color: var(--surface-color);
+    border-radius: 0.5rem;
+}
+
+#answer-input {
+    padding-bottom: 0;
+}
+
+#answer-suggestion {
+    height: 2em;
+    line-height: 2;
+    padding: 0 0.5rem;
+    background-color: transparent;
+    -webkit-user-select: none;
+    user-select: none;
+    cursor: text;
+}
+
+#answer-suggestion>kbd {
+    color: var(--accent-text-color);
+    background-color: var(--accent-color);
 }
 
 [data-answer-mode="choice"] {
@@ -109,11 +144,6 @@ div.spacer {
     flex: 1;
     overflow: hidden;
     height: 2.25em;
-}
-
-#answer-suggestion {
-    height: 1.5rem;
-    background-color: transparent;
 }
 
 #controls-container {

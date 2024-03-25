@@ -35,7 +35,10 @@
         <label for="answer-input">Answer</label>
         <div class="space" id="answer-container">
             <div data-answer-mode="input">
-                <textarea rows="5" autocomplete="off" id="answer-input"></textarea>
+                <div id="answer-textarea-container">
+                    <textarea rows="4" autocomplete="off" id="answer-input"></textarea>
+                    <p id="answer-suggestion"></p>
+                </div>
                 <div class="row">
                     <div class="button-grid" id="insert-row">
                         <button data-insert-symbol="0"></button>
@@ -60,8 +63,7 @@
                 <math-field id="math-input"></math-field>
             </div>
         </div>
-        <p id="answer-suggestion" class="space"></p>
-        <div class="button-grid space">
+        <div class="button-grid extra-space">
             <button data-multiple-choice="a">A</button>
             <button data-multiple-choice="b">B</button>
             <button data-multiple-choice="c">C</button>

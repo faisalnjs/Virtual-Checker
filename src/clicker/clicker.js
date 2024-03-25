@@ -60,6 +60,8 @@ let multipleChoice = null;
     }
     // Update history feed
     updateHistory();
+    // Focus answer input
+    document.getElementById("answer-suggestion").addEventListener("click", () => answerInput.focus());
 }
 
 // Submit click
