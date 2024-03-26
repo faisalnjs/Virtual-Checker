@@ -205,14 +205,14 @@
             <button data-reset="all">Reset All Settings</button>
         </div>
     </dialog>
-    <dialog data-modal-page="clear-data-fix" data-page-title="Settings may not save">
-        <p>VSCHSD has enabled a setting which clears site settings when you close your browser&mdash;resulting in
-            themes and history being reset each time</p>
-        <p>To fix this, add an exception for this site:</p>
+    <dialog data-modal-page="clear-data-fix" data-page-title="Settings May Not Save">
+        <p>VSCHSD administration enforces a setting which clears site settings when you close your
+            browser</p>
+        <p>Fix this by adding an exception for this site:</p>
         <ol>
-            <li>In a new tab, open "edge://settings/clearBrowsingDataOnClose"</li>
+            <li>In a new tab, open <code>edge://settings/clearBrowsingDataOnClose</code></li>
             <li>Click "Add" under "Cookies and other site data"</li>
-            <li>Add "<span class="hostname"></span>"</li>
+            <li>Add <code><span class="hostname"></span></code></li>
         </ol>
     </dialog>
     <script src="src/main.js" type="module"></script>
