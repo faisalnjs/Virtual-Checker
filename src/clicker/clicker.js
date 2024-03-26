@@ -138,6 +138,13 @@ mf.addEventListener("input", e => {
     e.target.classList.remove("attention");
 });
 
+// Prevent MathLive default behavior
+mf.addEventListener("keydown", e => {
+    if (e.ctrlKey && e.key == "Enter") {
+        e.preventDefault();
+    }
+});
+
 // Reset inputs to default state
 function resetInputs() {
     const mode = ui.getButtonSelectValue(document.getElementById("answer-mode-selector"));
