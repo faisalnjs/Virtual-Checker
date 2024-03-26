@@ -19,7 +19,7 @@ updateVersionString();
 function updateVersionString() {
     document.querySelectorAll("span.version").forEach(element => {
         const DEVELOPER_MODE = storage.get("developer");
-        element.innerHTML = __APP_VERSION__ + (DEVELOPER_MODE ? " (DEVELOPER)" : "");
+        element.innerHTML = __APP_VERSION__ + (DEVELOPER_MODE ? " <code>dev</code>" : "");
     });
 }
 document.querySelectorAll("span.hostname").forEach(element => {
