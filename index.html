@@ -95,11 +95,14 @@
     </dialog>
     <!-- Settings -->
     <dialog data-modal-page="settings" data-page-title="Settings">
-        <p id="version-string">Version <span class="version"></span></p>
+        <p id="version-string"><span class="version"></span></p>
         <button data-modal-view="settings/code">Seat Code</button>
         <button data-modal-view="settings/theme">Theme</button>
         <button data-modal-view="settings/keybinds">Keyboard Shortcuts</button>
         <button data-modal-view="settings/reset">Reset</button>
+        <div class="row center">
+            <a href="https://github.com/khui0/virtual-clicker" class="icon"><i class="bi bi-github"></i></a>
+        </div>
         <div data-modal-page="code" data-page-title="Seat Code">
             <input type="text" inputmode="numeric" placeholder="000" maxlength="3" id="code-input">
             <button data-modal-view="settings/code/help">Need help?</button>
