@@ -390,6 +390,7 @@ const resets = {
                 close: true,
                 onclick: () => {
                     storage.delete("history");
+                    window.location.reload();
                 },
             },
         ]);
@@ -405,6 +406,7 @@ const resets = {
                 close: true,
                 onclick: () => {
                     storage.obliterate();
+                    window.location.reload();
                 },
             },
         ]);
