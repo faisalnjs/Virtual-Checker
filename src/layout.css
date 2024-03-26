@@ -190,9 +190,21 @@ div.spacer {
     gap: 0.25rem 1.5rem;
 }
 
+#history-date {
+    font-size: 1.25rem;
+}
+
+#history-date:empty {
+    display: none;
+}
+
+#history-date:empty~#history-navigation {
+    display: none;
+}
+
 #history-feed {
     overflow-y: auto;
-    max-height: 400px;
+    height: 400px;
 }
 
 #history-feed>button {

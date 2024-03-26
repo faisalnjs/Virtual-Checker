@@ -87,6 +87,11 @@ button.icon {
     border-radius: 50%;
 }
 
+button:disabled {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
 .pill {
     border-radius: 100vh;
 }

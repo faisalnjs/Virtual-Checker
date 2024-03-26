@@ -2,7 +2,7 @@ import * as ui from "/src/modules/ui.js";
 import storage from "/src/modules/storage.js";
 
 import { autocomplete } from "/src/symbols/symbols.js";
-import { timeToString } from "/src/modules/time.js";
+import { unixToTimeString } from "/src/modules/time.js";
 import { getPeriod } from "/src/periods/periods";
 import { convertLatexToAsciiMath } from "mathlive";
 
@@ -12,6 +12,8 @@ const mf = document.getElementById("math-input");
 
 let currentAnswerMode;
 let multipleChoice = null;
+
+let historyIndex = 0;
 
 // Initialization
 {
@@ -281,15 +283,70 @@ function storeClick(code, question, answer, type) {
     updateHistory();
 }
 
+document.getElementById("history-first").addEventListener("click", () => {
+    historyIndex = getHistoryDates().length - 1;
+    updateHistory();
+});
+
+document.getElementById("history-backward").addEventListener("click", () => {
+    historyIndex++;
+    updateHistory();
+});
+
+document.getElementById("history-forward").addEventListener("click", () => {
+    historyIndex--;
+    updateHistory();
+});
+
+document.getElementById("history-last").addEventListener("click", () => {
+    historyIndex = 0;
+    updateHistory();
+});
+
+// Count number of unique days
+function getHistoryDates() {
+    const data = (storage.get("history") || []).map(entry => {
+        const day = new Date(entry.timestamp).toISOString().split("T")[0];
+        return { ...entry, day: day };
+    });
+    const unique = data.map(entry => entry.day).filter((value, i, array) => {
+        return array.indexOf(value) === i;
+    }).reverse();
+    return unique;
+}
+
+// Filter history by date
+function filterHistory() {
+    const data = (storage.get("history") || []).map(entry => {
+        const day = new Date(entry.timestamp).toISOString().split("T")[0];
+        return { ...entry, day: day };
+    });
+    return data.filter(entry => entry.day === getHistoryDates()[historyIndex]);
+}
+
 // Update history feed
 function updateHistory() {
-    const history = storage.get("history") || [];
+    const history = filterHistory();
+    const date = history[0] && new Intl.DateTimeFormat("en-US", {
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+    }).format(new Date(history[0]?.day));
+
+    // Update history navigation
+    document.getElementById("history-first").disabled = historyIndex === getHistoryDates().length - 1;
+    document.getElementById("history-backward").disabled = historyIndex === getHistoryDates().length - 1;
+    document.getElementById("history-forward").disabled = historyIndex === 0;
+    document.getElementById("history-last").disabled = historyIndex === 0;
+    document.getElementById("history-date").textContent = date;
+
     const feed = document.getElementById("history-feed");
     if (history.length != 0) {
         feed.innerHTML = "";
         history.forEach(item => {
             const button = document.createElement("button");
-            button.innerHTML = `<p><b>${item.question}.</b> ${timeToString(item.timestamp)} (${item.code})</p>\n<p>${item.answer}</p>`;
+            button.innerHTML = `<p><b>${item.question}.</b> ${unixToTimeString(item.timestamp)} (${item.code})</p>\n<p>${item.answer}</p>`;
             feed.prepend(button);
             // Resubmit click
             button.addEventListener("click", () => {
