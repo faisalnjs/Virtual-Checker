@@ -321,3 +321,13 @@ div.ML__keyboard {
     box-shadow: 0 0 0 0.125rem var(--accent-color) inset;
     transition: box-shadow 100ms ease;
 }
+
+#answer-input.attention {
+    box-shadow: none;
+}
+
+#answer-textarea-container:has(#answer-input.attention) {
+    outline: none;
+    box-shadow: 0 0 0 0.125rem var(--error-color) inset;
+    transition: box-shadow 100ms ease;
+}
