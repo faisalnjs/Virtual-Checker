@@ -203,3 +203,27 @@
     --accent-text-color: #2c2c2c;
     --error-color: #d7f066;
 }
+
+/* Special */
+
+[data-theme="dune-2"] {
+    color-scheme: dark;
+    --text-color: #d8d6d3;
+    --background-color: #242220;
+    --surface-color: #2e2c2a;
+    --accent-color: #1455b6;
+    --accent-text-color: #cbd9ff;
+    --error-color: #8b2626;
+}
+
+#atreides-logo {
+    display: none;
+}
+
+body[data-theme="dune-2"] #atreides-logo {
+    display: unset;
+}
+
+body[data-theme="dune-2"] #header>.virtual-clicker-logo {
+    display: none;
+}
