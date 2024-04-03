@@ -255,8 +255,10 @@ document.getElementById("remove-choice-button").addEventListener("click", () => 
 
 // Set answer mode
 function answerMode(mode) {
+    const current = document.querySelector(`[data-answer-mode="${currentAnswerMode}"]`);
+    const fromHeight = current?.getBoundingClientRect().height;
+
     if (currentAnswerMode == mode) return;
-    currentAnswerMode = mode;
     document.querySelectorAll("[data-answer-mode]").forEach(item => {
         if (item.getAttribute("data-answer-mode") == mode) {
             item.style.removeProperty("display");
@@ -270,9 +272,13 @@ function answerMode(mode) {
     const container = document.getElementById("answer-container");
     const target = document.querySelector(`[data-answer-mode="${mode}"]`);
     const toHeight = target.getBoundingClientRect().height;
-    ui.animate(container, undefined, {
+    ui.animate(container, fromHeight ? {
+        height: fromHeight + "px",
+    } : undefined, {
         height: toHeight + "px",
-    }, 500);
+    }, 500, false);
+
+    currentAnswerMode = mode;
 }
 
 // Store click to storage and history

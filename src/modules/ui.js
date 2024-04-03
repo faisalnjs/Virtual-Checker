@@ -253,7 +253,7 @@ export function addTooltip(element, text) {
 }
 
 // From kennyhui.dev
-export function animate(element, from, to, duration) {
+export function animate(element, from, to, duration, assign = true) {
     const animation = element.animate([
         from && from,
         to && to,
@@ -264,7 +264,7 @@ export function animate(element, from, to, duration) {
     });
     setTimeout(() => {
         animation.cancel();
-        Object.assign(element.style, to);
+        assign && Object.assign(element.style, to);
     }, duration);
 }
 
