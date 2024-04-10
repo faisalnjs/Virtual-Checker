@@ -30,15 +30,13 @@ let historyIndex = 0;
     // Show seat code modal if no saved code exists
     if (storage.get("code")) {
         updateCode();
-    }
-    else {
+    } else {
         ui.view("settings/code");
     }
     // Show clear data fix guide
     if (storage.get("created")) {
         document.querySelector(`[data-modal-view="clear-data-fix"]`).remove();
-    }
-    else {
+    } else {
         storage.set("created", Date.now());
     }
     // Focus question input
@@ -63,36 +61,45 @@ let historyIndex = 0;
     // Update history feed
     updateHistory();
     // Focus answer input
-    document.getElementById("answer-suggestion").addEventListener("click", () => answerInput.focus());
+    document
+        .getElementById("answer-suggestion")
+        .addEventListener("click", () => answerInput.focus());
 }
 
 // Submit click
 document.getElementById("submit-button").addEventListener("click", () => {
     const mode = ui.getButtonSelectValue(document.getElementById("answer-mode-selector"));
     const question = questionInput.value?.trim();
-    const answer = multipleChoice || (() => {
-        if (mode === "input") {
-            return answerInput.value?.trim();
-        } else if (mode === "math") {
-            return convertLatexToAsciiMath(mf.value);
-        }
-    })();
+    const answer =
+        multipleChoice ||
+        (() => {
+            if (mode === "input") {
+                return answerInput.value?.trim();
+            } else if (mode === "math") {
+                return convertLatexToAsciiMath(mf.value);
+            }
+        })();
     if (storage.get("code")) {
         if (question && answer) {
             // Check if code matches current period
-            const matchesCurrentPeriod = parseInt(storage.get("code").slice(0, 1)) === getPeriod() + 1 || true;
+            const matchesCurrentPeriod =
+                parseInt(storage.get("code").slice(0, 1)) === getPeriod() + 1 || true;
             if (!matchesCurrentPeriod) {
-                ui.prompt("Are you sure you want to submit?", "Your seat code isn't for this period!", [
-                    {
-                        text: "Cancel",
-                        close: true,
-                    },
-                    {
-                        text: "Submit Anyways",
-                        close: true,
-                        onclick: submit,
-                    }
-                ]);
+                ui.prompt(
+                    "Are you sure you want to submit?",
+                    "Your seat code isn't for this period!",
+                    [
+                        {
+                            text: "Cancel",
+                            close: true,
+                        },
+                        {
+                            text: "Submit Anyways",
+                            close: true,
+                            onclick: submit,
+                        },
+                    ],
+                );
             } else {
                 submit();
             }
@@ -110,8 +117,7 @@ document.getElementById("submit-button").addEventListener("click", () => {
             questionInput.classList.add("attention");
             questionInput.focus();
         }
-    }
-    else {
+    } else {
         ui.view("settings/code");
     }
     function submit() {
@@ -128,18 +134,18 @@ document.getElementById("submit-button").addEventListener("click", () => {
 });
 
 // Remove attention ring when user types in either input
-questionInput.addEventListener("input", e => {
+questionInput.addEventListener("input", (e) => {
     e.target.classList.remove("attention");
 });
-answerInput.addEventListener("input", e => {
+answerInput.addEventListener("input", (e) => {
     e.target.classList.remove("attention");
 });
-mf.addEventListener("input", e => {
+mf.addEventListener("input", (e) => {
     e.target.classList.remove("attention");
 });
 
 // Prevent MathLive default behavior
-mf.addEventListener("keydown", e => {
+mf.addEventListener("keydown", (e) => {
     if (e.ctrlKey && e.key == "Enter") {
         e.preventDefault();
     }
@@ -165,26 +171,27 @@ function submitClick(code, question, answer) {
     const fields = {
         "entry.1896388126": code,
         "entry.1232458460": question,
-        "entry.1065046570": answer
+        "entry.1065046570": answer,
     };
     const params = new URLSearchParams(fields).toString();
-    const url = "https://docs.google.com/forms/d/e/1FAIpQLSfwDCxVqO2GuB4jhk9iAl7lzoA2TsRlX6hz052XkEHbLrbryg/formResponse?";
+    const url =
+        "https://docs.google.com/forms/d/e/1FAIpQLSfwDCxVqO2GuB4jhk9iAl7lzoA2TsRlX6hz052XkEHbLrbryg/formResponse?";
     fetch(url + params, {
         method: "POST",
         mode: "no-cors",
         headers: {
-            "Content-Type": "application/x-www-form-urlencoded"
-        }
+            "Content-Type": "application/x-www-form-urlencoded",
+        },
     });
 }
 
 // Limit seat code input to integers
-document.getElementById("code-input").addEventListener("input", e => {
+document.getElementById("code-input").addEventListener("input", (e) => {
     e.target.value = parseInt(e.target.value) || "";
 });
 
 // Save seat code on enter
-document.getElementById("code-input").addEventListener("keydown", e => {
+document.getElementById("code-input").addEventListener("keydown", (e) => {
     if (e.key == "Enter") {
         e.preventDefault();
         saveCode();
@@ -208,8 +215,7 @@ function saveCode() {
         const params = new URLSearchParams(window.location.search);
         params.set("code", input);
         history.replaceState({}, "", "?" + params.toString());
-    }
-    else {
+    } else {
         ui.alert("Error", "Seat code isn't possible");
     }
 }
@@ -218,7 +224,7 @@ function saveCode() {
 function updateCode() {
     if (storage.get("code")) {
         document.getElementById("code-input").value = storage.get("code");
-        document.querySelectorAll("span.code").forEach(element => {
+        document.querySelectorAll("span.code").forEach((element) => {
             element.innerHTML = storage.get("code");
         });
         document.title = `Virtual Clicker (${storage.get("code")})`;
@@ -226,7 +232,7 @@ function updateCode() {
 }
 
 // Show multiple choice card
-document.querySelectorAll("[data-multiple-choice]").forEach(button => {
+document.querySelectorAll("[data-multiple-choice]").forEach((button) => {
     const descriptions = {
         "a": ["Agree", "True", "Yes"],
         "b": ["Disagree", "False", "No"],
@@ -234,7 +240,7 @@ document.querySelectorAll("[data-multiple-choice]").forEach(button => {
         "d": ["Neither", "Never"],
         "e": ["Sometimes", "Cannot be determined"],
     };
-    button.addEventListener("click", e => {
+    button.addEventListener("click", (e) => {
         const choice = e.target.getAttribute("data-multiple-choice");
         // Set content of multiple choice card
         const content = document.querySelector(`[data-answer-mode="choice"]>div`);
@@ -259,11 +265,10 @@ function answerMode(mode) {
     const fromHeight = current?.getBoundingClientRect().height;
 
     if (currentAnswerMode == mode) return;
-    document.querySelectorAll("[data-answer-mode]").forEach(item => {
+    document.querySelectorAll("[data-answer-mode]").forEach((item) => {
         if (item.getAttribute("data-answer-mode") == mode) {
             item.style.removeProperty("display");
-        }
-        else {
+        } else {
             item.style.display = "none";
         }
     });
@@ -272,11 +277,19 @@ function answerMode(mode) {
     const container = document.getElementById("answer-container");
     const target = document.querySelector(`[data-answer-mode="${mode}"]`);
     const toHeight = target.getBoundingClientRect().height;
-    ui.animate(container, fromHeight ? {
-        height: fromHeight + "px",
-    } : undefined, {
-        height: toHeight + "px",
-    }, 500, false);
+    ui.animate(
+        container,
+        fromHeight
+            ? {
+                  height: fromHeight + "px",
+              }
+            : undefined,
+        {
+            height: toHeight + "px",
+        },
+        500,
+        false,
+    );
 
     currentAnswerMode = mode;
 }
@@ -318,38 +331,45 @@ document.getElementById("history-last").addEventListener("click", () => {
 
 // Count number of unique days
 function getHistoryDates() {
-    const data = (storage.get("history") || []).map(entry => {
+    const data = (storage.get("history") || []).map((entry) => {
         const day = new Date(entry.timestamp).toISOString().split("T")[0];
         return { ...entry, day: day };
     });
-    const unique = data.map(entry => entry.day).filter((value, i, array) => {
-        return array.indexOf(value) === i;
-    }).reverse();
+    const unique = data
+        .map((entry) => entry.day)
+        .filter((value, i, array) => {
+            return array.indexOf(value) === i;
+        })
+        .reverse();
     return unique;
 }
 
 // Filter history by date
 function filterHistory() {
-    const data = (storage.get("history") || []).map(entry => {
+    const data = (storage.get("history") || []).map((entry) => {
         const day = new Date(entry.timestamp).toISOString().split("T")[0];
         return { ...entry, day: day };
     });
-    return data.filter(entry => entry.day === getHistoryDates()[historyIndex]);
+    return data.filter((entry) => entry.day === getHistoryDates()[historyIndex]);
 }
 
 // Update history feed
 function updateHistory() {
     const history = filterHistory();
-    const date = history[0] && new Intl.DateTimeFormat("en-US", {
-        weekday: "long",
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-    }).format(new Date(history[0]?.day));
+    const date =
+        history[0] &&
+        new Intl.DateTimeFormat("en-US", {
+            weekday: "long",
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+        }).format(new Date(history[0]?.day));
 
     // Update history navigation
-    document.getElementById("history-first").disabled = historyIndex === getHistoryDates().length - 1;
-    document.getElementById("history-backward").disabled = historyIndex === getHistoryDates().length - 1;
+    document.getElementById("history-first").disabled =
+        historyIndex === getHistoryDates().length - 1;
+    document.getElementById("history-backward").disabled =
+        historyIndex === getHistoryDates().length - 1;
     document.getElementById("history-forward").disabled = historyIndex === 0;
     document.getElementById("history-last").disabled = historyIndex === 0;
     document.getElementById("history-date").textContent = date;
@@ -357,7 +377,7 @@ function updateHistory() {
     const feed = document.getElementById("history-feed");
     if (history.length != 0) {
         feed.innerHTML = "";
-        history.forEach(item => {
+        history.forEach((item) => {
             const button = document.createElement("button");
             button.innerHTML = `<p><b>${item.question}.</b> ${unixToTimeString(item.timestamp)} (${item.code})</p>\n<p>${item.answer}</p>`;
             feed.prepend(button);
@@ -368,24 +388,27 @@ function updateHistory() {
                 ui.view("");
                 if (latex) {
                     answerMode("math");
-                    ui.setButtonSelectValue(document.getElementById("answer-mode-selector"), "math");
+                    ui.setButtonSelectValue(
+                        document.getElementById("answer-mode-selector"),
+                        "math",
+                    );
                     mf.value = item.answer;
                 } else {
                     const choice = item.answer.match(/^CHOICE ([A-E])$/);
                     if (!choice) {
                         answerInput.value = item.answer;
                         answerMode("input");
-                    }
-                    else {
-                        document.querySelector(`[data-multiple-choice="${choice[1].toLowerCase()}"]`).click();
+                    } else {
+                        document
+                            .querySelector(`[data-multiple-choice="${choice[1].toLowerCase()}"]`)
+                            .click();
                     }
                     questionInput.focus();
                     autocomplete.update();
                 }
             });
         });
-    }
-    else {
+    } else {
         feed.innerHTML = "<p>Submitted clicks will show up here!</p>";
     }
 }
@@ -427,8 +450,8 @@ const resets = {
 };
 
 // Show reset modal
-document.querySelectorAll("[data-reset]").forEach(button => {
-    button.addEventListener("click", e => {
+document.querySelectorAll("[data-reset]").forEach((button) => {
+    button.addEventListener("click", (e) => {
         resets[e.target.getAttribute("data-reset")]();
     });
 });
@@ -440,14 +463,14 @@ if (storage.get("developer")) {
             "click": () => {
                 storage.delete("developer");
             },
-        }).element
+        }).element,
     );
 }
 
 const answerLabel = document.querySelector(`label[for="answer-input"]`);
 
 // Select answer mode
-document.getElementById("answer-mode-selector").addEventListener("input", e => {
+document.getElementById("answer-mode-selector").addEventListener("input", (e) => {
     const mode = e.detail;
     answerMode(mode);
     if (mode === "input") {

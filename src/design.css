@@ -48,7 +48,9 @@ body {
     padding: 1rem;
     color: var(--text-color);
     background-color: var(--background-color);
-    font: 16px "Figtree", sans-serif;
+    font:
+        16px "Figtree",
+        sans-serif;
     line-height: 1.5;
 }
 
@@ -77,7 +79,9 @@ button {
     border-radius: 0.5rem;
     background-color: var(--surface-color);
     font: inherit;
-    transition: 100ms color var(--easing), 100ms background-color var(--easing);
+    transition:
+        100ms color var(--easing),
+        100ms background-color var(--easing);
 }
 
 button.icon {
@@ -137,7 +141,9 @@ kbd {
     padding: 0 0.25rem;
     border-radius: 0.25rem;
     background-color: var(--surface-color);
-    font: 14px "Figtree", sans-serif;
+    font:
+        14px "Figtree",
+        sans-serif;
 }
 
 code {
@@ -176,7 +182,7 @@ button[data-theme] {
         background-color: var(--accent-color);
     }
 
-    label:hover+button {
+    label:hover + button {
         background-color: var(--surface-color);
     }
 
@@ -230,7 +236,7 @@ button[data-theme] {
 }
 
 #theme-selector,
-#theme-selector>option {
+#theme-selector > option {
     text-transform: capitalize;
 }
 
@@ -269,7 +275,9 @@ math-field.attention {
 math-field::part(virtual-keyboard-toggle) {
     color: var(--text-color);
     background-color: var(--surface-color);
-    transition: 100ms color var(--easing), 100ms background-color var(--easing);
+    transition:
+        100ms color var(--easing),
+        100ms background-color var(--easing);
 }
 
 math-field::part(virtual-keyboard-toggle):hover {
@@ -298,12 +306,12 @@ div.ML__keyboard {
     border-radius: 0.5rem;
 }
 
-[data-button-select]>button {
+[data-button-select] > button {
     height: 1.75em;
     border-radius: 0.25rem;
 }
 
-[data-button-select]>button[aria-selected="true"] {
+[data-button-select] > button[aria-selected="true"] {
     color: var(--accent-text-color);
     background-color: var(--accent-color);
 }

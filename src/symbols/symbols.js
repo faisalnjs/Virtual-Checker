@@ -10,7 +10,7 @@ class Autocomplete {
         this.input = input;
         this.suggestion = suggestion;
 
-        this.input.addEventListener("keydown", e => {
+        this.input.addEventListener("keydown", (e) => {
             if (e.key == "Tab" && this.matches.length != 0) {
                 e.preventDefault();
                 e.target.setRangeText(symbols[this.matches[0]], this.#start, this.#end, "end");
@@ -52,12 +52,10 @@ class Autocomplete {
         if (this.#query?.trim()) {
             if (this.#query in symbols) {
                 return [this.#query];
+            } else {
+                return Object.keys(symbols).filter((string) => string.startsWith(this.#query));
             }
-            else {
-                return Object.keys(symbols).filter(string => string.startsWith(this.#query));
-            }
-        }
-        else {
+        } else {
             return [];
         }
     }
@@ -65,11 +63,9 @@ class Autocomplete {
     #updateSuggestion() {
         if (this.matches.length != 0) {
             this.suggestion.innerHTML = `<kbd>Tab</kbd> to insert ${symbols[this.matches[0]]} <kbd>Esc</kbd> to cancel`;
-        }
-        else if (this.#query?.trim()) {
+        } else if (this.#query?.trim()) {
             this.suggestion.innerHTML = "";
-        }
-        else {
+        } else {
             this.suggestion.innerHTML = "";
         }
     }
@@ -78,10 +74,13 @@ class Autocomplete {
 const uniqueSymbols = [...new Set(Object.values(symbols))];
 const answerInput = document.getElementById("answer-input");
 
-export const autocomplete = new Autocomplete(answerInput, document.getElementById("answer-suggestion"));
+export const autocomplete = new Autocomplete(
+    answerInput,
+    document.getElementById("answer-suggestion"),
+);
 
 // Insert symbol by index
-document.querySelectorAll("[data-insert-symbol]").forEach(button => {
+document.querySelectorAll("[data-insert-symbol]").forEach((button) => {
     const index = button.getAttribute("data-insert-symbol");
     const symbol = Object.values(symbols)[index];
     button.innerHTML = symbol;
@@ -91,7 +90,7 @@ document.querySelectorAll("[data-insert-symbol]").forEach(button => {
 });
 
 // Loop through unique symbols and append them to DOM
-uniqueSymbols.forEach(symbol => {
+uniqueSymbols.forEach((symbol) => {
     const button = new ui.Element("button", symbol, {
         click: () => {
             // Close the modal
@@ -113,7 +112,7 @@ uniqueSymbols.forEach(symbol => {
 });
 
 // Fill missing space
-const emptySpaces = 6 - uniqueSymbols.length % 6;
+const emptySpaces = 6 - (uniqueSymbols.length % 6);
 for (let i = 0; i < emptySpaces; i++) {
     document.querySelector("#symbols-grid").append(document.createElement("div"));
 }

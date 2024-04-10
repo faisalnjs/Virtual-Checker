@@ -5,7 +5,7 @@ import "./butterfly/butterfly.js";
 import * as ui from "/src/modules/ui.js";
 import storage from "/src/modules/storage.js";
 
-themes.forEach(theme => {
+themes.forEach((theme) => {
     const value = theme[0];
     const name = theme[1] || theme[0];
 
@@ -27,7 +27,7 @@ if (storage.get("theme") == "custom") {
 }
 enableTransitions();
 
-document.getElementById("theme-selector").addEventListener("input", e => {
+document.getElementById("theme-selector").addEventListener("input", (e) => {
     const value = e.target.value;
     document.getElementById("theme-preview").setAttribute("data-theme", value);
 });
@@ -84,8 +84,8 @@ updateEditorFields();
 updateEditorPreview();
 updateThemeCode();
 
-document.querySelectorAll("#theme-editor :is(input, select)").forEach(input => {
-    input.addEventListener("input", e => {
+document.querySelectorAll("#theme-editor :is(input, select)").forEach((input) => {
+    input.addEventListener("input", (e) => {
         customTheme[e.target.name] = e.target.value;
         updateEditorPreview();
         updateThemeCode();
@@ -105,7 +105,7 @@ document.getElementById("editor-reset").addEventListener("click", () => {
     updateThemeCode();
 });
 
-document.getElementById("theme-code").addEventListener("input", e => {
+document.getElementById("theme-code").addEventListener("input", (e) => {
     if (e.target.value?.trim()) {
         const theme = decodeThemeCode(e.target.value);
         theme && updateEditorPreview(theme);
@@ -113,7 +113,7 @@ document.getElementById("theme-code").addEventListener("input", e => {
 });
 
 document.getElementById("theme-code").addEventListener("blur", validateThemeCode);
-document.getElementById("theme-code").addEventListener("keydown", e => {
+document.getElementById("theme-code").addEventListener("keydown", (e) => {
     if (e.key == "Enter") {
         validateThemeCode();
     }
@@ -160,7 +160,7 @@ function applyCustomTheme() {
 
 function removeCustomTheme() {
     if (!storage.get("custom-theme")) return;
-    Object.keys(storage.get("custom-theme")).forEach(key => {
+    Object.keys(storage.get("custom-theme")).forEach((key) => {
         const prefix = key == "color-scheme" ? "" : "--";
         document.body.style.removeProperty(prefix + key);
     });
@@ -198,18 +198,26 @@ document.querySelector(`[data-modal-page="editor"]`).addEventListener("view", ()
 if (storage.get("developer")) {
     // Add developer theme input
     document.querySelector(`[data-modal-page="theme"]`).append(
-        new ui.Element("input", null, {
-            input: e => {
-                disableTransitions();
-                document.getElementById("theme-preview").setAttribute("data-theme", e.target.value);
-                document.body.setAttribute("data-theme", e.target.value);
-                removeCustomTheme();
-                enableTransitions();
-                storage.set("theme", e.target.value);
+        new ui.Element(
+            "input",
+            null,
+            {
+                input: (e) => {
+                    disableTransitions();
+                    document
+                        .getElementById("theme-preview")
+                        .setAttribute("data-theme", e.target.value);
+                    document.body.setAttribute("data-theme", e.target.value);
+                    removeCustomTheme();
+                    enableTransitions();
+                    storage.set("theme", e.target.value);
+                },
             },
-        }, null, {
-            id: "theme-debug",
-        }).element
+            null,
+            {
+                id: "theme-debug",
+            },
+        ).element,
     );
     // Populate field
     document.getElementById("theme-debug").value = storage.get("theme") || "";
@@ -217,7 +225,7 @@ if (storage.get("developer")) {
     document.querySelector(`[data-modal-page="editor"]`).append(
         new ui.Element("button", "Copy CSS", {
             "click": copyThemeCSS,
-        }).element
+        }).element,
     );
 }
 

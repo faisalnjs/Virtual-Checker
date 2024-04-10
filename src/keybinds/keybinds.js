@@ -4,8 +4,10 @@ import * as themes from "/src/themes/themes.js";
 
 import { insertFromIndex } from "/src/symbols/symbols.js";
 
-document.addEventListener("keydown", e => {
-    const anyDialogOpen = Array.from(document.querySelectorAll("dialog")).some(dialog => dialog.open);
+document.addEventListener("keydown", (e) => {
+    const anyDialogOpen = Array.from(document.querySelectorAll("dialog")).some(
+        (dialog) => dialog.open,
+    );
     const isTyping = document.activeElement.matches("input, textarea");
     if (e.ctrlKey) {
         if (e.key == "Enter" && !anyDialogOpen) {
@@ -20,8 +22,7 @@ document.addEventListener("keydown", e => {
         if (e.key == "/" && !anyDialogOpen) {
             ui.view("settings/keybinds");
         }
-    }
-    else if (e.altKey) {
+    } else if (e.altKey) {
         if (/[1-9]/.test(e.key)) {
             e.preventDefault();
             insertFromIndex(parseInt(e.key) - 1);

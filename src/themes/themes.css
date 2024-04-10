@@ -61,7 +61,7 @@
 [data-theme="rose"] {
     color-scheme: light;
     --text-color: #2c2c2c;
-    --background-color: #F4DBD8;
+    --background-color: #f4dbd8;
     --surface-color: #e0c4c0;
     --accent-color: #ae817c;
     --accent-text-color: #2c2c2c;
@@ -224,6 +224,6 @@ body[data-theme="dune-2"] #atreides-logo {
     display: unset;
 }
 
-body[data-theme="dune-2"] #header>.virtual-clicker-logo {
+body[data-theme="dune-2"] #header > .virtual-clicker-logo {
     display: none;
 }

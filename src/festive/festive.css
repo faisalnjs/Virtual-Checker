@@ -19,15 +19,25 @@
     --surface-color: var(--red);
 }
 
-[data-theme="festive-2023"] :is(button, input, textarea, select, dialog, [data-answer-mode="choice"]) {
+[data-theme="festive-2023"]
+    :is(button, input, textarea, select, dialog, [data-answer-mode="choice"]) {
     border: 0.125rem solid #242424;
 }
 
 [data-theme="festive-2023"] #submit-button {
     height: 2.25rem;
-    background: linear-gradient(-45deg, white 25%, var(--red) 25% 50%, white 50% 75%, var(--red) 75%);
+    background: linear-gradient(
+        -45deg,
+        white 25%,
+        var(--red) 25% 50%,
+        white 50% 75%,
+        var(--red) 75%
+    );
     background-size: 2rem 2rem;
-    font: bold 16px "Segoe Script", "Figtree", sans-serif;
+    font:
+        bold 16px "Segoe Script",
+        "Figtree",
+        sans-serif;
 }
 
 [data-theme="festive-2023"] #submit-button:is(:hover, :focus) {

@@ -17,12 +17,12 @@ import storage from "/src/modules/storage.js";
 
 updateVersionString();
 function updateVersionString() {
-    document.querySelectorAll("span.version").forEach(element => {
+    document.querySelectorAll("span.version").forEach((element) => {
         const DEVELOPER_MODE = storage.get("developer");
         element.innerHTML = __APP_VERSION__ + (DEVELOPER_MODE ? " <code>dev</code>" : "");
     });
 }
-document.querySelectorAll("span.hostname").forEach(element => {
+document.querySelectorAll("span.hostname").forEach((element) => {
     element.innerHTML = window.location.hostname;
 });
 

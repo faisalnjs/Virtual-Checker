@@ -9,8 +9,7 @@ export function unixToString(timestamp) {
         if (hours >= 12) {
             hours %= 12;
             period = "PM";
-        }
-        else {
+        } else {
             period = "AM";
         }
         if (hours == 0) {
@@ -29,8 +28,7 @@ export function unixToTimeString(timestamp) {
         if (hours >= 12) {
             hours %= 12;
             period = "PM";
-        }
-        else {
+        } else {
             period = "AM";
         }
         if (hours == 0) {

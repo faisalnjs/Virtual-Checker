@@ -28,7 +28,6 @@ div[data-modal-menu] {
     align-items: center;
     justify-content: space-between;
     gap: 0.25rem;
-
 }
 
 div[data-modal-buttons] {
@@ -43,7 +42,7 @@ div[data-modal-actions] {
     gap: 0.25rem;
 }
 
-div[data-modal-actions]>button {
+div[data-modal-actions] > button {
     flex: 1;
     margin-top: 0.5rem;
 }
@@ -68,7 +67,7 @@ div.modeless {
     pointer-events: none;
 }
 
-div.modeless>h2 {
+div.modeless > h2 {
     font-size: 3em;
     font-weight: normal;
 }
@@ -85,18 +84,18 @@ div[data-color-input] {
     position: relative;
 }
 
-div[data-color-input]>input {
+div[data-color-input] > input {
     padding-left: 2.25em;
     width: 100%;
 }
 
-div[data-color-input]>input[type="color"] {
+div[data-color-input] > input[type="color"] {
     position: absolute;
     pointer-events: none;
     opacity: 0;
 }
 
-div[data-color-input]>div[data-color-preview] {
+div[data-color-input] > div[data-color-preview] {
     position: absolute;
     width: 1.75em;
     height: 1.75em;
@@ -105,6 +104,6 @@ div[data-color-input]>div[data-color-preview] {
     border-radius: 0.25em;
 }
 
-div[data-color-input]>div[data-color-preview]:hover {
+div[data-color-input] > div[data-color-preview]:hover {
     cursor: pointer;
 }

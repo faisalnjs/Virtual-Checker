@@ -1,4 +1,4 @@
-body>* {
+body > * {
     flex-shrink: 0;
 }
 
@@ -19,7 +19,7 @@ div.spacer {
     gap: 0.25rem;
 }
 
-.full-row>* {
+.full-row > * {
     flex: 1;
 }
 
@@ -29,11 +29,11 @@ div.spacer {
     gap: 0.25rem;
 }
 
-:is(.space, .extra-space)+.space {
+:is(.space, .extra-space) + .space {
     margin-top: 0.25rem;
 }
 
-:is(.space, .extra-space)+.extra-space {
+:is(.space, .extra-space) + .extra-space {
     margin-top: 1.5rem;
 }
 
@@ -56,7 +56,7 @@ div.spacer {
     align-items: center;
 }
 
-#header>h1 {
+#header > h1 {
     font-size: 1.5rem;
 }
 
@@ -113,7 +113,7 @@ div.spacer {
     cursor: text;
 }
 
-#answer-suggestion>kbd {
+#answer-suggestion > kbd {
     color: var(--accent-text-color);
     background-color: var(--accent-color);
 }
@@ -136,7 +136,7 @@ div.spacer {
     gap: 0.25rem;
 }
 
-[data-answer-mode="math"]>math-field {
+[data-answer-mode="math"] > math-field {
     width: 100%;
 }
 
@@ -164,17 +164,17 @@ div.spacer {
     overflow: hidden;
 }
 
-#symbols-grid>button {
+#symbols-grid > button {
     border-radius: 0;
     font-size: 1.125em;
     background-color: var(--background-color);
 }
 
-#symbols-grid>button:hover {
+#symbols-grid > button:hover {
     background-color: var(--accent-color);
 }
 
-#symbols-grid>div {
+#symbols-grid > div {
     background-color: var(--background-color);
 }
 
@@ -198,7 +198,7 @@ div.spacer {
     display: none;
 }
 
-#history-date:empty~#history-navigation {
+#history-date:empty ~ #history-navigation {
     display: none;
 }
 
@@ -207,13 +207,13 @@ div.spacer {
     height: 400px;
 }
 
-#history-feed>button {
+#history-feed > button {
     height: fit-content;
     padding: 0.375em 0.75em;
     text-align: left;
 }
 
-#history-feed>button>p {
+#history-feed > button > p {
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
@@ -231,6 +231,6 @@ label {
     gap: 0.25rem;
 }
 
-#theme-editor>:nth-of-type(1) {
+#theme-editor > :nth-of-type(1) {
     grid-column: 1 / 3;
 }
