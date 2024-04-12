@@ -13,11 +13,16 @@ import "/src/keybinds/keybinds.js";
 
 import storage from "/src/modules/storage.js";
 
+const version = import.meta.env.PACKAGE_VERSION;
+
 updateVersionString();
 function updateVersionString() {
   document.querySelectorAll("span.version").forEach((element) => {
     const DEVELOPER_MODE = storage.get("developer");
-    element.innerHTML = __APP_VERSION__ + (DEVELOPER_MODE ? " <code>dev</code>" : "");
+    element.innerHTML =
+      version +
+      (version.startsWith("3.14") ? " <code>π</code>" : "") +
+      (DEVELOPER_MODE ? " <code>dev</code>" : "");
   });
 }
 document.querySelectorAll("span.hostname").forEach((element) => {

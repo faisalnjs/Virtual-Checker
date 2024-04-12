@@ -1,9 +1,6 @@
-/* eslint-disable no-undef */
 import webfontDownload from "vite-plugin-webfont-dl";
+import version from "vite-plugin-package-version";
 
 export default {
-  plugins: [webfontDownload()],
-  define: {
-    __APP_VERSION__: JSON.stringify(process.env.npm_package_version),
-  },
+  plugins: [webfontDownload(), version()],
 };
