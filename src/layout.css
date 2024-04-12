@@ -178,10 +178,17 @@ div.spacer {
   background-color: var(--background-color);
 }
 
-#theme-grid {
+#theme-selector {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
   gap: 0.25rem;
+  max-height: 9.5rem;
+  overflow: auto;
+}
+
+#theme-selector > button {
+  height: 3em;
+  line-height: 1.2;
 }
 
 #seat-grid {

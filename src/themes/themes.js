@@ -7,35 +7,36 @@ import "./festive/festive.js";
 import * as ui from "/src/modules/ui.js";
 import storage from "/src/modules/storage.js";
 
+let selectedTheme = "";
+
 themes.forEach((theme) => {
   const value = theme[0];
   const name = theme[1] || theme[0];
 
-  const option = document.createElement("option");
-  option.value = value;
-  option.textContent = name;
-  document.querySelector("#theme-selector").append(option);
+  const button = document.createElement("button");
+  button.textContent = name;
+  button.addEventListener("click", () => {
+    selectedTheme = value;
+    document.getElementById("theme-preview").setAttribute("data-theme", value);
+  });
+  document.getElementById("theme-selector").append(button);
 });
 
 if (storage.get("theme") == "custom") {
   // Custom theme
   applyCustomTheme();
-  document.getElementById("theme-selector").value = "";
+  selectedTheme = "";
 } else {
   // Built-in theme
-  document.body.setAttribute("data-theme", storage.get("theme") || "");
-  document.getElementById("theme-preview").setAttribute("data-theme", storage.get("theme") || "");
-  document.getElementById("theme-selector").value = storage.get("theme") || "";
+  const theme = storage.get("theme") || "";
+  document.body.setAttribute("data-theme", theme);
+  document.getElementById("theme-preview").setAttribute("data-theme", theme);
+  selectedTheme = theme;
 }
 enableTransitions();
 
-document.getElementById("theme-selector").addEventListener("input", (e) => {
-  const value = e.target.value;
-  document.getElementById("theme-preview").setAttribute("data-theme", value);
-});
-
 document.getElementById("theme-apply").addEventListener("click", () => {
-  const value = document.getElementById("theme-selector").value;
+  const value = selectedTheme;
   disableTransitions();
   document.body.setAttribute("data-theme", value);
   removeCustomTheme();
@@ -52,7 +53,6 @@ export function resetTheme() {
   document.body.removeAttribute("data-theme");
   removeCustomTheme();
   document.getElementById("theme-preview").removeAttribute("data-theme");
-  document.getElementById("theme-selector").value = "";
   enableTransitions();
   storage.delete("theme");
   storage.delete("custom-theme");
@@ -156,7 +156,6 @@ function applyCustomTheme() {
     const prefix = key == "color-scheme" ? "" : "--";
     document.body.style.setProperty(prefix + key, value);
   });
-  document.getElementById("theme-selector").value = "";
   document.getElementById("theme-preview").removeAttribute("data-theme");
 }
 

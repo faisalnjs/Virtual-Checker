@@ -235,11 +235,6 @@ button[data-theme] {
   border-radius: 100vh;
 }
 
-#theme-selector,
-#theme-selector > option {
-  text-transform: capitalize;
-}
-
 .hint {
   align-self: center;
   text-align: center;
