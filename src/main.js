@@ -11,31 +11,34 @@ import "/src/symbols/symbols.js";
 import "/src/themes/themes.js";
 import "/src/keybinds/keybinds.js";
 
-import "/src/festive/festive.js";
-
 import storage from "/src/modules/storage.js";
+
+const version = import.meta.env.PACKAGE_VERSION;
 
 updateVersionString();
 function updateVersionString() {
-    document.querySelectorAll("span.version").forEach(element => {
-        const DEVELOPER_MODE = storage.get("developer");
-        element.innerHTML = __APP_VERSION__ + (DEVELOPER_MODE ? " <code>dev</code>" : "");
-    });
+  document.querySelectorAll("span.version").forEach((element) => {
+    const DEVELOPER_MODE = storage.get("developer");
+    element.innerHTML =
+      version +
+      (version.startsWith("3.14") ? " <code>π</code>" : "") +
+      (DEVELOPER_MODE ? " <code>dev</code>" : "");
+  });
 }
-document.querySelectorAll("span.hostname").forEach(element => {
-    element.innerHTML = window.location.hostname;
+document.querySelectorAll("span.hostname").forEach((element) => {
+  element.innerHTML = window.location.hostname;
 });
 
 let developerTimeout;
 let developerClicks = 0;
 document.getElementById("version-string").addEventListener("click", () => {
-    developerClicks++;
-    clearTimeout(developerTimeout);
-    developerTimeout = setTimeout(() => {
-        developerClicks = 0;
-    }, 1000);
-    if (developerClicks == 10) {
-        storage.set("developer", true);
-        updateVersionString();
-    }
+  developerClicks++;
+  clearTimeout(developerTimeout);
+  developerTimeout = setTimeout(() => {
+    developerClicks = 0;
+  }, 1000);
+  if (developerClicks == 10) {
+    storage.set("developer", true);
+    updateVersionString();
+  }
 });

@@ -4,6 +4,6 @@ Room 233's student response system
 
 ## Build
 
-```npm run build```
+`npm run build`
 
-Serve the files that are generated in ```/dist```
+Serve the files that are generated in `/dist`

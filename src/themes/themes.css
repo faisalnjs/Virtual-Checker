@@ -1,229 +1,229 @@
 [data-theme="classic"] {
-    color-scheme: dark;
-    --text-color: #ffffff;
-    --background-color: #303946;
-    --surface-color: #424f61;
-    --accent-color: #059fff;
-    --accent-text-color: #ffffff;
-    --error-color: #f84747;
+  color-scheme: dark;
+  --text-color: #ffffff;
+  --background-color: #303946;
+  --surface-color: #424f61;
+  --accent-color: #059fff;
+  --accent-text-color: #ffffff;
+  --error-color: #f84747;
 }
 
 [data-theme="abyss"] {
-    color-scheme: dark;
-    --text-color: #ffffff;
-    --background-color: #000000;
-    --surface-color: #1f1f22;
-    --accent-color: #059fff;
-    --accent-text-color: #ffffff;
-    --error-color: #f84747;
+  color-scheme: dark;
+  --text-color: #ffffff;
+  --background-color: #000000;
+  --surface-color: #1f1f22;
+  --accent-color: #059fff;
+  --accent-text-color: #ffffff;
+  --error-color: #f84747;
 }
 
 [data-theme="graphite"] {
-    color-scheme: dark;
-    --text-color: #ffffff;
-    --background-color: #1f1f1f;
-    --surface-color: #2d2f30;
-    --accent-color: #444d58;
-    --accent-text-color: #ffffff;
-    --error-color: #f84747;
+  color-scheme: dark;
+  --text-color: #ffffff;
+  --background-color: #1f1f1f;
+  --surface-color: #2d2f30;
+  --accent-color: #444d58;
+  --accent-text-color: #ffffff;
+  --error-color: #f84747;
 }
 
 [data-theme="blizzard"] {
-    color-scheme: light;
-    --text-color: #2c2c2c;
-    --background-color: #cde7f5;
-    --surface-color: #abd0e6;
-    --accent-color: #71b2d3;
-    --accent-text-color: #2c2c2c;
-    --error-color: #ce7474;
+  color-scheme: light;
+  --text-color: #2c2c2c;
+  --background-color: #cde7f5;
+  --surface-color: #abd0e6;
+  --accent-color: #71b2d3;
+  --accent-text-color: #2c2c2c;
+  --error-color: #ce7474;
 }
 
 [data-theme="sage"] {
-    color-scheme: light;
-    --text-color: #2c2c2c;
-    --background-color: #bacbb0;
-    --surface-color: #a0b395;
-    --accent-color: #5c8a5b;
-    --accent-text-color: #2c2c2c;
-    --error-color: #b85f5f;
+  color-scheme: light;
+  --text-color: #2c2c2c;
+  --background-color: #bacbb0;
+  --surface-color: #a0b395;
+  --accent-color: #5c8a5b;
+  --accent-text-color: #2c2c2c;
+  --error-color: #b85f5f;
 }
 
 [data-theme="dune"] {
-    color-scheme: light;
-    --text-color: #2c2c2c;
-    --background-color: #cbc3af;
-    --surface-color: #b7ac93;
-    --accent-color: #917856;
-    --accent-text-color: #2c2c2c;
-    --error-color: #bd5858;
+  color-scheme: light;
+  --text-color: #2c2c2c;
+  --background-color: #cbc3af;
+  --surface-color: #b7ac93;
+  --accent-color: #917856;
+  --accent-text-color: #2c2c2c;
+  --error-color: #bd5858;
 }
 
 [data-theme="rose"] {
-    color-scheme: light;
-    --text-color: #2c2c2c;
-    --background-color: #F4DBD8;
-    --surface-color: #e0c4c0;
-    --accent-color: #ae817c;
-    --accent-text-color: #2c2c2c;
-    --error-color: #b42222;
+  color-scheme: light;
+  --text-color: #2c2c2c;
+  --background-color: #f4dbd8;
+  --surface-color: #e0c4c0;
+  --accent-color: #ae817c;
+  --accent-text-color: #2c2c2c;
+  --error-color: #b42222;
 }
 
 [data-theme="lavender"] {
-    color-scheme: light;
-    --text-color: #2c2c2c;
-    --background-color: #c3c0e5;
-    --surface-color: #aca8d4;
-    --accent-color: #7e78be;
-    --accent-text-color: #2c2c2c;
-    --error-color: #b85f5f;
+  color-scheme: light;
+  --text-color: #2c2c2c;
+  --background-color: #c3c0e5;
+  --surface-color: #aca8d4;
+  --accent-color: #7e78be;
+  --accent-text-color: #2c2c2c;
+  --error-color: #b85f5f;
 }
 
 [data-theme="cream"] {
-    color-scheme: light;
-    --text-color: #2c2c2c;
-    --background-color: #f1e8db;
-    --surface-color: #ddd3c6;
-    --accent-color: #505f45;
-    --accent-text-color: #ffffff;
-    --error-color: #b85f5f;
+  color-scheme: light;
+  --text-color: #2c2c2c;
+  --background-color: #f1e8db;
+  --surface-color: #ddd3c6;
+  --accent-color: #505f45;
+  --accent-text-color: #ffffff;
+  --error-color: #b85f5f;
 }
 
 [data-theme="ravenclaw"] {
-    color-scheme: dark;
-    --text-color: #ffffff;
-    --background-color: #202944;
-    --surface-color: #29365e;
-    --accent-color: #f0b569;
-    --accent-text-color: #2c2c2c;
-    --error-color: #b85f5f;
+  color-scheme: dark;
+  --text-color: #ffffff;
+  --background-color: #202944;
+  --surface-color: #29365e;
+  --accent-color: #f0b569;
+  --accent-text-color: #2c2c2c;
+  --error-color: #b85f5f;
 }
 
 [data-theme="hufflepuff"] {
-    color-scheme: light;
-    --text-color: #2c2c2c;
-    --background-color: #dbba71;
-    --surface-color: #c7a65e;
-    --accent-color: #2c2c2c;
-    --accent-text-color: #ffffff;
-    --error-color: #923737;
+  color-scheme: light;
+  --text-color: #2c2c2c;
+  --background-color: #dbba71;
+  --surface-color: #c7a65e;
+  --accent-color: #2c2c2c;
+  --accent-text-color: #ffffff;
+  --error-color: #923737;
 }
 
 [data-theme="slytherin"] {
-    color-scheme: dark;
-    --text-color: #ffffff;
-    --background-color: #1b3530;
-    --surface-color: #224941;
-    --accent-color: #cae7e1;
-    --accent-text-color: #2c2c2c;
-    --error-color: #b85f5f;
+  color-scheme: dark;
+  --text-color: #ffffff;
+  --background-color: #1b3530;
+  --surface-color: #224941;
+  --accent-color: #cae7e1;
+  --accent-text-color: #2c2c2c;
+  --error-color: #b85f5f;
 }
 
 [data-theme="gryffindor"] {
-    color-scheme: light;
-    --text-color: #ffffff;
-    --background-color: #6b242b;
-    --surface-color: #852b34;
-    --accent-color: #f3b84b;
-    --accent-text-color: #2c2c2c;
-    --error-color: #f76161;
+  color-scheme: light;
+  --text-color: #ffffff;
+  --background-color: #6b242b;
+  --surface-color: #852b34;
+  --accent-color: #f3b84b;
+  --accent-text-color: #2c2c2c;
+  --error-color: #f76161;
 }
 
 [data-theme="catppuccin-latte"] {
-    color-scheme: light;
-    /* Text */
-    --text-color: #4c4f69;
-    /* Base */
-    --background-color: #eff1f5;
-    /* Surface0 */
-    --surface-color: #ccd0da;
-    /* Rosewater */
-    --accent-color: #dc8a78;
-    /* Text */
-    --accent-text-color: #4c4f69;
-    /* Red */
-    --error-color: #d20f39;
+  color-scheme: light;
+  /* Text */
+  --text-color: #4c4f69;
+  /* Base */
+  --background-color: #eff1f5;
+  /* Surface0 */
+  --surface-color: #ccd0da;
+  /* Rosewater */
+  --accent-color: #dc8a78;
+  /* Text */
+  --accent-text-color: #4c4f69;
+  /* Red */
+  --error-color: #d20f39;
 }
 
 [data-theme="catppuccin-frappe"] {
-    color-scheme: dark;
-    /* Text */
-    --text-color: #c6d0f5;
-    /* Base */
-    --background-color: #303446;
-    /* Surface0 */
-    --surface-color: #414559;
-    /* Overlay0 */
-    --accent-color: #737994;
-    /* Text */
-    --accent-text-color: #c6d0f5;
-    /* Red */
-    --error-color: #e78284;
+  color-scheme: dark;
+  /* Text */
+  --text-color: #c6d0f5;
+  /* Base */
+  --background-color: #303446;
+  /* Surface0 */
+  --surface-color: #414559;
+  /* Overlay0 */
+  --accent-color: #737994;
+  /* Text */
+  --accent-text-color: #c6d0f5;
+  /* Red */
+  --error-color: #e78284;
 }
 
 [data-theme="catppuccin-macchiato"] {
-    color-scheme: dark;
-    /* Text */
-    --text-color: #cad3f5;
-    /* Base */
-    --background-color: #24273a;
-    /* Surface0 */
-    --surface-color: #363a4f;
-    /* Overlay0 */
-    --accent-color: #6e738d;
-    /* Text */
-    --accent-text-color: #cad3f5;
-    /* Red */
-    --error-color: #ed8796;
+  color-scheme: dark;
+  /* Text */
+  --text-color: #cad3f5;
+  /* Base */
+  --background-color: #24273a;
+  /* Surface0 */
+  --surface-color: #363a4f;
+  /* Overlay0 */
+  --accent-color: #6e738d;
+  /* Text */
+  --accent-text-color: #cad3f5;
+  /* Red */
+  --error-color: #ed8796;
 }
 
 [data-theme="catppuccin-mocha"] {
-    color-scheme: dark;
-    /* Text */
-    --text-color: #cdd6f4;
-    /* Base */
-    --background-color: #1e1e2e;
-    /* Surface0 */
-    --surface-color: #313244;
-    /* Overlay0 */
-    --accent-color: #6c7086;
-    /* Text */
-    --accent-text-color: #cdd6f4;
-    /* Red */
-    --error-color: #f38ba8;
+  color-scheme: dark;
+  /* Text */
+  --text-color: #cdd6f4;
+  /* Base */
+  --background-color: #1e1e2e;
+  /* Surface0 */
+  --surface-color: #313244;
+  /* Overlay0 */
+  --accent-color: #6c7086;
+  /* Text */
+  --accent-text-color: #cdd6f4;
+  /* Red */
+  --error-color: #f38ba8;
 }
 
 /* Seasonal */
 
 [data-theme="halloween-2023"] {
-    color-scheme: dark;
-    --text-color: #ffffff;
-    --background-color: #2c173d;
-    --surface-color: #cc5a2a;
-    --accent-color: #d6b7e7;
-    --accent-text-color: #2c2c2c;
-    --error-color: #d7f066;
+  color-scheme: dark;
+  --text-color: #ffffff;
+  --background-color: #2c173d;
+  --surface-color: #cc5a2a;
+  --accent-color: #d6b7e7;
+  --accent-text-color: #2c2c2c;
+  --error-color: #d7f066;
 }
 
 /* Special */
 
 [data-theme="dune-2"] {
-    color-scheme: dark;
-    --text-color: #d8d6d3;
-    --background-color: #242220;
-    --surface-color: #2e2c2a;
-    --accent-color: #1455b6;
-    --accent-text-color: #cbd9ff;
-    --error-color: #8b2626;
+  color-scheme: dark;
+  --text-color: #d8d6d3;
+  --background-color: #242220;
+  --surface-color: #2e2c2a;
+  --accent-color: #1455b6;
+  --accent-text-color: #cbd9ff;
+  --error-color: #8b2626;
 }
 
 #atreides-logo {
-    display: none;
+  display: none;
 }
 
 body[data-theme="dune-2"] #atreides-logo {
-    display: unset;
+  display: unset;
 }
 
-body[data-theme="dune-2"] #header>.virtual-clicker-logo {
-    display: none;
+body[data-theme="dune-2"] #header > .virtual-clicker-logo {
+  display: none;
 }

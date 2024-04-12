@@ -1,230 +1,304 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon" media="(prefers-color-scheme: light)">
-    <link rel="shortcut icon" href="favicon-dark.ico" type="image/x-icon" media="(prefers-color-scheme: dark)">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      rel="shortcut icon"
+      href="favicon.ico"
+      type="image/x-icon"
+      media="(prefers-color-scheme: light)"
+    />
+    <link
+      rel="shortcut icon"
+      href="favicon-dark.ico"
+      type="image/x-icon"
+      media="(prefers-color-scheme: dark)"
+    />
     <title>Virtual Clicker</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,400;0,700;1,400;1,700&display=swap"
-        rel="stylesheet">
-</head>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,400;0,700;1,400;1,700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
 
-<body class="col">
+  <body class="col">
     <div id="header">
-        <svg xmlns="http://www.w3.org/2000/svg" height="2.5rem" viewBox="0 0 1024 1024" class="virtual-clicker-logo">
-            <path fill="currentColor"
-                d="m589.75,426.88l-44.59,133.77c-12.45,37.34,15.34,75.89,54.7,75.89h258.09l-83.03,249.08h-498.07c-49.64,0-93.7-31.76-109.4-78.85L0,304.43h243.11l31.15,93.46c13.14,39.42,68.91,39.42,82.05,0l60.22-180.66c15.7-47.09,59.76-78.85,109.4-78.85h498.07l-83.03,249.08h-296.52c-24.82,0-46.85,15.88-54.7,39.42Z" />
-        </svg>
-        <svg xmlns="http://www.w3.org/2000/svg" height="2.5rem" viewBox="0 0 939.26 845.57" id="atreides-logo">
-            <path fill="currentColor"
-                d="M939.26 0v160.43L540.42 559.27v215.51l-70.79 70.79-70.79-70.79V559.27L0 160.43V0l469.63 470.64L939.26 0z" />
-            <path fill="currentColor"
-                d="M372.56 569.37v179.14l-97.74-97.75v-82.63L58.83 352.14v-96.51l313.73 313.74zM547.49 358.93l-77.28 77.28-77.77-77.77 77.19-77.19h69.24l5.68 5.68v21.9l-7.34-7.34-23.58 23.58 33.86 33.86ZM566.7 569.37v179.14l97.74-97.75v-82.63l215.99-215.99v-96.51L566.7 569.37z" />
-        </svg>
-        <h1>Virtual Clicker</h1>
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        height="2.5rem"
+        viewBox="0 0 1024 1024"
+        class="virtual-clicker-logo"
+      >
+        <path
+          fill="currentColor"
+          d="m589.75,426.88l-44.59,133.77c-12.45,37.34,15.34,75.89,54.7,75.89h258.09l-83.03,249.08h-498.07c-49.64,0-93.7-31.76-109.4-78.85L0,304.43h243.11l31.15,93.46c13.14,39.42,68.91,39.42,82.05,0l60.22-180.66c15.7-47.09,59.76-78.85,109.4-78.85h498.07l-83.03,249.08h-296.52c-24.82,0-46.85,15.88-54.7,39.42Z"
+        />
+      </svg>
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        height="2.5rem"
+        viewBox="0 0 939.26 845.57"
+        id="atreides-logo"
+      >
+        <path
+          fill="currentColor"
+          d="M939.26 0v160.43L540.42 559.27v215.51l-70.79 70.79-70.79-70.79V559.27L0 160.43V0l469.63 470.64L939.26 0z"
+        />
+        <path
+          fill="currentColor"
+          d="M372.56 569.37v179.14l-97.74-97.75v-82.63L58.83 352.14v-96.51l313.73 313.74zM547.49 358.93l-77.28 77.28-77.77-77.77 77.19-77.19h69.24l5.68 5.68v21.9l-7.34-7.34-23.58 23.58 33.86 33.86ZM566.7 569.37v179.14l97.74-97.75v-82.63l215.99-215.99v-96.51L566.7 569.37z"
+        />
+      </svg>
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        height="2.5rem"
+        viewBox="0 0 1024 806.99"
+        id="virtual-clicker-butterfly"
+      >
+        <path
+          fill="currentColor"
+          d="M363.41 378.38s-41.8-226.57-225.55-224.82c-221.29 2.11-134.61 298.78-27.42 425.27 107.19 126.48 302.27 274.41 420.18 214.38 117.91-60.03 87.28-309.52 68.6-452.34-14.67-112.11-29.57-188.01-135.93-182.37-134.65 7.13-99.88 219.89-99.88 219.89Z"
+        />
+        <path
+          fill="currentColor"
+          d="M862.92 0C673.83.59 599.44 155.06 616.9 263.97c19.52 121.75 29.65 162.85 28.07 274.12-1.7 120.31-17.36 201.71 55.47 224.8 81.26 25.76 143.18 1.37 202.14-72.59 58.95-73.96 62.17-119.32 33.23-165.07-28.94-45.75-115.22 2.5-124.34-83.31-8.58-80.69-24.56-154.76 26.8-200.74 47.06-42.14 48.24 57.88 102.9 56.81C1046.28 295.93 1081.58-.68 862.92 0ZM424.16 102.01c0 22.1-16.64 36.8-37.16 36.8s-37.16-14.7-37.16-36.8S366.48 64.49 387 64.49s37.16 15.42 37.16 37.52ZM556.06 70.92c0 24.96-15.06 45.2-40.02 45.2s-40.91-20.24-40.91-45.2 15.5-42.7 40.46-42.7 40.46 17.73 40.46 42.7Z"
+        />
+      </svg>
+      <h1>Virtual Clicker</h1>
     </div>
     <div id="clicker">
-        <h1><span class="code" data-modal-view="settings/code">000</span></h1>
-        <label for="question-input">Question</label>
-        <div class="space" id="question-container">
-            <input type="text" autocomplete="off" id="question-input">
-            <div id="answer-mode-selector" data-button-select>
-                <button aria-selected="true" data-value="input">Text</button>
-                <button aria-selected="false" data-value="math">Math</button>
-            </div>
+      <h1><span class="code" data-modal-view="settings/code">000</span></h1>
+      <label for="question-input">Question</label>
+      <div class="space" id="question-container">
+        <input type="text" autocomplete="off" id="question-input" />
+        <div id="answer-mode-selector" data-button-select>
+          <button aria-selected="true" data-value="input">Text</button>
+          <button aria-selected="false" data-value="math">Math</button>
         </div>
-        <label for="answer-input">Answer</label>
-        <div class="space" id="answer-container">
-            <div data-answer-mode="input">
-                <div id="answer-textarea-container">
-                    <textarea rows="4" autocomplete="off" id="answer-input"></textarea>
-                    <p id="answer-suggestion"></p>
-                </div>
-                <div class="row">
-                    <div class="button-grid" id="insert-row">
-                        <button data-insert-symbol="0"></button>
-                        <button data-insert-symbol="1"></button>
-                        <button data-insert-symbol="2"></button>
-                        <button data-insert-symbol="3"></button>
-                        <button data-insert-symbol="4"></button>
-                        <button data-insert-symbol="5"></button>
-                        <button data-insert-symbol="6"></button>
-                        <button data-insert-symbol="7"></button>
-                        <button data-insert-symbol="8"></button>
-                        <button data-insert-symbol="9"></button>
-                    </div>
-                    <button class="icon" data-modal-view="symbols"><i class="bi bi-three-dots"></i></button>
-                </div>
+      </div>
+      <label for="answer-input">Answer</label>
+      <div class="space" id="answer-container">
+        <div data-answer-mode="input">
+          <div id="answer-textarea-container">
+            <textarea rows="4" autocomplete="off" id="answer-input"></textarea>
+            <p id="answer-suggestion"></p>
+          </div>
+          <div class="row">
+            <div class="button-grid" id="insert-row">
+              <button data-insert-symbol="0"></button>
+              <button data-insert-symbol="1"></button>
+              <button data-insert-symbol="2"></button>
+              <button data-insert-symbol="3"></button>
+              <button data-insert-symbol="4"></button>
+              <button data-insert-symbol="5"></button>
+              <button data-insert-symbol="6"></button>
+              <button data-insert-symbol="7"></button>
+              <button data-insert-symbol="8"></button>
+              <button data-insert-symbol="9"></button>
             </div>
-            <div data-answer-mode="choice">
-                <div></div>
-                <button class="icon" id="remove-choice-button"><i class="bi bi-x-lg"></i></button>
-            </div>
-            <div data-answer-mode="math">
-                <math-field id="math-input"></math-field>
-            </div>
+            <button class="icon" data-modal-view="symbols">
+              <i class="bi bi-three-dots"></i>
+            </button>
+          </div>
         </div>
-        <div class="button-grid extra-space">
-            <button data-multiple-choice="a">A</button>
-            <button data-multiple-choice="b">B</button>
-            <button data-multiple-choice="c">C</button>
-            <button data-multiple-choice="d">D</button>
-            <button data-multiple-choice="e">E</button>
+        <div data-answer-mode="choice">
+          <div></div>
+          <button class="icon" id="remove-choice-button">
+            <i class="bi bi-x-lg"></i>
+          </button>
         </div>
-        <button class="pill space" id="submit-button">Submit</button>
+        <div data-answer-mode="math">
+          <math-field id="math-input"></math-field>
+        </div>
+      </div>
+      <div class="button-grid extra-space">
+        <button data-multiple-choice="a">A</button>
+        <button data-multiple-choice="b">B</button>
+        <button data-multiple-choice="c">C</button>
+        <button data-multiple-choice="d">D</button>
+        <button data-multiple-choice="e">E</button>
+      </div>
+      <button class="pill space" id="submit-button">Submit</button>
     </div>
     <div id="controls-container" class="pill">
-        <button class="icon" data-modal-view="settings"><i class="bi bi-gear"></i></button>
-        <button class="pill" data-modal-view="settings/code"><span class="code">000</span></button>
-        <button class="icon" data-modal-view="history"><i class="bi bi-clock-history"></i></button>
-        <button class="icon" data-modal-view="clear-data-fix"><i class="bi bi-exclamation-triangle"></i></button>
+      <button class="icon" data-modal-view="settings">
+        <i class="bi bi-gear"></i>
+      </button>
+      <button class="pill" data-modal-view="settings/code">
+        <span class="code">000</span>
+      </button>
+      <button class="icon" data-modal-view="history">
+        <i class="bi bi-clock-history"></i>
+      </button>
+      <button class="icon" data-modal-view="clear-data-fix">
+        <i class="bi bi-exclamation-triangle"></i>
+      </button>
     </div>
     <!-- Symbols -->
     <dialog data-modal-page="symbols" data-page-title="Symbols">
-        <div id="symbols-grid"></div>
+      <div id="symbols-grid"></div>
     </dialog>
     <!-- History -->
     <dialog data-modal-page="history" data-page-title="History">
-        <h2 id="history-date"></h2>
-        <div class="col" id="history-feed"></div>
-        <div id="history-navigation" class="row center">
-            <button class="icon" id="history-first"><i class="bi bi-chevron-double-left"></i></button>
-            <button class="icon" id="history-backward"><i class="bi bi-chevron-left"></i></button>
-            <button class="icon" id="history-forward"><i class="bi bi-chevron-right"></i></button>
-            <button class="icon" id="history-last"><i class="bi bi-chevron-double-right"></i></button>
-        </div>
+      <h2 id="history-date"></h2>
+      <div class="col" id="history-feed"></div>
+      <div id="history-navigation" class="row center">
+        <button class="icon" id="history-first">
+          <i class="bi bi-chevron-double-left"></i>
+        </button>
+        <button class="icon" id="history-backward">
+          <i class="bi bi-chevron-left"></i>
+        </button>
+        <button class="icon" id="history-forward">
+          <i class="bi bi-chevron-right"></i>
+        </button>
+        <button class="icon" id="history-last">
+          <i class="bi bi-chevron-double-right"></i>
+        </button>
+      </div>
     </dialog>
     <!-- Settings -->
     <dialog data-modal-page="settings" data-page-title="Settings">
-        <p id="version-string"><span class="version"></span></p>
-        <button data-modal-view="settings/code">Seat Code</button>
-        <button data-modal-view="settings/theme">Theme</button>
-        <button data-modal-view="settings/keybinds">Keyboard Shortcuts</button>
-        <button data-modal-view="settings/reset">Reset</button>
-        <div class="row center">
-            <a href="https://github.com/khui0/virtual-clicker" class="icon"><i class="bi bi-github"></i></a>
+      <p id="version-string"><span class="version"></span></p>
+      <button data-modal-view="settings/code">Seat Code</button>
+      <button data-modal-view="settings/theme">Theme</button>
+      <button data-modal-view="settings/keybinds">Keyboard Shortcuts</button>
+      <button data-modal-view="settings/reset">Reset</button>
+      <div class="row center">
+        <a href="https://github.com/khui0/virtual-clicker" class="icon"
+          ><i class="bi bi-github"></i
+        ></a>
+      </div>
+      <div data-modal-page="code" data-page-title="Seat Code">
+        <input type="text" inputmode="numeric" placeholder="000" maxlength="3" id="code-input" />
+        <button data-modal-view="settings/code/help">Need help?</button>
+        <div data-modal-actions>
+          <button id="save-code-button">Save</button>
         </div>
-        <div data-modal-page="code" data-page-title="Seat Code">
-            <input type="text" inputmode="numeric" placeholder="000" maxlength="3" id="code-input">
-            <button data-modal-view="settings/code/help">Need help?</button>
-            <button class="pill" id="save-code-button">Save</button>
-            <div data-modal-page="help" data-page-title="Seat Code Finder">
-                <label for="period-input">Period</label>
-                <select id="period-input">
-                    <option value="1">1</option>
-                    <option value="2">2</option>
-                    <option value="3">3</option>
-                    <option value="4">4</option>
-                    <option value="5">5</option>
-                    <option value="6">6</option>
-                    <option value="7">7</option>
-                    <option value="8">8</option>
-                    <option value="9">9</option>
-                </select>
-                <p>Where do you sit?</p>
-                <p class="hint">Screen</p>
-                <div id="seat-grid"></div>
-            </div>
+        <div data-modal-page="help" data-page-title="Seat Code Finder">
+          <label for="period-input">Period</label>
+          <select id="period-input">
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+            <option value="6">6</option>
+            <option value="7">7</option>
+            <option value="8">8</option>
+            <option value="9">9</option>
+          </select>
+          <p>Where do you sit?</p>
+          <p class="hint">Screen</p>
+          <div id="seat-grid"></div>
         </div>
-        <div data-modal-page="theme" data-page-title="Theme">
-            <div id="theme-preview">
-                <h1 class="text-placeholder">000</h1>
-                <p class="text-placeholder">Question</p>
-                <div class="control-placeholder"></div>
-                <p class="text-placeholder">Answer</p>
-                <div class="control-placeholder"></div>
-                <div class="control-placeholder pill"></div>
-            </div>
-            <select id="theme-selector"></select>
-            <button data-modal-view="settings/theme/editor">Custom</button>
-            <div class="full-row">
-                <button id="theme-reset">Reset</button>
-                <button id="theme-apply">Apply</button>
-            </div>
-            <div data-modal-page="editor" data-page-title="Custom Theme">
-                <div id="editor-preview">
-                    <h1 class="text-placeholder">000</h1>
-                    <p class="text-placeholder">Question</p>
-                    <div class="control-placeholder"></div>
-                    <p class="text-placeholder">Answer</p>
-                    <div class="control-placeholder"></div>
-                    <div class="control-placeholder pill"></div>
-                </div>
-                <div id="theme-editor">
-                    <label>
-                        Color Scheme
-                        <select name="color-scheme">
-                            <option value="light">Light</option>
-                            <option value="dark">Dark</option>
-                        </select>
-                    </label>
-                    <label>
-                        Text
-                        <div data-color-input="text-color"></div>
-                    </label>
-                    <label>
-                        Background
-                        <div data-color-input="background-color"></div>
-                    </label>
-                    <label>
-                        Surface
-                        <div data-color-input="surface-color"></div>
-                    </label>
-                    <label>
-                        Accent
-                        <div data-color-input="accent-color"></div>
-                    </label>
-                    <label>
-                        Accent Text
-                        <div data-color-input="accent-text-color"></div>
-                    </label>
-                    <label>
-                        Error
-                        <div data-color-input="error-color"></div>
-                    </label>
-                </div>
-                <label>
-                    Theme Code
-                    <input type="text" id="theme-code">
-                </label>
-                <p><i class="bi bi-exclamation-circle"></i> Use <kbd>Shift</kbd> + <kbd>R</kbd> to reset theme if you
-                    can't
-                    get back here</p>
-                <div class="full-row">
-                    <button id="editor-reset">Reset</button>
-                    <button id="editor-apply">Apply</button>
-                </div>
-            </div>
+      </div>
+      <div data-modal-page="theme" data-page-title="Theme">
+        <div id="theme-preview">
+          <h1 class="text-placeholder">000</h1>
+          <p class="text-placeholder">Question</p>
+          <div class="control-placeholder"></div>
+          <p class="text-placeholder">Answer</p>
+          <div class="control-placeholder"></div>
+          <div class="control-placeholder pill"></div>
         </div>
-        <div data-modal-page="keybinds" data-page-title="Keyboard Shortcuts">
-            <p><kbd>Ctrl</kbd> + <kbd>Enter</kbd> Submit click</p>
-            <p><kbd>Alt</kbd> + <kbd>1-9</kbd> Insert nth symbol</p>
-            <p><kbd>Ctrl</kbd> + <kbd>/</kbd> Open Keyboard Shortcuts</p>
-            <p><kbd>Ctrl</kbd> + <kbd>,</kbd> Open Settings</p>
-            <p><kbd>Ctrl</kbd> + <kbd>.</kbd> Open History</p>
-            <p><kbd>Shift</kbd> + <kbd>R</kbd> Reset theme</p>
+        <div id="theme-selector">
+          <button data-modal-view="settings/theme/editor">Custom</button>
         </div>
-        <div data-modal-page="reset" data-page-title="Reset">
-            <button data-reset="history">Clear History</button>
-            <button data-reset="all">Reset All Settings</button>
+        <div data-modal-actions>
+          <button id="theme-reset">Reset</button>
+          <button id="theme-apply">Apply</button>
         </div>
+        <div data-modal-page="editor" data-page-title="Custom Theme">
+          <div id="editor-preview">
+            <h1 class="text-placeholder">000</h1>
+            <p class="text-placeholder">Question</p>
+            <div class="control-placeholder"></div>
+            <p class="text-placeholder">Answer</p>
+            <div class="control-placeholder"></div>
+            <div class="control-placeholder pill"></div>
+          </div>
+          <div id="theme-editor">
+            <label>
+              Color Scheme
+              <select name="color-scheme">
+                <option value="light">Light</option>
+                <option value="dark">Dark</option>
+              </select>
+            </label>
+            <label>
+              Text
+              <div data-color-input="text-color"></div>
+            </label>
+            <label>
+              Background
+              <div data-color-input="background-color"></div>
+            </label>
+            <label>
+              Surface
+              <div data-color-input="surface-color"></div>
+            </label>
+            <label>
+              Accent
+              <div data-color-input="accent-color"></div>
+            </label>
+            <label>
+              Accent Text
+              <div data-color-input="accent-text-color"></div>
+            </label>
+            <label>
+              Error
+              <div data-color-input="error-color"></div>
+            </label>
+          </div>
+          <label>
+            Theme Code
+            <input type="text" id="theme-code" />
+          </label>
+          <p>
+            <i class="bi bi-exclamation-circle"></i> Use <kbd>Shift</kbd> + <kbd>R</kbd> to reset
+            the theme if you can't get back here
+          </p>
+          <div data-modal-actions>
+            <button id="editor-reset">Reset</button>
+            <button id="editor-apply">Apply</button>
+          </div>
+        </div>
+      </div>
+      <div data-modal-page="keybinds" data-page-title="Keyboard Shortcuts">
+        <p><kbd>Ctrl</kbd> + <kbd>Enter</kbd> Submit click</p>
+        <p><kbd>Alt</kbd> + <kbd>1-9</kbd> Insert nth symbol</p>
+        <p><kbd>Ctrl</kbd> + <kbd>/</kbd> Open Keyboard Shortcuts</p>
+        <p><kbd>Ctrl</kbd> + <kbd>,</kbd> Open Settings</p>
+        <p><kbd>Ctrl</kbd> + <kbd>.</kbd> Open History</p>
+        <p><kbd>Shift</kbd> + <kbd>R</kbd> Reset theme</p>
+      </div>
+      <div data-modal-page="reset" data-page-title="Reset">
+        <button data-reset="history">Clear History</button>
+        <button data-reset="all">Reset All Settings</button>
+      </div>
     </dialog>
     <dialog data-modal-page="clear-data-fix" data-page-title="Settings May Not Save">
-        <p>VSCHSD administration enforces a setting which clears site settings when you close your
-            browser</p>
-        <p>Fix this by adding an exception for this site:</p>
-        <ol>
-            <li>In a new tab, open <code>edge://settings/clearBrowsingDataOnClose</code></li>
-            <li>Click "Add" under "Cookies and other site data"</li>
-            <li>Add <code><span class="hostname"></span></code></li>
-        </ol>
+      <p>
+        VSCHSD administration enforces a setting which clears site settings when you close your
+        browser
+      </p>
+      <p>Fix this by adding an exception for this site:</p>
+      <ol>
+        <li>
+          In a new tab, open
+          <code>edge://settings/clearBrowsingDataOnClose</code>
+        </li>
+        <li>Click "Add" under "Cookies and other site data"</li>
+        <li>
+          Add <code><span class="hostname"></span></code>
+        </li>
+      </ol>
     </dialog>
     <script src="src/main.js" type="module"></script>
-</body>
-
+  </body>
 </html>
