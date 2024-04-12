@@ -20,7 +20,16 @@
 }
 
 [data-theme="festive-2023"]
-  :is(button, input, textarea, select, dialog, [data-answer-mode="choice"]) {
+  :is(
+    button,
+    input,
+    textarea,
+    select,
+    dialog,
+    [data-answer-mode="choice"],
+    #answer-textarea-container,
+    math-field
+  ) {
   border: 0.125rem solid #242424;
 }
 
@@ -37,6 +46,16 @@
 [data-theme="festive-2023"] #submit-button:is(:hover, :focus) {
   color: var(--text-color);
   animation: scroll 500ms linear infinite forwards;
+}
+
+[data-theme="festive-2023"] #answer-input {
+  border: none;
+}
+
+[data-theme="festive-2023"] #answer-textarea-container:has(#answer-input:focus) {
+  outline: none;
+  box-shadow: 0 0 0 0.125rem var(--accent-color) inset;
+  transition: box-shadow 100ms ease;
 }
 
 @keyframes scroll {

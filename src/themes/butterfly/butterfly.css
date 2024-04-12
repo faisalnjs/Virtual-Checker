@@ -11,7 +11,7 @@
 [data-theme="butterfly"] {
   color-scheme: light;
   --text-color: #000000;
-  --background-color: #9376aa;
+  --background-color: #9d87da;
   --surface-color: #ffffff;
   --accent-color: #000000;
   --accent-text-color: #ffffff;
@@ -58,6 +58,23 @@ body[data-theme="butterfly"] #header h1 {
 
 body[data-theme="butterfly"] #clicker > h1 {
   animation: glow 1.5s linear infinite alternate;
+}
+
+body[data-theme="butterfly"] dialog {
+  color: #ffffff;
+}
+
+body[data-theme="butterfly"] :is(button, kbd, code, input, select, textarea) {
+  color: #000000;
+  font-family: inherit;
+}
+
+body[data-theme="butterfly"] #code-input {
+  color: unset;
+}
+
+body[data-theme="butterfly"] button:hover {
+  color: #ffffff;
 }
 
 img.star {

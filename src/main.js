@@ -11,8 +11,6 @@ import "/src/symbols/symbols.js";
 import "/src/themes/themes.js";
 import "/src/keybinds/keybinds.js";
 
-import "/src/festive/festive.js";
-
 import storage from "/src/modules/storage.js";
 
 updateVersionString();
