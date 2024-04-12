@@ -1,77 +1,77 @@
 @font-face {
-    font-family: "ultinoid";
-    src: url("./ultinoid.woff");
+  font-family: "ultinoid";
+  src: url("./ultinoid.woff");
 }
 
 @font-face {
-    font-family: "typerwriter";
-    src: url("./typerwriter.woff2");
+  font-family: "typerwriter";
+  src: url("./typerwriter.woff2");
 }
 
 [data-theme="butterfly"] {
-    color-scheme: light;
-    --text-color: #000000;
-    --background-color: #9376aa;
-    --surface-color: #ffffff;
-    --accent-color: #000000;
-    --accent-text-color: #ffffff;
-    --error-color: #cb2b25;
+  color-scheme: light;
+  --text-color: #000000;
+  --background-color: #9376aa;
+  --surface-color: #ffffff;
+  --accent-color: #000000;
+  --accent-text-color: #ffffff;
+  --error-color: #cb2b25;
 }
 
 #virtual-clicker-butterfly {
-    display: none;
+  display: none;
 }
 
 body[data-theme="butterfly"] {
-    background-image: url("./background.png");
-    background-position: center;
-    background-size: cover;
-    font-family: "typerwriter";
-    font-weight: normal;
+  background-image: url("./background.png");
+  background-position: center;
+  background-size: cover;
+  font-family: "typerwriter";
+  font-weight: normal;
 }
 
 body[data-theme="butterfly"] #virtual-clicker-butterfly {
-    display: unset;
+  display: unset;
 }
 
 body[data-theme="butterfly"] #header > .virtual-clicker-logo {
-    display: none;
+  display: none;
 }
 
 body[data-theme="butterfly"] :is(#header, #clicker) {
-    background-color: transparent;
+  background-color: transparent;
 }
 
 body[data-theme="butterfly"] #answer-mode-selector {
-    background-color: var(--surface-color);
+  background-color: var(--surface-color);
 }
 
 body[data-theme="butterfly"] :is(#header, #clicker > h1, #clicker > label) {
-    color: #ffffff;
+  color: #ffffff;
 }
 
 body[data-theme="butterfly"] #header h1 {
-    font-family: "ultinoid";
-    font-size: 2.5rem;
-    font-weight: normal;
+  font-family: "ultinoid";
+  font-size: 2.5rem;
+  font-weight: normal;
 }
 
 body[data-theme="butterfly"] #clicker > h1 {
-    animation: glow 1.5s linear infinite alternate;
+  animation: glow 1.5s linear infinite alternate;
 }
 
 img.star {
-    pointer-events: none;
-    position: fixed;
-    background-color: transparent;
-    top: -30px;
+  pointer-events: none;
+  position: fixed;
+  background-color: transparent;
+  top: -30px;
 }
 
 @keyframes glow {
-    from {
-        text-shadow: none;
-    }
-    from {
-        text-shadow: 0 0 5px white;
-    }
+  from {
+    text-shadow: none;
+  }
+  from {
+    text-shadow: 0 0 5px white;
+  }
 }

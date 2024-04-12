@@ -1,63 +1,57 @@
 [data-theme="festive-2023"] {
-    color-scheme: light;
-    --text-color: #242424;
-    --background-color: #f1e2cc;
-    --surface-color: #dbc8ab;
-    --accent-color: #f0b73c;
-    --accent-text-color: #242424;
-    --error-color: #e451da;
+  color-scheme: light;
+  --text-color: #242424;
+  --background-color: #f1e2cc;
+  --surface-color: #dbc8ab;
+  --accent-color: #f0b73c;
+  --accent-text-color: #242424;
+  --error-color: #e451da;
 
-    --red: #f75e5e;
-    --green: #42b970;
+  --red: #f75e5e;
+  --green: #42b970;
 }
 
 [data-theme="festive-2023"] button:nth-child(odd):not(button[data-theme]) {
-    --surface-color: var(--green);
+  --surface-color: var(--green);
 }
 
 [data-theme="festive-2023"] button:nth-child(even):not(button[data-theme]) {
-    --surface-color: var(--red);
+  --surface-color: var(--red);
 }
 
 [data-theme="festive-2023"]
-    :is(button, input, textarea, select, dialog, [data-answer-mode="choice"]) {
-    border: 0.125rem solid #242424;
+  :is(button, input, textarea, select, dialog, [data-answer-mode="choice"]) {
+  border: 0.125rem solid #242424;
 }
 
 [data-theme="festive-2023"] #submit-button {
-    height: 2.25rem;
-    background: linear-gradient(
-        -45deg,
-        white 25%,
-        var(--red) 25% 50%,
-        white 50% 75%,
-        var(--red) 75%
-    );
-    background-size: 2rem 2rem;
-    font:
-        bold 16px "Segoe Script",
-        "Figtree",
-        sans-serif;
+  height: 2.25rem;
+  background: linear-gradient(-45deg, white 25%, var(--red) 25% 50%, white 50% 75%, var(--red) 75%);
+  background-size: 2rem 2rem;
+  font:
+    bold 16px "Segoe Script",
+    "Figtree",
+    sans-serif;
 }
 
 [data-theme="festive-2023"] #submit-button:is(:hover, :focus) {
-    color: var(--text-color);
-    animation: scroll 500ms linear infinite forwards;
+  color: var(--text-color);
+  animation: scroll 500ms linear infinite forwards;
 }
 
 @keyframes scroll {
-    from {
-        background-position: 0 0;
-    }
+  from {
+    background-position: 0 0;
+  }
 
-    to {
-        background-position: 2rem 0;
-    }
+  to {
+    background-position: 2rem 0;
+  }
 }
 
 img.snowflake {
-    position: absolute;
-    background-color: transparent;
-    width: 50px;
-    pointer-events: none;
+  position: absolute;
+  background-color: transparent;
+  width: 50px;
+  pointer-events: none;
 }

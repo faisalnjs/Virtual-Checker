@@ -1,109 +1,109 @@
 dialog[open] {
-    display: flex;
-    flex-direction: column;
+  display: flex;
+  flex-direction: column;
 }
 
 dialog {
-    gap: 0.25rem;
-    width: min(100%, 450px);
-    padding: 1rem;
-    border: none;
-    border-radius: 1rem;
-    box-shadow: 0 0 2rem rgba(0, 0, 0, 0.2);
+  gap: 0.25rem;
+  width: min(100%, 450px);
+  padding: 1rem;
+  border: none;
+  border-radius: 1rem;
+  box-shadow: 0 0 2rem rgba(0, 0, 0, 0.2);
 }
 
 dialog::backdrop {
-    display: none;
+  display: none;
 }
 
 div[data-modal-page] {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
 }
 
 div[data-modal-menu] {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.25rem;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.25rem;
 }
 
 div[data-modal-buttons] {
-    display: flex;
-    flex-direction: row;
-    gap: 0.25rem;
+  display: flex;
+  flex-direction: row;
+  gap: 0.25rem;
 }
 
 div[data-modal-actions] {
-    display: flex;
-    flex-direction: row;
-    gap: 0.25rem;
+  display: flex;
+  flex-direction: row;
+  gap: 0.25rem;
 }
 
 div[data-modal-actions] > button {
-    flex: 1;
-    margin-top: 0.5rem;
+  flex: 1;
+  margin-top: 0.5rem;
 }
 
 dialog button[data-modal-view]:not(.icon) {
-    text-align: unset;
+  text-align: unset;
 }
 
 div.modeless {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    z-index: 999;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 999;
 
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 1.5rem;
-    border-radius: 1rem;
-    box-shadow: 0 0 2rem rgba(0, 0, 0, 0.2);
-    pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1.5rem;
+  border-radius: 1rem;
+  box-shadow: 0 0 2rem rgba(0, 0, 0, 0.2);
+  pointer-events: none;
 }
 
 div.modeless > h2 {
-    font-size: 3em;
-    font-weight: normal;
+  font-size: 3em;
+  font-weight: normal;
 }
 
 p.tooltip {
-    pointer-events: none;
-    padding: 0.25em 0.5em;
-    border-radius: 0.5rem;
-    color: var(--accent-text-color);
-    background-color: var(--accent-color);
+  pointer-events: none;
+  padding: 0.25em 0.5em;
+  border-radius: 0.5rem;
+  color: var(--accent-text-color);
+  background-color: var(--accent-color);
 }
 
 div[data-color-input] {
-    position: relative;
+  position: relative;
 }
 
 div[data-color-input] > input {
-    padding-left: 2.25em;
-    width: 100%;
+  padding-left: 2.25em;
+  width: 100%;
 }
 
 div[data-color-input] > input[type="color"] {
-    position: absolute;
-    pointer-events: none;
-    opacity: 0;
+  position: absolute;
+  pointer-events: none;
+  opacity: 0;
 }
 
 div[data-color-input] > div[data-color-preview] {
-    position: absolute;
-    width: 1.75em;
-    height: 1.75em;
-    top: 0.25em;
-    left: 0.25em;
-    border-radius: 0.25em;
+  position: absolute;
+  width: 1.75em;
+  height: 1.75em;
+  top: 0.25em;
+  left: 0.25em;
+  border-radius: 0.25em;
 }
 
 div[data-color-input] > div[data-color-preview]:hover {
-    cursor: pointer;
+  cursor: pointer;
 }

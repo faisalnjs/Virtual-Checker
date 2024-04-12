@@ -1,29 +1,29 @@
 {
-    "name": "virtual-clicker",
-    "private": true,
-    "version": "3.13.0",
-    "type": "module",
-    "scripts": {
-        "dev": "vite --host",
-        "build": "vite build",
-        "preview": "vite preview"
-    },
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/khui0/virtual-clicker.git"
-    },
-    "bugs": {
-        "url": "https://github.com/khui0/virtual-clicker/issues"
-    },
-    "homepage": "https://github.com/khui0/virtual-clicker#readme",
-    "devDependencies": {
-        "eslint": "^8.51.0",
-        "prettier": "^3.2.5",
-        "vite": "^4.4.0",
-        "vite-plugin-webfont-dl": "^3.7.6"
-    },
-    "dependencies": {
-        "bootstrap-icons": "^1.11.3",
-        "mathlive": "^0.98.6"
-    }
+  "name": "virtual-clicker",
+  "private": true,
+  "version": "3.13.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/khui0/virtual-clicker.git"
+  },
+  "bugs": {
+    "url": "https://github.com/khui0/virtual-clicker/issues"
+  },
+  "homepage": "https://github.com/khui0/virtual-clicker#readme",
+  "devDependencies": {
+    "eslint": "^8.51.0",
+    "prettier": "^3.2.5",
+    "vite": "^4.4.0",
+    "vite-plugin-webfont-dl": "^3.7.6"
+  },
+  "dependencies": {
+    "bootstrap-icons": "^1.11.3",
+    "mathlive": "^0.98.6"
+  }
 }
