@@ -4,7 +4,8 @@ import storage from "/src/modules/storage.js";
 import { autocomplete } from "/src/symbols/symbols.js";
 import { unixToTimeString } from "/src/modules/time.js";
 import { getPeriod } from "/src/periods/periods";
-import { convertLatexToAsciiMath } from "mathlive";
+import { convertLatexToAsciiMath, convertLatexToMarkup, renderMathInElement } from "mathlive";
+``;
 
 const questionInput = document.getElementById("question-input");
 const answerInput = document.getElementById("answer-input");
@@ -372,12 +373,17 @@ function updateHistory() {
     feed.innerHTML = "";
     history.forEach((item) => {
       const button = document.createElement("button");
-      button.innerHTML = `<p><b>${item.question}.</b> ${unixToTimeString(item.timestamp)} (${item.code})</p>\n<p>${item.answer}</p>`;
+      const latex = item.type === "latex";
+      if (!latex) {
+        button.innerHTML = `<p><b>${item.question}.</b> ${unixToTimeString(item.timestamp)} (${item.code})</p>\n<p>${item.answer}</p>`;
+      } else {
+        button.innerHTML = `<p><b>${item.question}.</b> ${unixToTimeString(item.timestamp)} (${item.code})</p>\n${convertLatexToMarkup(item.answer)}\n<p class="hint">(Equation may not display properly)</p>`;
+      }
       feed.prepend(button);
+      renderMathInElement(button);
       // Resubmit click
       button.addEventListener("click", () => {
         questionInput.value = item.question;
-        const latex = item.type === "latex";
         ui.view("");
         if (latex) {
           answerMode("math");
