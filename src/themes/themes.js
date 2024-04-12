@@ -43,7 +43,9 @@ document.getElementById("theme-apply").addEventListener("click", () => {
   enableTransitions();
   storage.set("theme", value);
   // Update developer theme input
-  document.getElementById("theme-debug").value = value;
+  if (document.getElementById("theme-debug")) {
+    document.getElementById("theme-debug").value = value;
+  }
 });
 
 document.getElementById("theme-reset").addEventListener("click", resetTheme);

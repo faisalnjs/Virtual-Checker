@@ -17,8 +17,8 @@ dialog::backdrop {
 }
 
 dialog:modal {
-  max-width: 100vw;
-  max-height: 100vh;
+  max-width: calc(100vw - 2rem);
+  max-height: calc(100vh - 2rem);
 }
 
 div[data-modal-page] {
@@ -45,14 +45,14 @@ div[data-modal-actions] {
   display: flex;
   flex-direction: row;
   gap: 0.25rem;
+  margin-top: 0.25rem;
 }
 
 div[data-modal-actions] > button {
   flex: 1;
-  margin-top: 0.5rem;
 }
 
-dialog button[data-modal-view]:not(.icon) {
+dialog > button[data-modal-view]:not(.icon) {
   text-align: unset;
 }
 
