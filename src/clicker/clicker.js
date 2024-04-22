@@ -35,11 +35,11 @@ let historyIndex = 0;
     ui.view("settings/code");
   }
   // Show clear data fix guide
-  if (storage.get("created")) {
-    document.querySelector(`[data-modal-view="clear-data-fix"]`).remove();
-  } else {
-    storage.set("created", Date.now());
-  }
+  // if (storage.get("created")) {
+  //   document.querySelector(`[data-modal-view="clear-data-fix"]`).remove();
+  // } else {
+  //   storage.set("created", Date.now());
+  // }
   // Focus question input
   questionInput.focus();
   // Set default answer mode
