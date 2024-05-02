@@ -96,6 +96,11 @@ button:disabled {
   pointer-events: none;
 }
 
+button:has(i.bi) {
+  font-family: unset;
+  line-height: 1;
+}
+
 a.icon {
   font-size: 1.5em;
 }
