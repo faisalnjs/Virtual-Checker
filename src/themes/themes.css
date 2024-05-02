@@ -192,6 +192,16 @@
   --error-color: #f38ba8;
 }
 
+[data-theme="stealth"] {
+  color-scheme: dark;
+  --text-color: #f2f2f2;
+  --background-color: #0a0a0a;
+  --surface-color: #141414;
+  --accent-color: #f2f2f2;
+  --accent-text-color: #1c1c1c;
+  --error-color: #fa8796;
+}
+
 /* Seasonal */
 
 [data-theme="halloween-2023"] {
