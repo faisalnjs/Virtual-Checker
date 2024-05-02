@@ -79,6 +79,7 @@ div.spacer {
 
 #question-input {
   flex: 1;
+  min-width: 2rem;
 }
 
 #answer-container {
@@ -159,23 +160,15 @@ div.spacer {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
   gap: 0.125rem;
-  background-color: var(--surface-color);
-  border-radius: 0.5rem;
-  overflow: hidden;
 }
 
 #symbols-grid > button {
-  border-radius: 0;
-  font-size: 1.125em;
   background-color: var(--background-color);
 }
 
 #symbols-grid > button:hover {
-  background-color: var(--accent-color);
-}
-
-#symbols-grid > div {
-  background-color: var(--background-color);
+  color: var(--text-color);
+  background-color: var(--surface-color);
 }
 
 #theme-selector {
