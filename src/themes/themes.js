@@ -139,8 +139,10 @@ function updateEditorFields() {
   Object.entries(customTheme).forEach(([key, value]) => {
     const event = new Event("update");
     const input = document.querySelector(`#theme-editor [name="${key}"]`);
-    input.value = value;
-    input.dispatchEvent(event);
+    if (input) {
+      input.value = value;
+      input.dispatchEvent(event);
+    }
   });
 }
 
@@ -231,10 +233,12 @@ if (storage.get("developer")) {
 }
 
 function copyThemeCSS() {
-  const properties = Object.entries(customTheme).map(([key, value]) => {
-    const prefix = key == "color-scheme" ? "" : "--";
-    return `${prefix}${key}: ${value};`;
-  });
-  const css = `[data-theme="custom"] {\n    ${properties.join("\n    ")}\n}`;
+  const properties = Object.entries(customTheme)
+    .filter(([key]) => key?.trim())
+    .map(([key, value]) => {
+      const prefix = key == "color-scheme" ? "" : "--";
+      return `${prefix}${key}: ${value};`;
+    });
+  const css = `[data-theme="custom"] {\n  ${properties.join("\n  ")}\n}`;
   navigator.clipboard.writeText(css);
 }
