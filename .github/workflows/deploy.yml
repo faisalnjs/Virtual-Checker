@@ -42,6 +42,6 @@ jobs:
           ftp_username: ${{ secrets.FTP_USERNAME }}
           ftp_password: ${{ secrets.FTP_PASSWORD }}
           local_source_dir: "dist"
-          dist_target_dir: "domains/vssfalcons.com/public_html/virtual-clicker"
+          dist_target_dir: "public_html/virtual-clicker"
           delete: "true"
           exclude: "'^node_modules/'"
