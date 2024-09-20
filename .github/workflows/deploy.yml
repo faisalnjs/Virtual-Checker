@@ -7,7 +7,6 @@ on:
 
 permissions:
   contents: read
-  pages: write
   id-token: write
 
 concurrency:
@@ -16,9 +15,6 @@ concurrency:
 
 jobs:
   deploy:
-    environment:
-      name: github-pages
-      url: https://click.vssfalcons.com
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -36,11 +32,6 @@ jobs:
       - name: Build
         run: npm run build
       
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v1
-        with:
-          path: './dist'
-
       - name: List contents
         run: ls -la ./dist
 
