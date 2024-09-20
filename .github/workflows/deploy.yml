@@ -1,0 +1,56 @@
+name: Deploy to Dango Web Solutions
+
+on:
+  push:
+    branches: ['main']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: 'pages'
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: https://click.vssfalcons.com
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      
+      - name: Set up Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm install
+      
+      - name: Build
+        run: npm run build
+      
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v1
+        with:
+          path: './dist'
+
+      - name: List contents
+        run: ls -la ./dist
+
+      - name: FTP
+        uses: kevinpainchaud/simple-ftp-deploy-action@v1.2.1
+        with:
+          ftp_host: 'da.dangoweb.com'
+          ftp_username: ${{ secrets.FTP_USERNAME }}
+          ftp_password: ${{ secrets.FTP_PASSWORD }}
+          local_source_dir: "dist"
+          dist_target_dir: "domains/vssfalcons.com/public_html/virtual-clicker"
+          delete: "true"
+          exclude: "'^node_modules/'"
