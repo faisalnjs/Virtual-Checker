@@ -1,5 +1,5 @@
 {
-  "name": "virtual-clicker",
+  "name": "virtual-checker",
   "private": true,
   "version": "3.15.0",
   "type": "module",
@@ -10,12 +10,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/khui0/virtual-clicker.git"
+    "url": "git+https://github.com/faisalnjs/virtual-checker.git"
   },
   "bugs": {
-    "url": "https://github.com/khui0/virtual-clicker/issues"
+    "url": "https://github.com/faisalnjs/virtual-checker/issues"
   },
-  "homepage": "https://github.com/khui0/virtual-clicker#readme",
+  "homepage": "https://github.com/faisalnjs/virtual-checker#readme",
   "devDependencies": {
     "eslint": "^8.51.0",
     "prettier": "^3.2.5",

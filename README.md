@@ -1,6 +1,6 @@
-# Virtual Clicker
+# Virtual Checker
 
-Room 233's student response system
+Room 233's student homework checking system
 
 ## Build
 

@@ -170,7 +170,7 @@ button[data-theme] {
   transition: box-shadow 100ms ease;
 }
 
-.virtual-clicker-logo {
+.virtual-checker-logo {
   color: var(--logo-color);
 }
 

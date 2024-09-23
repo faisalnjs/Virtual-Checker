@@ -30,4 +30,4 @@ class Storage {
   }
 }
 
-export default new Storage("virtual-clicker-2");
+export default new Storage("virtual-checker-2");

@@ -222,7 +222,7 @@ function updateCode() {
     document.querySelectorAll("span.code").forEach((element) => {
       element.innerHTML = storage.get("code");
     });
-    document.title = `Virtual Clicker (${storage.get("code")})`;
+    document.title = `Virtual Checker (${storage.get("code")})`;
   }
 }
 

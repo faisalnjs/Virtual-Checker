@@ -18,7 +18,7 @@
   --error-color: #cb2b25;
 }
 
-#virtual-clicker-butterfly {
+#virtual-checker-butterfly {
   display: none;
 }
 
@@ -30,11 +30,11 @@ body[data-theme="butterfly"] {
   font-weight: normal;
 }
 
-body[data-theme="butterfly"] #virtual-clicker-butterfly {
+body[data-theme="butterfly"] #virtual-checker-butterfly {
   display: unset;
 }
 
-body[data-theme="butterfly"] #header > .virtual-clicker-logo {
+body[data-theme="butterfly"] #header > .virtual-checker-logo {
   display: none;
 }
 
