@@ -13,6 +13,7 @@ const questionInput = document.getElementById("question-input");
 const answerInput = document.getElementById("answer-input");
 const mf = document.getElementById("math-input");
 const setInput = document.getElementById("set-input");
+var setInputs = document.querySelectorAll("[data-set-input]");
 
 let currentAnswerMode;
 let multipleChoice = null;
@@ -43,7 +44,7 @@ let historyIndex = 0;
   // } else {
   //   storage.set("created", Date.now());
   // }
-  // Focus question input
+  // Focus segment input
   segmentInput.focus();
   // Set default answer mode
   answerMode("input");
@@ -71,6 +72,7 @@ let historyIndex = 0;
 // Submit click
 document.getElementById("submit-button").addEventListener("click", () => {
   const mode = ui.getButtonSelectValue(document.getElementById("answer-mode-selector"));
+  const segment = segmentInput.value?.trim();
   const question = questionInput.value?.trim();
   const answer =
     multipleChoice ||
@@ -89,7 +91,7 @@ document.getElementById("submit-button").addEventListener("click", () => {
       }
     })();
   if (storage.get("code")) {
-    if (question && answer) {
+    if (segment && question && answer) {
       // Check if code matches current period
       const matchesCurrentPeriod =
         parseInt(storage.get("code").slice(0, 1)) === getPeriod() + 1 || true;
@@ -125,15 +127,21 @@ document.getElementById("submit-button").addEventListener("click", () => {
       questionInput.classList.add("attention");
       questionInput.focus();
     }
+    if (!segment) {
+      segmentInput.classList.add("attention");
+      segmentInput.focus();
+    }
   } else {
     ui.view("settings/code");
   }
   function submit() {
-    submitClick(storage.get("code"), question, answer);
+    submitClick(storage.get("code"), segment, question, answer);
     if (mode === "math" && !multipleChoice) {
-      storeClick(storage.get("code"), question, mf.value, "latex");
+      storeClick(storage.get("code"), segment, question, mf.value, "latex");
+    } else if (mode === "set" && !multipleChoice) {
+      storeClick(storage.get("code"), segment, question, answer, "array");
     } else {
-      storeClick(storage.get("code"), question, answer, "text");
+      storeClick(storage.get("code"), segment, question, answer, "text");
     }
     resetInputs();
     // Show submit confirmation
@@ -142,6 +150,9 @@ document.getElementById("submit-button").addEventListener("click", () => {
 });
 
 // Remove attention ring when user types in either input
+segmentInput.addEventListener("input", (e) => {
+  e.target.classList.remove("attention");
+});
 questionInput.addEventListener("input", (e) => {
   e.target.classList.remove("attention");
 });
@@ -174,22 +185,19 @@ function resetInputs() {
   questionInput.focus();
 }
 
-// Submit to Google Forms
-function submitClick(code, question, answer) {
-  const fields = {
-    "entry.1896388126": code,
-    "entry.1232458460": question,
-    "entry.1065046570": answer,
-  };
-  const params = new URLSearchParams(fields).toString();
-  const url =
-    "https://docs.google.com/forms/d/e/1FAIpQLSfwDCxVqO2GuB4jhk9iAl7lzoA2TsRlX6hz052XkEHbLrbryg/formResponse?";
-  fetch(url + params, {
+// Check answer
+function submitClick(code, segment, question, answer) {
+  fetch('localhost:5000/check_answer', {
     method: "POST",
-    mode: "no-cors",
     headers: {
-      "Content-Type": "application/x-www-form-urlencoded",
+      "Content-Type": "application/json",
     },
+    body: JSON.stringify({
+      "response": answer,
+      "segment": segment,
+      "question_id": question,
+      "seat": code
+    })
   });
 }
 
@@ -236,7 +244,7 @@ function updateCode() {
       element.innerHTML = storage.get("code");
     });
     document.title = `Virtual Checker (${storage.get("code")})`;
-    document.getElementById("course-input").value = getCourse(storage.get("code"));
+    document.getElementById("course-input").value = getCourse(storage.get("code")) || "Unknown Course";
   }
 }
 
@@ -388,8 +396,13 @@ function updateHistory() {
     history.forEach((item) => {
       const button = document.createElement("button");
       const latex = item.type === "latex";
+      const array = item.type === "array";
       if (!latex) {
-        button.innerHTML = `<p><b>${item.question}.</b> ${unixToTimeString(item.timestamp)} (${item.code})</p>\n<p>${item.answer}</p>`;
+        if (!array) {
+          button.innerHTML = `<p><b>${item.question}.</b> ${unixToTimeString(item.timestamp)} (${item.code})</p>\n<p>${item.answer}</p>`;
+        } else {
+          button.innerHTML = `<p><b>${item.question}.</b> ${unixToTimeString(item.timestamp)} (${item.code})</p>\n<p>${item.answer.split('[')[1].split(']')[0]}</p>`;
+        }
       } else {
         button.innerHTML = `<p><b>${item.question}.</b> ${unixToTimeString(item.timestamp)} (${item.code})</p>\n${convertLatexToMarkup(item.answer)}\n<p class="hint">(Equation may not display properly)</p>`;
       }
@@ -403,6 +416,14 @@ function updateHistory() {
           answerMode("math");
           ui.setButtonSelectValue(document.getElementById("answer-mode-selector"), "math");
           mf.value = item.answer;
+        } else if (array) {
+          answerMode("set");
+          ui.setButtonSelectValue(document.getElementById("answer-mode-selector"), "set");
+          var i = 0;
+          JSON.parse(item.answer).forEach(a => {
+            setInputs[i].value = a;
+            i++;
+          });
         } else {
           const choice = item.answer.match(/^CHOICE ([A-E])$/);
           if (!choice) {
@@ -485,6 +506,8 @@ document.getElementById("answer-mode-selector").addEventListener("input", (e) =>
     answerLabel.setAttribute("for", "answer-input");
   } else if (mode === "math") {
     answerLabel.setAttribute("for", "math-input");
+  } else if (mode === "set") {
+    answerLabel.setAttribute("for", "set-input");
   }
 });
 
@@ -513,6 +536,7 @@ document.querySelector("[data-add-set-input]").addEventListener("click", () => {
       buttonGrid.appendChild(newSetInput);
     }
     document.querySelector('[data-answer-mode="set"] .button-grid').style.flexWrap = (setInputs.length > 2) ? 'wrap' : 'nowrap';
+    newSetInputInput.focus();
   }
 });
 
