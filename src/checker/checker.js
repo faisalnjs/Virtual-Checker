@@ -4,12 +4,15 @@ import storage from "/src/modules/storage.js";
 import { autocomplete } from "/src/symbols/symbols.js";
 import { unixToTimeString } from "/src/modules/time.js";
 import { getPeriod } from "/src/periods/periods";
+import { getCourse } from "/src/periods/classes";
 import { convertLatexToAsciiMath, convertLatexToMarkup, renderMathInElement } from "mathlive";
 ``;
 
+const segmentInput = document.getElementById("segment-input");
 const questionInput = document.getElementById("question-input");
 const answerInput = document.getElementById("answer-input");
 const mf = document.getElementById("math-input");
+const setInput = document.getElementById("set-input");
 
 let currentAnswerMode;
 let multipleChoice = null;
@@ -41,7 +44,7 @@ let historyIndex = 0;
   //   storage.set("created", Date.now());
   // }
   // Focus question input
-  questionInput.focus();
+  segmentInput.focus();
   // Set default answer mode
   answerMode("input");
   // Populate seat code finder grid
@@ -76,6 +79,13 @@ document.getElementById("submit-button").addEventListener("click", () => {
         return answerInput.value?.trim();
       } else if (mode === "math") {
         return convertLatexToAsciiMath(mf.value);
+      } else if (mode === "set") {
+        var values = [];
+        var setInputs = document.querySelectorAll('[data-set-input]');
+        setInputs.forEach(a => {
+          if ((a.value.length > 0) && (a.value != ' ')) values.push(a.value)
+        });
+        return JSON.stringify(values);
       }
     })();
   if (storage.get("code")) {
@@ -106,6 +116,9 @@ document.getElementById("submit-button").addEventListener("click", () => {
       } else if (mode === "math") {
         mf.classList.add("attention");
         mf.focus();
+      } else if (mode === "set") {
+        setInput.classList.add("attention");
+        setInput.focus();
       }
     }
     if (!question) {
@@ -223,6 +236,7 @@ function updateCode() {
       element.innerHTML = storage.get("code");
     });
     document.title = `Virtual Checker (${storage.get("code")})`;
+    document.getElementById("course-input").value = getCourse(storage.get("code"));
   }
 }
 
@@ -472,4 +486,45 @@ document.getElementById("answer-mode-selector").addEventListener("input", (e) =>
   } else if (mode === "math") {
     answerLabel.setAttribute("for", "math-input");
   }
+});
+
+var setInputs = document.querySelectorAll('[data-set-input]');
+
+// Add set input
+document.querySelector("[data-add-set-input]").addEventListener("click", () => {
+  setInputs = document.querySelectorAll('[data-set-input]');
+  let highestDataElement = null;
+  setInputs.forEach(element => {
+    if (highestDataElement === null || parseInt(element.getAttribute('data-set-input'), 10) > parseInt(highestDataElement.getAttribute('data-set-input'), 10)) highestDataElement = element;
+  });
+  if (highestDataElement !== null) {
+    var newSetInput = document.createElement('div');
+    newSetInput.id = 'question-container';
+    var newSetInputInput = document.createElement('input');
+    newSetInputInput.setAttribute('type', 'text');
+    newSetInputInput.setAttribute('autocomplete', 'off');
+    newSetInputInput.setAttribute('data-set-input', Number(highestDataElement.getAttribute('data-set-input')) + 1);
+    newSetInput.appendChild(newSetInputInput);
+    const buttonGrid = document.querySelector('[data-answer-mode="set"] .button-grid');
+    const insertBeforePosition = buttonGrid.children.length - 2;
+    if (insertBeforePosition > 0) {
+      buttonGrid.insertBefore(newSetInput, buttonGrid.children[insertBeforePosition]);
+    } else {
+      buttonGrid.appendChild(newSetInput);
+    }
+    document.querySelector('[data-answer-mode="set"] .button-grid').style.flexWrap = (setInputs.length > 2) ? 'wrap' : 'nowrap';
+  }
+});
+
+// Remove set input
+document.querySelector("[data-remove-set-input]").addEventListener("click", () => {
+  setInputs = document.querySelectorAll('[data-set-input]');
+  if (setInputs.length > 1) {
+    let highestDataElement = null;
+    setInputs.forEach(element => {
+      if (highestDataElement === null || parseInt(element.getAttribute('data-set-input'), 10) > parseInt(highestDataElement.getAttribute('data-set-input'), 10)) highestDataElement = element;
+    });
+    if (highestDataElement !== null) highestDataElement.parentElement.remove();
+  }
+  document.querySelector('[data-answer-mode="set"] .button-grid').style.flexWrap = (setInputs.length < 5) ? 'nowrap' : 'wrap';
 });

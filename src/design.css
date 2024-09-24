@@ -45,17 +45,14 @@
 
 body {
   min-height: 100%;
-  padding: 50px 100px 25px 100px;
+  padding: 50px 10% 25px 10%;
   color: var(--text-color);
   background-color: var(--background-color);
   font:
     16px "Figtree",
     sans-serif;
   line-height: 1.5;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 50px;
+  gap: 50px !important;
 }
 
 body.enable-transitions {
@@ -64,7 +61,6 @@ body.enable-transitions {
 
 h1 {
   font-size: 1.75rem;
-  line-height: 1.2;
 }
 
 h2,
@@ -124,6 +120,12 @@ select {
   border: none;
   border-radius: 0.5rem;
   background-color: var(--surface-color);
+  width: -webkit-fill-available;
+}
+
+input:disabled,
+select:disabled {
+  opacity: 0.5;
 }
 
 textarea {
@@ -302,17 +304,19 @@ div.ML__keyboard {
 }
 
 [data-button-select] {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 0.125rem;
+  display: flex;
+  gap: 0.25rem;
   padding: 0.25rem;
   background-color: var(--surface-color);
   border-radius: 0.5rem;
+  width: fit-content;
 }
 
 [data-button-select] > button {
-  height: 1.75em;
+  height: unset;
   border-radius: 0.25rem;
+  padding: 5px 12.5px;
+  cursor: pointer;
 }
 
 [data-button-select] > button[aria-selected="true"] {
@@ -342,4 +346,46 @@ div.ML__keyboard {
   outline: none;
   box-shadow: 0 0 0 0.125rem var(--error-color) inset;
   transition: box-shadow 100ms ease;
+}
+
+img {
+  border-radius: 5px;
+  border: 5px solid var(--surface-color);
+  background: url(<path-to-image>) lightgray 50% / cover no-repeat;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2.5px;
+  width: -webkit-fill-available;
+}
+
+button[square] {
+  width: min-content !important;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+@media screen and (max-width: 900px) {
+  .button-grid {
+    flex-wrap: wrap;
+  }
+}
+
+#checker button {
+  width: inherit;
+  min-width: 36px;
+}
+
+.button-grid.reverse {
+  flex-direction: row-reverse;
+}
+
+[data-answer-mode="set"] input {
+  text-align: center;
 }

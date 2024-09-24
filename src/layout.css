@@ -10,7 +10,6 @@ div.spacer {
   display: flex;
   flex-direction: row;
   gap: 0.25rem;
-  flex-wrap: wrap;
 }
 
 .full-row {
@@ -44,9 +43,10 @@ div.spacer {
 }
 
 .button-grid {
-  display: grid;
+  display: flex;
   grid-template-columns: repeat(auto-fit, minmax(2.5rem, 1fr));
   gap: 0.25rem;
+  width: -webkit-fill-available;
 }
 
 #header {
@@ -54,19 +54,21 @@ div.spacer {
   display: flex;
   flex-direction: column;
   align-items: center;
+  gap: 10px;
 }
 
 #header > h1 {
   font-size: 1.5rem;
 }
 
-#clicker {
+#checker {
   flex: 1;
   align-self: center;
   display: flex;
   flex-direction: column;
   justify-content: center;
   width: min(100%, 800px);
+  gap: 12.5px;
 }
 
 #question-container {
@@ -75,6 +77,7 @@ div.spacer {
   gap: 0.25rem;
   flex-wrap: wrap;
   justify-content: center;
+  width: -webkit-fill-available;
 }
 
 #question-input {
@@ -89,7 +92,7 @@ div.spacer {
 
 [data-answer-mode="input"] {
   display: flex;
-  flex-direction: column-reverse;
+  flex-direction: column;
   gap: 0.25rem;
 }
 
