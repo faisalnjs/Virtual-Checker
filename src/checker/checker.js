@@ -225,7 +225,7 @@ async function submitClick(code, segment, question, answer) {
     } else if (typeof r.error != 'undefined') {
       ui.modeless(`<i class="bi bi-exclamation-triangle"></i>`, 'Error');
     } else {
-      ui.modeless(`<i class="bi bi-check-lg"></i>`, "Submitted!");
+      ui.modeless(`<i class="bi bi-hourglass"></i>`, "Submitted, Awaiting Scoring");
     }
   })
 }
