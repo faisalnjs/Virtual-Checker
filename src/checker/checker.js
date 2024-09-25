@@ -17,6 +17,9 @@ const answerInput = document.getElementById("answer-input");
 const mf = document.getElementById("math-input");
 const setInput = document.getElementById("set-input");
 var setInputs = document.querySelectorAll("[data-set-input]");
+const questionImages = document.querySelector('.images');
+const nextQuestionButtons = document.querySelectorAll('[data-next-question]');
+const prevQuestionButtons = document.querySelectorAll('[data-prev-question]');
 
 let currentAnswerMode;
 let multipleChoice = null;
@@ -244,61 +247,101 @@ var segmentsArray = [];
 
 // Update elements with new seat code
 async function updateCode() {
-  if (storage.get("code")) {
-    document.getElementById("code-input").value = storage.get("code");
-    document.querySelectorAll("span.code").forEach((element) => {
-      element.innerHTML = storage.get("code");
+  const code = storage.get("code");
+  if (code) {
+    document.getElementById("code-input").value = code;
+    document.querySelectorAll("span.code").forEach(element => {
+      element.innerHTML = code;
     });
-    document.title = `Virtual Checker (${storage.get("code")})`;
-    document.getElementById("course-input").value = getCourse(storage.get("code")) || "Unknown Course";
-    // Load segments
-    await fetch(domain + '/segments?course=' + storage.get("code").slice(0, 1), {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      }
-    })
-      .then(a => a.json())
-      .then(a => {
-        segments.innerHTML = '';
-        segmentsArray = a;
-        a.forEach(segment => {
-          var s = document.createElement('option');
-          s.value = segment.number;
-          s.innerHTML = segment.name;
-          segments.append(s);
-          segments.addEventListener("change", () => {
-            var s2 = segmentsArray.find(s2 => s2.number == segments.value);
-            questions.innerHTML = '';
-            JSON.parse(s2.question_ids).forEach(question => {
-              var q = document.createElement('option');
-              q.value = question.id;
-              q.innerHTML = question.name;
-              questions.append(q);
-            });
-          });
-        });
-        var s2 = segmentsArray.find(s2 => s2.number == segments.value);
-        questions.innerHTML = '';
-        JSON.parse(s2.question_ids).forEach(question => {
-          var q = document.createElement('option');
-          q.value = question.id;
-          q.innerHTML = question.name;
-          questions.append(q);
-        });
-        fetch(domain + '/questions', {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          }
-        })
-          .then(a => a.json())
-          .then(a => {
-            questionsArray = a;
-        });
+    document.title = `Virtual Checker (${code})`;
+    document.getElementById("course-input").value = getCourse(code) || "Unknown Course";
+    try {
+      const segmentsResponse = await fetch(`${domain}/segments?course=${code.slice(0, 1)}`, {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
       });
+      const segmentsData = await segmentsResponse.json();
+      segments.innerHTML = '';
+      segmentsArray = segmentsData;
+      segmentsData.forEach(segment => {
+        const option = document.createElement('option');
+        option.value = segment.number;
+        option.innerHTML = segment.name;
+        segments.append(option);
+      });
+      segments.removeEventListener("change", updateSegment);
+      segments.addEventListener("change", updateSegment);
+      updateSegment();
+      const questionsResponse = await fetch(`${domain}/questions`, {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+      });
+      questionsArray = await questionsResponse.json();
+      await updateQuestion();
+    } catch (error) {
+      console.error("Failed to fetch data:", error);
+    }
   }
 }
+
+async function updateSegment() {
+  const selectedSegment = segmentsArray.find(s => s.number == segments.value);
+  questions.innerHTML = '';
+  JSON.parse(selectedSegment.question_ids).forEach(questionId => {
+    const questionOption = document.createElement('option');
+    questionOption.value = questionId.id;
+    questionOption.innerHTML = questionId.name;
+    questions.append(questionOption);
+  });
+  questions.removeEventListener("change", updateQuestion);
+  questions.addEventListener("change", updateQuestion);
+  await updateQuestion();
+}
+
+async function updateQuestion() {
+  var question = questionsArray.find(q => q.id == questions.value);
+  questionImages.innerHTML = '';
+  if (!question) return;
+  JSON.parse(question.images).forEach(image => {
+    var i = document.createElement('img');
+    i.src = image;
+    questionImages.append(i);
+  });
+  const questionOptions = questions.querySelectorAll('option');
+  const selectedQuestionOption = questions.querySelector('option:checked');
+
+  if (questionOptions.length === 0) {
+    nextQuestionButtons.forEach(btn => btn.disabled = true);
+    prevQuestionButtons.forEach(btn => btn.disabled = true);
+  } else {
+    const selectedQuestionOptionIndex = Array.from(questionOptions).indexOf(selectedQuestionOption);
+    nextQuestionButtons.forEach(btn => btn.disabled = selectedQuestionOptionIndex === questionOptions.length - 1);
+    prevQuestionButtons.forEach(btn => btn.disabled = selectedQuestionOptionIndex === 0);
+  }
+}
+
+function prevSegment() {
+  const questionOptions = questions.querySelectorAll('option');
+  const selectedQuestionOption = questions.querySelector('option:checked');
+  const selectedQuestionOptionIndex = Array.from(questionOptions).indexOf(selectedQuestionOption);
+  if (selectedQuestionOptionIndex > 0) {
+    questionOptions[selectedQuestionOptionIndex - 1].selected = true;
+    updateQuestion();
+  }
+}
+
+function nextSegment() {
+  const questionOptions = questions.querySelectorAll('option');
+  const selectedQuestionOption = questions.querySelector('option:checked');
+  const selectedQuestionOptionIndex = Array.from(questionOptions).indexOf(selectedQuestionOption);
+  if (selectedQuestionOptionIndex < questionOptions.length - 1) {
+    questionOptions[selectedQuestionOptionIndex + 1].selected = true;
+    updateQuestion();
+  }
+}
+
+document.querySelectorAll('[data-prev-question]').forEach(p => p.addEventListener('click', prevSegment));
+document.querySelectorAll('[data-next-question]').forEach(p => p.addEventListener('click', nextSegment));
 
 // Show multiple choice card
 document.querySelectorAll("[data-multiple-choice]").forEach((button) => {

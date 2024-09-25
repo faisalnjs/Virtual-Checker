@@ -82,6 +82,7 @@ button {
   transition:
     100ms color var(--easing),
     100ms background-color var(--easing);
+  cursor: pointer;
 }
 
 button.icon {
@@ -121,6 +122,7 @@ select {
   border-radius: 0.5rem;
   background-color: var(--surface-color);
   width: -webkit-fill-available;
+  cursor: pointer;
 }
 
 input:disabled,
@@ -358,6 +360,13 @@ div.ML__keyboard {
   transition: box-shadow 100ms ease;
 }
 
+.images {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 5px;
+}
+
 img {
   border-radius: 5px;
   border: 5px solid var(--surface-color);
@@ -374,7 +383,6 @@ img {
 
 button[square] {
   width: min-content !important;
-  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;

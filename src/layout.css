@@ -47,6 +47,7 @@ div.spacer {
   grid-template-columns: repeat(auto-fit, minmax(2.5rem, 1fr));
   gap: 0.25rem;
   width: -webkit-fill-available;
+  align-items: flex-end;
 }
 
 #header {
