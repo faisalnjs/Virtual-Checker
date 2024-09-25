@@ -8,7 +8,10 @@ import { getCourse } from "/src/periods/classes";
 import { convertLatexToAsciiMath, convertLatexToMarkup, renderMathInElement } from "mathlive";
 ``;
 
+const domain = (window.location.hostname.search('check') != -1) ? 'http://api.check.vssfalcons.com' : 'http://localhost:5000';
+const segments = document.getElementById("segment-input");
 const segmentInput = document.getElementById("segment-input");
+const questions = document.getElementById("question-input");
 const questionInput = document.getElementById("question-input");
 const answerInput = document.getElementById("answer-input");
 const mf = document.getElementById("math-input");
@@ -187,7 +190,7 @@ function resetInputs() {
 
 // Check answer
 function submitClick(code, segment, question, answer) {
-  fetch('localhost:5000/check_answer', {
+  fetch(domain + '/check_answer', {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -236,8 +239,11 @@ function saveCode() {
   }
 }
 
+var questionsArray = [];
+var segmentsArray = [];
+
 // Update elements with new seat code
-function updateCode() {
+async function updateCode() {
   if (storage.get("code")) {
     document.getElementById("code-input").value = storage.get("code");
     document.querySelectorAll("span.code").forEach((element) => {
@@ -245,6 +251,52 @@ function updateCode() {
     });
     document.title = `Virtual Checker (${storage.get("code")})`;
     document.getElementById("course-input").value = getCourse(storage.get("code")) || "Unknown Course";
+    // Load segments
+    await fetch(domain + '/segments?course=' + storage.get("code").slice(0, 1), {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      }
+    })
+      .then(a => a.json())
+      .then(a => {
+        segments.innerHTML = '';
+        segmentsArray = a;
+        a.forEach(segment => {
+          var s = document.createElement('option');
+          s.value = segment.number;
+          s.innerHTML = segment.name;
+          segments.append(s);
+          segments.addEventListener("change", () => {
+            var s2 = segmentsArray.find(s2 => s2.number == segments.value);
+            questions.innerHTML = '';
+            JSON.parse(s2.question_ids).forEach(question => {
+              var q = document.createElement('option');
+              q.value = question.id;
+              q.innerHTML = question.name;
+              questions.append(q);
+            });
+          });
+        });
+        var s2 = segmentsArray.find(s2 => s2.number == segments.value);
+        questions.innerHTML = '';
+        JSON.parse(s2.question_ids).forEach(question => {
+          var q = document.createElement('option');
+          q.value = question.id;
+          q.innerHTML = question.name;
+          questions.append(q);
+        });
+        fetch(domain + '/questions', {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          }
+        })
+          .then(a => a.json())
+          .then(a => {
+            questionsArray = a;
+        });
+      });
   }
 }
 
