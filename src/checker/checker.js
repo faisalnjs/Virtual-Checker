@@ -8,7 +8,7 @@ import { getCourse } from "/src/periods/classes";
 import { convertLatexToAsciiMath, convertLatexToMarkup, renderMathInElement } from "mathlive";
 ``;
 
-const domain = (window.location.hostname.search('check') != -1) ? 'http://api.check.vssfalcons.com' : 'http://localhost:5000';
+const domain = (window.location.hostname.search('check') != -1) ? 'https://api.check.vssfalcons.com' : 'http://localhost:5000';
 const segments = document.getElementById("segment-input");
 const segmentInput = document.getElementById("segment-input");
 const questions = document.getElementById("question-input");
