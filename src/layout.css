@@ -169,6 +169,8 @@ div.spacer {
   width: fit-content;
   overflow: hidden;
   align-self: center;
+  position: sticky;
+  bottom: 25px;
 }
 
 #symbols-grid {

@@ -140,18 +140,18 @@ document.getElementById("submit-button").addEventListener("click", () => {
   } else {
     ui.view("settings/code");
   }
-  function submit() {
-    submitClick(storage.get("code"), segment, question, answer);
-    if (mode === "math" && !multipleChoice) {
-      storeClick(storage.get("code"), segment, question, mf.value, "latex");
-    } else if (mode === "set" && !multipleChoice) {
-      storeClick(storage.get("code"), segment, question, answer, "array");
-    } else {
-      storeClick(storage.get("code"), segment, question, answer, "text");
-    }
-    resetInputs();
-    // Show submit confirmation
-    ui.modeless(`<i class="bi bi-check-lg"></i>`, "Submitted!");
+  async function submit() {
+    await submitClick(storage.get("code"), segment, question, answer)
+    .then(() => {
+      if (mode === "math" && !multipleChoice) {
+        storeClick(storage.get("code"), segment, question, mf.value, "latex");
+      } else if (mode === "set" && !multipleChoice) {
+        storeClick(storage.get("code"), segment, question, answer, "array");
+      } else {
+        storeClick(storage.get("code"), segment, question, answer, "text");
+      }
+      resetInputs();
+    });
   }
 });
 
@@ -183,6 +183,19 @@ function resetInputs() {
   questionInput.value = "";
   answerInput.value = "";
   mf.value = "";
+  setInputs = document.querySelectorAll('[data-set-input]');
+  if (setInputs.length > 1) {
+    var a = 0;
+    setInputs.forEach(s => {
+      if (a > 0) {
+        s.parentElement.remove();
+      } else {
+        s.value = '';
+      }
+      a++;
+    });
+  }
+  document.querySelector('[data-answer-mode="set"] .button-grid').style.flexWrap = 'nowrap';
   // Switch input mode (exit multiple choice)
   answerMode(mode);
   multipleChoice = null;
@@ -192,8 +205,8 @@ function resetInputs() {
 }
 
 // Check answer
-function submitClick(code, segment, question, answer) {
-  fetch(domain + '/check_answer', {
+async function submitClick(code, segment, question, answer) {
+  await fetch(domain + '/check_answer', {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -204,7 +217,17 @@ function submitClick(code, segment, question, answer) {
       "question_id": question,
       "seat": code
     })
-  });
+  })
+  .then(r => r.json())
+  .then(r => {
+    if (typeof r.correct != 'undefined') {
+      ui.modeless(`<i class="bi bi-${(r.correct) ? 'check' : 'x'}-lg"></i>`, (r.correct) ? 'Correct!' : 'Incorrect');
+    } else if (typeof r.error != 'undefined') {
+      ui.modeless(`<i class="bi bi-exclamation-triangle"></i>`, 'Error');
+    } else {
+      ui.modeless(`<i class="bi bi-check-lg"></i>`, "Submitted!");
+    }
+  })
 }
 
 // Limit seat code input to integers
@@ -407,11 +430,12 @@ function answerMode(mode) {
 }
 
 // Store click to storage and history
-function storeClick(code, question, answer, type) {
+function storeClick(code, segment, question, answer, type) {
   const history = storage.get("history") || [];
   const timestamp = Date.now();
   history.push({
     "code": code,
+    "segment": segment,
     "question": question,
     "answer": answer,
     "timestamp": timestamp,
@@ -494,12 +518,12 @@ function updateHistory() {
       const array = item.type === "array";
       if (!latex) {
         if (!array) {
-          button.innerHTML = `<p><b>${item.question}.</b> ${unixToTimeString(item.timestamp)} (${item.code})</p>\n<p>${item.answer}</p>`;
+          button.innerHTML = `<p><b>Segment ${item.segment} Question #${item.question}.</b> ${unixToTimeString(item.timestamp)} (${item.code})</p>\n<p>${item.answer}</p>`;
         } else {
-          button.innerHTML = `<p><b>${item.question}.</b> ${unixToTimeString(item.timestamp)} (${item.code})</p>\n<p>${item.answer.split('[')[1].split(']')[0]}</p>`;
+          button.innerHTML = `<p><b>Segment ${item.segment} Question #${item.question}.</b> ${unixToTimeString(item.timestamp)} (${item.code})</p>\n<p>${item.answer.split('[')[1].split(']')[0]}</p>`;
         }
       } else {
-        button.innerHTML = `<p><b>${item.question}.</b> ${unixToTimeString(item.timestamp)} (${item.code})</p>\n${convertLatexToMarkup(item.answer)}\n<p class="hint">(Equation may not display properly)</p>`;
+        button.innerHTML = `<p><b>Segment ${item.segment} Question #${item.question}.</b> ${unixToTimeString(item.timestamp)} (${item.code})</p>\n${convertLatexToMarkup(item.answer)}\n<p class="hint">(Equation may not display properly)</p>`;
       }
       feed.prepend(button);
       renderMathInElement(button);
