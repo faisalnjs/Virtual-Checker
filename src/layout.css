@@ -58,16 +58,16 @@ div.spacer {
   gap: 10px;
 }
 
-#header > h1 {
+#header h1 {
   font-size: 1.5rem;
 }
 
-#header > h6 {
-  font-size: 0.5rem;
+#header h6 {
+  font-size: 1.25rem;
   font-weight: 700;
 }
 
-#header > .info {
+#header .info {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -259,4 +259,5 @@ label {
   align-self: stretch;
   gap: 12.5px;
   width: -webkit-fill-available;
+  overflow: hidden;
 }

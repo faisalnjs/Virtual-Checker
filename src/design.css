@@ -137,7 +137,15 @@ select:disabled {
   border: none;
   border-radius: 0.5rem;
   background-color: var(--surface-color);
-  rotate: 90deg;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: grab;
+  user-select: none;
+}
+
+.drag:active {
+  cursor: grabbing;
 }
 
 textarea {
@@ -402,6 +410,10 @@ button[square] {
 
 .button-grid.reverse {
   flex-direction: row-reverse;
+}
+
+.button-grid.reorder {
+  flex-direction: column;
 }
 
 [data-answer-mode="set"] input {

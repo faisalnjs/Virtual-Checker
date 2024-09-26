@@ -6,13 +6,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link
       rel="shortcut icon"
-      href="favicon.ico"
+      href="../favicon.ico"
       type="image/x-icon"
       media="(prefers-color-scheme: dark)"
     />
     <link
       rel="shortcut icon"
-      href="favicon-dark.ico"
+      href="../favicon-dark.ico"
       type="image/x-icon"
       media="(prefers-color-scheme: light)"
     />
@@ -66,72 +66,208 @@
     <div id="checker">
       <div class="section">
         <h1>Courses</h1>
-        <div class="button-grid inputs">
-          <div class="input-group">
-            <label for="period-input">Period</label>
-            <div class="space" id="question-container">
-              <select id="period-input">
-                <option value="1">1</option>
-                <option value="2">2</option>
-                <option value="3">3</option>
-                <option value="4">4</option>
-                <option value="5">5</option>
-                <option value="6">6</option>
-                <option value="7">7</option>
-                <option value="8">8</option>
-                <option value="9">9</option>
-              </select>
+        <div class="section course-selector">
+          <div class="button-grid inputs">
+            <div class="input-group">
+              <label for="period-input">Period</label>
+              <div class="space" id="question-container">
+                <select id="period-input"></select>
+              </div>
+            </div>
+            <div class="input-group">
+              <label for="course-input">Name</label>
+              <div class="space" id="question-container">
+                <input type="text" autocomplete="off" id="course-input" value="" />
+              </div>
             </div>
           </div>
-          <div class="input-group">
-            <label for="course-input">Name</label>
-            <div class="space" id="question-container">
-              <input type="text" autocomplete="off" id="course-input" value="Unknown Course" />
-            </div>
-          </div>
+          <button class="space" id="reorder-courses-button">Reorder Courses & Periods</button>
         </div>
-        <button class="pill space" id="reorder-courses-button">Reorder Courses & Periods</button>
-        <div class="button-grid reorder">
+        <div class="section course-reorder">
+          <div class="button-grid reorder"></div>
           <div class="button-grid inputs">
-            <input type="text" autocomplete="off" id="course1" value="1" />
-            <div class="drag">|||</div>
-          </div>
-          <div class="button-grid inputs">
-          <input type="text" autocomplete="off" id="course2" value="2" />
-            <div class="drag">|||</div>
-          </div>
-          <div class="button-grid inputs">
-          <input type="text" autocomplete="off" id="course3" value="3" />
-            <div class="drag">|||</div>
-          </div>
-          <div class="button-grid inputs">
-          <input type="text" autocomplete="off" id="course4" value="4" />
-            <div class="drag">|||</div>
-          </div>
-          <div class="button-grid inputs">
-          <input type="text" autocomplete="off" id="course5" value="5" />
-            <div class="drag">|||</div>
-          </div>
-          <div class="button-grid inputs">
-          <input type="text" autocomplete="off" id="course6" value="6" />
-            <div class="drag">|||</div>
-          </div>
-          <div class="button-grid inputs">
-          <input type="text" autocomplete="off" id="course7" value="7" />
-            <div class="drag">|||</div>
-          </div>
-          <div class="button-grid inputs">
-          <input type="text" autocomplete="off" id="course8" value="8" />
-            <div class="drag">|||</div>
-          </div>
-          <div class="button-grid inputs">
-            <input type="text" autocomplete="off" id="course9" value="9" />
-            <div class="drag">|||</div>
+            <button class="space" id="save-course-order-button">Save Order</button>
+            <button class="space" id="cancel-reorder-courses-button">Cancel</button>
           </div>
         </div>
       </div>
-      <button class="pill space" id="save-button">Save</button>
+      <button class="space" id="save-button">Save</button>
     </div>
+    <!-- Controls -->
+    <div id="controls-container" class="pill">
+      <button class="icon" data-modal-view="settings">
+        <i class="bi bi-gear"></i>
+      </button>
+      <!-- <button class="pill" data-modal-view="settings/code">
+        <span class="code">000</span>
+      </button>
+      <button class="icon" data-modal-view="history">
+        <i class="bi bi-clock-history"></i>
+      </button> -->
+      <!-- <button class="icon" data-modal-view="clear-data-fix">
+          <i class="bi bi-exclamation-triangle"></i>
+        </button> -->
+    </div>
+    <!-- Symbols -->
+    <dialog data-modal-page="symbols" data-page-title="Symbols">
+      <div id="symbols-grid"></div>
+    </dialog>
+    <!-- History -->
+    <dialog data-modal-page="history" data-page-title="History">
+      <h2 id="history-date"></h2>
+      <div class="col" id="history-feed"></div>
+      <div id="history-navigation" class="row center">
+        <button class="icon" id="history-first">
+          <i class="bi bi-chevron-double-left"></i>
+        </button>
+        <button class="icon" id="history-backward">
+          <i class="bi bi-chevron-left"></i>
+        </button>
+        <button class="icon" id="history-forward">
+          <i class="bi bi-chevron-right"></i>
+        </button>
+        <button class="icon" id="history-last">
+          <i class="bi bi-chevron-double-right"></i>
+        </button>
+      </div>
+    </dialog>
+    <!-- Settings -->
+    <dialog data-modal-page="settings" data-page-title="Settings">
+      <p id="version-string"><span class="version"></span></p>
+      <!-- <button data-modal-view="settings/code">Seat Code</button> -->
+      <button data-modal-view="settings/theme">Theme</button>
+      <button data-modal-view="settings/keybinds">Keyboard Shortcuts</button>
+      <button data-modal-view="settings/reset">Reset</button>
+      <!-- <div class="row center">
+        <a href="https://dangoweb.com/?from=virtual-checker" class="icon"><i class="bi bi-cloud-fill"></i></a>
+        <a href="https://github.com/faisalnjs/virtual-checker" class="icon"><i class="bi bi-github"></i></a>
+      </div> -->
+      <div data-modal-page="code" data-page-title="Seat Code">
+        <input type="text" inputmode="numeric" placeholder="000" maxlength="3" id="code-input" />
+        <button data-modal-view="settings/code/help">Need help?</button>
+        <div data-modal-actions>
+          <button id="save-code-button">Save</button>
+        </div>
+        <div data-modal-page="help" data-page-title="Seat Code Finder">
+          <label for="period-input">Period</label>
+          <select id="period-input">
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+            <option value="6">6</option>
+            <option value="7">7</option>
+            <option value="8">8</option>
+            <option value="9">9</option>
+          </select>
+          <p>Where do you sit?</p>
+          <p class="hint">Screen</p>
+          <div id="seat-grid"></div>
+        </div>
+      </div>
+      <div data-modal-page="theme" data-page-title="Theme">
+        <div id="theme-preview">
+          <h1 class="text-placeholder">000</h1>
+          <p class="text-placeholder">Question</p>
+          <div class="control-placeholder"></div>
+          <p class="text-placeholder">Answer</p>
+          <div class="control-placeholder"></div>
+          <div class="control-placeholder pill"></div>
+        </div>
+        <div id="theme-selector">
+          <button data-modal-view="settings/theme/editor">Custom</button>
+        </div>
+        <div data-modal-actions>
+          <button id="theme-reset">Reset</button>
+          <button id="theme-apply">Apply</button>
+        </div>
+        <div data-modal-page="editor" data-page-title="Custom Theme">
+          <div id="editor-preview">
+            <h1 class="text-placeholder">000</h1>
+            <p class="text-placeholder">Question</p>
+            <div class="control-placeholder"></div>
+            <p class="text-placeholder">Answer</p>
+            <div class="control-placeholder"></div>
+            <div class="control-placeholder pill"></div>
+          </div>
+          <div id="theme-editor">
+            <label>
+              Color Scheme
+              <select name="color-scheme">
+                <option value="light">Light</option>
+                <option value="dark">Dark</option>
+              </select>
+            </label>
+            <label>
+              Text
+              <div data-color-input="text-color"></div>
+            </label>
+            <label>
+              Background
+              <div data-color-input="background-color"></div>
+            </label>
+            <label>
+              Surface
+              <div data-color-input="surface-color"></div>
+            </label>
+            <label>
+              Accent
+              <div data-color-input="accent-color"></div>
+            </label>
+            <label>
+              Accent Text
+              <div data-color-input="accent-text-color"></div>
+            </label>
+            <label>
+              Error
+              <div data-color-input="error-color"></div>
+            </label>
+          </div>
+          <label>
+            Theme Code
+            <input type="text" id="theme-code" />
+          </label>
+          <p>
+            <i class="bi bi-exclamation-circle"></i> Use <kbd>Shift</kbd> + <kbd>R</kbd> to reset
+            the theme if you can't get back here
+          </p>
+          <div data-modal-actions>
+            <button id="editor-reset">Reset</button>
+            <button id="editor-apply">Apply</button>
+          </div>
+        </div>
+      </div>
+      <div data-modal-page="keybinds" data-page-title="Keyboard Shortcuts">
+        <p><kbd>Ctrl</kbd> + <kbd>Enter</kbd> Submit click</p>
+        <p><kbd>Alt</kbd> + <kbd>1-9</kbd> Insert nth symbol</p>
+        <p><kbd>Ctrl</kbd> + <kbd>/</kbd> Open Keyboard Shortcuts</p>
+        <p><kbd>Ctrl</kbd> + <kbd>,</kbd> Open Settings</p>
+        <p><kbd>Ctrl</kbd> + <kbd>.</kbd> Open History</p>
+        <p><kbd>Shift</kbd> + <kbd>R</kbd> Reset theme</p>
+      </div>
+      <div data-modal-page="reset" data-page-title="Reset">
+        <button data-reset="history">Clear History</button>
+        <button data-reset="all">Reset All Settings</button>
+      </div>
+    </dialog>
+    <dialog data-modal-page="clear-data-fix" data-page-title="Settings May Not Save">
+      <p>
+        VSCHSD administration enforces a setting which clears site settings when you close your
+        browser
+      </p>
+      <p>Fix this by adding an exception for this site:</p>
+      <ol>
+        <li>
+          In a new tab, open
+          <code>edge://settings/clearBrowsingDataOnClose</code>
+        </li>
+        <li>Click "Add" under "Cookies and other site data"</li>
+        <li>
+          Add <code><span class="hostname"></span></code>
+        </li>
+      </ol>
+    </dialog>
     <script src="../src/admin.js" type="module"></script>
   </body>
 </html>

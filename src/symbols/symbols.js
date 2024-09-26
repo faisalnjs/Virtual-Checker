@@ -10,6 +10,8 @@ class Autocomplete {
     this.input = input;
     this.suggestion = suggestion;
 
+    if (!this.input) return;
+
     this.input.addEventListener("keydown", (e) => {
       if (e.key == "Tab" && this.matches.length != 0) {
         e.preventDefault();

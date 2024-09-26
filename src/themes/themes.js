@@ -9,18 +9,20 @@ import storage from "/src/modules/storage.js";
 
 let selectedTheme = "";
 
-themes.forEach((theme) => {
-  const value = theme[0];
-  const name = theme[1] || theme[0];
+if (document.getElementById("theme-selector")) {
+  themes.forEach((theme) => {
+    const value = theme[0];
+    const name = theme[1] || theme[0];
 
-  const button = document.createElement("button");
-  button.textContent = name;
-  button.addEventListener("click", () => {
-    selectedTheme = value;
-    document.getElementById("theme-preview").setAttribute("data-theme", value);
+    const button = document.createElement("button");
+    button.textContent = name;
+    button.addEventListener("click", () => {
+      selectedTheme = value;
+      document.getElementById("theme-preview").setAttribute("data-theme", value);
+    });
+    document.getElementById("theme-selector").append(button);
   });
-  document.getElementById("theme-selector").append(button);
-});
+}
 
 if (storage.get("theme") == "custom") {
   // Custom theme
@@ -30,25 +32,27 @@ if (storage.get("theme") == "custom") {
   // Built-in theme
   const theme = storage.get("theme") || "";
   document.body.setAttribute("data-theme", theme);
-  document.getElementById("theme-preview").setAttribute("data-theme", theme);
+  if (document.getElementById("theme-preview")) document.getElementById("theme-preview").setAttribute("data-theme", theme);
   selectedTheme = theme;
 }
 enableTransitions();
 
-document.getElementById("theme-apply").addEventListener("click", () => {
-  const value = selectedTheme;
-  disableTransitions();
-  document.body.setAttribute("data-theme", value);
-  removeCustomTheme();
-  enableTransitions();
-  storage.set("theme", value);
-  // Update developer theme input
-  if (document.getElementById("theme-debug")) {
-    document.getElementById("theme-debug").value = value;
-  }
-});
+if (document.getElementById("theme-apply")) {
+  document.getElementById("theme-apply").addEventListener("click", () => {
+    const value = selectedTheme;
+    disableTransitions();
+    document.body.setAttribute("data-theme", value);
+    removeCustomTheme();
+    enableTransitions();
+    storage.set("theme", value);
+    // Update developer theme input
+    if (document.getElementById("theme-debug")) {
+      document.getElementById("theme-debug").value = value;
+    }
+  });
+}
 
-document.getElementById("theme-reset").addEventListener("click", resetTheme);
+if (document.getElementById("theme-reset")) document.getElementById("theme-reset").addEventListener("click", resetTheme);
 
 export function resetTheme() {
   disableTransitions();
@@ -96,28 +100,28 @@ document.querySelectorAll("#theme-editor :is(input, select)").forEach((input) =>
   });
 });
 
-document.getElementById("editor-apply").addEventListener("click", () => {
+if (document.getElementById("editor-apply")) document.getElementById("editor-apply").addEventListener("click", () => {
   storage.set("custom-theme", customTheme);
   storage.set("theme", "custom");
   applyCustomTheme();
 });
 
-document.getElementById("editor-reset").addEventListener("click", () => {
+if (document.getElementById("editor-reset")) document.getElementById("editor-reset").addEventListener("click", () => {
   Object.assign(customTheme, defaultTheme);
   updateEditorFields();
   updateEditorPreview();
   updateThemeCode();
 });
 
-document.getElementById("theme-code").addEventListener("input", (e) => {
+if (document.getElementById("theme-code")) document.getElementById("theme-code").addEventListener("input", (e) => {
   if (e.target.value?.trim()) {
     const theme = decodeThemeCode(e.target.value);
     theme && updateEditorPreview(theme);
   }
 });
 
-document.getElementById("theme-code").addEventListener("blur", validateThemeCode);
-document.getElementById("theme-code").addEventListener("keydown", (e) => {
+if (document.getElementById("theme-code")) document.getElementById("theme-code").addEventListener("blur", validateThemeCode);
+if (document.getElementById("theme-code")) document.getElementById("theme-code").addEventListener("keydown", (e) => {
   if (e.key == "Enter") {
     validateThemeCode();
   }
@@ -148,6 +152,7 @@ function updateEditorFields() {
 
 function updateEditorPreview(theme = customTheme) {
   const preview = document.getElementById("editor-preview");
+  if (!preview) return;
   Object.entries(theme).forEach(([key, value]) => {
     const prefix = key == "color-scheme" ? "" : "--";
     preview.style.setProperty(prefix + key, value);
@@ -172,7 +177,7 @@ function removeCustomTheme() {
 }
 
 function updateThemeCode() {
-  document.getElementById("theme-code").value = encodeThemeCode(customTheme);
+  if (document.getElementById("theme-code")) document.getElementById("theme-code").value = encodeThemeCode(customTheme);
 }
 
 function encodeThemeCode(theme) {
@@ -193,7 +198,7 @@ function decodeThemeCode(code) {
 }
 
 // Load theme editor
-document.querySelector(`[data-modal-page="editor"]`).addEventListener("view", () => {
+if (document.querySelector(`[data-modal-page="editor"]`)) document.querySelector(`[data-modal-page="editor"]`).addEventListener("view", () => {
   Object.assign(customTheme, storage.get("custom-theme") || defaultTheme);
   updateEditorFields();
   updateEditorPreview();

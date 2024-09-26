@@ -25,7 +25,7 @@ document.addEventListener("keydown", (e) => {
   } else if (e.altKey) {
     if (/[1-9]/.test(e.key)) {
       e.preventDefault();
-      insertFromIndex(parseInt(e.key) - 1);
+      if (document.getElementById("answer-suggestion")) insertFromIndex(parseInt(e.key) - 1);
     }
   } else if (e.shiftKey) {
     if (e.key == "R" && !anyDialogOpen && !isTyping) {
