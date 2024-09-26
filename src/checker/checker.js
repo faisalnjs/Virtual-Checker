@@ -590,6 +590,7 @@ const resets = {
         close: true,
         onclick: () => {
           storage.delete("history");
+          storage.delete("questionsAnswered");
           window.location.reload();
         },
       },
