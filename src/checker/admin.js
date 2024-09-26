@@ -26,7 +26,7 @@ let draggedItem = null;
   .then(c => c.json())
   .then(c => {
     courses = c;
-    c.forEach(course => {
+    c.sort((a, b) => a.period - b.period).forEach(course => {
       const option = document.createElement("option");
       option.value = course.id;
       option.innerHTML = course.period;
@@ -34,9 +34,11 @@ let draggedItem = null;
       const elem = document.createElement("div");
       elem.classList = "button-grid inputs";
       elem.style = "flex-wrap: nowrap;";
-      elem.innerHTML = `<input type="text" autocomplete="off" id="course-${course.id}" value="${course.name || ''}" /><div class="drag"><i class="bi bi-grip-horizontal"></i></div>`;
+      elem.innerHTML = `<input type="text" autocomplete="off" id="course-${course.id}" value="${course.name || ''}" /><div class="drag"><i class="bi bi-grip-vertical"></i></div>`;
       document.querySelector(".reorder").appendChild(elem);
     });
+    const course = courses.find(c => c.id == document.getElementById("period-input").value);
+    document.getElementById("course-input").value = course.name;
     document.querySelectorAll('.drag').forEach(item => {
       item.setAttribute('draggable', true);
       item.addEventListener('dragstart', handleDragStart);
@@ -133,6 +135,53 @@ function calculateButtonHeights(container) {
   return totalHeight;
 }
 
+// Save Course Order
+document.getElementById("save-course-order-button").addEventListener("click", () => {
+  var updatedCourses = [...document.querySelector(".reorder").children].map((course, i) => {
+    const courseId = course.querySelector('input').id.split('-')[1];
+    return {
+      id: courseId,
+      name: document.getElementById(`course-${courseId}`).value,
+      period: i + 1
+    };
+  }).sort((a, b) => a.period - b.period);
+  console.log(updatedCourses)
+  fetch(domain + '/courses', {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(updatedCourses)
+  })
+    .then(r => r.json())
+    .then(c => {
+      courses = c;
+      document.querySelector(".reorder").innerHTML = "";
+      document.getElementById("period-input").innerHTML = "";
+      c.sort((a, b) => a.period - b.period).forEach(course => {
+        const option = document.createElement("option");
+        option.value = course.id;
+        option.innerHTML = course.period;
+        document.getElementById("period-input").appendChild(option);
+        const elem = document.createElement("div");
+        elem.classList = "button-grid inputs";
+        elem.style = "flex-wrap: nowrap;";
+        elem.innerHTML = `<input type="text" autocomplete="off" id="course-${course.id}" value="${course.name || ''}" /><div class="drag"><i class="bi bi-grip-vertical"></i></div>`;
+        document.querySelector(".reorder").appendChild(elem);
+      });
+      const course = courses.find(c => c.id == document.getElementById("period-input").value);
+      document.getElementById("course-input").value = course.name;
+      document.querySelectorAll('.drag').forEach(item => {
+        item.setAttribute('draggable', true);
+        item.addEventListener('dragstart', handleDragStart);
+        item.addEventListener('dragover', handleDragOver);
+        item.addEventListener('drop', handleDrop);
+      });
+    });
+  // Show submit confirmation
+  ui.modeless(`<i class="bi bi-check-lg"></i>`, "Saved!");
+});
+
 // Save
 document.getElementById("save-button").addEventListener("click", () => {
   fetch(domain + '/save', {
@@ -176,5 +225,10 @@ function handleDrop(e) {
     let parent = draggedItem.parentNode;
     parent.insertBefore(draggedItem, targetItem);
   }
+  const newOrder = [...document.querySelectorAll('.dragCourse')].sort((a, b) => {
+    return a.getBoundingClientRect().top - b.getBoundingClientRect().top;
+  });
+  const parent = document.querySelector('.reorder');
+  newOrder.forEach(item => parent.appendChild(item));
   return false;
 }
