@@ -145,7 +145,6 @@ document.getElementById("save-course-order-button").addEventListener("click", ()
       period: i + 1
     };
   }).sort((a, b) => a.period - b.period);
-  console.log(updatedCourses)
   fetch(domain + '/courses', {
     method: "POST",
     headers: {
@@ -184,11 +183,19 @@ document.getElementById("save-course-order-button").addEventListener("click", ()
 
 // Save
 document.getElementById("save-button").addEventListener("click", () => {
+  var updatedInfo = {
+    course: {
+      id: document.getElementById("period-input").value,
+      name: document.getElementById("course-input").value,
+    }
+  };
+  console.log(updatedInfo);
   fetch(domain + '/save', {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-    }
+    },
+    body: JSON.stringify(updatedInfo)
   });
   // Show submit confirmation
   ui.modeless(`<i class="bi bi-check-lg"></i>`, "Saved!");
