@@ -33,6 +33,7 @@ let draggedItem = null;
       document.getElementById("period-input").appendChild(option);
       const elem = document.createElement("div");
       elem.classList = "button-grid inputs";
+      elem.style = "flex-wrap: nowrap;";
       elem.innerHTML = `<input type="text" autocomplete="off" id="course-${course.id}" value="${course.name || ''}" /><div class="drag"><i class="bi bi-grip-horizontal"></i></div>`;
       document.querySelector(".reorder").appendChild(elem);
     });
@@ -159,21 +160,19 @@ document.getElementById("save-button").addEventListener("click", () => {
 // });
     
 function handleDragStart(e) {
-  draggedItem = this.parentNode; // Assuming the .drag element is a direct child of the item container
+  draggedItem = this.parentNode;
   e.dataTransfer.effectAllowed = 'move';
-  console.log(12)
 }
 
 function handleDragOver(e) {
-  e.preventDefault(); // Necessary to allow dropping
+  e.preventDefault();
   e.dataTransfer.dropEffect = 'move';
 }
 
 function handleDrop(e) {
-  e.stopPropagation(); // Stops some browsers from redirecting.
-  const targetItem = this.parentNode; // Assuming the .drag element is a direct child of the item container
+  e.stopPropagation();
+  const targetItem = this.parentNode;
   if (draggedItem !== targetItem) {
-    // Swap the positions of the draggedItem and targetItem in the DOM
     let parent = draggedItem.parentNode;
     parent.insertBefore(draggedItem, targetItem);
   }
