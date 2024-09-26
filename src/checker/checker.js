@@ -79,7 +79,8 @@ let historyIndex = 0;
 }
 
 // Submit click
-document.getElementById("submit-button").addEventListener("click", () => {
+document.getElementById("submit-button").addEventListener("click", (e) => {
+  e.target.disabled = true;
   const mode = ui.getButtonSelectValue(document.getElementById("answer-mode-selector"));
   const segment = segmentInput.value?.trim();
   const question = questionInput.value?.trim();
@@ -155,6 +156,9 @@ document.getElementById("submit-button").addEventListener("click", () => {
       }
     });
   }
+  setTimeout(() => {
+    e.target.disabled = false;
+  }, 3000);
 });
 
 // Remove attention ring when user types in either input
@@ -207,10 +211,12 @@ function resetInputs() {
 
 // Check answer
 async function submitClick(code, segment, question, answer) {
-window.scroll(0, 0);
 var qA = storage.get("questionsAnswered") || [];
 var alreadyAnswered = qA.find(q => q.segment == segment && q.question == question)
-if (alreadyAnswered && alreadyAnswered.status == 'correct') return ui.modeless(`<i class="bi bi-exclamation-lg"></i>`, 'Already Submitted!');
+if (alreadyAnswered && alreadyAnswered.status == 'Correct') {
+  window.scroll(0, 0);
+  return ui.modeless(`<i class="bi bi-exclamation-lg"></i>`, 'Already Submitted!');
+}
 await fetch(domain + '/check_answer', {
     method: "POST",
     headers: {
@@ -225,6 +231,7 @@ await fetch(domain + '/check_answer', {
   })
   .then(r => r.json())
   .then(r => {
+    window.scroll(0, 0);
     if (typeof r.correct != 'undefined') {
       ui.modeless(`<i class="bi bi-${(r.correct) ? 'check' : 'x'}-lg"></i>`, (r.correct) ? 'Correct' : 'Try Again');
       qA.push({ "segment": segment, "question": question, "status": (r.correct) ? 'Correct' : 'In Progress' });

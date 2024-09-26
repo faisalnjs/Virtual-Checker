@@ -59,6 +59,7 @@ document.getElementById("reorder-courses-button").addEventListener("click", () =
   const fromHeight = current?.getBoundingClientRect().height;
   document.querySelector('.course-reorder').style.display = 'flex';
   document.querySelector('.course-selector').style.display = 'none';
+  document.getElementById('save-button').style.display = 'none';
   const container = document.querySelector('.section');
   const target = document.querySelector('.course-reorder');
   const toHeight = target.getBoundingClientRect().height + calculateButtonHeights(target);
@@ -81,6 +82,7 @@ document.getElementById("cancel-reorder-courses-button").addEventListener("click
   const current = document.querySelector('.course-reorder');
   const fromHeight = current?.getBoundingClientRect().height;
   document.querySelector('.course-selector').style.display = 'flex';
+  document.getElementById('save-button').style.display = '';
   document.querySelector('.course-reorder').style.display = 'none';
   const container = document.querySelector('.section');
   const target = document.querySelector('.course-selector');
@@ -104,6 +106,7 @@ document.getElementById("save-course-order-button").addEventListener("click", ()
   const current = document.querySelector('.course-reorder');
   const fromHeight = current?.getBoundingClientRect().height;
   document.querySelector('.course-selector').style.display = 'flex';
+  document.getElementById('save-button').style.display = '';
   document.querySelector('.course-reorder').style.display = 'none'; 
   const container = document.querySelector('.section');
   const target = document.querySelector('.course-selector');
@@ -182,7 +185,7 @@ document.getElementById("save-course-order-button").addEventListener("click", ()
 });
 
 // Save
-document.getElementById("save-button").addEventListener("click", () => {
+document.getElementById("save-button").addEventListener("click", (e) => {
   var updatedInfo = {
     course: {
       id: document.getElementById("period-input").value,
@@ -197,8 +200,12 @@ document.getElementById("save-button").addEventListener("click", () => {
     },
     body: JSON.stringify(updatedInfo)
   });
+  e.target.disabled = true;
   // Show submit confirmation
   ui.modeless(`<i class="bi bi-check-lg"></i>`, "Saved!");
+  setTimeout(() => {
+    e.target.disabled = false;
+  }, 3000);
 });
 
 // Remove attention ring when user types in either input
