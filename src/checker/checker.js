@@ -207,12 +207,10 @@ function resetInputs() {
 
 // Check answer
 async function submitClick(code, segment, question, answer) {
+window.scroll(0, 0);
 var qA = storage.get("questionsAnswered") || [];
 var alreadyAnswered = qA.find(q => q.segment == segment && q.question == question)
-if (alreadyAnswered && alreadyAnswered.status == 'correct') {
-  window.scroll(0, 0);
-  return ui.modeless(`<i class="bi bi-exclamation-lg"></i>`, 'Already Submitted!');
-}
+if (alreadyAnswered && alreadyAnswered.status == 'correct') return ui.modeless(`<i class="bi bi-exclamation-lg"></i>`, 'Already Submitted!');
 await fetch(domain + '/check_answer', {
     method: "POST",
     headers: {
@@ -228,7 +226,7 @@ await fetch(domain + '/check_answer', {
   .then(r => r.json())
   .then(r => {
     if (typeof r.correct != 'undefined') {
-      ui.modeless(`<i class="bi bi-${(r.correct) ? 'check' : 'x'}-lg"></i>`, (r.correct) ? 'Correct!' : 'Incorrect');
+      ui.modeless(`<i class="bi bi-${(r.correct) ? 'check' : 'x'}-lg"></i>`, (r.correct) ? 'Correct' : 'Try Again');
       qA.push({ "segment": segment, "question": question, "status": (r.correct) ? 'Correct' : 'In Progress' });
     } else if (typeof r.error != 'undefined') {
       ui.modeless(`<i class="bi bi-exclamation-triangle"></i>`, 'Error');
@@ -584,7 +582,7 @@ function updateHistory() {
 // Reset modals
 const resets = {
   "history": () => {
-    ui.prompt("Clear history?", "This action cannot be reversed!", [
+    ui.prompt("Clear Responses?", "This action cannot be reversed!", [
       {
         text: "Cancel",
         close: true,
