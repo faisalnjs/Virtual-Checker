@@ -207,7 +207,13 @@ function resetInputs() {
 
 // Check answer
 async function submitClick(code, segment, question, answer) {
-  await fetch(domain + '/check_answer', {
+var qA = storage.get("questionsAnswered") || [];
+var alreadyAnswered = qA.find(q => q.segment == segment && q.question == question)
+if (alreadyAnswered && alreadyAnswered.status == 'correct') {
+  window.scroll(0, 0);
+  return ui.modeless(`<i class="bi bi-exclamation-lg"></i>`, 'Already Submitted!');
+}
+await fetch(domain + '/check_answer', {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -221,18 +227,16 @@ async function submitClick(code, segment, question, answer) {
   })
   .then(r => r.json())
   .then(r => {
-    var qA = storage.get("questionsAnswered") || [];
     if (typeof r.correct != 'undefined') {
       ui.modeless(`<i class="bi bi-${(r.correct) ? 'check' : 'x'}-lg"></i>`, (r.correct) ? 'Correct!' : 'Incorrect');
-      qA.push({ "segment": segment, "question": question, "status": (r.correct) ? 'correct' : 'in progress' });
+      qA.push({ "segment": segment, "question": question, "status": (r.correct) ? 'Correct' : 'In Progress' });
     } else if (typeof r.error != 'undefined') {
       ui.modeless(`<i class="bi bi-exclamation-triangle"></i>`, 'Error');
     } else {
       ui.modeless(`<i class="bi bi-hourglass"></i>`, "Submitted, Awaiting Scoring");
-      qA.push({ "segment": segment, "question": question, "status": 'pending' });
+      qA.push({ "segment": segment, "question": question, "status": 'Pending' });
     }
     storage.set("questionsAnswered", qA);
-    console.log("Updated questionsAnswered:", storage.get("questionsAnswered")); // Debugging statement
     resetInputs();
     nextQuestion();
     updateQuestion();
