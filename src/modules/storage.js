@@ -14,6 +14,10 @@ class Storage {
     return this.object[key];
   }
 
+  all() {
+    return this.object;
+  }
+
   delete(key) {
     let temp = this.object;
     delete temp[key];

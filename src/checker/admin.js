@@ -3,7 +3,8 @@ import * as ui from "/src/modules/ui.js";
 import { convertLatexToAsciiMath, convertLatexToMarkup, renderMathInElement } from "mathlive";
 ``;
 
-const domain = (window.location.hostname.search('check') != -1) ? 'https://api.check.vssfalcons.com' : 'http://localhost:5000';
+const domain = ((window.location.hostname.search('check') != -1) || (window.location.hostname.search('127') != -1)) ? 'https://api.check.vssfalcons.com' : 'http://localhost:5000';
+if (window.location.pathname.split('?')[0].endsWith('/admin')) window.location.pathname = '/admin/';
 
 var courses = [];    
 let draggedItem = null;

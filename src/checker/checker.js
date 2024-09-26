@@ -8,7 +8,7 @@ import { getCourse } from "/src/periods/classes";
 import { convertLatexToAsciiMath, convertLatexToMarkup, renderMathInElement } from "mathlive";
 ``;
 
-const domain = (window.location.hostname.search('check') != -1) ? 'https://api.check.vssfalcons.com' : 'http://localhost:5000';
+const domain = ((window.location.hostname.search('check') != -1) || (window.location.hostname.search('127') != -1)) ? 'https://api.check.vssfalcons.com' : 'http://localhost:5000';
 const segments = document.getElementById("segment-input");
 const segmentInput = document.getElementById("segment-input");
 const questions = document.getElementById("question-input");
@@ -26,6 +26,7 @@ let multipleChoice = null;
 
 let historyIndex = 0;
 
+// Initialization
 // Initialization
 {
   // Get URL parameters
@@ -73,6 +74,8 @@ let historyIndex = 0;
   updateHistory();
   // Focus answer input
   document.getElementById("answer-suggestion").addEventListener("click", () => answerInput.focus());
+  // Initialize questionsAnswered if not already set
+  if (!storage.get("questionsAnswered")) storage.set("questionsAnswered", []);
 }
 
 // Submit click
@@ -150,7 +153,6 @@ document.getElementById("submit-button").addEventListener("click", () => {
       } else {
         storeClick(storage.get("code"), segment, question, answer, "text");
       }
-      resetInputs();
     });
   }
 });
@@ -180,7 +182,6 @@ mf.addEventListener("keydown", (e) => {
 function resetInputs() {
   const mode = ui.getButtonSelectValue(document.getElementById("answer-mode-selector"));
   // Reset answer inputs
-  questionInput.value = "";
   answerInput.value = "";
   mf.value = "";
   setInputs = document.querySelectorAll('[data-set-input]');
@@ -220,13 +221,21 @@ async function submitClick(code, segment, question, answer) {
   })
   .then(r => r.json())
   .then(r => {
+    var qA = storage.get("questionsAnswered") || [];
     if (typeof r.correct != 'undefined') {
       ui.modeless(`<i class="bi bi-${(r.correct) ? 'check' : 'x'}-lg"></i>`, (r.correct) ? 'Correct!' : 'Incorrect');
+      qA.push({ "segment": segment, "question": question, "status": (r.correct) ? 'correct' : 'in progress' });
     } else if (typeof r.error != 'undefined') {
       ui.modeless(`<i class="bi bi-exclamation-triangle"></i>`, 'Error');
     } else {
       ui.modeless(`<i class="bi bi-hourglass"></i>`, "Submitted, Awaiting Scoring");
+      qA.push({ "segment": segment, "question": question, "status": 'pending' });
     }
+    storage.set("questionsAnswered", qA);
+    console.log("Updated questionsAnswered:", storage.get("questionsAnswered")); // Debugging statement
+    resetInputs();
+    nextQuestion();
+    updateQuestion();
   })
 }
 
@@ -279,7 +288,7 @@ async function updateCode() {
     document.title = `Virtual Checker (${code})`;
     document.getElementById("course-input").value = getCourse(code) || "Unknown Course";
     try {
-      const segmentsResponse = await fetch(`${domain}/segments?course=${code.slice(0, 1)}`, {
+      const segmentsResponse = await fetch(`${domain}/segments?course=${Number(code.slice(0, 1)) - 1}`, {
         method: "GET",
         headers: { "Content-Type": "application/json" },
       });
@@ -341,9 +350,16 @@ async function updateQuestion() {
     nextQuestionButtons.forEach(btn => btn.disabled = selectedQuestionOptionIndex === questionOptions.length - 1);
     prevQuestionButtons.forEach(btn => btn.disabled = selectedQuestionOptionIndex === 0);
   }
+  
+  const qA = storage.get("questionsAnswered") || [];
+  qA.forEach(q => {
+    var i = questions.querySelector(`option[value="${q.question}"]`);
+    const selectedSegment = segmentsArray.find(s => s.number == segments.value);
+    if (i) i.innerHTML = `${JSON.parse(selectedSegment.question_ids).find(q2 => q2.id == q.question).name} - ${q.status}`;
+  });
 }
 
-function prevSegment() {
+function prevQuestion() {
   const questionOptions = questions.querySelectorAll('option');
   const selectedQuestionOption = questions.querySelector('option:checked');
   const selectedQuestionOptionIndex = Array.from(questionOptions).indexOf(selectedQuestionOption);
@@ -353,7 +369,7 @@ function prevSegment() {
   }
 }
 
-function nextSegment() {
+function nextQuestion() {
   const questionOptions = questions.querySelectorAll('option');
   const selectedQuestionOption = questions.querySelector('option:checked');
   const selectedQuestionOptionIndex = Array.from(questionOptions).indexOf(selectedQuestionOption);
@@ -363,8 +379,8 @@ function nextSegment() {
   }
 }
 
-document.querySelectorAll('[data-prev-question]').forEach(p => p.addEventListener('click', prevSegment));
-document.querySelectorAll('[data-next-question]').forEach(p => p.addEventListener('click', nextSegment));
+document.querySelectorAll('[data-prev-question]').forEach(p => p.addEventListener('click', prevQuestion));
+document.querySelectorAll('[data-next-question]').forEach(p => p.addEventListener('click', nextQuestion));
 
 // Show multiple choice card
 document.querySelectorAll("[data-multiple-choice]").forEach((button) => {
