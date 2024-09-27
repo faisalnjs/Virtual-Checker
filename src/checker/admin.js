@@ -10,14 +10,14 @@ var courses = [];
 var segments = [];
 let draggedItem = null;
 
-// Initialization
-{
+async function init() {
   // Show clear data fix guide
   // if (storage.get("created")) {
   //   document.querySelector(`[data-modal-view="clear-data-fix"]`).remove();
   // } else {
   //   storage.set("created", Date.now());
   // }
+
   await fetch(domain + '/courses', {
     method: "GET",
     headers: {
@@ -63,6 +63,8 @@ let draggedItem = null;
   document.getElementById("period-input").value = courses.find(c => c.id == segments[0].course).id;
   updateSegments();
 }
+
+init();
 
 document.getElementById("period-input").addEventListener("change", updateSegments);
 
