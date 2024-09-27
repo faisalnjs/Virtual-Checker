@@ -59,6 +59,7 @@ async function init() {
     });
   });
   document.querySelector('.course-reorder').style.display = 'none';
+  document.querySelectorAll('[data-remove-segment-input]').forEach(a => a.removeEventListener('click', removeSegment));
   document.querySelectorAll('[data-remove-segment-input]').forEach(a => a.addEventListener('click', removeSegment));
   document.getElementById("period-input").value = courses.find(c => c.id == segments[0].course).id;
   updateSegments();
@@ -97,6 +98,7 @@ function updateSegments() {
     document.querySelector('.segments .section').innerHTML = '<button data-add-segment-input>Add Segment</button>';
   }
   document.querySelectorAll('[data-add-segment-input]').forEach(a => a.addEventListener('click', addSegment));
+  document.querySelectorAll('[data-remove-segment-input]').forEach(a => a.addEventListener('click', removeSegment));
   document.querySelectorAll('[data-add-segment-question-input]').forEach(a => a.addEventListener('click', addSegmentQuestion));
   document.querySelectorAll('[data-remove-segment-question-input]').forEach(a => a.addEventListener('click', removeSegmentQuestion));
 }
@@ -247,12 +249,12 @@ document.getElementById("save-button").addEventListener("click", (e) => {
       id: segment.id.split('-')[1],
       number: segment.querySelector('#segment-number-input').value,
       name: segment.querySelector('#segment-name-input').value,
-      question_ids: Array.from(segment.querySelectorAll('#segment-question-name-input')).map(q => {
+      question_ids: JSON.stringify(Array.from(segment.querySelectorAll('#segment-question-name-input')).map(q => {
         return {
           name: q.value,
           id: q.nextElementSibling.value
         };
-      })
+      }))
     });
   });
   console.log(updatedInfo);
@@ -265,6 +267,7 @@ document.getElementById("save-button").addEventListener("click", (e) => {
   });
   e.target.disabled = true;
   // Show submit confirmation
+  window.scroll(0, 0);
   ui.modeless(`<i class="bi bi-check-lg"></i>`, "Saved!");
   setTimeout(() => {
     e.target.disabled = false;
