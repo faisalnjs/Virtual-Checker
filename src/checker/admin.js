@@ -59,6 +59,7 @@ let draggedItem = null;
     });
   });
   document.querySelector('.course-reorder').style.display = 'none';
+  document.querySelectorAll('[data-remove-segment-input]').forEach(a => a.addEventListener('click', removeSegment));
 }
 
 document.getElementById("period-input").addEventListener("change", updateSegments);
@@ -75,13 +76,13 @@ function updateSegments() {
       segment.id = `segment-${s.number}`;
       var buttonGrid = document.createElement('div');
       buttonGrid.className = "button-grid inputs";
-      buttonGrid.innerHTML = `<div class="input-group small"><label for="segment-number-input">Number</label><div class="space" id="question-container"><input type="text" autocomplete="off" id="segment-${s.number}-number-input" value="${s.number}" /></div></div><div class="input-group"><label for="segment-name-input">Name</label><div class="space" id="question-container"><input type="text" autocomplete="off" id="segment-${s.number}-name-input" value="${s.name}" /></div></div>`;
+      buttonGrid.innerHTML = `<div class="input-group small"><label for="segment-number-input">Number</label><div class="space" id="question-container"><input type="text" autocomplete="off" id="segment-number-input" value="${s.number}" /></div></div><div class="input-group"><label for="segment-name-input">Name</label><div class="space" id="question-container"><input type="text" autocomplete="off" id="segment-name-input" value="${s.name}" /></div></div><button square data-remove-segment-input><i class="bi bi-dash"></i></button>`;
       segment.appendChild(buttonGrid);
       var questionsString = "";
       var questions = document.createElement('div');
       questions.classList = "questions";
       JSON.parse(s.question_ids).forEach(q => {
-        questionsString += `<div class="input-group"><input type="text" autocomplete="off" id="segment-${s.number}-question-${q.id}-name-input" value="${q.name}" /><input type="text" autocomplete="off" id="segment-${s.number}-question-${q.id}-id-input" value="${q.id}" /></div>`;
+        questionsString += `<div class="input-group"><input type="text" autocomplete="off" id="segment-question-name-input" value="${q.name}" /><input type="text" autocomplete="off" id="segment-question-id-input" value="${q.id}" /></div>`;
       });
       questions.innerHTML = `<div class="button-grid inputs"><div class="input-group small"><label>Name</label><label>ID</label></div>${questionsString}<div class="input-group fit"><button square data-add-segment-question-input><i class="bi bi-plus"></i></button><button square data-remove-segment-question-input><i class="bi bi-dash"></i></button></div></div>`;
       segment.appendChild(questions);
@@ -290,14 +291,20 @@ function handleDrop(e) {
 function addSegment() {
   var group = document.createElement('div');
   group.className = "section";
-  group.id = `segment-0`;
+  group.id = 'segment-new';
   var buttonGrid = document.createElement('div');
   buttonGrid.className = "button-grid inputs";
-  buttonGrid.innerHTML = `<div class="input-group small"><label for="segment-number-input">Number</label><div class="space" id="question-container"><input type="text" autocomplete="off" id="segment-0-number-input" value="0" /></div></div><div class="input-group"><label for="segment-name-input">Name</label><div class="space" id="question-container"><input type="text" autocomplete="off" id="segment-0-name-input" value="" /></div></div>`;
+  buttonGrid.innerHTML = `<div class="input-group small"><label for="segment-number-input">Number</label><div class="space" id="question-container"><input type="text" autocomplete="off" id="segment-number-input" value="0" /></div></div><div class="input-group"><label for="segment-name-input">Name</label><div class="space" id="question-container"><input type="text" autocomplete="off" id="segment-name-input" value="" /></div></div><button square data-remove-segment-input><i class="bi bi-dash"></i></button>`;
   group.appendChild(buttonGrid);
   var questions = document.createElement('div');
   questions.classList = "questions";
-  questions.innerHTML = `<div class="button-grid inputs"><div class="input-group small"><label>Name</label><label>ID</label></div><div class="input-group"><input type="text" autocomplete="off" id="segment-0-question-0-name-input" value="" /><input type="text" autocomplete="off" id="segment-0-question-0-id-input" value="" /></div><div class="input-group fit"><button square data-add-segment-question-input><i class="bi bi-plus"></i></button><button square data-remove-segment-question-input><i class="bi bi-dash"></i></button></div></div>`;
+  questions.innerHTML = `<div class="button-grid inputs"><div class="input-group small"><label>Name</label><label>ID</label></div><div class="input-group"><input type="text" autocomplete="off" id="segment-question-name-input" value="" /><input type="text" autocomplete="off" id="segment-question-id-input" value="" /></div><div class="input-group fit"><button square data-add-segment-question-input><i class="bi bi-plus"></i></button><button square data-remove-segment-question-input><i class="bi bi-dash"></i></button></div></div>`;
   group.appendChild(questions);
   this.parentElement.insertBefore(group, this.parentElement.children[this.parentElement.children.length - 1]);
+  document.querySelectorAll('[data-remove-segment-input]').forEach(a => a.removeEventListener('click', removeSegment));
+  document.querySelectorAll('[data-remove-segment-input]').forEach(a => a.addEventListener('click', removeSegment));
+}
+
+function removeSegment() {
+  this.parentElement.parentElement.remove();
 }
