@@ -237,9 +237,25 @@ document.getElementById("save-button").addEventListener("click", (e) => {
     course: {
       id: document.getElementById("period-input").value,
       name: document.getElementById("course-input").value,
-    }
+    },
+    segments: []
   };
-  console.log(updatedInfo);
+  Array.from(document.querySelectorAll('.segments .section .section'))
+  .filter(s => s.classList.length === 1)
+  .forEach(segment => {
+    updatedInfo.segments.push({
+      id: segment.id.split('-')[1],
+      number: segment.querySelector('#segment-number-input').value,
+      name: segment.querySelector('#segment-name-input').value,
+      question_ids: Array.from(segment.querySelectorAll('#segment-question-name-input')).map(q => {
+        return {
+          name: q.value,
+          id: q.nextElementSibling.value
+        };
+      })
+    });
+  });
+  return console.log(updatedInfo);
   fetch(domain + '/save', {
     method: "POST",
     headers: {
@@ -254,20 +270,6 @@ document.getElementById("save-button").addEventListener("click", (e) => {
     e.target.disabled = false;
   }, 3000);
 });
-
-// Remove attention ring when user types in either input
-// segmentInput.addEventListener("input", (e) => {
-//   e.target.classList.remove("attention");
-// });
-// questionInput.addEventListener("input", (e) => {
-//   e.target.classList.remove("attention");
-// });
-// answerInput.addEventListener("input", (e) => {
-//   e.target.classList.remove("attention");
-// });
-// mf.addEventListener("input", (e) => {
-//   e.target.classList.remove("attention");
-// });
     
 function handleDragStart(e) {
   draggedItem = this.parentNode;
