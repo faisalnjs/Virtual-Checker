@@ -6,7 +6,8 @@ import { convertLatexToAsciiMath, convertLatexToMarkup, renderMathInElement } fr
 const domain = ((window.location.hostname.search('check') != -1) || (window.location.hostname.search('127') != -1)) ? 'https://api.check.vssfalcons.com' : 'http://localhost:5000';
 if (window.location.pathname.split('?')[0].endsWith('/admin')) window.location.pathname = '/admin/';
 
-var courses = [];    
+var courses = [];
+var segments = [];
 let draggedItem = null;
 
 // Initialization
@@ -45,7 +46,17 @@ let draggedItem = null;
       item.addEventListener('dragover', handleDragOver);
       item.addEventListener('drop', handleDrop);
     });
-    updateSegments();
+    fetch(domain + '/segments', {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      }
+    })
+    .then(c => c.json())
+    .then(c => {
+      segments = c;
+      updateSegments();
+    });
   });
   document.querySelector('.course-reorder').style.display = 'none';
 }
@@ -55,39 +66,32 @@ document.getElementById("period-input").addEventListener("change", updateSegment
 function updateSegments() {
   const course = courses.find(c => c.id == document.getElementById("period-input").value);
   document.getElementById("course-input").value = course.name;
-  fetch(domain + '/segments?course=' + course.id, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-    }
-  })
-  .then(c => c.json())
-  .then(c => {
-    console.log(c)
-    if (c.length > 0) {
-      document.querySelector('.segments .section').innerHTML = '';
-      c.forEach(s => {
-        var segment = document.createElement('div');
-        segment.className = "section";
-        var buttonGrid = document.createElement('div');
-        buttonGrid.className = "button-grid inputs";
-        buttonGrid.innerHTML = `<div class="input-group small"><label for="segment-number-input">Number</label><div class="space" id="question-container"><input type="text" autocomplete="off" id="segment-${s.number}-number-input" value="${s.number}" /></div></div><div class="input-group"><label for="segment-name-input">Name</label><div class="space" id="question-container"><input type="text" autocomplete="off" id="segment-${s.number}-name-input" value="${s.name}" /></div></div><button square data-add-segment-input><i class="bi bi-plus"></i></button><button square data-remove-segment-input><i class="bi bi-dash"></i></button>`;
-        segment.appendChild(buttonGrid);
-        var questionsString = "";
-        var questions = document.createElement('div');
-        questions.classList = "questions";
-        JSON.parse(s.question_ids).forEach(q => {
-          questionsString += `<div class="input-group"><input type="text" autocomplete="off" id="segment-${s.number}-question-${q.id}-name-input" value="${q.name}" /><input type="text" autocomplete="off" id="segment-${s.number}-question-${q.id}-id-input" value="${q.id}" /></div>`;
-        });
-        questions.innerHTML = `<div class="button-grid inputs"><div class="input-group small"><label>Name</label><label>ID</label></div>${questionsString}<div class="input-group fit"><button square data-add-segment-question-input><i class="bi bi-plus"></i></button><button square data-remove-segment-question-input><i class="bi bi-dash"></i></button></div></div>`;
-        segment.appendChild(questions);
-        document.querySelector('.segments .section').appendChild(segment);
+  var c = segments.filter(s => s.course == course.id);
+  if (c.length > 0) {
+    document.querySelector('.segments .section').innerHTML = '';
+    c.forEach(s => {
+      var segment = document.createElement('div');
+      segment.className = "section";
+      segment.id = `segment-${s.number}`;
+      var buttonGrid = document.createElement('div');
+      buttonGrid.className = "button-grid inputs";
+      buttonGrid.innerHTML = `<div class="input-group small"><label for="segment-number-input">Number</label><div class="space" id="question-container"><input type="text" autocomplete="off" id="segment-${s.number}-number-input" value="${s.number}" /></div></div><div class="input-group"><label for="segment-name-input">Name</label><div class="space" id="question-container"><input type="text" autocomplete="off" id="segment-${s.number}-name-input" value="${s.name}" /></div></div>`;
+      segment.appendChild(buttonGrid);
+      var questionsString = "";
+      var questions = document.createElement('div');
+      questions.classList = "questions";
+      JSON.parse(s.question_ids).forEach(q => {
+        questionsString += `<div class="input-group"><input type="text" autocomplete="off" id="segment-${s.number}-question-${q.id}-name-input" value="${q.name}" /><input type="text" autocomplete="off" id="segment-${s.number}-question-${q.id}-id-input" value="${q.id}" /></div>`;
       });
-    } else {
-      document.querySelector('.segments .section').innerHTML = '<button data-add-segment-input>Add Segment</button>';
-    }
-    document.querySelectorAll('[data-add-segment-input]').forEach(a => a.addEventListener('click', addSegment));
-  });
+      questions.innerHTML = `<div class="button-grid inputs"><div class="input-group small"><label>Name</label><label>ID</label></div>${questionsString}<div class="input-group fit"><button square data-add-segment-question-input><i class="bi bi-plus"></i></button><button square data-remove-segment-question-input><i class="bi bi-dash"></i></button></div></div>`;
+      segment.appendChild(questions);
+      document.querySelector('.segments .section').appendChild(segment);
+    });
+    document.querySelector('.segments .section').innerHTML += '<button data-add-segment-input>Add Segment</button>';
+  } else {
+    document.querySelector('.segments .section').innerHTML = '<button data-add-segment-input>Add Segment</button>';
+  }
+  document.querySelectorAll('[data-add-segment-input]').forEach(a => a.addEventListener('click', addSegment));
 }
 
 document.getElementById("reorder-courses-button").addEventListener("click", () => {
@@ -285,7 +289,15 @@ function handleDrop(e) {
 
 function addSegment() {
   var group = document.createElement('div');
-  group.classList = "input-group";
-  group.innerHTML = `<input type="text" autocomplete="off" id="segment-${s.number}-question-${q.id}-name-input" value="${q.name}" /><input type="text" autocomplete="off" id="segment-${s.number}-question-${q.id}-id-input" value="${q.id}" /></div>`;
-  this.parentElement.parentElement.querySelector('.questions .button-grid').insertBefore(group, this.parentElement.parentElement.querySelector('.questions .button-grid').children)
+  group.className = "section";
+  group.id = `segment-0`;
+  var buttonGrid = document.createElement('div');
+  buttonGrid.className = "button-grid inputs";
+  buttonGrid.innerHTML = `<div class="input-group small"><label for="segment-number-input">Number</label><div class="space" id="question-container"><input type="text" autocomplete="off" id="segment-0-number-input" value="0" /></div></div><div class="input-group"><label for="segment-name-input">Name</label><div class="space" id="question-container"><input type="text" autocomplete="off" id="segment-0-name-input" value="" /></div></div>`;
+  group.appendChild(buttonGrid);
+  var questions = document.createElement('div');
+  questions.classList = "questions";
+  questions.innerHTML = `<div class="button-grid inputs"><div class="input-group small"><label>Name</label><label>ID</label></div><div class="input-group"><input type="text" autocomplete="off" id="segment-0-question-0-name-input" value="" /><input type="text" autocomplete="off" id="segment-0-question-0-id-input" value="" /></div><div class="input-group fit"><button square data-add-segment-question-input><i class="bi bi-plus"></i></button><button square data-remove-segment-question-input><i class="bi bi-dash"></i></button></div></div>`;
+  group.appendChild(questions);
+  this.parentElement.insertBefore(group, this.parentElement.children[this.parentElement.children.length - 1]);
 }
