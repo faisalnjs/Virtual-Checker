@@ -390,7 +390,7 @@ img {
 }
 
 button[square] {
-  width: min-content !important;
+  width: 2.25em !important;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -418,4 +418,27 @@ button[square] {
 
 [data-answer-mode="set"] input {
   text-align: center;
+}
+
+.segments .section:has(.questions) * {
+  gap: 8px !important;
+}
+
+.questions {
+  width: -webkit-fill-available;
+}
+
+.questions label {
+  justify-content: center;
+  padding: 0 0.5em;
+  text-align: right;
+  height: 2.25em;
+}
+
+.small {
+  max-width: 75px;
+}
+
+.fit {
+  width: fit-content;
 }

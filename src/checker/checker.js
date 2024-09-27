@@ -656,7 +656,7 @@ document.getElementById("answer-mode-selector").addEventListener("input", (e) =>
   }
 });
 
-var setInputs = document.querySelectorAll('[data-set-input]');
+setInputs = document.querySelectorAll('[data-set-input]');
 
 // Add set input
 document.querySelector("[data-add-set-input]").addEventListener("click", () => {
@@ -682,11 +682,12 @@ document.querySelector("[data-add-set-input]").addEventListener("click", () => {
     }
     document.querySelector('[data-answer-mode="set"] .button-grid').style.flexWrap = (setInputs.length > 2) ? 'wrap' : 'nowrap';
     newSetInputInput.focus();
+    document.querySelector("[data-remove-set-input]").disabled = false;
   }
 });
 
 // Remove set input
-document.querySelector("[data-remove-set-input]").addEventListener("click", () => {
+document.querySelector("[data-remove-set-input]").addEventListener("click", (e) => {
   setInputs = document.querySelectorAll('[data-set-input]');
   if (setInputs.length > 1) {
     let highestDataElement = null;
@@ -695,5 +696,6 @@ document.querySelector("[data-remove-set-input]").addEventListener("click", () =
     });
     if (highestDataElement !== null) highestDataElement.parentElement.remove();
   }
+  if (setInputs.length === 2) e.target.disabled = true;
   document.querySelector('[data-answer-mode="set"] .button-grid').style.flexWrap = (setInputs.length < 5) ? 'nowrap' : 'wrap';
 });
