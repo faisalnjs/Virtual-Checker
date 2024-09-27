@@ -121,7 +121,7 @@ select {
   border: none;
   border-radius: 0.5rem;
   background-color: var(--surface-color);
-  width: -webkit-fill-available;
+  width: 100%;
   cursor: pointer;
 }
 

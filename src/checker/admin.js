@@ -18,14 +18,14 @@ let draggedItem = null;
   // } else {
   //   storage.set("created", Date.now());
   // }
-  fetch(domain + '/courses', {
+  await fetch(domain + '/courses', {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
     }
   })
   .then(c => c.json())
-  .then(c => {
+  .then(async c => {
     courses = c;
     c.sort((a, b) => a.period - b.period).forEach(course => {
       const option = document.createElement("option");
@@ -46,7 +46,7 @@ let draggedItem = null;
       item.addEventListener('dragover', handleDragOver);
       item.addEventListener('drop', handleDrop);
     });
-    fetch(domain + '/segments', {
+    await fetch(domain + '/segments', {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -60,6 +60,8 @@ let draggedItem = null;
   });
   document.querySelector('.course-reorder').style.display = 'none';
   document.querySelectorAll('[data-remove-segment-input]').forEach(a => a.addEventListener('click', removeSegment));
+  document.getElementById("period-input").value = courses.find(c => c.id == segments[0].course).id;
+  updateSegments();
 }
 
 document.getElementById("period-input").addEventListener("change", updateSegments);
@@ -84,7 +86,7 @@ function updateSegments() {
       JSON.parse(s.question_ids).forEach(q => {
         questionsString += `<div class="input-group"><input type="text" autocomplete="off" id="segment-question-name-input" value="${q.name}" /><input type="text" autocomplete="off" id="segment-question-id-input" value="${q.id}" /></div>`;
       });
-      questions.innerHTML = `<div class="button-grid inputs"><div class="input-group small"><label>Name</label><label>ID</label></div>${questionsString}<div class="input-group fit"><button square data-add-segment-question-input><i class="bi bi-plus"></i></button><button square data-remove-segment-question-input><i class="bi bi-dash"></i></button></div></div>`;
+      questions.innerHTML = `<div class="button-grid inputs"><div class="input-group small"><label>Name</label><label>ID</label></div>${questionsString}<div class="input-group fit"><button square data-add-segment-question-input><i class="bi bi-plus"></i></button><button square data-remove-segment-question-input${(JSON.parse(s.question_ids).length === 1) ? ' disabled' : ''}><i class="bi bi-dash"></i></button></div></div>`;
       segment.appendChild(questions);
       document.querySelector('.segments .section').appendChild(segment);
     });
@@ -93,6 +95,8 @@ function updateSegments() {
     document.querySelector('.segments .section').innerHTML = '<button data-add-segment-input>Add Segment</button>';
   }
   document.querySelectorAll('[data-add-segment-input]').forEach(a => a.addEventListener('click', addSegment));
+  document.querySelectorAll('[data-add-segment-question-input]').forEach(a => a.addEventListener('click', addSegmentQuestion));
+  document.querySelectorAll('[data-remove-segment-question-input]').forEach(a => a.addEventListener('click', removeSegmentQuestion));
 }
 
 document.getElementById("reorder-courses-button").addEventListener("click", () => {
@@ -298,13 +302,31 @@ function addSegment() {
   group.appendChild(buttonGrid);
   var questions = document.createElement('div');
   questions.classList = "questions";
-  questions.innerHTML = `<div class="button-grid inputs"><div class="input-group small"><label>Name</label><label>ID</label></div><div class="input-group"><input type="text" autocomplete="off" id="segment-question-name-input" value="" /><input type="text" autocomplete="off" id="segment-question-id-input" value="" /></div><div class="input-group fit"><button square data-add-segment-question-input><i class="bi bi-plus"></i></button><button square data-remove-segment-question-input><i class="bi bi-dash"></i></button></div></div>`;
+  questions.innerHTML = `<div class="button-grid inputs"><div class="input-group small"><label>Name</label><label>ID</label></div><div class="input-group"><input type="text" autocomplete="off" id="segment-question-name-input" value="" /><input type="text" autocomplete="off" id="segment-question-id-input" value="" /></div><div class="input-group fit"><button square data-add-segment-question-input><i class="bi bi-plus"></i></button><button square data-remove-segment-question-input disabled><i class="bi bi-dash"></i></button></div></div>`;
   group.appendChild(questions);
   this.parentElement.insertBefore(group, this.parentElement.children[this.parentElement.children.length - 1]);
   document.querySelectorAll('[data-remove-segment-input]').forEach(a => a.removeEventListener('click', removeSegment));
   document.querySelectorAll('[data-remove-segment-input]').forEach(a => a.addEventListener('click', removeSegment));
+  document.querySelectorAll('[data-add-segment-question-input]').forEach(a => a.addEventListener('click', addSegmentQuestion));
+  document.querySelectorAll('[data-remove-segment-question-input]').forEach(a => a.addEventListener('click', removeSegmentQuestion));
 }
 
 function removeSegment() {
   this.parentElement.parentElement.remove();
+}
+
+function addSegmentQuestion() {
+  var group = document.createElement('div');
+  group.className = "input-group";
+  group.innerHTML = `<input type="text" autocomplete="off" id="segment-question-name-input" value="" /><input type="text" autocomplete="off" id="segment-question-id-input" value="" />`;
+  this.parentElement.parentElement.insertBefore(group, this.parentElement);
+  this.parentElement.querySelector('[data-remove-segment-question-input]').disabled = false;
+  this.parentElement.querySelector('[data-remove-segment-question-input]').addEventListener('click', removeSegmentQuestion);
+}
+
+function removeSegmentQuestion() {
+  this.parentElement.parentElement.children[this.parentElement.parentElement.children.length - 2].remove();
+  if (this.parentElement.parentElement.children.length === 3) {
+    this.parentElement.querySelector('[data-remove-segment-question-input]').disabled = true;
+  }
 }

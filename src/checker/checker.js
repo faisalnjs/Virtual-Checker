@@ -680,7 +680,7 @@ document.querySelector("[data-add-set-input]").addEventListener("click", () => {
     } else {
       buttonGrid.appendChild(newSetInput);
     }
-    document.querySelector('[data-answer-mode="set"] .button-grid').style.flexWrap = (setInputs.length > 2) ? 'wrap' : 'nowrap';
+    document.querySelector('[data-answer-mode="set"] .button-grid').style.flexWrap = (setInputs.length > 9) ? 'wrap' : 'nowrap';
     newSetInputInput.focus();
     document.querySelector("[data-remove-set-input]").disabled = false;
   }
@@ -697,5 +697,5 @@ document.querySelector("[data-remove-set-input]").addEventListener("click", (e) 
     if (highestDataElement !== null) highestDataElement.parentElement.remove();
   }
   if (setInputs.length === 2) e.target.disabled = true;
-  document.querySelector('[data-answer-mode="set"] .button-grid').style.flexWrap = (setInputs.length < 5) ? 'nowrap' : 'wrap';
+  document.querySelector('[data-answer-mode="set"] .button-grid').style.flexWrap = (setInputs.length < 12) ? 'nowrap' : 'wrap';
 });
