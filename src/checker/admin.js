@@ -255,7 +255,7 @@ document.getElementById("save-button").addEventListener("click", (e) => {
       })
     });
   });
-  return console.log(updatedInfo);
+  console.log(updatedInfo);
   fetch(domain + '/save', {
     method: "POST",
     headers: {
