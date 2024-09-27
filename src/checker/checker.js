@@ -27,7 +27,7 @@ let multipleChoice = null;
 let historyIndex = 0;
 
 // Initialization
-// Initialization
+  if (document.getElementById("course-input")) {
 {
   // Get URL parameters
   const params = new URLSearchParams(window.location.search);
@@ -52,7 +52,7 @@ let historyIndex = 0;
   //   storage.set("created", Date.now());
   // }
   // Focus segment input
-  segmentInput.focus();
+  if (segmentInput) segmentInput.focus();
   // Set default answer mode
   answerMode("input");
   // Populate seat code finder grid
@@ -181,6 +181,7 @@ mf.addEventListener("keydown", (e) => {
     e.preventDefault();
   }
 });
+  }
 
 // Reset inputs to default state
 function resetInputs() {
@@ -295,7 +296,7 @@ async function updateCode() {
       element.innerHTML = code;
     });
     document.title = `Virtual Checker (${code})`;
-    document.getElementById("course-input").value = getCourse(code) || "Unknown Course";
+    if (document.getElementById("course-input")) document.getElementById("course-input").value = getCourse(code) || "Unknown Course";
     try {
       const segmentsResponse = await fetch(`${domain}/segments?course=${Number(code.slice(0, 1)) - 1}`, {
         method: "GET",
@@ -318,7 +319,7 @@ async function updateCode() {
         headers: { "Content-Type": "application/json" },
       });
       questionsArray = await questionsResponse.json();
-      await updateQuestion();
+      if (document.querySelector('#checker .images').innerHTML === '') await updateQuestion();
     } catch (error) {
       console.error("Failed to fetch data:", error);
     }
@@ -414,10 +415,12 @@ document.querySelectorAll("[data-multiple-choice]").forEach((button) => {
 });
 
 // Hide multiple choice card
-document.getElementById("remove-choice-button").addEventListener("click", () => {
+if (document.getElementById("remove-choice-button")) {
+  document.getElementById("remove-choice-button").addEventListener("click", () => {
   answerMode(ui.getButtonSelectValue(document.getElementById("answer-mode-selector")));
   multipleChoice = null;
 });
+}
 
 // Set answer mode
 function answerMode(mode) {
@@ -644,6 +647,7 @@ if (storage.get("developer")) {
 const answerLabel = document.querySelector(`label[for="answer-input"]`);
 
 // Select answer mode
+if (document.getElementById("answer-mode-selector")) {
 document.getElementById("answer-mode-selector").addEventListener("input", (e) => {
   const mode = e.detail;
   answerMode(mode);
@@ -655,10 +659,12 @@ document.getElementById("answer-mode-selector").addEventListener("input", (e) =>
     answerLabel.setAttribute("for", "set-input");
   }
 });
+}
 
 setInputs = document.querySelectorAll('[data-set-input]');
 
 // Add set input
+if (document.querySelector("[data-add-set-input]")) {
 document.querySelector("[data-add-set-input]").addEventListener("click", () => {
   setInputs = document.querySelectorAll('[data-set-input]');
   let highestDataElement = null;
@@ -685,8 +691,10 @@ document.querySelector("[data-add-set-input]").addEventListener("click", () => {
     document.querySelector("[data-remove-set-input]").disabled = false;
   }
 });
+}
 
 // Remove set input
+if (document.querySelector("[data-remove-set-input]")) {
 document.querySelector("[data-remove-set-input]").addEventListener("click", (e) => {
   setInputs = document.querySelectorAll('[data-set-input]');
   if (setInputs.length > 1) {
@@ -699,3 +707,4 @@ document.querySelector("[data-remove-set-input]").addEventListener("click", (e) 
   if (setInputs.length === 2) e.target.disabled = true;
   document.querySelector('[data-answer-mode="set"] .button-grid').style.flexWrap = (setInputs.length < 12) ? 'nowrap' : 'wrap';
 });
+}

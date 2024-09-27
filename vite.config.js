@@ -2,6 +2,7 @@ import webfontDownload from "vite-plugin-webfont-dl";
 import version from "vite-plugin-package-version";
 
 export default {
+  appType: 'mpa',
   plugins: [webfontDownload(), version()],
   build: {
     rollupOptions: {

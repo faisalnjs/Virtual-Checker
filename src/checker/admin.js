@@ -61,7 +61,7 @@ async function init() {
   document.querySelector('.course-reorder').style.display = 'none';
   document.querySelectorAll('[data-remove-segment-input]').forEach(a => a.removeEventListener('click', removeSegment));
   document.querySelectorAll('[data-remove-segment-input]').forEach(a => a.addEventListener('click', removeSegment));
-  document.getElementById("period-input").value = courses.find(c => c.id == segments[0].course).id;
+  document.getElementById("period-input").value = courses.find(c => c.id == segments.sort((a, b) => a.course - b.course)[0].course).id;
   updateSegments();
 }
 
@@ -273,7 +273,7 @@ document.getElementById("save-button").addEventListener("click", (e) => {
     e.target.disabled = false;
   }, 3000);
 });
-    
+
 function handleDragStart(e) {
   draggedItem = this.parentNode;
   e.dataTransfer.effectAllowed = 'move';

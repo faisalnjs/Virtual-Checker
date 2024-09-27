@@ -128,6 +128,7 @@ select {
 input:disabled,
 select:disabled {
   opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .drag {
@@ -375,7 +376,7 @@ div.ML__keyboard {
   gap: 5px;
 }
 
-img {
+.checker img {
   border-radius: 5px;
   border: 5px solid var(--surface-color);
   background: url(<path-to-image>) lightgray 50% / cover no-repeat;
@@ -441,4 +442,8 @@ button[square] {
 
 .fit {
   width: fit-content;
+}
+
+#checker:not(:has(input)) {
+  align-items: center;
 }
