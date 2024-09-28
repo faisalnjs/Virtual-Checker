@@ -253,28 +253,48 @@ if (document.getElementById("reorder-courses-button")) {
 
 // Save
 document.getElementById("save-button").addEventListener("click", (e) => {
-  var updatedInfo = {
-    course: {
-      id: document.getElementById("course-period-input").value,
-      name: document.getElementById("course-input").value,
-    },
-    segments: []
-  };
-  Array.from(document.querySelectorAll('.segments .section .section'))
-    .filter(s => s.classList.length === 1)
-    .forEach(segment => {
-      updatedInfo.segments.push({
-        id: segment.id.split('-')[1],
-        number: segment.querySelector('#segment-number-input').value,
-        name: segment.querySelector('#segment-name-input').value,
-        question_ids: JSON.stringify(Array.from(segment.querySelectorAll('#segment-question-name-input')).filter(q => (q.value.length > 0) && (q.value != ' ') && (q.nextElementSibling.value.length > 0) && (q.nextElementSibling.value != ' ')).map(q => {
-          return {
-            name: q.value,
-            id: q.nextElementSibling.value
-          };
-        }))
+  var updatedInfo = { };
+  if (document.getElementById('course-period-input')) {
+    updatedInfo = {
+      course: {
+        id: document.getElementById("course-period-input").value,
+        name: document.getElementById("course-input").value,
+      },
+      segments: []
+    };
+    Array.from(document.querySelectorAll('.segments .section .section'))
+      .filter(s => s.classList.length === 1)
+      .forEach(segment => {
+        updatedInfo.segments.push({
+          id: segment.id.split('-')[1],
+          number: segment.querySelector('#segment-number-input').value,
+          name: segment.querySelector('#segment-name-input').value,
+          question_ids: JSON.stringify(Array.from(segment.querySelectorAll('#segment-question-name-input')).filter(q => (q.value.length > 0) && (q.value != ' ') && (q.nextElementSibling.value.length > 0) && (q.nextElementSibling.value != ' ')).map(q => {
+            return {
+              name: q.value,
+              id: q.nextElementSibling.value
+            };
+          }))
+        });
       });
-    });
+  } else if (document.querySelector('.questions.section')) {
+    updatedInfo = {
+      questions: []
+    };
+    Array.from(document.querySelectorAll('.questions .section .section'))
+      .filter(s => s.classList.length === 1)
+      .forEach(question => {
+        updatedInfo.questions.push({
+          id: question.id.split('-')[1],
+          number: question.querySelector('#question-number-input').value,
+          segment: question.querySelector('#question-segment-input').value,
+          question: question.querySelector('#question-text-input').value,
+          images: JSON.stringify(Array.from(question.querySelectorAll('.attachments img')).map(q => {
+            return q.src;
+          }))
+        });
+      });
+  }
   console.log(updatedInfo);
   fetch(domain + '/save', {
     method: "POST",
@@ -287,9 +307,10 @@ document.getElementById("save-button").addEventListener("click", (e) => {
   // Show submit confirmation
   window.scroll(0, 0);
   ui.modeless(`<i class="bi bi-check-lg"></i>`, "Saved!");
+  init();
   setTimeout(() => {
     e.target.disabled = false;
-  }, 3000);
+  }, 2500);
 });
 
 function handleDragStart(e) {
@@ -354,10 +375,6 @@ function removeSegmentQuestion() {
   if (this.parentElement.parentElement.children.length === 3) {
     this.parentElement.querySelector('[data-remove-segment-question-input]').disabled = true;
   }
-}
-
-if (document.querySelector('.questions.section')) {
-
 }
 
 function updateQuestions() {

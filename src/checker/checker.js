@@ -313,12 +313,12 @@ async function updateCode() {
       });
       segments.removeEventListener("change", updateSegment);
       segments.addEventListener("change", updateSegment);
-      updateSegment();
       const questionsResponse = await fetch(`${domain}/questions`, {
         method: "GET",
         headers: { "Content-Type": "application/json" },
       });
       questionsArray = await questionsResponse.json();
+      updateSegment();
       if (document.querySelector('#checker .images').innerHTML === '') await updateQuestion();
     } catch (error) {
       console.error("Failed to fetch data:", error);
@@ -330,10 +330,12 @@ async function updateSegment() {
   const selectedSegment = segmentsArray.find(s => s.number == segments.value);
   questions.innerHTML = '';
   JSON.parse(selectedSegment.question_ids).forEach(questionId => {
-    const questionOption = document.createElement('option');
-    questionOption.value = questionId.id;
-    questionOption.innerHTML = questionId.name;
-    questions.append(questionOption);
+    if (questionsArray.find(q => q.id == questionId.id)) {
+      const questionOption = document.createElement('option');
+      questionOption.value = questionId.id;
+      questionOption.innerHTML = questionId.name;
+      questions.append(questionOption);
+    }
   });
   questions.removeEventListener("change", updateQuestion);
   questions.addEventListener("change", updateQuestion);

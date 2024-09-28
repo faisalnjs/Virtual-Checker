@@ -83,11 +83,14 @@ div.spacer {
   overflow: hidden;
   transition: 0.25s var(--easing);
   cursor: pointer;
+  border-radius: 10px;
 }
 
 #header .menu:hover {
-  max-height: 100px;
+  max-height: 200px;
   transition: 0.25s var(--easing);
+  background-color: var(--surface-color);
+  padding: 10px 15px 12.5px 15px;
 }
 
 #checker {
