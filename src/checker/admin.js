@@ -8,6 +8,7 @@ if (window.location.pathname.split('?')[0].endsWith('/admin')) window.location.p
 
 var courses = [];
 var segments = [];
+var questions = [];
 let draggedItem = null;
 
 async function init() {
@@ -24,53 +25,68 @@ async function init() {
       "Content-Type": "application/json",
     }
   })
-  .then(c => c.json())
-  .then(async c => {
-    courses = c;
-    c.sort((a, b) => a.period - b.period).forEach(course => {
-      const option = document.createElement("option");
-      option.value = course.id;
-      option.innerHTML = course.period;
-      document.getElementById("period-input").appendChild(option);
-      const elem = document.createElement("div");
-      elem.classList = "button-grid inputs";
-      elem.style = "flex-wrap: nowrap;";
-      elem.innerHTML = `<input type="text" autocomplete="off" id="course-${course.id}" value="${course.name || ''}" /><div class="drag"><i class="bi bi-grip-vertical"></i></div>`;
-      document.querySelector(".reorder").appendChild(elem);
-    });
-    const course = courses.find(c => c.id == document.getElementById("period-input").value);
-    document.getElementById("course-input").value = course.name;
-    document.querySelectorAll('.drag').forEach(item => {
-      item.setAttribute('draggable', true);
-      item.addEventListener('dragstart', handleDragStart);
-      item.addEventListener('dragover', handleDragOver);
-      item.addEventListener('drop', handleDrop);
-    });
-    await fetch(domain + '/segments', {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      }
-    })
     .then(c => c.json())
-    .then(c => {
-      segments = c;
-      updateSegments();
+    .then(async c => {
+      courses = c;
+      if (document.getElementById("course-period-input")) {
+        c.sort((a, b) => a.period - b.period).forEach(course => {
+          const option = document.createElement("option");
+          option.value = course.id;
+          option.innerHTML = course.period;
+          document.getElementById("course-period-input").appendChild(option);
+          const elem = document.createElement("div");
+          elem.classList = "button-grid inputs";
+          elem.style = "flex-wrap: nowrap;";
+          elem.innerHTML = `<input type="text" autocomplete="off" id="course-${course.id}" value="${course.name || ''}" /><div class="drag"><i class="bi bi-grip-vertical"></i></div>`;
+          document.querySelector(".reorder").appendChild(elem);
+        });
+        const course = courses.find(c => c.id == document.getElementById("course-period-input").value);
+        document.getElementById("course-input").value = course.name;
+        document.querySelectorAll('.drag').forEach(item => {
+          item.setAttribute('draggable', true);
+          item.addEventListener('dragstart', handleDragStart);
+          item.addEventListener('dragover', handleDragOver);
+          item.addEventListener('drop', handleDrop);
+        });
+      }
+      await fetch(domain + '/segments', {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        }
+      })
+        .then(c => c.json())
+        .then(async c => {
+          segments = c;
+          if (document.getElementById("course-period-input")) updateSegments();
+          await fetch(domain + '/questions', {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+            }
+          })
+            .then(q => q.json())
+            .then(q => {
+              questions = q;
+              if (document.querySelector('.questions.section')) updateQuestions();
+            });
+        });
     });
-  });
-  document.querySelector('.course-reorder').style.display = 'none';
-  document.querySelectorAll('[data-remove-segment-input]').forEach(a => a.removeEventListener('click', removeSegment));
-  document.querySelectorAll('[data-remove-segment-input]').forEach(a => a.addEventListener('click', removeSegment));
-  document.getElementById("period-input").value = courses.find(c => c.id == segments.sort((a, b) => a.course - b.course)[0].course).id;
-  updateSegments();
+  if (document.getElementById("course-period-input")) {
+    document.querySelector('.course-reorder').style.display = 'none';
+    document.querySelectorAll('[data-remove-segment-input]').forEach(a => a.removeEventListener('click', removeSegment));
+    document.querySelectorAll('[data-remove-segment-input]').forEach(a => a.addEventListener('click', removeSegment));
+    document.getElementById("course-period-input").value = courses.find(c => c.id == segments.sort((a, b) => a.course - b.course)[0].course).id;
+    updateSegments();
+  }
 }
 
 init();
 
-document.getElementById("period-input").addEventListener("change", updateSegments);
+if (document.getElementById("course-period-input")) document.getElementById("course-period-input").addEventListener("change", updateSegments);
 
 function updateSegments() {
-  const course = courses.find(c => c.id == document.getElementById("period-input").value);
+  const course = courses.find(c => c.id == document.getElementById("course-period-input").value);
   document.getElementById("course-input").value = course.name;
   var c = segments.filter(s => s.course == course.id);
   if (c.length > 0) {
@@ -103,78 +119,6 @@ function updateSegments() {
   document.querySelectorAll('[data-remove-segment-question-input]').forEach(a => a.addEventListener('click', removeSegmentQuestion));
 }
 
-document.getElementById("reorder-courses-button").addEventListener("click", () => {
-  const current = document.querySelector('.course-selector');
-  const fromHeight = current?.getBoundingClientRect().height;
-  document.querySelector('.course-reorder').style.display = 'flex';
-  document.querySelector('.course-selector').style.display = 'none';
-  document.getElementById('save-button').style.display = 'none';
-  const container = document.querySelector('.section');
-  const target = document.querySelector('.course-reorder');
-  const toHeight = target.getBoundingClientRect().height + calculateButtonHeights(target);
-  ui.animate(
-    container,
-    fromHeight
-      ? {
-          height: fromHeight + "px",
-        }
-      : undefined,
-    {
-      height: toHeight + "px",
-    },
-    500,
-    false,
-  );
-});
-
-document.getElementById("cancel-reorder-courses-button").addEventListener("click", () => {
-  const current = document.querySelector('.course-reorder');
-  const fromHeight = current?.getBoundingClientRect().height;
-  document.querySelector('.course-selector').style.display = 'flex';
-  document.getElementById('save-button').style.display = '';
-  document.querySelector('.course-reorder').style.display = 'none';
-  const container = document.querySelector('.section');
-  const target = document.querySelector('.course-selector');
-  const toHeight = target.getBoundingClientRect().height + calculateButtonHeights(target);
-  ui.animate(
-    container,
-    fromHeight
-      ? {
-          height: fromHeight + "px",
-        }
-      : undefined,
-    {
-      height: toHeight + "px",
-    },
-    500,
-    false,
-  );
-});
-
-document.getElementById("save-course-order-button").addEventListener("click", () => {
-  const current = document.querySelector('.course-reorder');
-  const fromHeight = current?.getBoundingClientRect().height;
-  document.querySelector('.course-selector').style.display = 'flex';
-  document.getElementById('save-button').style.display = '';
-  document.querySelector('.course-reorder').style.display = 'none'; 
-  const container = document.querySelector('.section');
-  const target = document.querySelector('.course-selector');
-  const toHeight = target.getBoundingClientRect().height + calculateButtonHeights(target);
-  ui.animate(
-    container,
-    fromHeight
-      ? {
-          height: fromHeight + "px",
-        }
-      : undefined,
-    {
-      height: toHeight + "px",
-    },
-    500,
-    false,
-  );
-});
-
 function calculateButtonHeights(container) {
   let totalHeight = 0;
   const buttons = container.querySelectorAll('button');
@@ -187,76 +131,150 @@ function calculateButtonHeights(container) {
   return totalHeight;
 }
 
-// Save Course Order
-document.getElementById("save-course-order-button").addEventListener("click", () => {
-  var updatedCourses = [...document.querySelector(".reorder").children].map((course, i) => {
-    const courseId = course.querySelector('input').id.split('-')[1];
-    return {
-      id: courseId,
-      name: document.getElementById(`course-${courseId}`).value,
-      period: i + 1
-    };
-  }).sort((a, b) => a.period - b.period);
-  fetch(domain + '/courses', {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(updatedCourses)
-  })
-    .then(r => r.json())
-    .then(c => {
-      courses = c;
-      document.querySelector(".reorder").innerHTML = "";
-      document.getElementById("period-input").innerHTML = "";
-      c.sort((a, b) => a.period - b.period).forEach(course => {
-        const option = document.createElement("option");
-        option.value = course.id;
-        option.innerHTML = course.period;
-        document.getElementById("period-input").appendChild(option);
-        const elem = document.createElement("div");
-        elem.classList = "button-grid inputs";
-        elem.style = "flex-wrap: nowrap;";
-        elem.innerHTML = `<input type="text" autocomplete="off" id="course-${course.id}" value="${course.name || ''}" /><div class="drag"><i class="bi bi-grip-vertical"></i></div>`;
-        document.querySelector(".reorder").appendChild(elem);
+if (document.getElementById("reorder-courses-button")) {
+  document.getElementById("reorder-courses-button").addEventListener("click", () => {
+    const current = document.querySelector('.course-selector');
+    const fromHeight = current?.getBoundingClientRect().height;
+    document.querySelector('.course-reorder').style.display = 'flex';
+    document.querySelector('.course-selector').style.display = 'none';
+    document.getElementById('save-button').style.display = 'none';
+    const container = document.querySelector('.section');
+    const target = document.querySelector('.course-reorder');
+    const toHeight = target.getBoundingClientRect().height + calculateButtonHeights(target);
+    ui.animate(
+      container,
+      fromHeight
+        ? {
+          height: fromHeight + "px",
+        }
+        : undefined,
+      {
+        height: toHeight + "px",
+      },
+      500,
+      false,
+    );
+  });
+
+  document.getElementById("cancel-reorder-courses-button").addEventListener("click", () => {
+    const current = document.querySelector('.course-reorder');
+    const fromHeight = current?.getBoundingClientRect().height;
+    document.querySelector('.course-selector').style.display = 'flex';
+    document.getElementById('save-button').style.display = '';
+    document.querySelector('.course-reorder').style.display = 'none';
+    const container = document.querySelector('.section');
+    const target = document.querySelector('.course-selector');
+    const toHeight = target.getBoundingClientRect().height + calculateButtonHeights(target);
+    ui.animate(
+      container,
+      fromHeight
+        ? {
+          height: fromHeight + "px",
+        }
+        : undefined,
+      {
+        height: toHeight + "px",
+      },
+      500,
+      false,
+    );
+  });
+
+  document.getElementById("save-course-order-button").addEventListener("click", () => {
+    const current = document.querySelector('.course-reorder');
+    const fromHeight = current?.getBoundingClientRect().height;
+    document.querySelector('.course-selector').style.display = 'flex';
+    document.getElementById('save-button').style.display = '';
+    document.querySelector('.course-reorder').style.display = 'none';
+    const container = document.querySelector('.section');
+    const target = document.querySelector('.course-selector');
+    const toHeight = target.getBoundingClientRect().height + calculateButtonHeights(target);
+    ui.animate(
+      container,
+      fromHeight
+        ? {
+          height: fromHeight + "px",
+        }
+        : undefined,
+      {
+        height: toHeight + "px",
+      },
+      500,
+      false,
+    );
+  });
+
+  // Save Course Order
+  document.getElementById("save-course-order-button").addEventListener("click", () => {
+    var updatedCourses = [...document.querySelector(".reorder").children].map((course, i) => {
+      const courseId = course.querySelector('input').id.split('-')[1];
+      return {
+        id: courseId,
+        name: document.getElementById(`course-${courseId}`).value,
+        period: i + 1
+      };
+    }).sort((a, b) => a.period - b.period);
+    fetch(domain + '/courses', {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(updatedCourses)
+    })
+      .then(r => r.json())
+      .then(c => {
+        courses = c;
+        document.querySelector(".reorder").innerHTML = "";
+        document.getElementById("course-period-input").innerHTML = "";
+        c.sort((a, b) => a.period - b.period).forEach(course => {
+          const option = document.createElement("option");
+          option.value = course.id;
+          option.innerHTML = course.period;
+          document.getElementById("course-period-input").appendChild(option);
+          const elem = document.createElement("div");
+          elem.classList = "button-grid inputs";
+          elem.style = "flex-wrap: nowrap;";
+          elem.innerHTML = `<input type="text" autocomplete="off" id="course-${course.id}" value="${course.name || ''}" /><div class="drag"><i class="bi bi-grip-vertical"></i></div>`;
+          document.querySelector(".reorder").appendChild(elem);
+        });
+        const course = courses.find(c => c.id == document.getElementById("course-period-input").value);
+        document.getElementById("course-input").value = course.name;
+        document.querySelectorAll('.drag').forEach(item => {
+          item.setAttribute('draggable', true);
+          item.addEventListener('dragstart', handleDragStart);
+          item.addEventListener('dragover', handleDragOver);
+          item.addEventListener('drop', handleDrop);
+        });
       });
-      const course = courses.find(c => c.id == document.getElementById("period-input").value);
-      document.getElementById("course-input").value = course.name;
-      document.querySelectorAll('.drag').forEach(item => {
-        item.setAttribute('draggable', true);
-        item.addEventListener('dragstart', handleDragStart);
-        item.addEventListener('dragover', handleDragOver);
-        item.addEventListener('drop', handleDrop);
-      });
-    });
-  // Show submit confirmation
-  ui.modeless(`<i class="bi bi-check-lg"></i>`, "Saved!");
-});
+    // Show submit confirmation
+    ui.modeless(`<i class="bi bi-check-lg"></i>`, "Saved!");
+  });
+}
 
 // Save
 document.getElementById("save-button").addEventListener("click", (e) => {
   var updatedInfo = {
     course: {
-      id: document.getElementById("period-input").value,
+      id: document.getElementById("course-period-input").value,
       name: document.getElementById("course-input").value,
     },
     segments: []
   };
   Array.from(document.querySelectorAll('.segments .section .section'))
-  .filter(s => s.classList.length === 1)
-  .forEach(segment => {
-    updatedInfo.segments.push({
-      id: segment.id.split('-')[1],
-      number: segment.querySelector('#segment-number-input').value,
-      name: segment.querySelector('#segment-name-input').value,
-      question_ids: JSON.stringify(Array.from(segment.querySelectorAll('#segment-question-name-input')).map(q => {
-        return {
-          name: q.value,
-          id: q.nextElementSibling.value
-        };
-      }))
+    .filter(s => s.classList.length === 1)
+    .forEach(segment => {
+      updatedInfo.segments.push({
+        id: segment.id.split('-')[1],
+        number: segment.querySelector('#segment-number-input').value,
+        name: segment.querySelector('#segment-name-input').value,
+        question_ids: JSON.stringify(Array.from(segment.querySelectorAll('#segment-question-name-input')).filter(q => (q.value.length > 0) && (q.value != ' ') && (q.nextElementSibling.value.length > 0) && (q.nextElementSibling.value != ' ')).map(q => {
+          return {
+            name: q.value,
+            id: q.nextElementSibling.value
+          };
+        }))
+      });
     });
-  });
   console.log(updatedInfo);
   fetch(domain + '/save', {
     method: "POST",
@@ -336,4 +354,71 @@ function removeSegmentQuestion() {
   if (this.parentElement.parentElement.children.length === 3) {
     this.parentElement.querySelector('[data-remove-segment-question-input]').disabled = true;
   }
+}
+
+if (document.querySelector('.questions.section')) {
+
+}
+
+function updateQuestions() {
+  console.log(questions);
+  if (questions.length > 0) {
+    document.querySelector('.questions .section').innerHTML = '';
+    questions.forEach(q => {
+      var question = document.createElement('div');
+      question.className = "section";
+      question.id = `question-${q.id}`;
+      var buttonGrid = document.createElement('div');
+      buttonGrid.className = "button-grid inputs";
+      var segmentsString = "";
+      segments.forEach(s => segmentsString += `<option value="${s.number}"${(segments.filter(e => JSON.parse(e.question_ids).find(qId => qId.id == q.id)).number === s.number) ? ' selected': ''}>${s.number}</option>`);
+      buttonGrid.innerHTML = `<div class="input-group small"><label for="question-id-input">ID</label><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-id-input" value="${q.id}" disabled /></div></div><div class="input-group small"><label for="question-number-input">Number</label><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-number-input" value="${q.number}" /></div></div><div class="input-group small"><label for="question-segment-input">Segment</label><div class="space" id="question-container"><select id="question-segment-input">${segmentsString}</select></div></div><div class="input-group"><label for="question-text-input">Question</label><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-text-input" value="${q.question}" /></div></div><button square data-remove-question-input><i class="bi bi-dash"></i></button>`;
+      question.appendChild(buttonGrid);
+      var images = document.createElement('div');
+      images.classList = "attachments";
+      JSON.parse(q.images).forEach(q => {
+        var image = document.createElement('div');
+        image.classList = "image";
+        image.innerHTML = `<img src="${q}" />`;
+        images.appendChild(image);
+      });
+      var drop = document.createElement('div');
+      drop.classList = "drop";
+      drop.innerHTML = "+";
+      images.appendChild(drop);
+      question.appendChild(images);
+      document.querySelector('.questions .section').appendChild(question);
+    });
+    document.querySelector('.questions .section').innerHTML += '<button data-add-question-input>Add Question</button>';
+  } else {
+    document.querySelector('.questions .section').innerHTML = '<button data-add-question-input>Add Question</button>';
+  }
+  document.querySelectorAll('[data-add-question-input]').forEach(a => a.addEventListener('click', addQuestion));
+  document.querySelectorAll('[data-remove-question-input]').forEach(a => a.addEventListener('click', removeQuestion));
+}
+
+function addQuestion() {
+  var group = document.createElement('div');
+  group.className = "section";
+  group.id = 'question-new';
+  var buttonGrid = document.createElement('div');
+  buttonGrid.className = "button-grid inputs";
+  var segmentsString = "";
+  segments.forEach(s => segmentsString += `<option value="${s.number}">${s.number}</option>`);
+  buttonGrid.innerHTML = `<div class="input-group small"><label for="question-id-input">ID</label><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-id-input" value="" disabled /></div></div><div class="input-group small"><label for="question-number-input">Number</label><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-number-input" value="" /></div></div><div class="input-group small"><label for="question-segment-input">Segment</label><div class="space" id="question-container"><select id="question-segment-input">${segmentsString}</select></div></div><div class="input-group"><label for="question-text-input">Question</label><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-text-input" value="" /></div></div><button square data-remove-question-input><i class="bi bi-dash"></i></button>`;
+  group.appendChild(buttonGrid);
+  var images = document.createElement('div');
+  images.classList = "attachments";
+  var drop = document.createElement('div');
+  drop.classList = "drop";
+  drop.innerHTML = "+";
+  images.appendChild(drop);
+  group.appendChild(images);
+  this.parentElement.insertBefore(group, this.parentElement.children[this.parentElement.children.length - 1]);
+  document.querySelectorAll('[data-add-question-input]').forEach(a => a.addEventListener('click', addQuestion));
+  document.querySelectorAll('[data-remove-question-input]').forEach(a => a.addEventListener('click', removeQuestion));
+}
+
+function removeQuestion() {
+  this.parentElement.parentElement.remove();
 }

@@ -62,15 +62,32 @@ div.spacer {
   font-size: 1.5rem;
 }
 
-#header h6 {
+#header h6,
+#header a {
   font-size: 1.25rem;
   font-weight: 700;
+  text-decoration: none;
 }
 
 #header .info {
   display: flex;
   flex-direction: column;
   align-items: center;
+}
+
+#header .menu {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-height: 30px;
+  overflow: hidden;
+  transition: 0.25s var(--easing);
+  cursor: pointer;
+}
+
+#header .menu:hover {
+  max-height: 100px;
+  transition: 0.25s var(--easing);
 }
 
 #checker {

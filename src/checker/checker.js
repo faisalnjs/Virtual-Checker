@@ -27,161 +27,161 @@ let multipleChoice = null;
 let historyIndex = 0;
 
 // Initialization
-  if (document.getElementById("course-input")) {
-{
-  // Get URL parameters
-  const params = new URLSearchParams(window.location.search);
-  const code = params.get("code");
-  // Test for valid seat code
-  const regex = /^[1-9][1-6][1-5]$/;
-  if (regex.test(code)) {
-    // Update seat code
-    storage.set("code", code);
-    updateCode();
-  }
-  // Show seat code modal if no saved code exists
-  if (storage.get("code")) {
-    updateCode();
-  } else {
-    ui.view("settings/code");
-  }
-  // Show clear data fix guide
-  // if (storage.get("created")) {
-  //   document.querySelector(`[data-modal-view="clear-data-fix"]`).remove();
-  // } else {
-  //   storage.set("created", Date.now());
-  // }
-  // Focus segment input
-  if (segmentInput) segmentInput.focus();
-  // Set default answer mode
-  answerMode("input");
-  // Populate seat code finder grid
-  for (let col = 1; col <= 5; col++) {
-    for (let row = 6; row > 0; row--) {
-      const period = document.getElementById("period-input").value;
-      const code = period + row.toString() + col.toString();
-      const button = new ui.Element("button", "", {
-        click: () => {
-          document.getElementById("code-input").value = code;
-          ui.view("settings/code");
-        },
-      }).element;
-      document.getElementById("seat-grid").append(button);
-      ui.addTooltip(button, code);
+if (document.getElementById("course-input")) {
+  {
+    // Get URL parameters
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get("code");
+    // Test for valid seat code
+    const regex = /^[1-9][1-6][1-5]$/;
+    if (regex.test(code)) {
+      // Update seat code
+      storage.set("code", code);
+      updateCode();
     }
+    // Show seat code modal if no saved code exists
+    if (storage.get("code")) {
+      updateCode();
+    } else {
+      ui.view("settings/code");
+    }
+    // Show clear data fix guide
+    // if (storage.get("created")) {
+    //   document.querySelector(`[data-modal-view="clear-data-fix"]`).remove();
+    // } else {
+    //   storage.set("created", Date.now());
+    // }
+    // Focus segment input
+    if (segmentInput) segmentInput.focus();
+    // Set default answer mode
+    answerMode("input");
+    // Populate seat code finder grid
+    for (let col = 1; col <= 5; col++) {
+      for (let row = 6; row > 0; row--) {
+        const period = document.getElementById("period-input").value;
+        const code = period + row.toString() + col.toString();
+        const button = new ui.Element("button", "", {
+          click: () => {
+            document.getElementById("code-input").value = code;
+            ui.view("settings/code");
+          },
+        }).element;
+        document.getElementById("seat-grid").append(button);
+        ui.addTooltip(button, code);
+      }
+    }
+    // Update history feed
+    updateHistory();
+    // Focus answer input
+    document.getElementById("answer-suggestion").addEventListener("click", () => answerInput.focus());
+    // Initialize questionsAnswered if not already set
+    if (!storage.get("questionsAnswered")) storage.set("questionsAnswered", []);
   }
-  // Update history feed
-  updateHistory();
-  // Focus answer input
-  document.getElementById("answer-suggestion").addEventListener("click", () => answerInput.focus());
-  // Initialize questionsAnswered if not already set
-  if (!storage.get("questionsAnswered")) storage.set("questionsAnswered", []);
-}
 
-// Submit click
-document.getElementById("submit-button").addEventListener("click", (e) => {
-  e.target.disabled = true;
-  const mode = ui.getButtonSelectValue(document.getElementById("answer-mode-selector"));
-  const segment = segmentInput.value?.trim();
-  const question = questionInput.value?.trim();
-  const answer =
-    multipleChoice ||
-    (() => {
-      if (mode === "input") {
-        return answerInput.value?.trim();
-      } else if (mode === "math") {
-        return convertLatexToAsciiMath(mf.value);
-      } else if (mode === "set") {
-        var values = [];
-        var setInputs = document.querySelectorAll('[data-set-input]');
-        setInputs.forEach(a => {
-          if ((a.value.length > 0) && (a.value != ' ')) values.push(a.value)
+  // Submit click
+  document.getElementById("submit-button").addEventListener("click", (e) => {
+    e.target.disabled = true;
+    const mode = ui.getButtonSelectValue(document.getElementById("answer-mode-selector"));
+    const segment = segmentInput.value?.trim();
+    const question = questionInput.value?.trim();
+    const answer =
+      multipleChoice ||
+      (() => {
+        if (mode === "input") {
+          return answerInput.value?.trim();
+        } else if (mode === "math") {
+          return convertLatexToAsciiMath(mf.value);
+        } else if (mode === "set") {
+          var values = [];
+          var setInputs = document.querySelectorAll('[data-set-input]');
+          setInputs.forEach(a => {
+            if ((a.value.length > 0) && (a.value != ' ')) values.push(a.value)
+          });
+          return JSON.stringify(values);
+        }
+      })();
+    if (storage.get("code")) {
+      if (segment && question && answer) {
+        // Check if code matches current period
+        const matchesCurrentPeriod =
+          parseInt(storage.get("code").slice(0, 1)) === getPeriod() + 1 || true;
+        if (!matchesCurrentPeriod) {
+          ui.prompt("Are you sure you want to submit?", "Your seat code isn't for this period!", [
+            {
+              text: "Cancel",
+              close: true,
+            },
+            {
+              text: "Submit Anyways",
+              close: true,
+              onclick: submit,
+            },
+          ]);
+        } else {
+          submit();
+        }
+      }
+      if (!answer) {
+        if (mode === "input") {
+          answerInput.classList.add("attention");
+          answerInput.focus();
+        } else if (mode === "math") {
+          mf.classList.add("attention");
+          mf.focus();
+        } else if (mode === "set") {
+          setInput.classList.add("attention");
+          setInput.focus();
+        }
+      }
+      if (!question) {
+        questionInput.classList.add("attention");
+        questionInput.focus();
+      }
+      if (!segment) {
+        segmentInput.classList.add("attention");
+        segmentInput.focus();
+      }
+    } else {
+      ui.view("settings/code");
+    }
+    async function submit() {
+      await submitClick(storage.get("code"), segment, question, answer)
+        .then(() => {
+          if (mode === "math" && !multipleChoice) {
+            storeClick(storage.get("code"), segment, question, mf.value, "latex");
+          } else if (mode === "set" && !multipleChoice) {
+            storeClick(storage.get("code"), segment, question, answer, "array");
+          } else {
+            storeClick(storage.get("code"), segment, question, answer, "text");
+          }
         });
-        return JSON.stringify(values);
-      }
-    })();
-  if (storage.get("code")) {
-    if (segment && question && answer) {
-      // Check if code matches current period
-      const matchesCurrentPeriod =
-        parseInt(storage.get("code").slice(0, 1)) === getPeriod() + 1 || true;
-      if (!matchesCurrentPeriod) {
-        ui.prompt("Are you sure you want to submit?", "Your seat code isn't for this period!", [
-          {
-            text: "Cancel",
-            close: true,
-          },
-          {
-            text: "Submit Anyways",
-            close: true,
-            onclick: submit,
-          },
-        ]);
-      } else {
-        submit();
-      }
     }
-    if (!answer) {
-      if (mode === "input") {
-        answerInput.classList.add("attention");
-        answerInput.focus();
-      } else if (mode === "math") {
-        mf.classList.add("attention");
-        mf.focus();
-      } else if (mode === "set") {
-        setInput.classList.add("attention");
-        setInput.focus();
-      }
-    }
-    if (!question) {
-      questionInput.classList.add("attention");
-      questionInput.focus();
-    }
-    if (!segment) {
-      segmentInput.classList.add("attention");
-      segmentInput.focus();
-    }
-  } else {
-    ui.view("settings/code");
-  }
-  async function submit() {
-    await submitClick(storage.get("code"), segment, question, answer)
-    .then(() => {
-      if (mode === "math" && !multipleChoice) {
-        storeClick(storage.get("code"), segment, question, mf.value, "latex");
-      } else if (mode === "set" && !multipleChoice) {
-        storeClick(storage.get("code"), segment, question, answer, "array");
-      } else {
-        storeClick(storage.get("code"), segment, question, answer, "text");
-      }
-    });
-  }
-  setTimeout(() => {
-    e.target.disabled = false;
-  }, 3000);
-});
+    setTimeout(() => {
+      e.target.disabled = false;
+    }, 3000);
+  });
 
-// Remove attention ring when user types in either input
-segmentInput.addEventListener("input", (e) => {
-  e.target.classList.remove("attention");
-});
-questionInput.addEventListener("input", (e) => {
-  e.target.classList.remove("attention");
-});
-answerInput.addEventListener("input", (e) => {
-  e.target.classList.remove("attention");
-});
-mf.addEventListener("input", (e) => {
-  e.target.classList.remove("attention");
-});
+  // Remove attention ring when user types in either input
+  segmentInput.addEventListener("input", (e) => {
+    e.target.classList.remove("attention");
+  });
+  questionInput.addEventListener("input", (e) => {
+    e.target.classList.remove("attention");
+  });
+  answerInput.addEventListener("input", (e) => {
+    e.target.classList.remove("attention");
+  });
+  mf.addEventListener("input", (e) => {
+    e.target.classList.remove("attention");
+  });
 
-// Prevent MathLive default behavior
-mf.addEventListener("keydown", (e) => {
-  if (e.ctrlKey && e.key == "Enter") {
-    e.preventDefault();
-  }
-});
-  }
+  // Prevent MathLive default behavior
+  mf.addEventListener("keydown", (e) => {
+    if (e.ctrlKey && e.key == "Enter") {
+      e.preventDefault();
+    }
+  });
+}
 
 // Reset inputs to default state
 function resetInputs() {
@@ -212,13 +212,13 @@ function resetInputs() {
 
 // Check answer
 async function submitClick(code, segment, question, answer) {
-var qA = storage.get("questionsAnswered") || [];
-var alreadyAnswered = qA.find(q => q.segment == segment && q.question == question)
-if (alreadyAnswered && alreadyAnswered.status == 'Correct') {
-  window.scroll(0, 0);
-  return ui.modeless(`<i class="bi bi-exclamation-lg"></i>`, 'Already Submitted!');
-}
-await fetch(domain + '/check_answer', {
+  var qA = storage.get("questionsAnswered") || [];
+  var alreadyAnswered = qA.find(q => q.segment == segment && q.question == question)
+  if (alreadyAnswered && alreadyAnswered.status == 'Correct') {
+    window.scroll(0, 0);
+    return ui.modeless(`<i class="bi bi-exclamation-lg"></i>`, 'Already Submitted!');
+  }
+  await fetch(domain + '/check_answer', {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -230,23 +230,23 @@ await fetch(domain + '/check_answer', {
       "seat": code
     })
   })
-  .then(r => r.json())
-  .then(r => {
-    window.scroll(0, 0);
-    if (typeof r.correct != 'undefined') {
-      ui.modeless(`<i class="bi bi-${(r.correct) ? 'check' : 'x'}-lg"></i>`, (r.correct) ? 'Correct' : 'Try Again');
-      qA.push({ "segment": segment, "question": question, "status": (r.correct) ? 'Correct' : 'In Progress' });
-    } else if (typeof r.error != 'undefined') {
-      ui.modeless(`<i class="bi bi-exclamation-triangle"></i>`, 'Error');
-    } else {
-      ui.modeless(`<i class="bi bi-hourglass"></i>`, "Submitted, Awaiting Scoring");
-      qA.push({ "segment": segment, "question": question, "status": 'Pending' });
-    }
-    storage.set("questionsAnswered", qA);
-    resetInputs();
-    nextQuestion();
-    updateQuestion();
-  })
+    .then(r => r.json())
+    .then(r => {
+      window.scroll(0, 0);
+      if (typeof r.correct != 'undefined') {
+        ui.modeless(`<i class="bi bi-${(r.correct) ? 'check' : 'x'}-lg"></i>`, (r.correct) ? 'Correct' : 'Try Again');
+        qA.push({ "segment": segment, "question": question, "status": (r.correct) ? 'Correct' : 'In Progress' });
+      } else if (typeof r.error != 'undefined') {
+        ui.modeless(`<i class="bi bi-exclamation-triangle"></i>`, 'Error');
+      } else {
+        ui.modeless(`<i class="bi bi-hourglass"></i>`, "Submitted, Awaiting Scoring");
+        qA.push({ "segment": segment, "question": question, "status": 'Pending' });
+      }
+      storage.set("questionsAnswered", qA);
+      resetInputs();
+      nextQuestion();
+      updateQuestion();
+    })
 }
 
 // Limit seat code input to integers
@@ -360,7 +360,7 @@ async function updateQuestion() {
     nextQuestionButtons.forEach(btn => btn.disabled = selectedQuestionOptionIndex === questionOptions.length - 1);
     prevQuestionButtons.forEach(btn => btn.disabled = selectedQuestionOptionIndex === 0);
   }
-  
+
   const qA = storage.get("questionsAnswered") || [];
   qA.forEach(q => {
     var i = questions.querySelector(`option[value="${q.question}"]`);
@@ -417,9 +417,9 @@ document.querySelectorAll("[data-multiple-choice]").forEach((button) => {
 // Hide multiple choice card
 if (document.getElementById("remove-choice-button")) {
   document.getElementById("remove-choice-button").addEventListener("click", () => {
-  answerMode(ui.getButtonSelectValue(document.getElementById("answer-mode-selector")));
-  multipleChoice = null;
-});
+    answerMode(ui.getButtonSelectValue(document.getElementById("answer-mode-selector")));
+    multipleChoice = null;
+  });
 }
 
 // Set answer mode
@@ -444,8 +444,8 @@ function answerMode(mode) {
     container,
     fromHeight
       ? {
-          height: fromHeight + "px",
-        }
+        height: fromHeight + "px",
+      }
       : undefined,
     {
       height: toHeight + "px",
@@ -648,63 +648,63 @@ const answerLabel = document.querySelector(`label[for="answer-input"]`);
 
 // Select answer mode
 if (document.getElementById("answer-mode-selector")) {
-document.getElementById("answer-mode-selector").addEventListener("input", (e) => {
-  const mode = e.detail;
-  answerMode(mode);
-  if (mode === "input") {
-    answerLabel.setAttribute("for", "answer-input");
-  } else if (mode === "math") {
-    answerLabel.setAttribute("for", "math-input");
-  } else if (mode === "set") {
-    answerLabel.setAttribute("for", "set-input");
-  }
-});
+  document.getElementById("answer-mode-selector").addEventListener("input", (e) => {
+    const mode = e.detail;
+    answerMode(mode);
+    if (mode === "input") {
+      answerLabel.setAttribute("for", "answer-input");
+    } else if (mode === "math") {
+      answerLabel.setAttribute("for", "math-input");
+    } else if (mode === "set") {
+      answerLabel.setAttribute("for", "set-input");
+    }
+  });
 }
 
 setInputs = document.querySelectorAll('[data-set-input]');
 
 // Add set input
 if (document.querySelector("[data-add-set-input]")) {
-document.querySelector("[data-add-set-input]").addEventListener("click", () => {
-  setInputs = document.querySelectorAll('[data-set-input]');
-  let highestDataElement = null;
-  setInputs.forEach(element => {
-    if (highestDataElement === null || parseInt(element.getAttribute('data-set-input'), 10) > parseInt(highestDataElement.getAttribute('data-set-input'), 10)) highestDataElement = element;
-  });
-  if (highestDataElement !== null) {
-    var newSetInput = document.createElement('div');
-    newSetInput.id = 'question-container';
-    var newSetInputInput = document.createElement('input');
-    newSetInputInput.setAttribute('type', 'text');
-    newSetInputInput.setAttribute('autocomplete', 'off');
-    newSetInputInput.setAttribute('data-set-input', Number(highestDataElement.getAttribute('data-set-input')) + 1);
-    newSetInput.appendChild(newSetInputInput);
-    const buttonGrid = document.querySelector('[data-answer-mode="set"] .button-grid');
-    const insertBeforePosition = buttonGrid.children.length - 2;
-    if (insertBeforePosition > 0) {
-      buttonGrid.insertBefore(newSetInput, buttonGrid.children[insertBeforePosition]);
-    } else {
-      buttonGrid.appendChild(newSetInput);
-    }
-    document.querySelector('[data-answer-mode="set"] .button-grid').style.flexWrap = (setInputs.length > 9) ? 'wrap' : 'nowrap';
-    newSetInputInput.focus();
-    document.querySelector("[data-remove-set-input]").disabled = false;
-  }
-});
-}
-
-// Remove set input
-if (document.querySelector("[data-remove-set-input]")) {
-document.querySelector("[data-remove-set-input]").addEventListener("click", (e) => {
-  setInputs = document.querySelectorAll('[data-set-input]');
-  if (setInputs.length > 1) {
+  document.querySelector("[data-add-set-input]").addEventListener("click", () => {
+    setInputs = document.querySelectorAll('[data-set-input]');
     let highestDataElement = null;
     setInputs.forEach(element => {
       if (highestDataElement === null || parseInt(element.getAttribute('data-set-input'), 10) > parseInt(highestDataElement.getAttribute('data-set-input'), 10)) highestDataElement = element;
     });
-    if (highestDataElement !== null) highestDataElement.parentElement.remove();
-  }
-  if (setInputs.length === 2) e.target.disabled = true;
-  document.querySelector('[data-answer-mode="set"] .button-grid').style.flexWrap = (setInputs.length < 12) ? 'nowrap' : 'wrap';
-});
+    if (highestDataElement !== null) {
+      var newSetInput = document.createElement('div');
+      newSetInput.id = 'question-container';
+      var newSetInputInput = document.createElement('input');
+      newSetInputInput.setAttribute('type', 'text');
+      newSetInputInput.setAttribute('autocomplete', 'off');
+      newSetInputInput.setAttribute('data-set-input', Number(highestDataElement.getAttribute('data-set-input')) + 1);
+      newSetInput.appendChild(newSetInputInput);
+      const buttonGrid = document.querySelector('[data-answer-mode="set"] .button-grid');
+      const insertBeforePosition = buttonGrid.children.length - 2;
+      if (insertBeforePosition > 0) {
+        buttonGrid.insertBefore(newSetInput, buttonGrid.children[insertBeforePosition]);
+      } else {
+        buttonGrid.appendChild(newSetInput);
+      }
+      document.querySelector('[data-answer-mode="set"] .button-grid').style.flexWrap = (setInputs.length > 9) ? 'wrap' : 'nowrap';
+      newSetInputInput.focus();
+      document.querySelector("[data-remove-set-input]").disabled = false;
+    }
+  });
+}
+
+// Remove set input
+if (document.querySelector("[data-remove-set-input]")) {
+  document.querySelector("[data-remove-set-input]").addEventListener("click", (e) => {
+    setInputs = document.querySelectorAll('[data-set-input]');
+    if (setInputs.length > 1) {
+      let highestDataElement = null;
+      setInputs.forEach(element => {
+        if (highestDataElement === null || parseInt(element.getAttribute('data-set-input'), 10) > parseInt(highestDataElement.getAttribute('data-set-input'), 10)) highestDataElement = element;
+      });
+      if (highestDataElement !== null) highestDataElement.parentElement.remove();
+    }
+    if (setInputs.length === 2) e.target.disabled = true;
+    document.querySelector('[data-answer-mode="set"] .button-grid').style.flexWrap = (setInputs.length < 12) ? 'nowrap' : 'wrap';
+  });
 }

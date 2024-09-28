@@ -16,7 +16,7 @@
       type="image/x-icon"
       media="(prefers-color-scheme: light)"
     />
-    <title>Admin - Virtual Checker</title>
+    <title>Questions - Virtual Checker</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -63,78 +63,48 @@
       </svg>
       <div class="info"><h1>Virtual Checker</h1>
         <div class="menu">
-          <a href="/admin/">- Segments -</a>
           <a href="/admin/questions">- Questions -</a>
           <a href="/admin/responses">- Responses -</a>
+          <a href="/admin/">- Segments -</a>
         </div>
       </div>
     </div>
     <div id="checker">
-      <div class="section">
-        <h1>Courses</h1>
-        <div class="section course-selector">
-          <div class="button-grid inputs">
-            <div class="input-group">
-              <label for="course-period-input">Period</label>
-              <div class="space" id="question-container">
-                <select id="course-period-input"></select>
-              </div>
-            </div>
-            <div class="input-group">
-              <label for="course-input">Name</label>
-              <div class="space" id="question-container">
-                <input type="text" autocomplete="off" id="course-input" value="" />
-              </div>
-            </div>
-          </div>
-          <button class="space" id="reorder-courses-button">Reorder Courses & Periods</button>
-        </div>
-        <div class="section course-reorder">
-          <div class="button-grid reorder"></div>
-          <div class="button-grid inputs">
-            <button class="space" id="save-course-order-button">Save Order</button>
-            <button class="space" id="cancel-reorder-courses-button">Cancel</button>
-          </div>
-        </div>
-      </div>
-      <div class="section segments">
-        <h1>Segments</h1>
+      <div class="section questions">
+        <h1>Questions</h1>
         <div class="section">
           <div class="button-grid inputs">
             <div class="input-group small">
-              <label for="segment-number-input">Number</label>
+              <label for="question-id-input">ID</label>
               <div class="space" id="question-container">
-                <input type="text" autocomplete="off" id="segment-0-number-input" value="" />
+                <input type="text" autocomplete="off" id="question-id-input" value="" disabled />
+              </div>
+            </div>
+            <div class="input-group small">
+              <label for="question-number-input">Number</label>
+              <div class="space" id="question-container">
+                <input type="text" autocomplete="off" id="question-number-input" value="" />
+              </div>
+            </div>
+            <div class="input-group small">
+              <label for="question-segment-input">Segment</label>
+              <div class="space" id="question-container">
+                <input type="text" autocomplete="off" id="question-segment-input" value="" />
               </div>
             </div>
             <div class="input-group">
-              <label for="segment-name-input">Name</label>
+              <label for="question-text-input">Question</label>
               <div class="space" id="question-container">
-                <input type="text" autocomplete="off" id="segment-0-name-input" value="" />
+                <input type="text" autocomplete="off" id="question-text-input" value="" />
               </div>
             </div>
-            <button square data-add-segment-input><i class="bi bi-plus"></i></button>
-            <button square data-remove-segment-input><i class="bi bi-dash"></i></button>
+            <button square data-add-question-input><i class="bi bi-plus"></i></button>
+            <button square data-remove-question-input><i class="bi bi-dash"></i></button>
           </div>
-          <div class="questions">
-            <div class="button-grid inputs">
-              <div class="input-group small">
-                <label>Name</label>
-                <label>ID</label>
-              </div>
-              <div class="input-group">
-                <input type="text" autocomplete="off" id="segment-0-question-1-name-input" value="1a" />
-                <input type="text" autocomplete="off" id="segment-0-question-1-id-input" value="1" />
-              </div>
-              <div class="input-group fit">
-                <button square data-add-segment-question-input><i class="bi bi-plus"></i></button>
-                <button square data-remove-segment-question-input><i class="bi bi-dash"></i></button>
-              </div>
-            </div>
-          </div>
+          <div class="images"></div>
         </div>
+        <button class="space" id="save-button">Save</button>
       </div>
-      <button class="space" id="save-button">Save</button>
     </div>
     <!-- Controls -->
     <div id="controls-container" class="pill">
