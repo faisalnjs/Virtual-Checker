@@ -10,6 +10,7 @@ var courses = [];
 var segments = [];
 var questions = [];
 let draggedItem = null;
+var files = [];
 
 async function init() {
   // Show clear data fix guide
@@ -253,7 +254,7 @@ if (document.getElementById("reorder-courses-button")) {
 
 // Save
 document.getElementById("save-button").addEventListener("click", (e) => {
-  var updatedInfo = { };
+  var updatedInfo = {};
   if (document.getElementById('course-period-input')) {
     updatedInfo = {
       course: {
@@ -295,13 +296,20 @@ document.getElementById("save-button").addEventListener("click", (e) => {
         });
       });
   }
-  console.log(updatedInfo);
+  const formData = new FormData();
+  for (const key in updatedInfo) {
+    if (Object.prototype.hasOwnProperty.call(updatedInfo, key)) {
+      formData.append(key, JSON.stringify(updatedInfo[key]));
+    }
+  }
+  if (files.length > 0) {
+    for (let i = 0; i < files.length; i++) {
+      formData.append('files[]', files[i]);
+    }
+  }
   fetch(domain + '/save', {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(updatedInfo)
+    body: formData,
   });
   e.target.disabled = true;
   // Show submit confirmation
@@ -378,7 +386,6 @@ function removeSegmentQuestion() {
 }
 
 function updateQuestions() {
-  console.log(questions);
   if (questions.length > 0) {
     document.querySelector('.questions .section').innerHTML = '';
     questions.forEach(q => {
@@ -388,7 +395,7 @@ function updateQuestions() {
       var buttonGrid = document.createElement('div');
       buttonGrid.className = "button-grid inputs";
       var segmentsString = "";
-      segments.forEach(s => segmentsString += `<option value="${s.number}"${(segments.filter(e => JSON.parse(e.question_ids).find(qId => qId.id == q.id)).number === s.number) ? ' selected': ''}>${s.number}</option>`);
+      segments.forEach(s => segmentsString += `<option value="${s.number}"${(segments.filter(e => JSON.parse(e.question_ids).find(qId => qId.id == q.id)).number === s.number) ? ' selected' : ''}>${s.number}</option>`);
       buttonGrid.innerHTML = `<div class="input-group small"><label for="question-id-input">ID</label><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-id-input" value="${q.id}" disabled /></div></div><div class="input-group small"><label for="question-number-input">Number</label><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-number-input" value="${q.number}" /></div></div><div class="input-group small"><label for="question-segment-input">Segment</label><div class="space" id="question-container"><select id="question-segment-input">${segmentsString}</select></div></div><div class="input-group"><label for="question-text-input">Question</label><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-text-input" value="${q.question}" /></div></div><button square data-remove-question-input><i class="bi bi-dash"></i></button>`;
       question.appendChild(buttonGrid);
       var images = document.createElement('div');
@@ -402,11 +409,38 @@ function updateQuestions() {
       var drop = document.createElement('div');
       drop.classList = "drop";
       drop.innerHTML = "+";
+      var drop2 = document.createElement('input');
+      drop2.type = "file";
+      drop2.id = "fileInput";
+      drop2.name = "file";
+      drop2.accept = "image/*";
       images.appendChild(drop);
+      images.appendChild(drop2);
+      ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        drop.addEventListener(eventName, preventDefaults, false);
+        document.body.addEventListener(eventName, preventDefaults, false);
+      });
+      ['dragenter', 'dragover'].forEach(eventName => {
+        drop.addEventListener(eventName, highlight, false);
+      });
+      ['dragleave', 'drop'].forEach(eventName => {
+        drop.addEventListener(eventName, unhighlight, false);
+      });
+      drop.addEventListener('drop', handleDrop2, false);
+      drop.addEventListener('click', function() {
+        drop2.click();
+      });
+      drop2.addEventListener('change', function(e) {
+        const files = e.target.files;
+        handleFiles(e, files);
+      });
       question.appendChild(images);
       document.querySelector('.questions .section').appendChild(question);
     });
-    document.querySelector('.questions .section').innerHTML += '<button data-add-question-input>Add Question</button>';
+    var addQuestionButton = document.createElement('button');
+    addQuestionButton.setAttribute('data-add-question-input', '');
+    addQuestionButton.innerText = "Add Question";
+    document.querySelector('.questions .section').appendChild(addQuestionButton);
   } else {
     document.querySelector('.questions .section').innerHTML = '<button data-add-question-input>Add Question</button>';
   }
@@ -429,7 +463,31 @@ function addQuestion() {
   var drop = document.createElement('div');
   drop.classList = "drop";
   drop.innerHTML = "+";
+  var drop2 = document.createElement('input');
+  drop2.type = "file";
+  drop2.id = "fileInput";
+  drop2.name = "file";
+  drop2.accept = "image/*";
   images.appendChild(drop);
+  images.appendChild(drop2);
+  ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+    drop.addEventListener(eventName, preventDefaults, false);
+    document.body.addEventListener(eventName, preventDefaults, false);
+  });
+  ['dragenter', 'dragover'].forEach(eventName => {
+    drop.addEventListener(eventName, highlight, false);
+  });
+  ['dragleave', 'drop'].forEach(eventName => {
+    drop.addEventListener(eventName, unhighlight, false);
+  });
+  drop.addEventListener('drop', handleDrop2, false);
+  drop.addEventListener('click', function() {
+    drop2.click();
+  });
+  drop2.addEventListener('change', function(e) {
+    const files = e.target.files;
+    handleFiles(e, files);
+  });
   group.appendChild(images);
   this.parentElement.insertBefore(group, this.parentElement.children[this.parentElement.children.length - 1]);
   document.querySelectorAll('[data-add-question-input]').forEach(a => a.addEventListener('click', addQuestion));
@@ -438,4 +496,28 @@ function addQuestion() {
 
 function removeQuestion() {
   this.parentElement.parentElement.remove();
+}
+
+function preventDefaults(e) {
+  e.preventDefault();
+  e.stopPropagation();
+}
+
+function highlight() {
+  this.classList.add('hover');
+}
+
+function unhighlight() {
+  this.classList.remove('hover');
+}
+
+function handleDrop2(e) {
+  const dt = e.dataTransfer;
+  const files = dt.files;
+  handleFiles(e, files);
+}
+
+function handleFiles(e, file) {
+  // add the image to .attachments before the 2 last elements
+  file.forEach(f => files.push(file));
 }

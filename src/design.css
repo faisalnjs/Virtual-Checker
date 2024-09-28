@@ -498,3 +498,7 @@ button[square] {
   background: var(--surface-color);
   cursor: pointer;
 }
+
+.attachments input[type="file"] {
+  display: none;
+}
