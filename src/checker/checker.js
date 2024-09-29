@@ -345,6 +345,10 @@ async function updateSegment() {
 async function updateQuestion() {
   var question = questionsArray.find(q => q.id == questions.value);
   questionImages.innerHTML = '';
+  nextQuestionButtons.forEach(btn => btn.disabled = true);
+  prevQuestionButtons.forEach(btn => btn.disabled = true);
+  document.getElementById("submit-button").disabled = true;
+  document.querySelector('.hiddenOnLoad').classList.remove('show');
   if (!question) return;
   JSON.parse(question.images).forEach(image => {
     var i = document.createElement('img');
@@ -354,13 +358,12 @@ async function updateQuestion() {
   const questionOptions = questions.querySelectorAll('option');
   const selectedQuestionOption = questions.querySelector('option:checked');
 
-  if (questionOptions.length === 0) {
-    nextQuestionButtons.forEach(btn => btn.disabled = true);
-    prevQuestionButtons.forEach(btn => btn.disabled = true);
-  } else {
+  if (questionOptions.length > 0) {
     const selectedQuestionOptionIndex = Array.from(questionOptions).indexOf(selectedQuestionOption);
     nextQuestionButtons.forEach(btn => btn.disabled = selectedQuestionOptionIndex === questionOptions.length - 1);
     prevQuestionButtons.forEach(btn => btn.disabled = selectedQuestionOptionIndex === 0);
+    document.querySelector('.hiddenOnLoad').classList.add('show');
+    document.getElementById("submit-button").disabled = false;
   }
 
   const qA = storage.get("questionsAnswered") || [];

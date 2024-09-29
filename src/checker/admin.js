@@ -312,7 +312,7 @@ async function save(hideResult) {
   });
   document.getElementById("save-button").disabled = true;
   window.scroll(0, 0);
-  if (!hideResult) ui.modeless(`<i class="bi bi-check-lg"></i>`, "Saved");
+  if ((typeof hideResult != 'boolean')) ui.modeless(`<i class="bi bi-check-lg"></i>`, "Saved");
   init();
   setTimeout(() => {
     document.getElementById("save-button").disabled = false;

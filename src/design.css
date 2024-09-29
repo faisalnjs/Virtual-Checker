@@ -500,3 +500,14 @@ button[square] {
   background: var(--surface-color);
   cursor: pointer;
 }
+
+.hiddenOnLoad {
+  max-height: 0px;
+  overflow: hidden;
+  transition: 0.5s;
+}
+
+.hiddenOnLoad.show {
+  max-height: 500px;
+  transition: 0.5s var(--easing);
+}
