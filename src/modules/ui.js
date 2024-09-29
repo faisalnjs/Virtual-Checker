@@ -190,7 +190,7 @@ export function view(path) {
       });
   }
   const previous = pages.slice(0, pages.length - 1).join("/");
-  const buttons = [
+  const buttons = (title === 'API Offline') ? [] : [
     {
       text: `<i class="bi bi-x-lg"></i>`,
       class: "icon",
@@ -327,7 +327,7 @@ export class Element {
 (() => {
   document.addEventListener("pointerdown", (e) => {
     const dialog = document.querySelector("dialog[open]");
-    if (dialog?.hasAttribute("data-open") && !dialog?.contains(e.target)) {
+    if ((dialog?.querySelector('h2').innerText != 'API Offline') && dialog?.hasAttribute("data-open") && !dialog?.contains(e.target)) {
       document.addEventListener(
         "pointerup",
         () => {

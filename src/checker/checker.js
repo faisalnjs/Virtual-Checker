@@ -246,6 +246,7 @@ async function submitClick(code, segment, question, answer) {
       nextQuestion();
       updateQuestion();
     })
+    .catch(() => ui.view("api-fail"))
 }
 
 // Limit seat code input to integers
@@ -319,7 +320,7 @@ async function updateCode() {
       updateSegment();
       if (document.querySelector('#checker .images').innerHTML === '') await updateQuestion();
     } catch (error) {
-      console.error("Failed to fetch data:", error);
+      ui.view("api-fail");
     }
   }
 }

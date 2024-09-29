@@ -72,9 +72,12 @@ async function init() {
             .then(q => {
               questions = q;
               if (document.querySelector('.questions.section')) updateQuestions();
-            });
-        });
-    });
+            })
+            .catch(() => ui.view("api-fail"));
+        })
+        .catch(() => ui.view("api-fail"));
+    })
+    .catch(() => ui.view("api-fail"));
   if (document.getElementById("course-period-input")) {
     document.querySelector('.course-reorder').style.display = 'none';
     document.querySelectorAll('[data-remove-segment-input]').forEach(a => a.removeEventListener('click', removeSegment));
@@ -248,7 +251,8 @@ if (document.getElementById("reorder-courses-button")) {
           item.addEventListener('dragover', handleDragOver);
           item.addEventListener('drop', handleDrop);
         });
-      });
+      })
+      .catch(() => ui.view("api-fail"));
     // Show submit confirmation
     ui.modeless(`<i class="bi bi-check-lg"></i>`, "Saved");
   });
@@ -308,7 +312,8 @@ async function save(hideResult) {
   fetch(domain + '/save', {
     method: "POST",
     body: formData,
-  });
+  })
+  .catch(() => ui.view("api-fail"));
   document.getElementById("save-button").disabled = true;
   window.scroll(0, 0);
   if ((typeof hideResult != 'boolean')) ui.modeless(`<i class="bi bi-check-lg"></i>`, "Saved");
@@ -482,7 +487,8 @@ async function removeImage(event) {
       .then(() => {
         ui.modeless(`<i class="bi bi-file-earmark-x"></i>`, "Removed");
         init();
-      });
+      })
+      .catch(() => ui.view("api-fail"));
   } else {
     window.open(event.target.src);
   }
