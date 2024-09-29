@@ -458,9 +458,11 @@ button[square] {
 .attachments .image,
 .attachments img {
   height: 65px;
+  min-width: 70px;
   border-radius: 2.5px;
   cursor: pointer;
   position: relative;
+  background-color: var(--text-color);
 }
 
 .attachments .image::after {
@@ -470,7 +472,7 @@ button[square] {
   width: 100%;
   z-index: 10;
   background: var(--surface-color);
-  opacity: 0.5;
+  opacity: 0.75;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -497,8 +499,4 @@ button[square] {
   border: 1px dashed var(--accent-color);
   background: var(--surface-color);
   cursor: pointer;
-}
-
-.attachments input[type="file"] {
-  display: none;
 }

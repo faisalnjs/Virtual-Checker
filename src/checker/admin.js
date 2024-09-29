@@ -10,9 +10,12 @@ var courses = [];
 var segments = [];
 var questions = [];
 let draggedItem = null;
-var files = [];
+var files = {};
+var formData = new FormData();
 
 async function init() {
+  formData = new FormData();
+
   // Show clear data fix guide
   // if (storage.get("created")) {
   //   document.querySelector(`[data-modal-view="clear-data-fix"]`).remove();
@@ -248,12 +251,14 @@ if (document.getElementById("reorder-courses-button")) {
         });
       });
     // Show submit confirmation
-    ui.modeless(`<i class="bi bi-check-lg"></i>`, "Saved!");
+    ui.modeless(`<i class="bi bi-check-lg"></i>`, "Saved");
   });
 }
 
 // Save
-document.getElementById("save-button").addEventListener("click", (e) => {
+document.getElementById("save-button").addEventListener("click", save);
+  
+async function save(hideResult) {
   var updatedInfo = {};
   if (document.getElementById('course-period-input')) {
     updatedInfo = {
@@ -296,30 +301,23 @@ document.getElementById("save-button").addEventListener("click", (e) => {
         });
       });
   }
-  const formData = new FormData();
   for (const key in updatedInfo) {
     if (Object.prototype.hasOwnProperty.call(updatedInfo, key)) {
       formData.append(key, JSON.stringify(updatedInfo[key]));
-    }
-  }
-  if (files.length > 0) {
-    for (let i = 0; i < files.length; i++) {
-      formData.append('files[]', files[i]);
     }
   }
   fetch(domain + '/save', {
     method: "POST",
     body: formData,
   });
-  e.target.disabled = true;
-  // Show submit confirmation
+  document.getElementById("save-button").disabled = true;
   window.scroll(0, 0);
-  ui.modeless(`<i class="bi bi-check-lg"></i>`, "Saved!");
+  if (!hideResult) ui.modeless(`<i class="bi bi-check-lg"></i>`, "Saved");
   init();
   setTimeout(() => {
-    e.target.disabled = false;
+    document.getElementById("save-button").disabled = false;
   }, 2500);
-});
+}
 
 function handleDragStart(e) {
   draggedItem = this.parentNode;
@@ -404,36 +402,15 @@ function updateQuestions() {
         var image = document.createElement('div');
         image.classList = "image";
         image.innerHTML = `<img src="${q}" />`;
+        image.addEventListener('click', removeImage);
         images.appendChild(image);
       });
       var drop = document.createElement('div');
       drop.classList = "drop";
       drop.innerHTML = "+";
-      var drop2 = document.createElement('input');
-      drop2.type = "file";
-      drop2.id = "fileInput";
-      drop2.name = "file";
-      drop2.accept = "image/*";
+      drop.id = q.id;
+      drop.addEventListener('click', renderPond);
       images.appendChild(drop);
-      images.appendChild(drop2);
-      ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-        drop.addEventListener(eventName, preventDefaults, false);
-        document.body.addEventListener(eventName, preventDefaults, false);
-      });
-      ['dragenter', 'dragover'].forEach(eventName => {
-        drop.addEventListener(eventName, highlight, false);
-      });
-      ['dragleave', 'drop'].forEach(eventName => {
-        drop.addEventListener(eventName, unhighlight, false);
-      });
-      drop.addEventListener('drop', handleDrop2, false);
-      drop.addEventListener('click', function() {
-        drop2.click();
-      });
-      drop2.addEventListener('change', function(e) {
-        const files = e.target.files;
-        handleFiles(e, files);
-      });
       question.appendChild(images);
       document.querySelector('.questions .section').appendChild(question);
     });
@@ -458,37 +435,6 @@ function addQuestion() {
   segments.forEach(s => segmentsString += `<option value="${s.number}">${s.number}</option>`);
   buttonGrid.innerHTML = `<div class="input-group small"><label for="question-id-input">ID</label><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-id-input" value="" disabled /></div></div><div class="input-group small"><label for="question-number-input">Number</label><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-number-input" value="" /></div></div><div class="input-group small"><label for="question-segment-input">Segment</label><div class="space" id="question-container"><select id="question-segment-input">${segmentsString}</select></div></div><div class="input-group"><label for="question-text-input">Question</label><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-text-input" value="" /></div></div><button square data-remove-question-input><i class="bi bi-dash"></i></button>`;
   group.appendChild(buttonGrid);
-  var images = document.createElement('div');
-  images.classList = "attachments";
-  var drop = document.createElement('div');
-  drop.classList = "drop";
-  drop.innerHTML = "+";
-  var drop2 = document.createElement('input');
-  drop2.type = "file";
-  drop2.id = "fileInput";
-  drop2.name = "file";
-  drop2.accept = "image/*";
-  images.appendChild(drop);
-  images.appendChild(drop2);
-  ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-    drop.addEventListener(eventName, preventDefaults, false);
-    document.body.addEventListener(eventName, preventDefaults, false);
-  });
-  ['dragenter', 'dragover'].forEach(eventName => {
-    drop.addEventListener(eventName, highlight, false);
-  });
-  ['dragleave', 'drop'].forEach(eventName => {
-    drop.addEventListener(eventName, unhighlight, false);
-  });
-  drop.addEventListener('drop', handleDrop2, false);
-  drop.addEventListener('click', function() {
-    drop2.click();
-  });
-  drop2.addEventListener('change', function(e) {
-    const files = e.target.files;
-    handleFiles(e, files);
-  });
-  group.appendChild(images);
   this.parentElement.insertBefore(group, this.parentElement.children[this.parentElement.children.length - 1]);
   document.querySelectorAll('[data-add-question-input]').forEach(a => a.addEventListener('click', addQuestion));
   document.querySelectorAll('[data-remove-question-input]').forEach(a => a.addEventListener('click', removeQuestion));
@@ -498,26 +444,47 @@ function removeQuestion() {
   this.parentElement.parentElement.remove();
 }
 
-function preventDefaults(e) {
-  e.preventDefault();
-  e.stopPropagation();
+async function renderPond() {
+  await save(true);
+  const url = '/admin/upload.html?question=' + this.id;
+  const width = 600;
+  const height = 600;
+  const left = (window.screen.width / 2) - (width / 2);
+  const top = (window.screen.height / 2) - (height / 2);
+  const windowFeatures = `width=${width},height=${height},resizable=no,scrollbars=no,status=yes,left=${left},top=${top}`;
+  const newWindow = window.open(url, '_blank', windowFeatures);
+  const checkWindowClosed = setInterval(function() {
+    if (newWindow && newWindow.closed) {
+      clearInterval(checkWindowClosed);
+      ui.modeless(`<i class="bi bi-cloud-upload"></i>`, "Uploaded");
+      init();
+    }
+  }, 1000);
 }
 
-function highlight() {
-  this.classList.add('hover');
-}
-
-function unhighlight() {
-  this.classList.remove('hover');
-}
-
-function handleDrop2(e) {
-  const dt = e.dataTransfer;
-  const files = dt.files;
-  handleFiles(e, files);
-}
-
-function handleFiles(e, file) {
-  // add the image to .attachments before the 2 last elements
-  file.forEach(f => files.push(file));
+async function removeImage(event) {
+  await save(true);
+  const element = event.target;
+  const rect = element.getBoundingClientRect();
+  const clickYRelativeToElement = event.clientY - rect.top;
+  const distanceFromBottom = rect.height - clickYRelativeToElement;
+  if (distanceFromBottom <= 26) {
+    await fetch(domain + '/upload', {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        question_id: event.target.parentElement.parentElement.querySelector('#question-id-input').value,
+        file_url: event.target.querySelector('img').src
+      }),
+    })
+      .then(q => q.json())
+      .then(() => {
+        ui.modeless(`<i class="bi bi-file-earmark-x"></i>`, "Removed");
+        init();
+      });
+  } else {
+    window.open(event.target.src);
+  }
 }
