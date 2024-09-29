@@ -4,7 +4,6 @@ import storage from "/src/modules/storage.js";
 import { autocomplete } from "/src/symbols/symbols.js";
 import { unixToTimeString } from "/src/modules/time.js";
 import { getPeriod } from "/src/periods/periods";
-import { getCourse } from "/src/periods/classes";
 import { convertLatexToAsciiMath, convertLatexToMarkup, renderMathInElement } from "mathlive";
 ``;
 
@@ -296,7 +295,6 @@ async function updateCode() {
       element.innerHTML = code;
     });
     document.title = `Virtual Checker (${code})`;
-    if (document.getElementById("course-input")) document.getElementById("course-input").value = getCourse(code) || "Unknown Course";
     try {
       const segmentsResponse = await fetch(`${domain}/segments?course=${Number(code.slice(0, 1)) - 1}`, {
         method: "GET",

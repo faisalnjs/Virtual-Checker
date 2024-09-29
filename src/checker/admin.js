@@ -10,7 +10,6 @@ var courses = [];
 var segments = [];
 var questions = [];
 let draggedItem = null;
-var files = {};
 var formData = new FormData();
 
 async function init() {
