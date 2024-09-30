@@ -304,7 +304,6 @@ async function save(hideResult) {
       segments: []
     };
     Array.from(document.querySelectorAll('.segments .section .section'))
-      .filter(s => s.classList.length === 1)
       .forEach(segment => {
         updatedInfo.segments.push({
           id: segment.id.split('-')[1],
@@ -323,7 +322,6 @@ async function save(hideResult) {
       questions: []
     };
     Array.from(document.querySelectorAll('.questions .section .section'))
-      .filter(s => s.classList.length === 1)
       .forEach(question => {
         updatedInfo.questions.push({
           id: question.id.split('-')[1],
