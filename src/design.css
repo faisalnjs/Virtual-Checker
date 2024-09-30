@@ -549,3 +549,47 @@ button[square] {
 .questions .section.expanded .bi-caret-down-fill {
   display: none;
 }
+
+.section [data-select] {
+  display: none;
+}
+
+.selecting [data-select] {
+  display: flex;
+}
+
+.selecting .bi-circle-fill {
+  display: none;
+}
+
+.selecting .selected .bi-circle {
+  display: none;
+}
+
+.selecting .selected .bi-circle-fill {
+  display: block;
+}
+
+#controls-container .bi-x {
+  display: none;
+}
+
+#controls-container [data-delete-multiple] {
+  display: none;
+}
+
+body:has(.selecting) #controls-container button:has(.bi-gear) {
+  display: none;
+}
+
+body:has(.selecting) #controls-container .bi-circle {
+  display: none;
+}
+
+body:has(.selecting) #controls-container .bi-x {
+  display: block;
+}
+
+body:has(.selecting) #controls-container [data-delete-multiple] {
+  display: block;
+}

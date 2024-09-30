@@ -90,6 +90,30 @@ async function init() {
 init();
 
 if (document.getElementById("course-period-input")) document.getElementById("course-period-input").addEventListener("change", updateSegments);
+document.querySelector('[data-select-multiple]').addEventListener("click", toggleSelecting);
+document.querySelector('[data-delete-multiple]').addEventListener("click", deleteMultiple);
+
+function toggleSelecting() {
+  if (document.querySelector('.segments .section')) document.querySelector('.segments .section').classList.toggle('selecting');
+  if (document.querySelector('.questions .section')) document.querySelector('.questions .section').classList.toggle('selecting');
+}
+
+function removeSelecting() {
+  if (document.querySelector('.segments .section')) document.querySelector('.segments .section').classList.remove('selecting');
+  if (document.querySelector('.questions .section')) document.querySelector('.questions .section').classList.remove('selecting');
+}
+
+function deleteMultiple() {
+  document.querySelectorAll('.selected').forEach(e => e.remove());
+}
+
+function toggleSelected() {
+  this.parentElement.parentElement.classList.toggle('selected');
+}
+
+function removeAllSelected() {
+  document.querySelectorAll('.selected').forEach(e => e.classList.remove('.selected'));
+}
 
 function updateSegments() {
   const course = courses.find(c => c.id == document.getElementById("course-period-input").value);
@@ -103,7 +127,7 @@ function updateSegments() {
       segment.id = `segment-${s.number}`;
       var buttonGrid = document.createElement('div');
       buttonGrid.className = "button-grid inputs";
-      buttonGrid.innerHTML = `<div class="input-group small"><div class="space" id="question-container"><input type="text" autocomplete="off" id="segment-number-input" value="${s.number}" /></div></div><div class="input-group"><div class="space" id="question-container"><input type="text" autocomplete="off" id="segment-name-input" value="${s.name}" /></div></div><button square data-remove-segment-input><i class="bi bi-dash"></i></button><button square data-toggle-segment><i class="bi bi-caret-down-fill"></i><i class="bi bi-caret-up-fill"></i></button>`;
+      buttonGrid.innerHTML = `<button square data-select><i class="bi bi-circle"></i><i class="bi bi-circle-fill"></i></button><div class="input-group small"><div class="space" id="question-container"><input type="text" autocomplete="off" id="segment-number-input" value="${s.number}" /></div></div><div class="input-group"><div class="space" id="question-container"><input type="text" autocomplete="off" id="segment-name-input" value="${s.name}" /></div></div><button square data-remove-segment-input><i class="bi bi-dash"></i></button><button square data-toggle-segment><i class="bi bi-caret-down-fill"></i><i class="bi bi-caret-up-fill"></i></button>`;
       segment.appendChild(buttonGrid);
       var questionsString = "";
       var questions = document.createElement('div');
@@ -124,6 +148,7 @@ function updateSegments() {
   document.querySelectorAll('[data-add-segment-question-input]').forEach(a => a.addEventListener('click', addSegmentQuestion));
   document.querySelectorAll('[data-remove-segment-question-input]').forEach(a => a.addEventListener('click', removeSegmentQuestion));
   document.querySelectorAll('[data-toggle-segment]').forEach(a => a.addEventListener('click', toggleSegment));
+  document.querySelectorAll('[data-select]').forEach(a => a.addEventListener('click', toggleSelected));
 }
 
 function toggleSegment() {
@@ -267,6 +292,8 @@ if (document.getElementById("reorder-courses-button")) {
 document.getElementById("save-button").addEventListener("click", save);
   
 async function save(hideResult) {
+  removeAllSelected();
+  removeSelecting();
   var updatedInfo = {};
   if (document.getElementById('course-period-input')) {
     updatedInfo = {
@@ -359,7 +386,7 @@ function addSegment() {
   group.id = 'segment-new';
   var buttonGrid = document.createElement('div');
   buttonGrid.className = "button-grid inputs";
-  buttonGrid.innerHTML = `<div class="input-group small"><div class="space" id="question-container"><input type="text" autocomplete="off" id="segment-number-input" value="0" /></div></div><div class="input-group"><div class="space" id="question-container"><input type="text" autocomplete="off" id="segment-name-input" value="" /></div></div><button square data-remove-segment-input><i class="bi bi-dash"></i></button><button square data-toggle-segment><i class="bi bi-caret-down-fill"></i><i class="bi bi-caret-up-fill"></i></button>`;
+  buttonGrid.innerHTML = `<button square data-select><i class="bi bi-circle"></i><i class="bi bi-circle-fill"></i></button><div class="input-group small"><div class="space" id="question-container"><input type="text" autocomplete="off" id="segment-number-input" value="0" /></div></div><div class="input-group"><div class="space" id="question-container"><input type="text" autocomplete="off" id="segment-name-input" value="" /></div></div><button square data-remove-segment-input><i class="bi bi-dash"></i></button><button square data-toggle-segment><i class="bi bi-caret-down-fill"></i><i class="bi bi-caret-up-fill"></i></button>`;
   group.appendChild(buttonGrid);
   var questions = document.createElement('div');
   questions.classList = "questions";
@@ -371,6 +398,7 @@ function addSegment() {
   document.querySelectorAll('[data-add-segment-question-input]').forEach(a => a.addEventListener('click', addSegmentQuestion));
   document.querySelectorAll('[data-remove-segment-question-input]').forEach(a => a.addEventListener('click', removeSegmentQuestion));
   document.querySelectorAll('[data-toggle-segment]').forEach(a => a.addEventListener('click', toggleSegment));
+  document.querySelectorAll('[data-select]').forEach(a => a.addEventListener('click', toggleSelected));
 }
 
 function removeSegment() {
@@ -404,7 +432,7 @@ function updateQuestions() {
       buttonGrid.className = "button-grid inputs";
       var segmentsString = "";
       segments.forEach(s => segmentsString += `<option value="${s.number}"${(segments.filter(e => JSON.parse(e.question_ids).find(qId => qId.id == q.id)).number === s.number) ? ' selected' : ''}>${s.number}</option>`);
-      buttonGrid.innerHTML = `<div class="input-group small"><label for="question-id-input">ID</label><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-id-input" value="${q.id}" disabled /></div></div><div class="input-group small"><label for="question-number-input">Number</label><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-number-input" value="${q.number}" /></div></div><div class="input-group small"><label for="question-segment-input">Segment</label><div class="space" id="question-container"><select id="question-segment-input">${segmentsString}</select></div></div><div class="input-group"><label for="question-text-input">Question</label><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-text-input" value="${q.question}" /></div></div><button square data-remove-question-input><i class="bi bi-dash"></i></button><button square data-toggle-question><i class="bi bi-caret-down-fill"></i><i class="bi bi-caret-up-fill"></i></button>`;
+      buttonGrid.innerHTML = `<button square data-select><i class="bi bi-circle"></i><i class="bi bi-circle-fill"></i></button><div class="input-group small"><label for="question-id-input">ID</label><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-id-input" value="${q.id}" disabled /></div></div><div class="input-group small"><label for="question-number-input">Number</label><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-number-input" value="${q.number}" /></div></div><div class="input-group small"><label for="question-segment-input">Segment</label><div class="space" id="question-container"><select id="question-segment-input">${segmentsString}</select></div></div><div class="input-group"><label for="question-text-input">Question</label><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-text-input" value="${q.question}" /></div></div><button square data-remove-question-input><i class="bi bi-dash"></i></button><button square data-toggle-question><i class="bi bi-caret-down-fill"></i><i class="bi bi-caret-up-fill"></i></button>`;
       question.appendChild(buttonGrid);
       var images = document.createElement('div');
       images.classList = "attachments";
@@ -434,6 +462,7 @@ function updateQuestions() {
   document.querySelectorAll('[data-add-question-input]').forEach(a => a.addEventListener('click', addQuestion));
   document.querySelectorAll('[data-remove-question-input]').forEach(a => a.addEventListener('click', removeQuestion));
   document.querySelectorAll('[data-toggle-question]').forEach(a => a.addEventListener('click', toggleQuestion));
+  document.querySelectorAll('[data-select]').forEach(a => a.addEventListener('click', toggleSelected));
 }
 
 function toggleQuestion() {
@@ -448,12 +477,13 @@ function addQuestion() {
   buttonGrid.className = "button-grid inputs";
   var segmentsString = "";
   segments.forEach(s => segmentsString += `<option value="${s.number}">${s.number}</option>`);
-  buttonGrid.innerHTML = `<div class="input-group small"><label for="question-id-input">ID</label><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-id-input" value="" disabled /></div></div><div class="input-group small"><label for="question-number-input">Number</label><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-number-input" value="" /></div></div><div class="input-group small"><label for="question-segment-input">Segment</label><div class="space" id="question-container"><select id="question-segment-input">${segmentsString}</select></div></div><div class="input-group"><label for="question-text-input">Question</label><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-text-input" value="" /></div></div><button square data-remove-question-input><i class="bi bi-dash"></i></button><button square data-toggle-question><i class="bi bi-caret-down-fill"></i><i class="bi bi-caret-up-fill"></i></button>`;
+  buttonGrid.innerHTML = `<button square data-select><i class="bi bi-circle"></i><i class="bi bi-circle-fill"></i></button><div class="input-group small"><label for="question-id-input">ID</label><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-id-input" value="" disabled /></div></div><div class="input-group small"><label for="question-number-input">Number</label><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-number-input" value="" /></div></div><div class="input-group small"><label for="question-segment-input">Segment</label><div class="space" id="question-container"><select id="question-segment-input">${segmentsString}</select></div></div><div class="input-group"><label for="question-text-input">Question</label><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-text-input" value="" /></div></div><button square data-remove-question-input><i class="bi bi-dash"></i></button><button square data-toggle-question><i class="bi bi-caret-down-fill"></i><i class="bi bi-caret-up-fill"></i></button>`;
   group.appendChild(buttonGrid);
   this.parentElement.insertBefore(group, this.parentElement.children[this.parentElement.children.length - 1]);
   document.querySelectorAll('[data-add-question-input]').forEach(a => a.addEventListener('click', addQuestion));
   document.querySelectorAll('[data-remove-question-input]').forEach(a => a.addEventListener('click', removeQuestion));
   document.querySelectorAll('[data-toggle-question]').forEach(a => a.addEventListener('click', toggleQuestion));
+  document.querySelectorAll('[data-select]').forEach(a => a.addEventListener('click', toggleSelected));
 }
 
 function removeQuestion() {
