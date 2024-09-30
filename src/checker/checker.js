@@ -19,6 +19,7 @@ var setInputs = document.querySelectorAll("[data-set-input]");
 const questionImages = document.querySelector('.images');
 const nextQuestionButtons = document.querySelectorAll('[data-next-question]');
 const prevQuestionButtons = document.querySelectorAll('[data-prev-question]');
+var period = document.getElementById("period-input").value;
 
 let currentAnswerMode;
 let multipleChoice = null;
@@ -57,7 +58,7 @@ if (document.getElementById("course-input")) {
     // Populate seat code finder grid
     for (let col = 1; col <= 5; col++) {
       for (let row = 6; row > 0; row--) {
-        const period = document.getElementById("period-input").value;
+        period = document.getElementById("period-input").value;
         const code = period + row.toString() + col.toString();
         const button = new ui.Element("button", "", {
           click: () => {
@@ -69,6 +70,23 @@ if (document.getElementById("course-input")) {
         ui.addTooltip(button, code);
       }
     }
+    document.getElementById("period-input").addEventListener("change", (e) => {
+      document.getElementById("seat-grid").innerHTML = "";
+      for (let col = 1; col <= 5; col++) {
+        for (let row = 6; row > 0; row--) {
+          period = document.getElementById("period-input").value;
+          const code = period + row.toString() + col.toString();
+          const button = new ui.Element("button", "", {
+            click: () => {
+              document.getElementById("code-input").value = code;
+              ui.view("settings/code");
+            },
+          }).element;
+          document.getElementById("seat-grid").append(button);
+          ui.addTooltip(button, code);
+        }
+      }
+    });
     // Update history feed
     updateHistory();
     // Focus answer input
@@ -297,7 +315,14 @@ async function updateCode() {
     });
     document.title = `Virtual Checker (${code})`;
     try {
-      const segmentsResponse = await fetch(`${domain}/segments?course=${Number(code.slice(0, 1)) - 1}`, {
+      const coursesResponse = await fetch(`${domain}/courses`, {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+      });
+      const coursesData = await coursesResponse.json();
+      const course = coursesData.find(c => c.period === Number(code.slice(0, 1)));
+      if (document.getElementById("course-input")) document.getElementById("course-input").value = course.name || "Unknown Course";
+      const segmentsResponse = await fetch(`${domain}/segments?course=${course.id}`, {
         method: "GET",
         headers: { "Content-Type": "application/json" },
       });
@@ -328,6 +353,7 @@ async function updateCode() {
 async function updateSegment() {
   const selectedSegment = segmentsArray.find(s => s.number == segments.value);
   questions.innerHTML = '';
+  if (!selectedSegment) return updateQuestion();
   JSON.parse(selectedSegment.question_ids).forEach(questionId => {
     if (questionsArray.find(q => q.id == questionId.id)) {
       const questionOption = document.createElement('option');
