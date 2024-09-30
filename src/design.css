@@ -527,7 +527,8 @@ button[square] {
 }
 
 .segments .section .questions,
-.questions .section .attachments {
+.questions .section .attachments,
+.questions .section .answers {
   max-height: 0px;
   transition: 0.25s var(--easing);
   overflow: hidden;
@@ -546,6 +547,11 @@ button[square] {
 .segments .section.expanded .questions,
 .questions .section.expanded .attachments {
   max-height: 100px;
+  transition: 0.25s var(--easing);
+}
+
+.questions .section.expanded .answers {
+  max-height: 1000px;
   transition: 0.25s var(--easing);
 }
 
@@ -610,4 +616,8 @@ body:has(.selecting) #controls-container [data-delete-multiple] {
 
 .section:has(.expanded) {
   transition: 0.25s gap var(--easing);
+}
+
+.answers {
+  width: -webkit-fill-available;
 }
