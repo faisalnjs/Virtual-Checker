@@ -99,6 +99,10 @@
       </div>
       <div class="section segments">
         <h1>Segments</h1>
+        <div class="button-grid inputs" style="gap: 7.5px;">
+          <label style="width: -webkit-fill-available" class="small">Number</label>
+          <label style="width: -webkit-fill-available">Name</label>
+        </div>
         <div class="section">
           <div class="button-grid inputs">
             <div class="input-group small">
@@ -124,7 +128,7 @@
               </div>
               <div class="input-group">
                 <input type="text" autocomplete="off" />
-                <input type="text" autocomplete="off" />
+                <input type="number" autocomplete="off" />
               </div>
               <div class="input-group fit">
                 <button square><i class="bi bi-plus"></i></button>
@@ -140,6 +144,9 @@
     <div id="controls-container" class="pill">
       <button class="icon" data-modal-view="settings">
         <i class="bi bi-gear"></i>
+      </button>
+      <button class="icon" data-select>
+        <i class="bi bi-circle"></i>
       </button>
       <!-- <button class="pill" data-modal-view="settings/code">
         <span class="code">000</span>

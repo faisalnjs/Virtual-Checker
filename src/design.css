@@ -511,3 +511,41 @@ button[square] {
   max-height: 500px;
   transition: 0.5s var(--easing);
 }
+
+.segments .section [data-remove-segment-input],
+.questions .section [data-remove-question-input] {
+  display: none;
+}
+
+.segments .section .questions,
+.questions .section .attachments {
+  max-height: 0px;
+  transition: 0.25s var(--easing);
+  overflow: hidden;
+}
+
+.segments .section .bi-caret-up-fill,
+.questions .section .bi-caret-up-fill {
+  display: none;
+}
+
+.segments .section.expanded [data-remove-segment-input],
+.questions .section.expanded [data-remove-question-input] {
+  display: flex;
+}
+
+.segments .section.expanded .questions,
+.questions .section.expanded .attachments {
+  max-height: 100px;
+  transition: 0.25s var(--easing);
+}
+
+.segments .section.expanded .bi-caret-up-fill,
+.questions .section.expanded .bi-caret-up-fill {
+  display: block;
+}
+
+.segments .section.expanded .bi-caret-down-fill,
+.questions .section.expanded .bi-caret-down-fill {
+  display: none;
+}
