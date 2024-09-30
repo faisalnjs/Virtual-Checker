@@ -402,6 +402,15 @@ button[square] {
   .button-grid {
     flex-wrap: wrap;
   }
+
+  label {
+    width: unset !important;
+  }
+  
+  .small,
+  square {
+    max-width: unset !important;
+  }
 }
 
 #checker button {
@@ -592,4 +601,13 @@ body:has(.selecting) #controls-container .bi-x {
 
 body:has(.selecting) #controls-container [data-delete-multiple] {
   display: block;
+}
+
+.section:not(:has(.expanded)) {
+  gap: 7.5px;
+  transition: 0.25s gap var(--easing);
+}
+
+.section:has(.expanded) {
+  transition: 0.25s gap var(--easing);
 }
