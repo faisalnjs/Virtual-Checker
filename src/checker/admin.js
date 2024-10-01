@@ -701,7 +701,7 @@ function updateResponses() {
       });
     }
   });
-  trendingResponses.forEach(r => {
+  trendingResponses.filter(t => t.count > 1).forEach(r => {
     var buttonGrid = document.createElement('div');
     buttonGrid.className = "button-grid inputs";
     buttonGrid.innerHTML = `<input type="text" autocomplete="off" class="small" id="response-segment-input" value="${r.segment}" disabled /><input type="text" autocomplete="off" class="small" id="response-question-input" value="${r.question_id}" disabled /><input type="text" autocomplete="off" id="response-response-input" value="${r.response}" disabled /><input type="text" autocomplete="off" class="small" id="response-count-input" value="${r.count}" disabled /><select name="response-status-input" class="medium" id="response-status-input"><option value="Unknown, Recorded" ${(r.status === 'Unknown, Recorded') ? 'selected' : ''}>Unknown</option><option value="Incorrect" ${(r.status === 'Incorrect') ? 'selected' : ''}>Incorrect</option><option value="Correct" ${(r.status === 'Correct') ? 'selected' : ''}>Correct</option><option value="Invalid Format" ${(r.status === 'Invalid Format') ? 'selected' : ''}>Invalid</option></select>`;
