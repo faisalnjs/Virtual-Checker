@@ -124,10 +124,33 @@
             </select>
           </div>
         </div>
-        <button class="space" id="save-button">Save</button>
+      </div>
+      <div class="section trendingResponses">
+        <h1>Trends</h1>
+        <div class="button-grid inputs">
+          <label style="width: -webkit-fill-available" class="small">Segment</label>
+          <label style="width: -webkit-fill-available" class="small">Question</label>
+          <label style="width: -webkit-fill-available">Response</label>
+          <label style="width: -webkit-fill-available" class="small">#</label>
+          <label style="width: -webkit-fill-available" class="medium">Status</label>
+        </div>
+        <div class="section">
+          <div class="button-grid inputs">
+            <input type="text" autocomplete="off" class="small" id="response-segment-input" value="" disabled />
+            <input type="text" autocomplete="off" class="small" id="response-question-input" value="" disabled />
+            <input type="text" autocomplete="off" id="response-response-input" value="" disabled />
+            <input type="text" autocomplete="off" class="small" id="response-count-input" value="" disabled />
+            <select name="response-status-input" class="medium" id="response-status-input">
+              <option value="Unknown, Recorded">Unknown</option>
+              <option value="Incorrect">Incorrect</option>
+              <option value="Correct">Correct</option>
+              <option value="Invalid Format">Invalid</option>
+            </select>
+          </div>
+        </div>
       </div>
       <div class="section responses">
-        <h1>Responses</h1>
+        <h1>Marked Responses</h1>
         <div class="button-grid inputs">
           <label style="width: -webkit-fill-available" class="small">ID</label>
           <label style="width: -webkit-fill-available" class="small">Segment</label>

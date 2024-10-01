@@ -672,7 +672,9 @@ async function removeImage(event) {
 
 function updateResponses() {
   document.querySelector('.awaitingResponses .section').innerHTML = '';
+  document.querySelector('.trendingResponses .section').innerHTML = '';
   document.querySelector('.responses .section').innerHTML = '';
+  var trendingResponses = [];
   responses
   .filter(r => String(r.seatCode)[0] == document.getElementById("sort-course-input").value)
   .filter(r => String(r.segment).startsWith(document.getElementById("sort-segment-input").value))
@@ -686,6 +688,24 @@ function updateResponses() {
     buttonGrid.innerHTML = `<input type="text" autocomplete="off" class="small" id="response-id-input" value="${r.id}" disabled /><input type="text" autocomplete="off" class="small" id="response-segment-input" value="${r.segment}" disabled /><input type="text" autocomplete="off" class="small" id="response-question-input" value="${r.question_id}" disabled /><input type="text" autocomplete="off" class="small" id="response-seat-code-input" value="${r.seatCode}" disabled /><input type="text" autocomplete="off" id="response-response-input" value="${r.response}" disabled /><select name="response-status-input" class="medium" id="response-status-input"><option value="Unknown, Recorded" ${(r.status === 'Unknown, Recorded') ? 'selected' : ''}>Unknown</option><option value="Incorrect" ${(r.status === 'Incorrect') ? 'selected' : ''}>Incorrect</option><option value="Correct" ${(r.status === 'Correct') ? 'selected' : ''}>Correct</option><option value="Invalid Format" ${(r.status === 'Invalid Format') ? 'selected' : ''}>Invalid</option></select>`;
     document.querySelector('.responses .section').appendChild(buttonGrid);
     if ((r.status === 'Invalid Format') || (r.status === 'Unknown, Recorded')) document.querySelector('.awaitingResponses .section').appendChild(buttonGrid);
+    var trend = trendingResponses.find(t => (t.segment === r.segment) && (t.question_id === r.question_id) && (t.response === r.response) && (t.status === r.status));
+    if (trend) {
+      trend.count++;
+    } else {
+      trendingResponses.push({
+        segment: r.segment,
+        question_id: r.question_id,
+        response: r.response,
+        status: r.status,
+        count: 1
+      });
+    }
+  });
+  trendingResponses.forEach(r => {
+    var buttonGrid = document.createElement('div');
+    buttonGrid.className = "button-grid inputs";
+    buttonGrid.innerHTML = `<input type="text" autocomplete="off" class="small" id="response-segment-input" value="${r.segment}" disabled /><input type="text" autocomplete="off" class="small" id="response-question-input" value="${r.question_id}" disabled /><input type="text" autocomplete="off" id="response-response-input" value="${r.response}" disabled /><input type="text" autocomplete="off" class="small" id="response-count-input" value="${r.count}" disabled /><select name="response-status-input" class="medium" id="response-status-input"><option value="Unknown, Recorded" ${(r.status === 'Unknown, Recorded') ? 'selected' : ''}>Unknown</option><option value="Incorrect" ${(r.status === 'Incorrect') ? 'selected' : ''}>Incorrect</option><option value="Correct" ${(r.status === 'Correct') ? 'selected' : ''}>Correct</option><option value="Invalid Format" ${(r.status === 'Invalid Format') ? 'selected' : ''}>Invalid</option></select>`;
+    document.querySelector('.trendingResponses .section').appendChild(buttonGrid);
   });
   document.querySelectorAll('[data-add-response-input]').forEach(a => a.addEventListener('click', addQuestion));
   document.querySelectorAll('[data-remove-response-input]').forEach(a => a.addEventListener('click', removeQuestion));
