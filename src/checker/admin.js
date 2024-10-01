@@ -83,13 +83,25 @@ async function init() {
                   answers = a;
                   if (document.querySelector('.questions.section')) updateQuestions();
                 })
-                .catch(() => ui.view("api-fail"));
+                .catch((e) => {
+                  console.error(e);
+                  ui.view("api-fail");
+                });
             })
-            .catch(() => ui.view("api-fail"));
+            .catch((e) => {
+              console.error(e);
+              ui.view("api-fail");
+            });
         })
-        .catch(() => ui.view("api-fail"));
+        .catch((e) => {
+          console.error(e);
+          ui.view("api-fail");
+        });
     })
-    .catch(() => ui.view("api-fail"));
+    .catch((e) => {
+      console.error(e);
+      ui.view("api-fail");
+    });
   if (document.getElementById("course-period-input")) {
     document.querySelector('.course-reorder').style.display = 'none';
     document.querySelectorAll('[data-remove-segment-input]').forEach(a => a.removeEventListener('click', removeSegment));
@@ -294,7 +306,10 @@ if (document.getElementById("reorder-courses-button")) {
           item.addEventListener('drop', handleDrop);
         });
       })
-      .catch(() => ui.view("api-fail"));
+      .catch((e) => {
+        console.error(e);
+        ui.view("api-fail");
+      });
     // Show submit confirmation
     ui.modeless(`<i class="bi bi-check-lg"></i>`, "Saved");
   });
@@ -342,9 +357,18 @@ async function save(hideResult) {
           number: question.querySelector('#question-number-input').value,
           segment: question.querySelector('#question-segment-input').value,
           question: question.querySelector('#question-text-input').value,
-          images: JSON.stringify(Array.from(question.querySelectorAll('.attachments img')).map(q => {
+          images: Array.from(question.querySelectorAll('.attachments img')).map(q => {
             return q.src;
-          }))
+          }),
+          correctAnswers: Array.from(question.querySelectorAll('#question-correct-answer-input')).map(q => {
+            return q.value;
+          }),
+          incorrectAnswers: Array.from(question.querySelectorAll('.incorrectAnswers .inputs')).map(q => {
+            return {
+              answer: q.querySelector('#question-incorrect-answer-input').value,
+              reason: q.querySelector('#question-incorrect-answer-reason-input').value
+            };
+          })
         });
       });
   }
@@ -357,7 +381,10 @@ async function save(hideResult) {
     method: "POST",
     body: formData,
   })
-  .catch(() => ui.view("api-fail"));
+  .catch((e) => {
+    console.error(e);
+    ui.view("api-fail");
+  });
   document.getElementById("save-button").disabled = true;
   window.scroll(0, 0);
   if ((typeof hideResult != 'boolean')) ui.modeless(`<i class="bi bi-check-lg"></i>`, "Saved");
@@ -443,7 +470,7 @@ function updateQuestions() {
       var buttonGrid = document.createElement('div');
       buttonGrid.className = "button-grid inputs";
       var segmentsString = "";
-      segments.forEach(s => segmentsString += `<option value="${s.number}"${(segments.filter(e => JSON.parse(e.question_ids).find(qId => qId.id == q.id)).number === s.number) ? ' selected' : ''}>${s.number}</option>`);
+      segments.forEach(s => segmentsString += `<option value="${s.number}"${(segments.filter(e => JSON.parse(e.question_ids).find(qId => qId.id == q.id))[0].number === s.number) ? ' selected' : ''}>${s.number}</option>`);
       buttonGrid.innerHTML = `<button square data-select><i class="bi bi-circle"></i><i class="bi bi-circle-fill"></i></button><div class="input-group small"><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-id-input" value="${q.id}" disabled /></div></div><div class="input-group small"><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-number-input" value="${q.number}" placeholder="${q.number}" /></div></div><div class="input-group small"><div class="space" id="question-container"><select id="question-segment-input">${segmentsString}</select></div></div><div class="input-group"><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-text-input" value="${q.question}" placeholder="${q.question}" /></div></div><button square data-remove-question-input><i class="bi bi-dash"></i></button><button square data-toggle-question><i class="bi bi-caret-down-fill"></i><i class="bi bi-caret-up-fill"></i></button>`;
       question.appendChild(buttonGrid);
       var images = document.createElement('div');
@@ -467,7 +494,7 @@ function updateQuestions() {
       var correctAnswersString = "";
       var questionAnswers = answers.find(a => a.id === q.id);
       questionAnswers.correct_answers.forEach(a => {
-        correctAnswersString += `<div class="input-group"><input type="text" autocomplete="off" id="question-correct-answer-input" value="${a}" placeholder="${a}" /></div>`;
+        correctAnswersString += `<div class="button-grid inputs"><input type="text" autocomplete="off" id="question-correct-answer-input" value="${a}" placeholder="${a}" /><button data-remove-correct-answer-input square><i class="bi bi-dash"></i></button></div>`;
       });
       correctAnswers.innerHTML = `<b>Correct Answers</b><div class="section correctAnswers">${correctAnswersString}<button data-add-correct-answer-input>Add Correct Answer</button></div>`;
       question.appendChild(correctAnswers);
@@ -475,7 +502,7 @@ function updateQuestions() {
       incorrectAnswers.classList = "answers";
       var incorrectAnswersString = "";
       questionAnswers.incorrect_answers.forEach(a => {
-        incorrectAnswersString += `<div class="button-grid inputs"><div class="input-group"><input type="text" autocomplete="off" id="question-incorrect-answer-input" value="${a.answer}" placeholder="${a.answer}" /></div><div class="input-group"><input type="text" autocomplete="off" id="question-incorrect-answer-reason-input" value="${a.reason}" placeholder="${a.reason}" /></div></div>`;
+        incorrectAnswersString += `<div class="button-grid inputs"><input type="text" autocomplete="off" id="question-incorrect-answer-input" value="${a.answer}" placeholder="${a.answer}" /><input type="text" autocomplete="off" id="question-incorrect-answer-reason-input" value="${a.reason}" placeholder="${a.reason}" /><button data-remove-incorrect-answer-input square><i class="bi bi-dash"></i></button></div>`;
       });
       incorrectAnswers.innerHTML = `<b>Incorrect Answers</b><div class="section incorrectAnswers">${incorrectAnswersString}<button data-add-incorrect-answer-input>Add Incorrect Answer</button></div>`;
       question.appendChild(incorrectAnswers);
@@ -499,28 +526,46 @@ function updateQuestions() {
 }
 
 function addCorrectAnswer() {
-  var button = document.createElement('button');
-  button.setAttribute('data-add-correct-answer-input', '');
-  button.innerHTML = 'Add Correct Answer';
-  this.parentElement.insertBefore(button, this);
+  var input = document.createElement('div');
+  input.className = "button-grid inputs";
+  input.innerHTML = `<input type="text" autocomplete="off" id="question-correct-answer-input" value="" /><button data-remove-correct-answer-input square><i class="bi bi-dash"></i></button>`;
+  this.parentElement.insertBefore(input, this);
   document.querySelectorAll('[data-add-correct-answer-input]').forEach(a => a.addEventListener('click', addCorrectAnswer));
+  document.querySelectorAll('[data-remove-correct-answer-input]').forEach(a => a.addEventListener('click', removeCorrectAnswer));
 }
 
 function addIncorrectAnswer() {
-  this.parentElement.parentElement.querySelector('.incorrectAnswers').innerHTML = this.parentElement.parentElement.querySelector('.incorrectAnswers').innerHTML.replaceAll('<button data-add-incorrect-answer-input>Add Incorrect Answer</button>', `<div class="button-grid inputs"><div class="input-group"><input type="text" autocomplete="off" id="question-incorrect-answer-input" value="" /></div><div class="input-group"><input type="text" autocomplete="off" id="question-incorrect-answer-reason-input" value="" /></div></div><button data-add-incorrect-answer-input>Add Incorrect Answer</button>`);
+  var input = document.createElement('div');
+  input.className = "button-grid inputs";
+  input.innerHTML = `<input type="text" autocomplete="off" id="question-incorrect-answer-input" value="" /><input type="text" autocomplete="off" id="question-incorrect-answer-reason-input" value="" /><button data-remove-incorrect-answer-input square><i class="bi bi-dash"></i></button>`;
+  this.parentElement.insertBefore(input, this);
   document.querySelectorAll('[data-add-incorrect-answer-input]').forEach(a => a.addEventListener('click', addIncorrectAnswer));
+  document.querySelectorAll('[data-remove-incorrect-answer-input]').forEach(a => a.addEventListener('click', removeIncorrectAnswer));
 }
 
 function removeCorrectAnswer() {
-  this.parentElement.parentElement.remove();
+  this.parentElement.remove();
 }
 
 function removeIncorrectAnswer() {
-  this.parentElement.parentElement.remove();
+  this.parentElement.remove();
 }
 
 function toggleQuestion() {
-  this.parentElement.parentElement.classList.toggle('expanded');
+  if (this.parentElement.parentElement.classList.contains('expanded')) {
+    hideAllQuestions();
+  } else {
+    hideAllQuestions();
+    this.parentElement.parentElement.classList.add('expanded');
+    document.querySelector('[data-add-question-input]').style.display = "none";
+    document.querySelector('#save-button').style.display = "none";
+  }
+}
+
+function hideAllQuestions() {
+  document.querySelectorAll('.expanded').forEach(q => q.classList.remove('expanded'));
+  document.querySelector('[data-add-question-input]').style.display = "block";
+  document.querySelector('#save-button').style.display = "block";
 }
 
 function addQuestion() {
@@ -542,6 +587,7 @@ function addQuestion() {
 
 function removeQuestion() {
   this.parentElement.parentElement.remove();
+  hideAllQuestions();
 }
 
 async function renderPond() {
@@ -584,7 +630,10 @@ async function removeImage(event) {
         ui.modeless(`<i class="bi bi-file-earmark-x"></i>`, "Removed");
         init();
       })
-      .catch(() => ui.view("api-fail"));
+      .catch((e) => {
+        console.error(e);
+        ui.view("api-fail");
+      });
   } else {
     window.open(event.target.src);
   }

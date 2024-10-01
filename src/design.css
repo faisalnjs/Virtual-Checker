@@ -619,5 +619,16 @@ body:has(.selecting) #controls-container [data-delete-multiple] {
 }
 
 .answers {
+  display: flex;
+  flex-direction: column;
+  gap: 2.5px;
   width: -webkit-fill-available;
+}
+
+.questions .section:has(.expanded) .section[id]:not(.expanded) {
+  display: none;
+}
+
+.questions .section[id]:not(.expanded) {
+  gap: 0px;
 }
