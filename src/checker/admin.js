@@ -54,6 +54,18 @@ async function init() {
           item.addEventListener('drop', handleDrop);
         });
       }
+      if (document.getElementById("sort-course-input")) {
+        c.sort((a, b) => a.period - b.period).forEach(course => {
+          const option = document.createElement("option");
+          option.value = course.period;
+          option.innerHTML = `Period ${course.period}${course.name ? ` - ${course.name}` : ''}`;
+          document.getElementById("sort-course-input").appendChild(option);
+        });
+        document.getElementById("sort-course-input").addEventListener("change", updateResponses);
+        document.getElementById("sort-segment-input").addEventListener("input", updateResponses);
+        document.getElementById("sort-question-input").addEventListener("input", updateResponses);
+        document.getElementById("sort-seat-input").addEventListener("input", updateResponses);
+      }
       await fetch(domain + '/segments', {
         method: "GET",
         headers: {
@@ -92,7 +104,10 @@ async function init() {
                     .then(r => r.json())
                     .then(r => {
                       responses = r;
-                      if (document.querySelector('.responses.section')) updateResponses();
+                      if (document.querySelector('.responses.section')) {
+                        document.getElementById("sort-course-input").value = courses.find(c => c.id == String(responses.sort((a, b) => String(a.seatCode)[0] - String(b.seatCode)[0])[0].seatCode)[0]).id;
+                        updateResponses();
+                      }
                     })
                     .catch((e) => {
                       console.error(e);
@@ -657,21 +672,16 @@ async function removeImage(event) {
 
 function updateResponses() {
   document.querySelector('.responses .section').innerHTML = '';
-  responses.forEach(r => {
+  responses
+  .filter(r => String(r.seatCode)[0] == document.getElementById("sort-course-input").value)
+  .filter(r => String(r.segment).startsWith(document.getElementById("sort-segment-input").value))
+  .filter(r => String(r.question_id).startsWith(document.getElementById("sort-question-input").value))
+  .filter(r => String(r.seatCode).startsWith(document.getElementById("sort-seat-input").value))
+  .forEach(r => {
     var buttonGrid = document.createElement('div');
     buttonGrid.className = "button-grid inputs";
     buttonGrid.id = `response-${r.id}`;
-    buttonGrid.innerHTML = `<input type="text" autocomplete="off" class="small" id="response-id-input" value="${r.id}" disabled />
-            <input type="text" autocomplete="off" class="small" id="response-segment-input" value="${r.segment}" disabled />
-            <input type="text" autocomplete="off" class="small" id="response-question-input" value="${r.question_id}" disabled />
-            <input type="text" autocomplete="off" class="small" id="response-seat-code-input" value="${r.seatCode}" disabled />
-            <input type="text" autocomplete="off" id="response-response-input" value="${r.response}" disabled />
-            <select name="response-status-input" class="medium" id="response-status-input">
-              <option value="Unknown, Recorded" ${(r.status === 'Unknown, Recorded') ? 'selected' : ''}>Unknown</option>
-              <option value="Incorrect" ${(r.status === 'Incorrect') ? 'selected' : ''}>Incorrect</option>
-              <option value="Correct" ${(r.status === 'Correct') ? 'selected' : ''}>Correct</option>
-              <option value="Invalid Format" ${(r.status === 'Invalid') ? 'selected' : ''}>Invalid</option>
-            </select>`;
+    buttonGrid.innerHTML = `<input type="text" autocomplete="off" class="small" id="response-id-input" value="${r.id}" disabled /><input type="text" autocomplete="off" class="small" id="response-segment-input" value="${r.segment}" disabled /><input type="text" autocomplete="off" class="small" id="response-question-input" value="${r.question_id}" disabled /><input type="text" autocomplete="off" class="small" id="response-seat-code-input" value="${r.seatCode}" disabled /><input type="text" autocomplete="off" id="response-response-input" value="${r.response}" disabled /><select name="response-status-input" class="medium" id="response-status-input"><option value="Unknown, Recorded" ${(r.status === 'Unknown, Recorded') ? 'selected' : ''}>Unknown</option><option value="Incorrect" ${(r.status === 'Incorrect') ? 'selected' : ''}>Incorrect</option><option value="Correct" ${(r.status === 'Correct') ? 'selected' : ''}>Correct</option><option value="Invalid Format" ${(r.status === 'Invalid') ? 'selected' : ''}>Invalid</option></select>`;
     document.querySelector('.responses .section').appendChild(buttonGrid);
   });
   document.querySelectorAll('[data-add-response-input]').forEach(a => a.addEventListener('click', addQuestion));

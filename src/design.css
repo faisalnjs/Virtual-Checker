@@ -637,3 +637,7 @@ body:has(.selecting) #controls-container [data-delete-multiple] {
 .segments .section[id]:not(.expanded) {
   gap: 0px;
 }
+
+.button-grid[id^=response-].hidden {
+  display: none;
+}
