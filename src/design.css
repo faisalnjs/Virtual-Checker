@@ -408,6 +408,7 @@ button[square] {
   }
   
   .small,
+  .medium,
   square {
     max-width: unset !important;
   }
@@ -430,10 +431,6 @@ button[square] {
   text-align: center;
 }
 
-.segments .section:has(.questions) * {
-  gap: 8px !important;
-}
-
 .questions:not(:has(.section)) {
   width: -webkit-fill-available;
 }
@@ -447,6 +444,10 @@ button[square] {
 
 .small {
   max-width: 75px;
+}
+
+.medium {
+  max-width: 175px;
 }
 
 .fit {
@@ -630,5 +631,9 @@ body:has(.selecting) #controls-container [data-delete-multiple] {
 }
 
 .questions .section[id]:not(.expanded) {
+  gap: 0px;
+}
+
+.segments .section[id]:not(.expanded) {
   gap: 0px;
 }

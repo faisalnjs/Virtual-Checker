@@ -16,7 +16,7 @@
       type="image/x-icon"
       media="(prefers-color-scheme: light)"
     />
-    <title>Questions - Virtual Checker</title>
+    <title>Responses - Virtual Checker</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -63,56 +63,36 @@
       </svg>
       <div class="info"><h1>Virtual Checker</h1>
         <div class="menu">
-          <a href="/admin/questions">- Questions -</a>
           <a href="/admin/responses">- Responses -</a>
           <a href="/admin/">- Segments -</a>
+          <a href="/admin/questions">- Questions -</a>
         </div>
       </div>
     </div>
     <div id="checker">
-      <div class="section questions">
-        <h1>Questions</h1>
+      <div class="section responses">
+        <h1>Responses</h1>
         <div class="button-grid inputs">
           <label style="width: -webkit-fill-available" class="small">ID</label>
-          <label style="width: -webkit-fill-available" class="small">Number</label>
           <label style="width: -webkit-fill-available" class="small">Segment</label>
-          <label style="width: -webkit-fill-available">Question</label>
+          <label style="width: -webkit-fill-available" class="small">Question</label>
+          <label style="width: -webkit-fill-available" class="small">Seat</label>
+          <label style="width: -webkit-fill-available">Response</label>
+          <label style="width: -webkit-fill-available" class="medium">Status</label>
         </div>
         <div class="section">
           <div class="button-grid inputs">
-            <div class="input-group small">
-              <div class="space" id="question-container">
-                <input type="text" autocomplete="off" id="question-id-input" value="" disabled />
-              </div>
-            </div>
-            <div class="input-group small">
-              <div class="space" id="question-container">
-                <input type="text" autocomplete="off" id="question-number-input" value="" />
-              </div>
-            </div>
-            <div class="input-group small">
-              <div class="space" id="question-container">
-                <input type="text" autocomplete="off" id="question-segment-input" value="" />
-              </div>
-            </div>
-            <div class="input-group">
-              <div class="space" id="question-container">
-                <input type="text" autocomplete="off" id="question-text-input" value="" />
-              </div>
-            </div>
-            <button square data-add-question-input><i class="bi bi-plus"></i></button>
-            <button square data-remove-question-input><i class="bi bi-dash"></i></button>
-          </div>
-          <div class="attachments"></div>
-          <div class="answers">
-            <b>Correct Answers</b>
-            <div class="section correctAnswers">
-              <div class="button-grid inputs">
-                <input type="text" autocomplete="off" id="question-correct-answer-input" value="" />
-                <button square data-add-answer-input><i class="bi bi-plus"></i></button>
-                <button square data-remove-answer-input><i class="bi bi-dash"></i></button>
-              </div>
-            </div>
+            <input type="text" autocomplete="off" class="small" id="response-id-input" value="" disabled />
+            <input type="text" autocomplete="off" class="small" id="response-segment-input" value="" disabled />
+            <input type="text" autocomplete="off" class="small" id="response-question-input" value="" disabled />
+            <input type="text" autocomplete="off" class="small" id="response-seat-code-input" value="" disabled />
+            <input type="text" autocomplete="off" id="response-response-input" value="" disabled />
+            <select name="response-status-input" class="medium" id="response-status-input">
+              <option value="Unknown, Recorded">Unknown</option>
+              <option value="Incorrect">Incorrect</option>
+              <option value="Correct">Correct</option>
+              <option value="Invalid Format">Invalid</option>
+            </select>
           </div>
         </div>
         <button class="space" id="save-button">Save</button>

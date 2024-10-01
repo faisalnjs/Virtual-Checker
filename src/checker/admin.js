@@ -10,6 +10,7 @@ var courses = [];
 var segments = [];
 var questions = [];
 var answers = [];
+var responses = [];
 let draggedItem = null;
 var formData = new FormData();
 
@@ -79,9 +80,24 @@ async function init() {
                 }
               })
                 .then(a => a.json())
-                .then(a => {
+                .then(async a => {
                   answers = a;
                   if (document.querySelector('.questions.section')) updateQuestions();
+                  await fetch(domain + '/responses', {
+                    method: "GET",
+                    headers: {
+                      "Content-Type": "application/json",
+                    }
+                  })
+                    .then(r => r.json())
+                    .then(r => {
+                      responses = r;
+                      if (document.querySelector('.responses.section')) updateResponses();
+                    })
+                    .catch((e) => {
+                      console.error(e);
+                      ui.view("api-fail");
+                    });
                 })
                 .catch((e) => {
                   console.error(e);
@@ -637,4 +653,27 @@ async function removeImage(event) {
   } else {
     window.open(event.target.src);
   }
+}
+
+function updateResponses() {
+  document.querySelector('.responses .section').innerHTML = '';
+  responses.forEach(r => {
+    var buttonGrid = document.createElement('div');
+    buttonGrid.className = "button-grid inputs";
+    buttonGrid.id = `response-${r.id}`;
+    buttonGrid.innerHTML = `<input type="text" autocomplete="off" class="small" id="response-id-input" value="${r.id}" disabled />
+            <input type="text" autocomplete="off" class="small" id="response-segment-input" value="${r.segment}" disabled />
+            <input type="text" autocomplete="off" class="small" id="response-question-input" value="${r.question_id}" disabled />
+            <input type="text" autocomplete="off" class="small" id="response-seat-code-input" value="${r.seatCode}" disabled />
+            <input type="text" autocomplete="off" id="response-response-input" value="${r.response}" disabled />
+            <select name="response-status-input" class="medium" id="response-status-input">
+              <option value="Unknown, Recorded" ${(r.status === 'Unknown, Recorded') ? 'selected' : ''}>Unknown</option>
+              <option value="Incorrect" ${(r.status === 'Incorrect') ? 'selected' : ''}>Incorrect</option>
+              <option value="Correct" ${(r.status === 'Correct') ? 'selected' : ''}>Correct</option>
+              <option value="Invalid Format" ${(r.status === 'Invalid') ? 'selected' : ''}>Invalid</option>
+            </select>`;
+    document.querySelector('.responses .section').appendChild(buttonGrid);
+  });
+  document.querySelectorAll('[data-add-response-input]').forEach(a => a.addEventListener('click', addQuestion));
+  document.querySelectorAll('[data-remove-response-input]').forEach(a => a.addEventListener('click', removeQuestion));
 }
