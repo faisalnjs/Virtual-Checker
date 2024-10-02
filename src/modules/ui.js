@@ -56,22 +56,7 @@ export function modal(options) {
           button.onclick(inputValue);
         }
         if (button.close) {
-          // Trigger fade-out animation before closing
-          animate(
-            dialog,
-            {
-              scale: "1",
-              opacity: "1",
-            },
-            {
-              scale: "0.9",
-              opacity: "0",
-            },
-            250,
-          );
-          setTimeout(() => {
-            dialog.close();
-          }, 250);
+          closeModal();
         }
       },
     }, button.class).element;
@@ -111,6 +96,31 @@ export function modal(options) {
       dialog.remove();
     }, 250);
   });
+
+  // Add event listener for clicks outside the modal
+  document.addEventListener("pointerdown", (e) => {
+    if (!dialog.contains(e.target)) {
+      closeModal();
+    }
+  });
+
+  function closeModal() {
+    animate(
+      dialog,
+      {
+        scale: "1",
+        opacity: "1",
+      },
+      {
+        scale: "0.9",
+        opacity: "0",
+      },
+      250,
+    );
+    setTimeout(() => {
+      dialog.close();
+    }, 250);
+  }
   
   return dialog;
 }
