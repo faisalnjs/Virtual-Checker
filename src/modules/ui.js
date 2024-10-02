@@ -56,7 +56,22 @@ export function modal(options) {
           button.onclick(inputValue);
         }
         if (button.close) {
-          dialog.close();
+          // Trigger fade-out animation before closing
+          animate(
+            dialog,
+            {
+              scale: "1",
+              opacity: "1",
+            },
+            {
+              scale: "0.9",
+              opacity: "0",
+            },
+            250,
+          );
+          setTimeout(() => {
+            dialog.close();
+          }, 250);
         }
       },
     }, button.class).element;
@@ -80,16 +95,21 @@ export function modal(options) {
   dialog.showModal();
   
   dialog.addEventListener("close", () => {
+    animate(
+      dialog,
+      {
+        scale: "1",
+        opacity: "1",
+      },
+      {
+        scale: "0.9",
+        opacity: "0",
+      },
+      250,
+    );
     setTimeout(() => {
-      dialog.animate(keyframes, {
-        duration: 100,
-        direction: "reverse",
-        fill: "forwards",
-      });
-      setTimeout(() => {
-        dialog.remove();
-      }, 100);
-    }, 2400);
+      dialog.remove();
+    }, 250);
   });
   
   return dialog;
