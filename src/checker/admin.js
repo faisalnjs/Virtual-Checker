@@ -754,15 +754,14 @@ function markCorrect() {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      segment: this.parentElement.querySelector('#response-segment-input').value,
-      question_number: this.parentElement.querySelector('#response-question-input').value,
-      response: this.parentElement.querySelector('#response-response-input').value
+      question_id: questions.find(q => q.number == this.parentElement.querySelector('#response-question-input').value).id,
+      answer: this.parentElement.querySelector('#response-response-input').value
     }),
   })
     .then(q => q.json())
     .then(() => {
-      ui.modeless(`<i class="bi bi-check-lg"></i>`, "Updated Status");
-      updateResponses();
+      ui.toast("Successfully updated status.", 3000, "success", "bi bi-check");
+      init();
     })
     .catch((e) => {
       console.error(e);
@@ -790,7 +789,7 @@ function markIncorrect() {
         text: 'Continue',
         class: 'submit-button',
         onclick: (inputValue) => {
-          markIncorrectConfirm(inputValue);
+          markIncorrectConfirm(inputValue, this);
         },
         close: true,
       },
@@ -798,24 +797,22 @@ function markIncorrect() {
   });
 }
 
-function markIncorrectConfirm(reason) {
-  return alert(reason)
+function markIncorrectConfirm(reason, e) {
   fetch(domain + '/mark_incorrect', {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      segment: this.parentElement.querySelector('#response-segment-input').value,
-      question_number: this.parentElement.querySelector('#response-question-input').value,
-      response: this.parentElement.querySelector('#response-response-input').value,
+      question_id: questions.find(q => q.number == e.parentElement.querySelector('#response-question-input').value).id,
+      answer: e.parentElement.querySelector('#response-response-input').value,
       reason: reason
     }),
   })
     .then(q => q.json())
     .then(() => {
-      ui.modeless(`<i class="bi bi-check-lg"></i>`, "Updated Status");
-      updateResponses();
+      ui.toast("Successfully updated status.", 3000, "success", "bi bi-check");
+      init();
     })
     .catch((e) => {
       console.error(e);

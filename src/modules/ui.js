@@ -26,14 +26,17 @@ export function prompt(title, text, buttons, blur) {
 
 export function modal(options) {
   const dialog = document.createElement("dialog");
+  
   if (options.title) {
     const title = document.createElement("h2");
     title.innerText = options.title;
     dialog.append(title);
   }
+  
   if (options.body) {
-    dialog.innerHTML += options.body
+    dialog.innerHTML += options.body;
   }
+  
   if (options.input) {
     const input = document.createElement("input");
     input.type = options.input.type || "text";
@@ -42,19 +45,24 @@ export function modal(options) {
     input.className = "dialog-input";
     dialog.appendChild(input);
   }
+  
   document.body.append(dialog);
+  
   options.buttons.forEach(button => {
     const btnElement = new Element("button", button.text, {
       click: () => {
-        button.close && dialog.close();
         if (button.onclick) {
           const inputValue = dialog.querySelector(".dialog-input") ? dialog.querySelector(".dialog-input").value : null;
           button.onclick(inputValue);
+        }
+        if (button.close) {
+          dialog.close();
         }
       },
     }, button.class).element;
     dialog.appendChild(btnElement);
   });
+  
   const keyframes = [{ opacity: 0 }, { opacity: 1 }];
   animate(
     dialog,
@@ -68,7 +76,9 @@ export function modal(options) {
     },
     250,
   );
+  
   dialog.showModal();
+  
   dialog.addEventListener("close", () => {
     setTimeout(() => {
       dialog.animate(keyframes, {
@@ -81,6 +91,7 @@ export function modal(options) {
       }, 100);
     }, 2400);
   });
+  
   return dialog;
 }
 
@@ -478,5 +489,36 @@ export function setButtonSelectValue(element, value) {
     });
     // Select target element
     element.querySelector(`button[data-value="${value}"]`).setAttribute("aria-selected", true);
+  }
+}
+
+export function toast(message, duration = 3000, type = "info", icon = null) {
+  const toastContainer = document.querySelector(".toast-container") || createToastContainer();
+  const toastElement = new Element("div", message, null, `toast ${type}`).element;
+  if (icon) {
+    const iconElement = document.createElement("i");
+    iconElement.className = icon;
+    toastElement.prepend(iconElement);
+  }
+  const progressBar = document.createElement("div");
+  progressBar.className = "toast-progress-bar";
+  toastElement.appendChild(progressBar);
+  toastContainer.appendChild(toastElement);
+  animate(toastElement, { transform: "translateX(100%)", opacity: "0" }, { transform: "translateX(0)", opacity: "1" }, 250);
+  progressBar.style.transition = `width ${duration}ms linear`;
+  setTimeout(() => {
+    progressBar.style.width = "100%";
+  }, 10);
+  setTimeout(() => {
+    animate(toastElement, { transform: "translateX(0)", opacity: "1" }, { transform: "translateX(100%)", opacity: "0" }, 250);
+    setTimeout(() => {
+      toastElement.remove();
+    }, 250);
+  }, duration);
+  function createToastContainer() {
+    const container = document.createElement("div");
+    container.className = "toast-container";
+    document.body.appendChild(container);
+    return container;
   }
 }
