@@ -560,8 +560,7 @@ function updateHistory() {
 
   // Update history navigation
   document.getElementById("history-first").disabled = historyIndex === getHistoryDates().length - 1;
-  document.getElementById("history-backward").disabled =
-    historyIndex === getHistoryDates().length - 1;
+  document.getElementById("history-backward").disabled = historyIndex === getHistoryDates().length - 1;
   document.getElementById("history-forward").disabled = historyIndex === 0;
   document.getElementById("history-last").disabled = historyIndex === 0;
   document.getElementById("history-date").textContent = date;
@@ -569,49 +568,65 @@ function updateHistory() {
   const feed = document.getElementById("history-feed");
   if (history.length != 0) {
     feed.innerHTML = "";
-    history.forEach((item) => {
-      const button = document.createElement("button");
-      const latex = item.type === "latex";
-      const array = item.type === "array";
-      if (!latex) {
-        if (!array) {
-          button.innerHTML = `<p><b>Segment ${item.segment} Question #${item.question}.</b> ${unixToTimeString(item.timestamp)} (${item.code})</p>\n<p>${item.answer}${(item.reason) ? `<br><b>Reason:</b> ${item.reason}` : ''}</p>`;
-        } else {
-          button.innerHTML = `<p><b>Segment ${item.segment} Question #${item.question}.</b> ${unixToTimeString(item.timestamp)} (${item.code})</p>\n<p>${item.answer.split('[')[1].split(']')[0]}</p>`;
+    history.forEach(async (item) => {
+      await fetch(`${domain}/response?seatCode=${storage.get("code")}&segment=${item.segment}&question=${item.question}&answer=${item.answer}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
         }
-      } else {
-        button.innerHTML = `<p><b>Segment ${item.segment} Question #${item.question}.</b> ${unixToTimeString(item.timestamp)} (${item.code})</p>\n${convertLatexToMarkup(item.answer)}\n<p class="hint">(Equation may not display properly)</p>`;
-      }
-      feed.prepend(button);
-      renderMathInElement(button);
-      // Resubmit check
-      button.addEventListener("click", () => {
-        questionInput.value = item.question;
-        ui.view("");
-        if (latex) {
-          answerMode("math");
-          ui.setButtonSelectValue(document.getElementById("answer-mode-selector"), "math");
-          mf.value = item.answer;
-        } else if (array) {
-          answerMode("set");
-          ui.setButtonSelectValue(document.getElementById("answer-mode-selector"), "set");
-          var i = 0;
-          JSON.parse(item.answer).forEach(a => {
-            setInputs[i].value = a;
-            i++;
-          });
-        } else {
-          const choice = item.answer.match(/^CHOICE ([A-E])$/);
-          if (!choice) {
-            answerInput.value = item.answer;
-            answerMode("input");
+      })
+        .then(r => r.json())
+        .then(r => {
+          if (r.error) return console.log(r.error, item);
+          const button = document.createElement("button");
+          const latex = item.type === "latex";
+          const array = item.type === "array";
+          var response = `${(r.reason) ? `<br><b>Reason:</b> ${r.reason}` : ''}`;
+          if (!latex) {
+            if (!array) {
+              button.innerHTML = `<p><b>Segment ${item.segment} Question #${item.question}.</b> ${unixToTimeString(item.timestamp)} (${item.code})</p>\n<p>${item.answer}${response}</p>`;
+            } else {
+              button.innerHTML = `<p><b>Segment ${item.segment} Question #${item.question}.</b> ${unixToTimeString(item.timestamp)} (${item.code})</p>\n<p>${item.answer.split('[')[1].split(']')[0]}${response}</p>`;
+            }
           } else {
-            document.querySelector(`[data-multiple-choice="${choice[1].toLowerCase()}"]`).click();
+            button.innerHTML = `<p><b>Segment ${item.segment} Question #${item.question}.</b> ${unixToTimeString(item.timestamp)} (${item.code})</p>\n${convertLatexToMarkup(item.answer)}\n<p class="hint">(Equation may not display properly)${response}</p>`;
           }
-          questionInput.focus();
-          autocomplete.update();
-        }
-      });
+          feed.prepend(button);
+          renderMathInElement(button);
+          // Resubmit check
+          button.addEventListener("click", () => {
+            questionInput.value = item.question;
+            ui.view("");
+            if (latex) {
+              answerMode("math");
+              ui.setButtonSelectValue(document.getElementById("answer-mode-selector"), "math");
+              mf.value = item.answer;
+            } else if (array) {
+              answerMode("set");
+              ui.setButtonSelectValue(document.getElementById("answer-mode-selector"), "set");
+              var i = 0;
+              JSON.parse(item.answer).forEach(a => {
+                setInputs[i].value = a;
+                i++;
+              });
+            } else {
+              const choice = item.answer.match(/^CHOICE ([A-E])$/);
+              if (!choice) {
+                answerInput.value = item.answer;
+                answerMode("input");
+              } else {
+                document.querySelector(`[data-multiple-choice="${choice[1].toLowerCase()}"]`).click();
+              }
+              questionInput.focus();
+              autocomplete.update();
+            }
+          });
+        })
+        .catch((e) => {
+          console.error(e);
+          ui.view("api-fail");
+          if (document.querySelector('[data-polling]')) pollingOff();
+        });
     });
   } else {
     feed.innerHTML = "<p>Submitted clicks will show up here!</p>";
