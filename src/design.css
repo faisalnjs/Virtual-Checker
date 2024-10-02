@@ -129,6 +129,8 @@ input:disabled,
 select:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+  overflow: auto;
+  pointer-events: auto;
 }
 
 .drag {
