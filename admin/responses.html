@@ -82,19 +82,19 @@
           <div class="input-group small">
             <label for="sort-segment-input">Segment</label>
             <div class="space" id="question-container">
-              <input type="text" autocomplete="off" id="sort-segment-input" value="" />
+              <input type="text" autocomplete="off" id="sort-segment-input" value="" placeholder="1" />
             </div>
           </div>
           <div class="input-group small">
             <label for="sort-question-input">Question</label>
             <div class="space" id="question-container">
-              <input type="text" autocomplete="off" id="sort-question-input" value="" />
+              <input type="text" autocomplete="off" id="sort-question-input" value="" placeholder="1a" />
             </div>
           </div>
           <div class="input-group small">
             <label for="sort-seat-input">Seat</label>
             <div class="space" id="question-container">
-              <input type="number" autocomplete="off" id="sort-seat-input" value="" max="999" maxlength="3" />
+              <input type="number" autocomplete="off" id="sort-seat-input" value="" placeholder="311" max="999" maxlength="3" />
             </div>
           </div>
         </div>
@@ -102,29 +102,24 @@
       <div class="section awaitingResponses">
         <h1>Awaiting Scoring</h1>
         <div class="button-grid inputs">
-          <label style="width: -webkit-fill-available" class="small">ID</label>
+          <!-- <label style="width: -webkit-fill-available" class="small">ID</label> -->
           <label style="width: -webkit-fill-available" class="small">Segment</label>
           <label style="width: -webkit-fill-available" class="small">Question</label>
           <label style="width: -webkit-fill-available" class="small">Seat</label>
           <label style="width: -webkit-fill-available">Response</label>
-          <label style="width: -webkit-fill-available" class="medium">Status</label>
+          <label style="width: -webkit-fill-available" class="small">Status</label>
         </div>
         <div class="section">
           <div class="button-grid inputs">
-            <input type="text" autocomplete="off" class="small" id="response-id-input" value="" disabled />
+            <!-- <input type="text" autocomplete="off" class="small" id="response-id-input" value="" disabled /> -->
             <input type="text" autocomplete="off" class="small" id="response-segment-input" value="" disabled />
             <input type="text" autocomplete="off" class="small" id="response-question-input" value="" disabled />
             <input type="text" autocomplete="off" class="small" id="response-seat-code-input" value="" disabled />
             <input type="text" autocomplete="off" id="response-response-input" value="" disabled />
-            <select name="response-status-input" class="medium" id="response-status-input">
-              <option value="Unknown, Recorded">Unknown</option>
-              <option value="Incorrect">Incorrect</option>
-              <option value="Correct">Correct</option>
-              <option value="Invalid Format">Invalid</option>
-            </select>
+            <button square id="mark-correct-button"><i class="bi bi-check-circle"></i></button>
+            <button square id="mark-incorrect-button"><i class="bi bi-x-circle"></i></button>
           </div>
         </div>
-        <button class="space" id="save-button" awaiting>Save</button>
       </div>
       <div class="section trendingResponses">
         <h1>Trends</h1>
@@ -133,7 +128,7 @@
           <label style="width: -webkit-fill-available" class="small">Question</label>
           <label style="width: -webkit-fill-available">Response</label>
           <label style="width: -webkit-fill-available" class="small">#</label>
-          <label style="width: -webkit-fill-available" class="medium">Status</label>
+          <label style="width: -webkit-fill-available" class="small">Status</label>
         </div>
         <div class="section">
           <div class="button-grid inputs">
@@ -141,42 +136,32 @@
             <input type="text" autocomplete="off" class="small" id="response-question-input" value="" disabled />
             <input type="text" autocomplete="off" id="response-response-input" value="" disabled />
             <input type="text" autocomplete="off" class="small" id="response-count-input" value="" disabled />
-            <select name="response-status-input" class="medium" id="response-status-input">
-              <option value="Unknown, Recorded">Unknown</option>
-              <option value="Incorrect">Incorrect</option>
-              <option value="Correct">Correct</option>
-              <option value="Invalid Format">Invalid</option>
-            </select>
+            <button square id="mark-correct-button"><i class="bi bi-check-circle"></i></button>
+            <button square id="mark-incorrect-button"><i class="bi bi-x-circle"></i></button>
           </div>
         </div>
-        <button class="space" id="save-button" trending>Save</button>
       </div>
       <div class="section responses">
         <h1>Marked Responses</h1>
         <div class="button-grid inputs">
-          <label style="width: -webkit-fill-available" class="small">ID</label>
+          <!-- <label style="width: -webkit-fill-available" class="small">ID</label> -->
           <label style="width: -webkit-fill-available" class="small">Segment</label>
           <label style="width: -webkit-fill-available" class="small">Question</label>
           <label style="width: -webkit-fill-available" class="small">Seat</label>
           <label style="width: -webkit-fill-available">Response</label>
-          <label style="width: -webkit-fill-available" class="medium">Status</label>
+          <label style="width: -webkit-fill-available" class="small">Status</label>
         </div>
         <div class="section">
           <div class="button-grid inputs">
-            <input type="text" autocomplete="off" class="small" id="response-id-input" value="" disabled />
+            <!-- <input type="text" autocomplete="off" class="small" id="response-id-input" value="" disabled /> -->
             <input type="text" autocomplete="off" class="small" id="response-segment-input" value="" disabled />
             <input type="text" autocomplete="off" class="small" id="response-question-input" value="" disabled />
             <input type="text" autocomplete="off" class="small" id="response-seat-code-input" value="" disabled />
             <input type="text" autocomplete="off" id="response-response-input" value="" disabled />
-            <select name="response-status-input" class="medium" id="response-status-input">
-              <option value="Unknown, Recorded">Unknown</option>
-              <option value="Incorrect">Incorrect</option>
-              <option value="Correct">Correct</option>
-              <option value="Invalid Format">Invalid</option>
-            </select>
+            <button square id="mark-correct-button"><i class="bi bi-check-circle"></i></button>
+            <button square id="mark-incorrect-button"><i class="bi bi-x-circle"></i></button>
           </div>
         </div>
-        <button class="space" id="save-button">Save</button>
       </div>
     </div>
     <!-- Controls -->
@@ -184,12 +169,9 @@
       <button class="icon" data-modal-view="settings">
         <i class="bi bi-gear"></i>
       </button>
-      <button class="icon" data-delete-multiple>
-        <i class="bi bi-trash"></i>
-      </button>
-      <button class="icon" data-select-multiple>
-        <i class="bi bi-circle"></i>
-        <i class="bi bi-x"></i>
+      <button class="icon" data-polling>
+        <i class="bi bi-skip-forward-circle-fill"></i>
+        <i class="bi bi-stop-circle-fill" style="display: none;"></i>
       </button>
       <!-- <button class="pill" data-modal-view="settings/code">
         <span class="code">000</span>
@@ -332,7 +314,7 @@
         </div>
       </div>
       <div data-modal-page="keybinds" data-page-title="Keyboard Shortcuts">
-        <p><kbd>Ctrl</kbd> + <kbd>Enter</kbd> Submit click</p>
+        <p><kbd>Ctrl</kbd> + <kbd>Enter</kbd> Submit check</p>
         <p><kbd>Alt</kbd> + <kbd>1-9</kbd> Insert nth symbol</p>
         <p><kbd>Ctrl</kbd> + <kbd>/</kbd> Open Keyboard Shortcuts</p>
         <p><kbd>Ctrl</kbd> + <kbd>,</kbd> Open Settings</p>
@@ -363,7 +345,7 @@
     </dialog>
     <dialog data-modal-page="api-fail" data-page-title="API Offline">
       <p>
-        The Virtual Checker API is currently offline. Please try again later, or contact support below.
+        The Virtual Checker API is currently offline. Please try again later, check for <a href="https://status.dangoweb.com/">server maintenance</a>, or contact support below.
       </p>
       <div class="row center">
         <a href="https://github.com/faisalnjs/virtual-checker/issues" class="icon"><i class="bi bi-github"></i></a>

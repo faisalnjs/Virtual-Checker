@@ -13,6 +13,7 @@ var answers = [];
 var responses = [];
 let draggedItem = null;
 var formData = new FormData();
+var polling = false;
 
 async function init() {
   formData = new FormData();
@@ -112,26 +113,32 @@ async function init() {
                     .catch((e) => {
                       console.error(e);
                       ui.view("api-fail");
+                      if (document.querySelector('[data-polling]')) pollingOff();
                     });
                 })
                 .catch((e) => {
                   console.error(e);
                   ui.view("api-fail");
+                  if (document.querySelector('[data-polling]')) pollingOff();
                 });
             })
             .catch((e) => {
               console.error(e);
               ui.view("api-fail");
+              if (document.querySelector('[data-polling]')) pollingOff();
             });
         })
         .catch((e) => {
           console.error(e);
           ui.view("api-fail");
+          if (document.querySelector('[data-polling]')) pollingOff();
         });
     })
     .catch((e) => {
       console.error(e);
       ui.view("api-fail");
+      if (document.querySelector('[data-polling]')) pollingOff();
+      polling = false;
     });
   if (document.getElementById("course-period-input")) {
     document.querySelector('.course-reorder').style.display = 'none';
@@ -145,8 +152,9 @@ async function init() {
 init();
 
 if (document.getElementById("course-period-input")) document.getElementById("course-period-input").addEventListener("change", updateSegments);
-document.querySelector('[data-select-multiple]').addEventListener("click", toggleSelecting);
-document.querySelector('[data-delete-multiple]').addEventListener("click", deleteMultiple);
+if (document.querySelector('[data-select]')) document.querySelector('[data-select-multiple]').addEventListener("click", toggleSelecting);
+if (document.querySelector('[data-select]')) document.querySelector('[data-delete-multiple]').addEventListener("click", deleteMultiple);
+if (document.querySelector('[data-polling]')) document.querySelector('[data-polling]').addEventListener("click", togglePolling);
 
 function toggleSelecting() {
   if (document.querySelector('.segments .section')) document.querySelector('.segments .section').classList.toggle('selecting');
@@ -168,6 +176,31 @@ function toggleSelected() {
 
 function removeAllSelected() {
   document.querySelectorAll('.selected').forEach(e => e.classList.remove('.selected'));
+}
+
+function togglePolling() {
+  if (polling) {
+    polling = false;
+    document.querySelector('[data-polling] .bi-skip-forward-circle-fill').style.display = "block";
+    document.querySelector('[data-polling] .bi-stop-circle-fill').style.display = "none";
+  } else {
+    polling = true;
+    document.querySelector('[data-polling] .bi-skip-forward-circle-fill').style.display = "none";
+    document.querySelector('[data-polling] .bi-stop-circle-fill').style.display = "block";
+    let pollingInterval = setInterval(() => {
+      if (!polling) {
+        clearInterval(pollingInterval);
+      } else {
+        init();
+      }
+    }, 5000);
+  }
+}
+
+function pollingOff() {
+  polling = false;
+  document.querySelector('[data-polling] .bi-skip-forward-circle-fill').style.display = "block";
+  document.querySelector('[data-polling] .bi-stop-circle-fill').style.display = "none";
 }
 
 function updateSegments() {
@@ -228,7 +261,7 @@ if (document.getElementById("reorder-courses-button")) {
     const fromHeight = current?.getBoundingClientRect().height;
     document.querySelector('.course-reorder').style.display = 'flex';
     document.querySelector('.course-selector').style.display = 'none';
-    document.getElementById('save-button').style.display = 'none';
+    document.querySelectorAll('#save-button').forEach(w => w.style.display = 'none');
     const container = document.querySelector('.section');
     const target = document.querySelector('.course-reorder');
     const toHeight = target.getBoundingClientRect().height + calculateButtonHeights(target);
@@ -251,7 +284,7 @@ if (document.getElementById("reorder-courses-button")) {
     const current = document.querySelector('.course-reorder');
     const fromHeight = current?.getBoundingClientRect().height;
     document.querySelector('.course-selector').style.display = 'flex';
-    document.getElementById('save-button').style.display = '';
+    document.querySelectorAll('#save-button').forEach(w => w.style.display = '');
     document.querySelector('.course-reorder').style.display = 'none';
     const container = document.querySelector('.section');
     const target = document.querySelector('.course-selector');
@@ -275,7 +308,7 @@ if (document.getElementById("reorder-courses-button")) {
     const current = document.querySelector('.course-reorder');
     const fromHeight = current?.getBoundingClientRect().height;
     document.querySelector('.course-selector').style.display = 'flex';
-    document.getElementById('save-button').style.display = '';
+    document.querySelectorAll('#save-button').forEach(w => w.style.display = '');
     document.querySelector('.course-reorder').style.display = 'none';
     const container = document.querySelector('.section');
     const target = document.querySelector('.course-selector');
@@ -340,6 +373,7 @@ if (document.getElementById("reorder-courses-button")) {
       .catch((e) => {
         console.error(e);
         ui.view("api-fail");
+        if (document.querySelector('[data-polling]')) pollingOff();
       });
     // Show submit confirmation
     ui.modeless(`<i class="bi bi-check-lg"></i>`, "Saved");
@@ -347,8 +381,8 @@ if (document.getElementById("reorder-courses-button")) {
 }
 
 // Save
-document.getElementById("save-button").addEventListener("click", save);
-  
+document.querySelectorAll("#save-button").forEach(w => w.addEventListener("click", save));
+
 async function save(hideResult) {
   removeAllSelected();
   removeSelecting();
@@ -412,16 +446,17 @@ async function save(hideResult) {
     method: "POST",
     body: formData,
   })
-  .catch((e) => {
-    console.error(e);
-    ui.view("api-fail");
-  });
-  document.getElementById("save-button").disabled = true;
+    .catch((e) => {
+      console.error(e);
+      ui.view("api-fail");
+      if (document.querySelector('[data-polling]')) pollingOff();
+    });
+  document.querySelectorAll("#save-button").forEach(w => w.disabled = true);
   window.scroll(0, 0);
   if ((typeof hideResult != 'boolean')) ui.modeless(`<i class="bi bi-check-lg"></i>`, "Saved");
   init();
   setTimeout(() => {
-    document.getElementById("save-button").disabled = false;
+    document.querySelectorAll("#save-button").forEach(w => w.disabled = false);
   }, 2500);
 }
 
@@ -589,14 +624,14 @@ function toggleQuestion() {
     hideAllQuestions();
     this.parentElement.parentElement.classList.add('expanded');
     document.querySelector('[data-add-question-input]').style.display = "none";
-    document.querySelector('#save-button').style.display = "none";
+    document.querySelectorAll('#save-button').forEach(w => w.style.display = "none");
   }
 }
 
 function hideAllQuestions() {
   document.querySelectorAll('.expanded').forEach(q => q.classList.remove('expanded'));
   document.querySelector('[data-add-question-input]').style.display = "block";
-  document.querySelector('#save-button').style.display = "block";
+  document.querySelectorAll('#save-button').forEach(w => w.style.display = "block");
 }
 
 function addQuestion() {
@@ -630,7 +665,7 @@ async function renderPond() {
   const top = (window.screen.height / 2) - (height / 2);
   const windowFeatures = `width=${width},height=${height},resizable=no,scrollbars=no,status=yes,left=${left},top=${top}`;
   const newWindow = window.open(url, '_blank', windowFeatures);
-  const checkWindowClosed = setInterval(function() {
+  const checkWindowClosed = setInterval(function () {
     if (newWindow && newWindow.closed) {
       clearInterval(checkWindowClosed);
       ui.modeless(`<i class="bi bi-cloud-upload"></i>`, "Uploaded");
@@ -664,6 +699,7 @@ async function removeImage(event) {
       .catch((e) => {
         console.error(e);
         ui.view("api-fail");
+        if (document.querySelector('[data-polling]')) pollingOff();
       });
   } else {
     window.open(event.target.src);
@@ -676,37 +712,114 @@ function updateResponses() {
   document.querySelector('.responses .section').innerHTML = '';
   var trendingResponses = [];
   responses
-  .filter(r => String(r.seatCode)[0] == document.getElementById("sort-course-input").value)
-  .filter(r => String(r.segment).startsWith(document.getElementById("sort-segment-input").value))
-  .filter(r => String(r.question_id).startsWith(document.getElementById("sort-question-input").value))
-  .filter(r => String(r.seatCode).startsWith(document.getElementById("sort-seat-input").value))
-  .reverse()
-  .forEach(r => {
-    var buttonGrid = document.createElement('div');
-    buttonGrid.className = "button-grid inputs";
-    buttonGrid.id = `response-${r.id}`;
-    buttonGrid.innerHTML = `<input type="text" autocomplete="off" class="small" id="response-id-input" value="${r.id}" disabled /><input type="text" autocomplete="off" class="small" id="response-segment-input" value="${r.segment}" disabled /><input type="text" autocomplete="off" class="small" id="response-question-input" value="${r.question_id}" disabled /><input type="text" autocomplete="off" class="small" id="response-seat-code-input" value="${r.seatCode}" disabled /><input type="text" autocomplete="off" id="response-response-input" value="${r.response}" disabled /><select name="response-status-input" class="medium" id="response-status-input"><option value="Unknown, Recorded" ${(r.status === 'Unknown, Recorded') ? 'selected' : ''}>Unknown</option><option value="Incorrect" ${(r.status === 'Incorrect') ? 'selected' : ''}>Incorrect</option><option value="Correct" ${(r.status === 'Correct') ? 'selected' : ''}>Correct</option><option value="Invalid Format" ${(r.status === 'Invalid Format') ? 'selected' : ''}>Invalid</option></select>`;
-    document.querySelector('.responses .section').appendChild(buttonGrid);
-    if ((r.status === 'Invalid Format') || (r.status === 'Unknown, Recorded')) document.querySelector('.awaitingResponses .section').appendChild(buttonGrid);
-    var trend = trendingResponses.find(t => (t.segment === r.segment) && (t.question_id === r.question_id) && (t.response === r.response) && (t.status === r.status));
-    if (trend) {
-      trend.count++;
-    } else {
-      trendingResponses.push({
-        segment: r.segment,
-        question_id: r.question_id,
-        response: r.response,
-        status: r.status,
-        count: 1
-      });
-    }
-  });
+    .filter(r => String(r.seatCode)[0] == document.getElementById("sort-course-input").value)
+    .filter(r => String(r.segment).startsWith(document.getElementById("sort-segment-input").value))
+    .filter(r => questions.find(q => q.id == r.question_id).number.startsWith(document.getElementById("sort-question-input").value))
+    .filter(r => String(r.seatCode).startsWith(document.getElementById("sort-seat-input").value))
+    .reverse()
+    .forEach(r => {
+      var buttonGrid = document.createElement('div');
+      buttonGrid.className = "button-grid inputs";
+      buttonGrid.id = `response-${r.id}`;
+      buttonGrid.innerHTML = `<input type="text" autocomplete="off" class="small" id="response-id-input" value="${r.id}" disabled hidden /><input type="text" autocomplete="off" class="small" id="response-segment-input" value="${r.segment}" disabled /><input type="text" autocomplete="off" class="small" id="response-question-input" value="${questions.find(q => q.id == r.question_id).number}" disabled /><input type="text" autocomplete="off" class="small" id="response-seat-code-input" value="${r.seatCode}" disabled /><input type="text" autocomplete="off" id="response-response-input" value="${r.response}" disabled /><button square id="mark-correct-button"${(r.status === 'Correct') ? ' disabled' : ''}><i class="bi bi-check-circle${(r.status === 'Correct') ? '-fill' : ''}"></i></button><button square id="mark-incorrect-button"${(r.status === 'Incorrect') ? ' disabled' : ''}><i class="bi bi-x-circle${(r.status === 'Incorrect') ? '-fill' : ''}"></i></button>`;
+      document.querySelector('.responses .section').appendChild(buttonGrid);
+      if ((r.status === 'Invalid Format') || (r.status === 'Unknown, Recorded')) document.querySelector('.awaitingResponses .section').appendChild(buttonGrid);
+      var trend = trendingResponses.find(t => (t.segment === r.segment) && (t.question_id === r.question_id) && (t.response === r.response) && (t.status === r.status));
+      if (trend) {
+        trend.count++;
+      } else {
+        trendingResponses.push({
+          segment: r.segment,
+          question_id: r.question_id,
+          response: r.response,
+          status: r.status,
+          count: 1
+        });
+      }
+    });
   trendingResponses.filter(t => t.count > 1).forEach(r => {
     var buttonGrid = document.createElement('div');
     buttonGrid.className = "button-grid inputs";
-    buttonGrid.innerHTML = `<input type="text" autocomplete="off" class="small" id="response-segment-input" value="${r.segment}" disabled /><input type="text" autocomplete="off" class="small" id="response-question-input" value="${r.question_id}" disabled /><input type="text" autocomplete="off" id="response-response-input" value="${r.response}" disabled /><input type="text" autocomplete="off" class="small" id="response-count-input" value="${r.count}" disabled /><select name="response-status-input" class="medium" id="response-status-input"><option value="Unknown, Recorded" ${(r.status === 'Unknown, Recorded') ? 'selected' : ''}>Unknown</option><option value="Incorrect" ${(r.status === 'Incorrect') ? 'selected' : ''}>Incorrect</option><option value="Correct" ${(r.status === 'Correct') ? 'selected' : ''}>Correct</option><option value="Invalid Format" ${(r.status === 'Invalid Format') ? 'selected' : ''}>Invalid</option></select>`;
+    buttonGrid.innerHTML = `<input type="text" autocomplete="off" class="small" id="response-segment-input" value="${r.segment}" disabled /><input type="text" autocomplete="off" class="small" id="response-question-input" value="${questions.find(q => q.id == r.question_id).number}" disabled /><input type="text" autocomplete="off" id="response-response-input" value="${r.response}" disabled /><input type="text" autocomplete="off" class="small" id="response-count-input" value="${r.count}" disabled /><button square id="mark-correct-button"${(r.status === 'Correct') ? ' disabled' : ''}><i class="bi bi-check-circle${(r.status === 'Correct') ? '-fill' : ''}"></i></button><button square id="mark-incorrect-button"${(r.status === 'Incorrect') ? ' disabled' : ''}><i class="bi bi-x-circle${(r.status === 'Incorrect') ? '-fill' : ''}"></i></button>`;
     document.querySelector('.trendingResponses .section').appendChild(buttonGrid);
   });
-  document.querySelectorAll('[data-add-response-input]').forEach(a => a.addEventListener('click', addQuestion));
-  document.querySelectorAll('[data-remove-response-input]').forEach(a => a.addEventListener('click', removeQuestion));
+  document.querySelectorAll('#mark-correct-button').forEach(a => a.addEventListener('click', markCorrect));
+  document.querySelectorAll('#mark-incorrect-button').forEach(a => a.addEventListener('click', markIncorrect));
+}
+
+function markCorrect() {
+  fetch(domain + '/mark_correct', {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      segment: this.parentElement.querySelector('#response-segment-input').value,
+      question_number: this.parentElement.querySelector('#response-question-input').value,
+      response: this.parentElement.querySelector('#response-response-input').value
+    }),
+  })
+    .then(q => q.json())
+    .then(() => {
+      ui.modeless(`<i class="bi bi-check-lg"></i>`, "Updated Status");
+      updateResponses();
+    })
+    .catch((e) => {
+      console.error(e);
+      ui.view("api-fail");
+      if (document.querySelector('[data-polling]')) pollingOff();
+    });
+}
+
+function markIncorrect() {
+  ui.modal({
+    title: 'Add Reason',
+    body: '<p>Add a reason that this response is incorrect.</p>',
+    input: {
+      type: 'text',
+      placeholder: 'Take the derivative of x^2 before multiplying.',
+      defaultValue: '',
+    },
+    buttons: [
+      {
+        text: 'Cancel',
+        class: 'cancel-button',
+        close: true,
+      },
+      {
+        text: 'Continue',
+        class: 'submit-button',
+        onclick: (inputValue) => {
+          markIncorrectConfirm(inputValue);
+        },
+        close: true,
+      },
+    ],
+  });
+}
+
+function markIncorrectConfirm(reason) {
+  return alert(reason)
+  fetch(domain + '/mark_incorrect', {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      segment: this.parentElement.querySelector('#response-segment-input').value,
+      question_number: this.parentElement.querySelector('#response-question-input').value,
+      response: this.parentElement.querySelector('#response-response-input').value,
+      reason: reason
+    }),
+  })
+    .then(q => q.json())
+    .then(() => {
+      ui.modeless(`<i class="bi bi-check-lg"></i>`, "Updated Status");
+      updateResponses();
+    })
+    .catch((e) => {
+      console.error(e);
+      ui.view("api-fail");
+      if (document.querySelector('[data-polling]')) pollingOff();
+    });
 }

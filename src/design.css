@@ -641,3 +641,7 @@ body:has(.selecting) #controls-container [data-delete-multiple] {
 .button-grid[id^=response-].hidden {
   display: none;
 }
+
+hidden {
+  display: none;
+}

@@ -95,7 +95,7 @@ if (document.getElementById("course-input")) {
     if (!storage.get("questionsAnswered")) storage.set("questionsAnswered", []);
   }
 
-  // Submit click
+  // Submit check
   document.getElementById("submit-button").addEventListener("click", (e) => {
     e.target.disabled = true;
     const mode = ui.getButtonSelectValue(document.getElementById("answer-mode-selector"));
@@ -162,16 +162,7 @@ if (document.getElementById("course-input")) {
       ui.view("settings/code");
     }
     async function submit() {
-      await submitClick(storage.get("code"), segment, question, answer)
-        .then(() => {
-          if (mode === "math" && !multipleChoice) {
-            storeClick(storage.get("code"), segment, question, mf.value, "latex");
-          } else if (mode === "set" && !multipleChoice) {
-            storeClick(storage.get("code"), segment, question, answer, "array");
-          } else {
-            storeClick(storage.get("code"), segment, question, answer, "text");
-          }
-        });
+      await submitClick(storage.get("code"), segment, question, answer, mode);
     }
     setTimeout(() => {
       e.target.disabled = false;
@@ -228,12 +219,12 @@ function resetInputs() {
 }
 
 // Check answer
-async function submitClick(code, segment, question, answer) {
+async function submitClick(code, segment, question, answer, mode) {
   var qA = storage.get("questionsAnswered") || [];
   var alreadyAnswered = qA.find(q => q.segment == segment && q.question == question)
   if (alreadyAnswered && alreadyAnswered.status == 'Correct') {
     window.scroll(0, 0);
-    return ui.modeless(`<i class="bi bi-exclamation-lg"></i>`, 'Already Submitted!');
+    return ui.modeless(`<i class="bi bi-exclamation-lg"></i>`, 'Already Correct');
   }
   await fetch(domain + '/check_answer', {
     method: "POST",
@@ -263,6 +254,13 @@ async function submitClick(code, segment, question, answer) {
       resetInputs();
       nextQuestion();
       updateQuestion();
+      if (mode === "math" && !multipleChoice) {
+        storeClick(storage.get("code"), segment, question, mf.value, r.reason, "latex");
+      } else if (mode === "set" && !multipleChoice) {
+        storeClick(storage.get("code"), segment, question, answer, r.reason, "array");
+      } else {
+        storeClick(storage.get("code"), segment, question, answer, r.reason, "text");
+      }
     })
     .catch(() => ui.view("api-fail"))
 }
@@ -488,7 +486,7 @@ function answerMode(mode) {
 }
 
 // Store click to storage and history
-function storeClick(code, segment, question, answer, type) {
+function storeClick(code, segment, question, answer, reason, type) {
   const history = storage.get("history") || [];
   const timestamp = Date.now();
   history.push({
@@ -496,6 +494,7 @@ function storeClick(code, segment, question, answer, type) {
     "segment": segment,
     "question": question,
     "answer": answer,
+    "reason": reason,
     "timestamp": timestamp,
     "type": type || "text",
   });
@@ -576,7 +575,7 @@ function updateHistory() {
       const array = item.type === "array";
       if (!latex) {
         if (!array) {
-          button.innerHTML = `<p><b>Segment ${item.segment} Question #${item.question}.</b> ${unixToTimeString(item.timestamp)} (${item.code})</p>\n<p>${item.answer}</p>`;
+          button.innerHTML = `<p><b>Segment ${item.segment} Question #${item.question}.</b> ${unixToTimeString(item.timestamp)} (${item.code})</p>\n<p>${item.answer}${(item.reason) ? `<br><b>Reason:</b> ${item.reason}` : ''}</p>`;
         } else {
           button.innerHTML = `<p><b>Segment ${item.segment} Question #${item.question}.</b> ${unixToTimeString(item.timestamp)} (${item.code})</p>\n<p>${item.answer.split('[')[1].split(']')[0]}</p>`;
         }
@@ -585,7 +584,7 @@ function updateHistory() {
       }
       feed.prepend(button);
       renderMathInElement(button);
-      // Resubmit click
+      // Resubmit check
       button.addEventListener("click", () => {
         questionInput.value = item.question;
         ui.view("");

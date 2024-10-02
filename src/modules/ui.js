@@ -25,16 +25,61 @@ export function prompt(title, text, buttons, blur) {
 }
 
 export function modal(options) {
-  // Create dialog element
   const dialog = document.createElement("dialog");
-  dialog.innerHTML = options.body;
-  // Append dialog element to DOM
+  if (options.title) {
+    const title = document.createElement("h2");
+    title.innerText = options.title;
+    dialog.append(title);
+  }
+  if (options.body) {
+    dialog.innerHTML += options.body
+  }
+  if (options.input) {
+    const input = document.createElement("input");
+    input.type = options.input.type || "text";
+    input.placeholder = options.input.placeholder || "";
+    input.value = options.input.defaultValue || "";
+    input.className = "dialog-input";
+    dialog.appendChild(input);
+  }
   document.body.append(dialog);
-  // Show modal
-  show(dialog, options.title, null, options.buttons, options.blur);
-  // Remove dialog element on close
+  options.buttons.forEach(button => {
+    const btnElement = new Element("button", button.text, {
+      click: () => {
+        button.close && dialog.close();
+        if (button.onclick) {
+          const inputValue = dialog.querySelector(".dialog-input") ? dialog.querySelector(".dialog-input").value : null;
+          button.onclick(inputValue);
+        }
+      },
+    }, button.class).element;
+    dialog.appendChild(btnElement);
+  });
+  const keyframes = [{ opacity: 0 }, { opacity: 1 }];
+  animate(
+    dialog,
+    {
+      scale: "0.9",
+      opacity: "0",
+    },
+    {
+      scale: "1",
+      opacity: "1",
+    },
+    250,
+  );
+  dialog.showModal();
   dialog.addEventListener("close", () => {
-    dialog.remove();
+    setTimeout(() => {
+      dialog.animate(keyframes, {
+        duration: 100,
+        direction: "reverse",
+        fill: "forwards",
+      });
+      setTimeout(() => {
+        dialog.remove();
+      }, 100);
+    }, 2400);
   });
   return dialog;
 }
