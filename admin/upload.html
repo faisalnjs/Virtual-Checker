@@ -37,7 +37,10 @@
         });
         pond.on('processfile', (error, file) => {
             if (error) return;
-            window.close();
+            window.opener.postMessage('uploadSuccess', window.location.protocol + '//' + window.location.hostname + (window.location.port ? ':' + window.location.port : ''));
+            setTimeout(() => {
+                window.close();
+            }, 500);
         });
     </script>
 </body>

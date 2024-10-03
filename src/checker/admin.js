@@ -665,10 +665,19 @@ async function renderPond() {
   const top = (window.screen.height / 2) - (height / 2);
   const windowFeatures = `width=${width},height=${height},resizable=no,scrollbars=no,status=yes,left=${left},top=${top}`;
   const newWindow = window.open(url, '_blank', windowFeatures);
+  let uploadSuccessful = false;
+  window.addEventListener('message', (event) => {
+    if (event.origin !== (window.location.protocol + '//' + window.location.hostname + (window.location.port ? ':' + window.location.port : ''))) return;  
+    if (event.data === 'uploadSuccess') uploadSuccessful = true;
+  }, false);
   const checkWindowClosed = setInterval(function () {
     if (newWindow && newWindow.closed) {
       clearInterval(checkWindowClosed);
-      ui.modeless(`<i class="bi bi-cloud-upload"></i>`, "Uploaded");
+      if (uploadSuccessful) {
+        ui.modeless(`<i class="bi bi-cloud-upload"></i>`, "Uploaded");
+      } else {
+        ui.modeless(`<i class="bi bi-exclamation-triangle"></i>`, "Upload Cancelled");
+      }
       init();
     }
   }, 1000);
