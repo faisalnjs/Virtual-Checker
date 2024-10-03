@@ -716,7 +716,11 @@ function updateResponses() {
     .filter(r => String(r.segment).startsWith(document.getElementById("sort-segment-input").value))
     .filter(r => questions.find(q => q.id == r.question_id).number.startsWith(document.getElementById("sort-question-input").value))
     .filter(r => String(r.seatCode).startsWith(document.getElementById("sort-seat-input").value))
-    .reverse()
+    .sort((a, b) => {
+      if (a.flagged && !b.flagged) return -1;
+      if (!a.flagged && b.flagged) return 1;
+      return b.id - a.id;
+    })
     .forEach(r => {
       var buttonGrid = document.createElement('div');
       buttonGrid.className = "button-grid inputs";
