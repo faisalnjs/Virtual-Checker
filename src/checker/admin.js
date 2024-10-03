@@ -721,7 +721,7 @@ function updateResponses() {
       var buttonGrid = document.createElement('div');
       buttonGrid.className = "button-grid inputs";
       buttonGrid.id = `response-${r.id}`;
-      buttonGrid.innerHTML = `<input type="text" autocomplete="off" class="small" id="response-id-input" value="${r.id}" disabled hidden /><input type="text" autocomplete="off" class="small" id="response-segment-input" value="${r.segment}" disabled /><input type="text" autocomplete="off" class="small" id="response-question-input" value="${questions.find(q => q.id == r.question_id).number}" disabled /><input type="text" autocomplete="off" class="small" id="response-seat-code-input" value="${r.seatCode}" disabled /><input type="text" autocomplete="off" id="response-response-input" value="${r.response}" disabled />${((r.status === 'Incorrect') && r.reason) ? `<input type="text" autocomplete="off" id="response-response-input" value="${r.reason}" disabled />` : ''}<button square id="mark-correct-button"${(r.status === 'Correct') ? ' disabled' : ''}><i class="bi bi-check-circle${(r.status === 'Correct') ? '-fill' : ''}"></i></button><button square id="mark-incorrect-button"${(r.status === 'Incorrect') ? ' disabled' : ''}><i class="bi bi-x-circle${(r.status === 'Incorrect') ? '-fill' : ''}"></i></button>`;
+      buttonGrid.innerHTML = `<input type="text" autocomplete="off" class="small" id="response-id-input" value="${r.id}" disabled hidden />${(r.flagged == '1') ? `<button square data-unflag-response><i class="bi bi-flag-fill"></i></button>` : `<button square data-flag-response><i class="bi bi-flag"></i></button>`}<input type="text" autocomplete="off" class="small" id="response-segment-input" value="${r.segment}" disabled /><input type="text" autocomplete="off" class="small" id="response-question-input" value="${questions.find(q => q.id == r.question_id).number}" disabled /><input type="text" autocomplete="off" class="small" id="response-seat-code-input" value="${r.seatCode}" disabled /><input type="text" autocomplete="off" id="response-response-input" value="${r.response}" disabled />${((r.status === 'Incorrect') && r.reason) ? `<input type="text" autocomplete="off" id="response-response-input" value="${r.reason}" disabled />` : ''}<button square id="mark-correct-button"${(r.status === 'Correct') ? ' disabled' : ''}><i class="bi bi-check-circle${(r.status === 'Correct') ? '-fill' : ''}"></i></button><button square id="mark-incorrect-button"${(r.status === 'Incorrect') ? ' disabled' : ''}><i class="bi bi-x-circle${(r.status === 'Incorrect') ? '-fill' : ''}"></i></button>`;
       document.querySelector('.responses .section').appendChild(buttonGrid);
       if ((r.status === 'Invalid Format') || (r.status === 'Unknown, Recorded')) document.querySelector('.awaitingResponses .section').appendChild(buttonGrid);
       var trend = trendingResponses.find(t => (t.segment === r.segment) && (t.question_id === r.question_id) && (t.response === r.response) && (t.status === r.status));
@@ -745,6 +745,52 @@ function updateResponses() {
   });
   document.querySelectorAll('#mark-correct-button').forEach(a => a.addEventListener('click', markCorrect));
   document.querySelectorAll('#mark-incorrect-button').forEach(a => a.addEventListener('click', markIncorrect));
+  document.querySelectorAll('[data-flag-response]').forEach(a => a.addEventListener('click', flagResponse));
+  document.querySelectorAll('[data-unflag-response]').forEach(a => a.addEventListener('click', unflagResponse));
+}
+
+function flagResponse() {
+  fetch(domain + '/flag', {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      question_id: this.parentElement.querySelector('#response-id-input').value,
+      seatCode: this.parentElement.querySelector('#response-seat-code-input').value,
+    }),
+  })
+    .then(q => q.json())
+    .then(() => {
+      ui.toast("Flagged response for review.", 3000, "success", "bi bi-flag-fill");
+      init();
+    })
+    .catch((e) => {
+      console.error(e);
+      ui.view("api-fail");
+    });
+}
+
+function unflagResponse() {
+  fetch(domain + '/unflag', {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      question_id: this.parentElement.querySelector('#response-id-input').value,
+      seatCode: this.parentElement.querySelector('#response-seat-code-input').value,
+    }),
+  })
+    .then(q => q.json())
+    .then(() => {
+      ui.toast("Unflagged response.", 3000, "success", "bi bi-flag-fill");
+      init();
+    })
+    .catch((e) => {
+      console.error(e);
+      ui.view("api-fail");
+    });
 }
 
 function markCorrect() {
@@ -760,7 +806,7 @@ function markCorrect() {
   })
     .then(q => q.json())
     .then(() => {
-      ui.toast("Successfully updated status.", 3000, "success", "bi bi-check");
+      ui.toast("Successfully updated status.", 3000, "success", "bi bi-check-lg");
       init();
     })
     .catch((e) => {
@@ -811,7 +857,7 @@ function markIncorrectConfirm(reason, e) {
   })
     .then(q => q.json())
     .then(() => {
-      ui.toast("Successfully updated status.", 3000, "success", "bi bi-check");
+      ui.toast("Successfully updated status.", 3000, "success", "bi bi-check-lg");
       init();
     })
     .catch((e) => {

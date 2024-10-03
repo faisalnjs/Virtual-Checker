@@ -568,33 +568,49 @@ function updateHistory() {
   const feed = document.getElementById("history-feed");
   if (history.length != 0) {
     feed.innerHTML = "";
-    history.forEach(async (item) => {
-      await fetch(`${domain}/response?seatCode=${storage.get("code")}&segment=${item.segment}&question=${item.question}&answer=${item.answer}`, {
+    const fetchPromises = history.sort((a, b) => a.timestamp - b.timestamp).map(item =>
+      fetch(`${domain}/response?seatCode=${storage.get("code")}&segment=${item.segment}&question=${item.question}&answer=${item.answer}`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
         }
       })
         .then(r => r.json())
-        .then(r => {
-          if (r.error) return console.log(r.error, item);
-          const button = document.createElement("button");
-          const latex = item.type === "latex";
-          const array = item.type === "array";
-          var response = `${(r.reason) ? `<br><b>Reason:</b> ${r.reason}` : ''}`;
-          if (!latex) {
-            if (!array) {
-              button.innerHTML = `<p><b>Segment ${item.segment} Question #${item.question}.</b> ${unixToTimeString(item.timestamp)} (${item.code})</p>\n<p>${item.answer}${response}</p>`;
-            } else {
-              button.innerHTML = `<p><b>Segment ${item.segment} Question #${item.question}.</b> ${unixToTimeString(item.timestamp)} (${item.code})</p>\n<p>${item.answer.split('[')[1].split(']')[0]}${response}</p>`;
-            }
+        .then(r => ({ ...r, item }))
+        .catch(e => {
+          console.error(e);
+          return { error: e, item };
+        })
+    );
+
+    Promise.all(fetchPromises).then(results => {
+      results.forEach(({ item, ...r }) => {
+        if (r.error) {
+          console.log(r.error);
+          ui.view("api-fail");
+          return;
+        }
+        const button = document.createElement("button");
+        const latex = item.type === "latex";
+        const array = item.type === "array";
+        button.id = r.id;
+        button.classList = (r.status === "Incorrect") ? 'incorrect' : (r.status === "Correct") ? 'correct' : '';
+        var response = `${((r.status != "Correct") && (r.status != "Incorrect")) ? `<br><b>Status:</b> ${r.status.includes('Unknown') ? r.status.split('Unknown, ')[1] : r.status}` : ''}${(r.reason) ? `<br><b>Response:</b> ${r.reason}` : ''}${(r.status === "Incorrect") ? `<br><button data-flag-response${(r.flagged == '1') ? ' disabled' : ''}><i class="bi bi-flag-fill"></i> Flag for Review</button>` : ''}`;
+        if (!latex) {
+          if (!array) {
+            button.innerHTML = `<p><b>Segment ${item.segment} Question #${item.question}.</b> ${unixToTimeString(item.timestamp)} (${item.code})</p>\n<p>${item.answer}${response}</p>`;
           } else {
-            button.innerHTML = `<p><b>Segment ${item.segment} Question #${item.question}.</b> ${unixToTimeString(item.timestamp)} (${item.code})</p>\n${convertLatexToMarkup(item.answer)}\n<p class="hint">(Equation may not display properly)${response}</p>`;
+            button.innerHTML = `<p><b>Segment ${item.segment} Question #${item.question}.</b> ${unixToTimeString(item.timestamp)} (${item.code})</p>\n<p>${item.answer.split('[')[1].split(']')[0]}${response}</p>`;
           }
-          feed.prepend(button);
-          renderMathInElement(button);
-          // Resubmit check
-          button.addEventListener("click", () => {
+        } else {
+          button.innerHTML = `<p><b>Segment ${item.segment} Question #${item.question}.</b> ${unixToTimeString(item.timestamp)} (${item.code})</p>\n${convertLatexToMarkup(item.answer)}\n<p class="hint">(Equation may not display properly)${response}</p>`;
+        }
+        feed.prepend(button);
+        renderMathInElement(button);
+        // Resubmit check
+        if (r.status != "Correct") {
+          button.addEventListener("click", (event) => {
+            if (event.target.hasAttribute('data-flag-response')) return flagResponse(event);
             questionInput.value = item.question;
             ui.view("");
             if (latex) {
@@ -621,16 +637,34 @@ function updateHistory() {
               autocomplete.update();
             }
           });
-        })
-        .catch((e) => {
-          console.error(e);
-          ui.view("api-fail");
-          if (document.querySelector('[data-polling]')) pollingOff();
-        });
+        }
+      });
     });
   } else {
     feed.innerHTML = "<p>Submitted clicks will show up here!</p>";
   }
+}
+
+function flagResponse(event) {
+  fetch(domain + '/flag', {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      question_id: event.srcElement.parentElement.parentElement.id,
+      seatCode: storage.get("code"),
+    }),
+  })
+    .then(q => q.json())
+    .then(() => {
+      ui.toast("Flagged response for review.", 3000, "success", "bi bi-flag-fill");
+      event.srcElement.disabled = true;
+    })
+    .catch((e) => {
+      console.error(e);
+      ui.view("api-fail");
+    });
 }
 
 // Reset modals

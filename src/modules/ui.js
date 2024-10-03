@@ -26,17 +26,17 @@ export function prompt(title, text, buttons, blur) {
 
 export function modal(options) {
   const dialog = document.createElement("dialog");
-  
+
   if (options.title) {
     const title = document.createElement("h2");
     title.innerText = options.title;
     dialog.append(title);
   }
-  
+
   if (options.body) {
     dialog.innerHTML += options.body;
   }
-  
+
   if (options.input) {
     const input = document.createElement("input");
     input.type = options.input.type || "text";
@@ -45,9 +45,9 @@ export function modal(options) {
     input.className = "dialog-input";
     dialog.appendChild(input);
   }
-  
+
   document.body.append(dialog);
-  
+
   options.buttons.forEach(button => {
     const btnElement = new Element("button", button.text, {
       click: () => {
@@ -62,8 +62,7 @@ export function modal(options) {
     }, button.class).element;
     dialog.appendChild(btnElement);
   });
-  
-  const keyframes = [{ opacity: 0 }, { opacity: 1 }];
+
   animate(
     dialog,
     {
@@ -76,9 +75,9 @@ export function modal(options) {
     },
     250,
   );
-  
+
   dialog.showModal();
-  
+
   dialog.addEventListener("close", () => {
     animate(
       dialog,
@@ -97,9 +96,14 @@ export function modal(options) {
     }, 250);
   });
 
-  // Add event listener for clicks outside the modal
   document.addEventListener("pointerdown", (e) => {
     if (!dialog.contains(e.target)) {
+      closeModal();
+    }
+  });
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
       closeModal();
     }
   });
@@ -121,7 +125,7 @@ export function modal(options) {
       dialog.close();
     }, 250);
   }
-  
+
   return dialog;
 }
 

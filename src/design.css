@@ -79,9 +79,7 @@ button {
   border-radius: 0.5rem;
   background-color: var(--surface-color);
   font: inherit;
-  transition:
-    100ms color var(--easing),
-    100ms background-color var(--easing);
+  transition: 100ms var(--easing);
   cursor: pointer;
 }
 
@@ -392,8 +390,9 @@ div.ML__keyboard {
   width: -webkit-fill-available;
 }
 
-button[square] {
+[square] {
   width: 2.25em !important;
+  min-width: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -408,7 +407,7 @@ button[square] {
   label {
     width: unset !important;
   }
-  
+
   .small,
   .medium,
   square {
@@ -521,6 +520,7 @@ button[square] {
 
 .hiddenOnLoad.show {
   max-height: 500px;
+  overflow: visible;
   transition: 0.5s var(--easing);
 }
 
@@ -640,7 +640,7 @@ body:has(.selecting) #controls-container [data-delete-multiple] {
   gap: 0px;
 }
 
-.button-grid[id^=response-].hidden {
+.button-grid[id^="response-"].hidden {
   display: none;
 }
 
@@ -666,7 +666,9 @@ hidden {
   color: var(--text-color);
   box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
   opacity: 0;
-  transition: opacity 250ms ease, transform 250ms ease;
+  transition:
+    opacity 250ms ease,
+    transform 250ms ease;
   line-height: 13px;
   position: relative;
   overflow: hidden;
@@ -676,11 +678,11 @@ hidden {
 }
 
 .toast i {
-  font-size: 1.5rem;
+  font-size: 1rem;
 }
 
 .toast.success {
-  background-color: #4caf50;
+  background-color: mediumseagreen;
   color: #ffffff;
 }
 
@@ -696,4 +698,34 @@ hidden {
   height: 4px;
   background-color: rgba(0, 0, 0, 0.1);
   width: 0;
+}
+
+#history-feed .correct {
+  border-left: 3px solid mediumseagreen;
+  border-right: 3px solid mediumseagreen;
+}
+
+#history-feed .incorrect {
+  border-left: 3px solid indianred;
+  border-right: 3px solid indianred;
+}
+
+#history-feed button button {
+  width: -webkit-fill-available;
+  background-color: var(--background-color);
+  color: var(--accent-text-color);
+  margin: 5px 0;
+}
+
+#history-feed > button:hover {
+  background-color: var(--surface-color);
+  color: var(--text-color);
+}
+
+#history-feed button button:hover {
+  opacity: 0.75;
+}
+
+#history-feed button button i {
+  font-size: 12px;
 }

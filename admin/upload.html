@@ -1,41 +1,45 @@
 <!doctype html>
 <html>
-    <head>
-        <meta charset="UTF-8" />
-        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Upload - Virtual Checker</title>
-        <style>
-            ::-webkit-scrollbar {
-                display: none;
-            }
-        </style>
-    </head>
-    <body>
-        <link href="https://unpkg.com/filepond@^4/dist/filepond.css" rel="stylesheet" />
-        <input type="file" />
-        <script src="https://unpkg.com/filepond-plugin-file-validate-type/dist/filepond-plugin-file-validate-type.js"></script>
-        <script src="https://unpkg.com/filepond@^4/dist/filepond.js"></script>
-        <script>
-            const urlParams = new URLSearchParams(window.location.search);
-            const question = urlParams.get('question');
-            if (!question) window.location.href = '/admin';
-            const inputElement = document.querySelector('input[type="file"]');
-            const domain = ((window.location.hostname.search('check') != -1) || (window.location.hostname.search('127') != -1)) ? 'https://api.check.vssfalcons.com' : 'http://localhost:5000';
-            FilePond.registerPlugin(FilePondPluginFileValidateType);
-            const pond = FilePond.create(inputElement, {
-                server: domain + '/upload',
-                credits: false,
-                allowMultiple: true,
-                acceptedFileTypes: ['image/*'],
-            });
-            pond.on('initfile', (item) => {
-                item.setMetadata('question', question);
-            });
-            pond.on('processfile', (error, file) => {
-                if (error) return;
-                window.close();
-            });
-        </script>
-    </body>
+
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Upload - Virtual Checker</title>
+    <style>
+        ::-webkit-scrollbar {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <link href="https://unpkg.com/filepond@^4/dist/filepond.css" rel="stylesheet" />
+    <input type="file" />
+    <script
+        src="https://unpkg.com/filepond-plugin-file-validate-type/dist/filepond-plugin-file-validate-type.js"></script>
+    <script src="https://unpkg.com/filepond@^4/dist/filepond.js"></script>
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const question = urlParams.get('question');
+        if (!question) window.location.href = '/admin';
+        const inputElement = document.querySelector('input[type="file"]');
+        const domain = ((window.location.hostname.search('check') != -1) || (window.location.hostname.search('127') != -1)) ? 'https://api.check.vssfalcons.com' : 'http://localhost:5000';
+        FilePond.registerPlugin(FilePondPluginFileValidateType);
+        const pond = FilePond.create(inputElement, {
+            server: domain + '/upload',
+            credits: false,
+            allowMultiple: true,
+            acceptedFileTypes: ['image/*'],
+        });
+        pond.on('initfile', (item) => {
+            item.setMetadata('question', question);
+        });
+        pond.on('processfile', (error, file) => {
+            if (error) return;
+            window.close();
+        });
+    </script>
+</body>
+
 </html>

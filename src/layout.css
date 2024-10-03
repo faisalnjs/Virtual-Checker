@@ -248,6 +248,7 @@ div.spacer {
   height: fit-content;
   padding: 0.375em 0.75em;
   text-align: left;
+  line-height: unset;
 }
 
 #history-feed > button > p {
