@@ -620,10 +620,13 @@ function updateHistory() {
             } else if (array) {
               answerMode("set");
               ui.setButtonSelectValue(document.getElementById("answer-mode-selector"), "set");
+              resetSetInput();
               var i = 0;
               JSON.parse(item.answer).forEach(a => {
+                setInputs = document.querySelectorAll("[data-set-input]");
                 setInputs[i].value = a;
                 i++;
+                if (i < JSON.parse(item.answer).length) addSet();
               });
             } else {
               const choice = item.answer.match(/^CHOICE ([A-E])$/);
@@ -743,32 +746,7 @@ setInputs = document.querySelectorAll('[data-set-input]');
 
 // Add set input
 if (document.querySelector("[data-add-set-input]")) {
-  document.querySelector("[data-add-set-input]").addEventListener("click", () => {
-    setInputs = document.querySelectorAll('[data-set-input]');
-    let highestDataElement = null;
-    setInputs.forEach(element => {
-      if (highestDataElement === null || parseInt(element.getAttribute('data-set-input'), 10) > parseInt(highestDataElement.getAttribute('data-set-input'), 10)) highestDataElement = element;
-    });
-    if (highestDataElement !== null) {
-      var newSetInput = document.createElement('div');
-      newSetInput.id = 'question-container';
-      var newSetInputInput = document.createElement('input');
-      newSetInputInput.setAttribute('type', 'text');
-      newSetInputInput.setAttribute('autocomplete', 'off');
-      newSetInputInput.setAttribute('data-set-input', Number(highestDataElement.getAttribute('data-set-input')) + 1);
-      newSetInput.appendChild(newSetInputInput);
-      const buttonGrid = document.querySelector('[data-answer-mode="set"] .button-grid');
-      const insertBeforePosition = buttonGrid.children.length - 2;
-      if (insertBeforePosition > 0) {
-        buttonGrid.insertBefore(newSetInput, buttonGrid.children[insertBeforePosition]);
-      } else {
-        buttonGrid.appendChild(newSetInput);
-      }
-      document.querySelector('[data-answer-mode="set"] .button-grid').style.flexWrap = (setInputs.length > 9) ? 'wrap' : 'nowrap';
-      newSetInputInput.focus();
-      document.querySelector("[data-remove-set-input]").disabled = false;
-    }
-  });
+  document.querySelector("[data-add-set-input]").addEventListener("click", addSet);
 }
 
 // Remove set input
@@ -785,4 +763,35 @@ if (document.querySelector("[data-remove-set-input]")) {
     if (setInputs.length === 2) e.target.disabled = true;
     document.querySelector('[data-answer-mode="set"] .button-grid').style.flexWrap = (setInputs.length < 12) ? 'nowrap' : 'wrap';
   });
+}
+
+function addSet() {
+  setInputs = document.querySelectorAll('[data-set-input]');
+  let highestDataElement = null;
+  setInputs.forEach(element => {
+    if (highestDataElement === null || parseInt(element.getAttribute('data-set-input'), 10) > parseInt(highestDataElement.getAttribute('data-set-input'), 10)) highestDataElement = element;
+  });
+  if (highestDataElement !== null) {
+    var newSetInput = document.createElement('div');
+    newSetInput.id = 'question-container';
+    var newSetInputInput = document.createElement('input');
+    newSetInputInput.setAttribute('type', 'text');
+    newSetInputInput.setAttribute('autocomplete', 'off');
+    newSetInputInput.setAttribute('data-set-input', Number(highestDataElement.getAttribute('data-set-input')) + 1);
+    newSetInput.appendChild(newSetInputInput);
+    const buttonGrid = document.querySelector('[data-answer-mode="set"] .button-grid');
+    const insertBeforePosition = buttonGrid.children.length - 2;
+    if (insertBeforePosition > 0) {
+      buttonGrid.insertBefore(newSetInput, buttonGrid.children[insertBeforePosition]);
+    } else {
+      buttonGrid.appendChild(newSetInput);
+    }
+    document.querySelector('[data-answer-mode="set"] .button-grid').style.flexWrap = (setInputs.length > 9) ? 'wrap' : 'nowrap';
+    newSetInputInput.focus();
+    document.querySelector("[data-remove-set-input]").disabled = false;
+  }
+}
+
+function resetSetInput() {
+  document.querySelector('[data-answer-mode="set"]').innerHTML = '<div class="button-grid"><div id="question-container"><input type="text" autocomplete="off" id="set-input" data-set-input="1" /></div><button square data-add-set-input><i class="bi bi-plus"></i></button><button square data-remove-set-input disabled><i class="bi bi-dash"></i></button></div>';
 }
