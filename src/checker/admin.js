@@ -722,6 +722,16 @@ function updateResponses() {
       return b.id - a.id;
     })
     .forEach(r => {
+      if (r.response.includes('[')) {
+        var responseString = '';
+        var i = 0;
+        JSON.parse(r.response).forEach(a => {
+          responseString += a;
+          i++;
+          if (i < JSON.parse(r.response).length) responseString += ', ';
+        });
+        r.response = responseString;
+      }
       var buttonGrid = document.createElement('div');
       buttonGrid.className = "button-grid inputs";
       buttonGrid.id = `response-${r.id}`;
