@@ -409,6 +409,7 @@ div.ML__keyboard {
   }
 
   .small,
+  .smedium,
   .medium,
   square {
     max-width: unset !important;
@@ -445,6 +446,10 @@ div.ML__keyboard {
 
 .small {
   max-width: 75px;
+}
+
+.smedium {
+  max-width: 125px;
 }
 
 .medium {
