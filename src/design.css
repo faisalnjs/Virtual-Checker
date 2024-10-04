@@ -649,7 +649,8 @@ body:has(.selecting) #controls-container [data-delete-multiple] {
   display: none;
 }
 
-hidden {
+hidden,
+[hidden] {
   display: none;
 }
 
@@ -733,4 +734,16 @@ hidden {
 
 #history-feed button button i {
   font-size: 12px;
+}
+
+#checker:not(.timestamps) [data-time-taken] {
+  display: none;
+}
+
+#checker.timestamps [data-unflag-response],
+#checker.timestamps [data-flag-response],
+#checker.timestamps [data-segment],
+#checker.timestamps [data-question],
+#checker.timestamps .inputs > label[square] {
+  display: none;
 }
