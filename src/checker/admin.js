@@ -14,6 +14,7 @@ var responses = [];
 let draggedItem = null;
 var formData = new FormData();
 var polling = false;
+var active = false;
 
 async function init() {
   formData = new FormData();
@@ -108,6 +109,8 @@ async function init() {
                       if (document.querySelector('.responses.section')) {
                         document.getElementById("sort-course-input").value = courses.find(c => c.id == String(responses.sort((a, b) => String(a.seatCode)[0] - String(b.seatCode)[0])[0].seatCode)[0]).id;
                         updateResponses();
+                      } else {
+                        active = true;
                       }
                     })
                     .catch((e) => {
@@ -157,28 +160,34 @@ if (document.querySelector('[data-select]')) document.querySelector('[data-delet
 if (document.querySelector('[data-polling]')) document.querySelector('[data-polling]').addEventListener("click", togglePolling);
 
 function toggleSelecting() {
+  if (!active) return;
   if (document.querySelector('.segments .section')) document.querySelector('.segments .section').classList.toggle('selecting');
   if (document.querySelector('.questions .section')) document.querySelector('.questions .section').classList.toggle('selecting');
 }
 
 function removeSelecting() {
+  if (!active) return;
   if (document.querySelector('.segments .section')) document.querySelector('.segments .section').classList.remove('selecting');
   if (document.querySelector('.questions .section')) document.querySelector('.questions .section').classList.remove('selecting');
 }
 
 function deleteMultiple() {
+  if (!active) return;
   document.querySelectorAll('.selected').forEach(e => e.remove());
 }
 
 function toggleSelected() {
+  if (!active) return;
   this.parentElement.parentElement.classList.toggle('selected');
 }
 
 function removeAllSelected() {
+  if (!active) return;
   document.querySelectorAll('.selected').forEach(e => e.classList.remove('.selected'));
 }
 
 function togglePolling() {
+  if (!active) return;
   if (polling) {
     polling = false;
     document.querySelector('[data-polling] .bi-skip-forward-circle-fill').style.display = "block";
@@ -198,12 +207,14 @@ function togglePolling() {
 }
 
 function pollingOff() {
+  if (!active) return;
   polling = false;
   document.querySelector('[data-polling] .bi-skip-forward-circle-fill').style.display = "block";
   document.querySelector('[data-polling] .bi-stop-circle-fill').style.display = "none";
 }
 
 function updateSegments() {
+  if (!active) return;
   const course = courses.find(c => c.id == document.getElementById("course-period-input").value);
   document.getElementById("course-input").value = course.name;
   var c = segments.filter(s => s.course == course.id);
@@ -240,10 +251,12 @@ function updateSegments() {
 }
 
 function toggleSegment() {
+  if (!active) return;
   this.parentElement.parentElement.classList.toggle('expanded');
 }
 
 function calculateButtonHeights(container) {
+  if (!active) return;
   let totalHeight = 0;
   const buttons = container.querySelectorAll('button');
   buttons.forEach(button => {
@@ -257,6 +270,7 @@ function calculateButtonHeights(container) {
 
 if (document.getElementById("reorder-courses-button")) {
   document.getElementById("reorder-courses-button").addEventListener("click", () => {
+    if (!active) return;
     const current = document.querySelector('.course-selector');
     const fromHeight = current?.getBoundingClientRect().height;
     document.querySelector('.course-reorder').style.display = 'flex';
@@ -281,6 +295,7 @@ if (document.getElementById("reorder-courses-button")) {
   });
 
   document.getElementById("cancel-reorder-courses-button").addEventListener("click", () => {
+    if (!active) return;
     const current = document.querySelector('.course-reorder');
     const fromHeight = current?.getBoundingClientRect().height;
     document.querySelector('.course-selector').style.display = 'flex';
@@ -305,6 +320,7 @@ if (document.getElementById("reorder-courses-button")) {
   });
 
   document.getElementById("save-course-order-button").addEventListener("click", () => {
+    if (!active) return;
     const current = document.querySelector('.course-reorder');
     const fromHeight = current?.getBoundingClientRect().height;
     document.querySelector('.course-selector').style.display = 'flex';
@@ -330,6 +346,7 @@ if (document.getElementById("reorder-courses-button")) {
 
   // Save Course Order
   document.getElementById("save-course-order-button").addEventListener("click", () => {
+    if (!active) return;
     var updatedCourses = [...document.querySelector(".reorder").children].map((course, i) => {
       const courseId = course.querySelector('input').id.split('-')[1];
       return {
@@ -384,6 +401,7 @@ if (document.getElementById("reorder-courses-button")) {
 document.querySelectorAll("#save-button").forEach(w => w.addEventListener("click", save));
 
 async function save(hideResult) {
+  if (!active) return;
   removeAllSelected();
   removeSelecting();
   var updatedInfo = {};
@@ -461,16 +479,19 @@ async function save(hideResult) {
 }
 
 function handleDragStart(e) {
+  if (!active) return;
   draggedItem = this.parentNode;
   e.dataTransfer.effectAllowed = 'move';
 }
 
 function handleDragOver(e) {
+  if (!active) return;
   e.preventDefault();
   e.dataTransfer.dropEffect = 'move';
 }
 
 function handleDrop(e) {
+  if (!active) return;
   e.stopPropagation();
   const targetItem = this.parentNode;
   if (draggedItem !== targetItem) {
@@ -486,6 +507,7 @@ function handleDrop(e) {
 }
 
 function addSegment() {
+  if (!active) return;
   var group = document.createElement('div');
   group.className = "section";
   group.id = 'segment-new';
@@ -507,10 +529,12 @@ function addSegment() {
 }
 
 function removeSegment() {
+  if (!active) return;
   this.parentElement.parentElement.remove();
 }
 
 function addSegmentQuestion() {
+  if (!active) return;
   var group = document.createElement('div');
   group.className = "input-group";
   group.innerHTML = `<input type="text" autocomplete="off" id="segment-question-name-input" value="" /><input type="number" autocomplete="off" id="segment-question-id-input" value="" />`;
@@ -520,6 +544,7 @@ function addSegmentQuestion() {
 }
 
 function removeSegmentQuestion() {
+  if (!active) return;
   this.parentElement.parentElement.children[this.parentElement.parentElement.children.length - 2].remove();
   if (this.parentElement.parentElement.children.length === 3) {
     this.parentElement.querySelector('[data-remove-segment-question-input]').disabled = true;
@@ -592,6 +617,7 @@ function updateQuestions() {
 }
 
 function addCorrectAnswer() {
+  if (!active) return;
   var input = document.createElement('div');
   input.className = "button-grid inputs";
   input.innerHTML = `<input type="text" autocomplete="off" id="question-correct-answer-input" value="" /><button data-remove-correct-answer-input square><i class="bi bi-dash"></i></button>`;
@@ -601,6 +627,7 @@ function addCorrectAnswer() {
 }
 
 function addIncorrectAnswer() {
+  if (!active) return;
   var input = document.createElement('div');
   input.className = "button-grid inputs";
   input.innerHTML = `<input type="text" autocomplete="off" id="question-incorrect-answer-input" value="" /><input type="text" autocomplete="off" id="question-incorrect-answer-reason-input" value="" /><button data-remove-incorrect-answer-input square><i class="bi bi-dash"></i></button>`;
@@ -610,14 +637,17 @@ function addIncorrectAnswer() {
 }
 
 function removeCorrectAnswer() {
+  if (!active) return;
   this.parentElement.remove();
 }
 
 function removeIncorrectAnswer() {
+  if (!active) return;
   this.parentElement.remove();
 }
 
 function toggleQuestion() {
+  if (!active) return;
   if (this.parentElement.parentElement.classList.contains('expanded')) {
     hideAllQuestions();
   } else {
@@ -629,12 +659,14 @@ function toggleQuestion() {
 }
 
 function hideAllQuestions() {
+  if (!active) return;
   document.querySelectorAll('.expanded').forEach(q => q.classList.remove('expanded'));
   document.querySelector('[data-add-question-input]').style.display = "block";
   document.querySelectorAll('#save-button').forEach(w => w.style.display = "block");
 }
 
 function addQuestion() {
+  if (!active) return;
   var group = document.createElement('div');
   group.className = "section";
   group.id = 'question-new';
@@ -652,11 +684,13 @@ function addQuestion() {
 }
 
 function removeQuestion() {
+  if (!active) return;
   this.parentElement.parentElement.remove();
   hideAllQuestions();
 }
 
 async function renderPond() {
+  if (!active) return;
   await save(true);
   const url = '/admin/upload.html?question=' + this.id;
   const width = 600;
@@ -684,6 +718,7 @@ async function renderPond() {
 }
 
 async function removeImage(event) {
+  if (!active) return;
   await save(true);
   const element = event.target;
   const rect = element.getBoundingClientRect();
@@ -770,9 +805,11 @@ function updateResponses() {
   document.querySelectorAll('#mark-incorrect-button').forEach(a => a.addEventListener('click', markIncorrect));
   document.querySelectorAll('[data-flag-response]').forEach(a => a.addEventListener('click', flagResponse));
   document.querySelectorAll('[data-unflag-response]').forEach(a => a.addEventListener('click', unflagResponse));
+  active = true;
 }
 
 function flagResponse() {
+  if (!active) return;
   fetch(domain + '/flag', {
     method: "POST",
     headers: {
@@ -795,6 +832,7 @@ function flagResponse() {
 }
 
 function unflagResponse() {
+  if (!active) return;
   fetch(domain + '/unflag', {
     method: "POST",
     headers: {
@@ -817,6 +855,7 @@ function unflagResponse() {
 }
 
 function markCorrect() {
+  if (!active) return;
   fetch(domain + '/mark_correct', {
     method: "POST",
     headers: {
@@ -840,6 +879,7 @@ function markCorrect() {
 }
 
 function markIncorrect() {
+  if (!active) return;
   ui.modal({
     title: 'Add Reason',
     body: '<p>Add a reason that this response is incorrect.</p>',
@@ -867,6 +907,7 @@ function markIncorrect() {
 }
 
 function markIncorrectConfirm(reason, e) {
+  if (!active) return;
   fetch(domain + '/mark_incorrect', {
     method: "POST",
     headers: {
