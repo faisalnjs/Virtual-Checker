@@ -782,7 +782,7 @@ function updateResponses() {
       var buttonGrid = document.createElement('div');
       buttonGrid.className = "button-grid inputs";
       buttonGrid.id = `response-${r.id}`;
-      buttonGrid.innerHTML = `<input type="text" autocomplete="off" class="small" id="response-id-input" value="${r.id}" disabled hidden />${(r.flagged == '1') ? `<button square data-unflag-response><i class="bi bi-flag-fill"></i></button>` : `<button square data-flag-response><i class="bi bi-flag"></i></button>`}<input type="text" autocomplete="off" class="small" id="response-segment-input" value="${r.segment}" disabled /><input type="text" autocomplete="off" class="small" id="response-question-input" value="${questions.find(q => q.id == r.question_id).number}" disabled /><input type="text" autocomplete="off" class="small" id="response-seat-code-input" value="${r.seatCode}" disabled /><input type="text" autocomplete="off" id="response-response-input" value="${r.response}" disabled />${(r.status === 'Incorrect') ? `<button square data-edit-reply><i class="bi bi-reply${(r.reason) ? '-fill' : ''}"></i></button>` : ''}<input type="text" autocomplete="off" class="smedium" id="response-timestamp-input" value="${date.getMonth() + 1}/${date.getDate()} ${hours % 12 || 12}:${minutes < 10 ? '0' + minutes : minutes} ${hours >= 12 ? 'PM' : 'AM'}" disabled /><button square id="mark-correct-button"${(r.status === 'Correct') ? ' disabled' : ''}><i class="bi bi-check-circle${(r.status === 'Correct') ? '-fill' : ''}"></i></button><button square id="mark-incorrect-button"${(r.status === 'Incorrect') ? ' disabled' : ''}><i class="bi bi-x-circle${(r.status === 'Incorrect') ? '-fill' : ''}"></i></button>`;
+      buttonGrid.innerHTML = `<input type="text" autocomplete="off" class="small" id="response-id-input" value="${r.id}" disabled hidden />${(r.flagged == '1') ? `<button square data-unflag-response><i class="bi bi-flag-fill"></i></button>` : `<button square data-flag-response><i class="bi bi-flag"></i></button>`}<input type="text" autocomplete="off" class="small" id="response-segment-input" value="${r.segment}" disabled /><input type="text" autocomplete="off" class="small" id="response-question-input" value="${questions.find(q => q.id == r.question_id).number}" disabled /><input type="text" autocomplete="off" class="small" id="response-seat-code-input" value="${r.seatCode}" disabled /><input type="text" autocomplete="off" id="response-response-input" value="${r.response}" disabled />${(r.status === 'Incorrect') ? `<button square data-edit-reason><i class="bi bi-reply${(r.reason) ? '-fill' : ''}"></i></button>` : ''}<input type="text" autocomplete="off" class="smedium" id="response-timestamp-input" value="${date.getMonth() + 1}/${date.getDate()} ${hours % 12 || 12}:${minutes < 10 ? '0' + minutes : minutes} ${hours >= 12 ? 'PM' : 'AM'}" disabled /><button square id="mark-correct-button"${(r.status === 'Correct') ? ' disabled' : ''}><i class="bi bi-check-circle${(r.status === 'Correct') ? '-fill' : ''}"></i></button><button square id="mark-incorrect-button"${(r.status === 'Incorrect') ? ' disabled' : ''}><i class="bi bi-x-circle${(r.status === 'Incorrect') ? '-fill' : ''}"></i></button>`;
       document.querySelector('.responses .section').appendChild(buttonGrid);
       if ((r.status === 'Invalid Format') || (r.status === 'Unknown, Recorded')) document.querySelector('.awaitingResponses .section').appendChild(buttonGrid);
       var trend = trendingResponses.find(t => (t.segment === r.segment) && (t.question_id === r.question_id) && (t.response === r.response) && (t.status === r.status));
@@ -808,6 +808,7 @@ function updateResponses() {
   document.querySelectorAll('#mark-incorrect-button').forEach(a => a.addEventListener('click', markIncorrect));
   document.querySelectorAll('[data-flag-response]').forEach(a => a.addEventListener('click', flagResponse));
   document.querySelectorAll('[data-unflag-response]').forEach(a => a.addEventListener('click', unflagResponse));
+  document.querySelectorAll('[data-edit-reason]').forEach(a => a.addEventListener('click', editReason));
   active = true;
 }
 
@@ -941,8 +942,8 @@ function editReason() {
     body: '<p>Edit your reason that this response is incorrect.</p>',
     input: {
       type: 'text',
-      placeholder: responses.find(r => r.id == this.parentElement.querySelector('#response-id-input').value).,
-      defaultValue: '',
+      placeholder: responses.find(r => r.id == this.parentElement.querySelector('#response-id-input').value).reason || '',
+      defaultValue: responses.find(r => r.id == this.parentElement.querySelector('#response-id-input').value).reason || '',
     },
     buttons: [
       {
@@ -954,35 +955,10 @@ function editReason() {
         text: 'Continue',
         class: 'submit-button',
         onclick: (inputValue) => {
-          editReasonConfirm(inputValue, this);
+          markIncorrectConfirm(inputValue, this);
         },
         close: true,
       },
     ],
   });
-}
-
-function editReasonConfirm(reason, e) {
-  if (!active) return;
-  fetch(domain + '/edit_reason', {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      question_id: questions.find(q => q.number == e.parentElement.querySelector('#response-question-input').value).id,
-      answer: e.parentElement.querySelector('#response-response-input').value,
-      reason: reason
-    }),
-  })
-    .then(q => q.json())
-    .then(() => {
-      ui.toast("Successfully updated status.", 3000, "success", "bi bi-check-lg");
-      init();
-    })
-    .catch((e) => {
-      console.error(e);
-      ui.view("api-fail");
-      if (document.querySelector('[data-polling]')) pollingOff();
-    });
 }
