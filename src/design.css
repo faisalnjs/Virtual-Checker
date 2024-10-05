@@ -131,6 +131,11 @@ select:disabled {
   pointer-events: auto;
 }
 
+input.disabled:disabled,
+select.disabled:disabled {
+  opacity: 0.25;
+}
+
 .drag {
   height: 2.25em;
   width: 2.25em;
