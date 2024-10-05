@@ -719,7 +719,7 @@ hidden,
 #history-feed button button {
   width: -webkit-fill-available;
   background-color: var(--background-color);
-  color: var(--accent-text-color);
+  color: var(--text-color);
   margin: 5px 0;
 }
 

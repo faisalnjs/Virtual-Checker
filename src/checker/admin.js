@@ -798,37 +798,49 @@ function updateResponses() {
     const date = new Date(r.timestamp);
     let hours = date.getHours();
     const minutes = date.getMinutes();
-
     const currentDate = new Date(r.timestamp);
     var timeTaken = "N/A";
-    const sameDayResponses = responses1.filter(a => {
-      const aDate = new Date(a.timestamp);
-      return a.seatCode === r.seatCode && 
-            aDate.getDate() === currentDate.getDate() &&
-            aDate.getMonth() === currentDate.getMonth() &&
-            aDate.getFullYear() === currentDate.getFullYear();
-    }).sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-    const lastResponseIndex = sameDayResponses.findIndex(a => new Date(a.timestamp) >= currentDate) - 1;
-    const lastResponse = lastResponseIndex >= 0 ? sameDayResponses[lastResponseIndex] : null;
+    var timeTakenToRevise = "N/A";
+    const sameSeatCodeResponses = responses1.filter(a => a.seatCode === r.seatCode).sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+    const sameQuestionResponses = sameSeatCodeResponses.filter(a => a.question_id === r.question_id);
+    const lastResponseIndex = sameSeatCodeResponses.findIndex(a => new Date(a.timestamp) >= currentDate) - 1;
+    const lastResponse = lastResponseIndex >= 0 ? sameSeatCodeResponses[lastResponseIndex] : null;
+    const lastSameQuestionResponseIndex = sameQuestionResponses.findIndex(a => new Date(a.timestamp) >= currentDate) - 1;
+    const lastSameQuestionResponse = lastSameQuestionResponseIndex >= 0 ? sameQuestionResponses[lastSameQuestionResponseIndex] : null;
     if (lastResponse) {
       const lastResponseDate = new Date(lastResponse.timestamp);
       const timeDifference = (currentDate - lastResponseDate) / 60000;
-      if (timeDifference >= 60) {
+      if (timeDifference >= 1440) {
+        const days = Math.floor(timeDifference / 1440);
+        const hours = Math.floor((timeDifference % 1440) / 60);
+        timeTaken = `${days}d ${hours > 0 ? `${hours}h` : ''}`.trim();
+      } else if (timeDifference >= 60) {
         const hours = Math.floor(timeDifference / 60);
         const minutes = Math.floor(timeDifference % 60);
-        if (minutes > 0) {
-          timeTaken = `${hours}h ${minutes}m`;
-        } else {
-          timeTaken = `${hours} hour${hours > 1 ? 's' : ''}`;
-        }
+        timeTaken = `${hours}h ${minutes > 0 ? `${minutes}m` : ''}`.trim();
       } else {
-        timeTaken = `${Math.floor(timeDifference)} min${timeDifference > 1 ? 's' : ''}`;
+        timeTaken = `${Math.floor(timeDifference)} min${Math.floor(timeDifference) === 1 ? '' : 's'}`;
+      }
+    }
+    if (lastSameQuestionResponse) {
+      const lastResponseDate = new Date(lastSameQuestionResponse.timestamp);
+      const timeDifference = (currentDate - lastResponseDate) / 60000;
+      if (timeDifference >= 1440) {
+        const days = Math.floor(timeDifference / 1440);
+        const hours = Math.floor((timeDifference % 1440) / 60);
+        timeTakenToRevise = `${days}d ${hours > 0 ? `${hours}h` : ''}`.trim();
+      } else if (timeDifference >= 60) {
+        const hours = Math.floor(timeDifference / 60);
+        const minutes = Math.floor(timeDifference % 60);
+        timeTakenToRevise = `${hours}h ${minutes > 0 ? `${minutes}m` : ''}`.trim();
+      } else {
+        timeTakenToRevise = `${Math.floor(timeDifference)} min${Math.floor(timeDifference) === 1 ? '' : 's'}`;
       }
     }
     var buttonGrid = document.createElement('div');
     buttonGrid.className = "button-grid inputs";
     buttonGrid.id = `response-${r.id}`;
-    buttonGrid.innerHTML = `<input type="text" autocomplete="off" class="small" id="response-id-input" value="${r.id}" disabled hidden />${(r.flagged == '1') ? `<button square data-unflag-response><i class="bi bi-flag-fill"></i></button>` : `<button square data-flag-response><i class="bi bi-flag"></i></button>`}<input type="text" autocomplete="off" class="small" id="response-segment-input" value="${r.segment}" disabled data-segment /><input type="text" autocomplete="off" class="small" id="response-question-input" value="${questions.find(q => q.id == r.question_id).number}" disabled data-question /><input type="text" autocomplete="off" class="small" id="response-seat-code-input" value="${r.seatCode}" disabled data-seat-code /><input type="text" autocomplete="off" class="small" id="response-time-taken-input" value="${timeTaken}" disabled data-time-taken /><input type="text" autocomplete="off" id="response-response-input" value="${responseString}" disabled />${(r.status === 'Incorrect') ? `<button square data-edit-reason><i class="bi bi-reply${(r.reason) ? '-fill' : ''}"></i></button>` : ''}<input type="text" autocomplete="off" class="smedium" id="response-timestamp-input" value="${date.getMonth() + 1}/${date.getDate()} ${hours % 12 || 12}:${minutes < 10 ? '0' + minutes : minutes} ${hours >= 12 ? 'PM' : 'AM'}" disabled /><button square id="mark-correct-button"${(r.status === 'Correct') ? ' disabled' : ''}><i class="bi bi-check-circle${(r.status === 'Correct') ? '-fill' : ''}"></i></button><button square id="mark-incorrect-button"${(r.status === 'Incorrect') ? ' disabled' : ''}><i class="bi bi-x-circle${(r.status === 'Incorrect') ? '-fill' : ''}"></i></button>`;
+    buttonGrid.innerHTML = `<input type="text" autocomplete="off" class="small" id="response-id-input" value="${r.id}" disabled hidden />${(r.flagged == '1') ? `<button square data-unflag-response><i class="bi bi-flag-fill"></i></button>` : `<button square data-flag-response><i class="bi bi-flag"></i></button>`}<input type="text" autocomplete="off" class="small" id="response-segment-input" value="${r.segment}" disabled data-segment /><input type="text" autocomplete="off" class="small" id="response-question-input" value="${questions.find(q => q.id == r.question_id).number}" disabled data-question /><input type="text" autocomplete="off" class="small" id="response-seat-code-input" value="${r.seatCode}" disabled data-seat-code /><input type="text" autocomplete="off" class="small" id="response-time-taken-input" value="${timeTaken}" disabled data-time-taken /><input type="text" autocomplete="off" class="small" id="response-time-taken-input" value="${timeTakenToRevise}" disabled data-time-taken /><input type="text" autocomplete="off" id="response-response-input" value="${responseString}" disabled />${(r.status === 'Incorrect') ? `<button square data-edit-reason><i class="bi bi-reply${(r.reason) ? '-fill' : ''}"></i></button>` : ''}<input type="text" autocomplete="off" class="smedium" id="response-timestamp-input" value="${date.getMonth() + 1}/${date.getDate()} ${hours % 12 || 12}:${minutes < 10 ? '0' + minutes : minutes} ${hours >= 12 ? 'PM' : 'AM'}" disabled /><button square id="mark-correct-button"${(r.status === 'Correct') ? ' disabled' : ''}><i class="bi bi-check-circle${(r.status === 'Correct') ? '-fill' : ''}"></i></button><button square id="mark-incorrect-button"${(r.status === 'Incorrect') ? ' disabled' : ''}><i class="bi bi-x-circle${(r.status === 'Incorrect') ? '-fill' : ''}"></i></button>`;
     document.querySelector('.responses .section').appendChild(buttonGrid);
     if ((r.status === 'Invalid Format') || (r.status === 'Unknown, Recorded')) document.querySelector('.awaitingResponses .section').appendChild(buttonGrid);
     var trend = trendingResponses.find(t => (t.segment === r.segment) && (t.question_id === r.question_id) && (t.response === responseString) && (t.status === r.status));
