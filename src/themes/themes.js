@@ -20,7 +20,9 @@ if (document.getElementById("theme-selector")) {
       selectedTheme = value;
       document.getElementById("theme-preview").setAttribute("data-theme", value);
     });
-    document.getElementById("theme-selector").append(button);
+    const themeSelector = document.getElementById("theme-selector");
+    const lastElement = themeSelector.lastElementChild;
+    if (lastElement) themeSelector.insertBefore(button, lastElement);
   });
 }
 
