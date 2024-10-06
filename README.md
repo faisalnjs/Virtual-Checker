@@ -24,6 +24,10 @@ Next generation AI-powered homework checking, cloud hosted ☁️🚀✅
 
 Vite will start a development server at `localhost:5173`
 
+### Credits
+
+- [khui0](https://github.com/khui0) - Base Virtual Clicker
+
 ## Build
 
 `npm run build`

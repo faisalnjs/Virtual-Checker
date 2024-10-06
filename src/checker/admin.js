@@ -15,6 +15,7 @@ let draggedItem = null;
 var formData = new FormData();
 var polling = false;
 var active = false;
+var timestamps = false;
 
 async function init() {
   formData = new FormData();
@@ -158,6 +159,7 @@ if (document.getElementById("course-period-input")) document.getElementById("cou
 if (document.querySelector('[data-select]')) document.querySelector('[data-select-multiple]').addEventListener("click", toggleSelecting);
 if (document.querySelector('[data-select]')) document.querySelector('[data-delete-multiple]').addEventListener("click", deleteMultiple);
 if (document.querySelector('[data-polling]')) document.querySelector('[data-polling]').addEventListener("click", togglePolling);
+if (document.querySelector('[data-timestamps]')) document.querySelector('[data-timestamps]').addEventListener("click", toggleTimestamps);
 
 function toggleSelecting() {
   if (!active) return;
@@ -211,6 +213,21 @@ function pollingOff() {
   polling = false;
   document.querySelector('[data-polling] .bi-skip-forward-circle-fill').style.display = "block";
   document.querySelector('[data-polling] .bi-stop-circle-fill').style.display = "none";
+}
+
+function toggleTimestamps() {
+  if (!active) return;
+  if (timestamps) {
+    timestamps = false;
+    document.querySelector('[data-timestamps] .bi-clock').style.display = "block";
+    document.querySelector('[data-timestamps] .bi-clock-fill').style.display = "none";
+    document.querySelector('#checker').classList.remove('timestamps');
+  } else {
+    timestamps = true;
+    document.querySelector('[data-timestamps] .bi-clock').style.display = "none";
+    document.querySelector('[data-timestamps] .bi-clock-fill').style.display = "block";
+    document.querySelector('#checker').classList.add('timestamps');
+  }
 }
 
 function updateSegments() {
@@ -755,7 +772,8 @@ function updateResponses() {
   document.querySelector('.trendingResponses .section').innerHTML = '';
   document.querySelector('.responses .section').innerHTML = '';
   var trendingResponses = [];
-  responses
+  var timedResponses = [];
+  var responses1 = responses
     .filter(r => String(r.seatCode)[0] == document.getElementById("sort-course-input").value)
     .filter(r => String(r.segment).startsWith(document.getElementById("sort-segment-input").value))
     .filter(r => questions.find(q => q.id == r.question_id).number.startsWith(document.getElementById("sort-question-input").value))
@@ -764,48 +782,112 @@ function updateResponses() {
       if (a.flagged && !b.flagged) return -1;
       if (!a.flagged && b.flagged) return 1;
       return b.id - a.id;
-    })
-    .forEach(r => {
-      if (r.response.includes('[')) {
-        var responseString = '';
-        var i = 0;
-        JSON.parse(r.response).forEach(a => {
-          responseString += a;
-          i++;
-          if (i < JSON.parse(r.response).length) responseString += ', ';
-        });
-        r.response = responseString;
-      }
-      var buttonGrid = document.createElement('div');
-      buttonGrid.className = "button-grid inputs";
-      buttonGrid.id = `response-${r.id}`;
-      buttonGrid.innerHTML = `<input type="text" autocomplete="off" class="small" id="response-id-input" value="${r.id}" disabled hidden />${(r.flagged == '1') ? `<button square data-unflag-response><i class="bi bi-flag-fill"></i></button>` : `<button square data-flag-response><i class="bi bi-flag"></i></button>`}<input type="text" autocomplete="off" class="small" id="response-segment-input" value="${r.segment}" disabled /><input type="text" autocomplete="off" class="small" id="response-question-input" value="${questions.find(q => q.id == r.question_id).number}" disabled /><input type="text" autocomplete="off" class="small" id="response-seat-code-input" value="${r.seatCode}" disabled /><input type="text" autocomplete="off" id="response-response-input" value="${r.response}" disabled />${((r.status === 'Incorrect') && r.reason) ? `<input type="text" autocomplete="off" id="response-response-input" value="${r.reason}" disabled />` : ''}<button square id="mark-correct-button"${(r.status === 'Correct') ? ' disabled' : ''}><i class="bi bi-check-circle${(r.status === 'Correct') ? '-fill' : ''}"></i></button><button square id="mark-incorrect-button"${(r.status === 'Incorrect') ? ' disabled' : ''}><i class="bi bi-x-circle${(r.status === 'Incorrect') ? '-fill' : ''}"></i></button>`;
-      document.querySelector('.responses .section').appendChild(buttonGrid);
-      if ((r.status === 'Invalid Format') || (r.status === 'Unknown, Recorded')) document.querySelector('.awaitingResponses .section').appendChild(buttonGrid);
-      var trend = trendingResponses.find(t => (t.segment === r.segment) && (t.question_id === r.question_id) && (t.response === r.response) && (t.status === r.status));
-      if (trend) {
-        trend.count++;
-      } else {
-        trendingResponses.push({
-          segment: r.segment,
-          question_id: r.question_id,
-          response: r.response,
-          status: r.status,
-          count: 1
-        });
-      }
     });
+  responses1.forEach(r => {
+    var responseString = r.response;
+    if (responseString.includes('[')) {
+      var parsedResponse = JSON.parse(r.response);
+      responseString = parsedResponse.join(', ');
+    }
+    const date = new Date(r.timestamp);
+    let hours = date.getHours();
+    const minutes = date.getMinutes();
+    const currentDate = new Date(r.timestamp);
+    var timeTaken = "N/A";
+    var timeTakenToRevise = "N/A";
+    const sameSeatCodeResponses = responses1.filter(a => a.seatCode === r.seatCode).sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+    const sameQuestionResponses = sameSeatCodeResponses.filter(a => a.question_id === r.question_id);
+    const lastResponseIndex = sameSeatCodeResponses.findIndex(a => new Date(a.timestamp) >= currentDate) - 1;
+    const lastResponse = lastResponseIndex >= 0 ? sameSeatCodeResponses[lastResponseIndex] : null;
+    const lastSameQuestionResponseIndex = sameQuestionResponses.findIndex(a => new Date(a.timestamp) >= currentDate) - 1;
+    const lastSameQuestionResponse = lastSameQuestionResponseIndex >= 0 ? sameQuestionResponses[lastSameQuestionResponseIndex] : null;
+    let timeDifference;
+    if (lastResponse) {
+      timeDifference = calculateTimeDifference(currentDate, lastResponse.timestamp);
+      timeTaken = formatTimeDifference(timeDifference);
+      timedResponses.push(timeDifference);
+    }
+    if (lastSameQuestionResponse) {
+      timeDifference = calculateTimeDifference(currentDate, lastSameQuestionResponse.timestamp);
+      timeTakenToRevise = formatTimeDifference(timeDifference);
+    }
+    var [daysPart, z, timePart] = r.timeTaken.split(' ');
+    const days = parseInt(daysPart, 10);
+    const [hours1, minutes1] = timePart.split(':').map(part => parseInt(part, 10));
+    const totalHours = days * 24 + hours1;
+    let result;
+    if (totalHours >= 24) {
+      result = `${days}d ${hours1}h`;
+    } else if (totalHours >= 1) {
+      result = `${hours1}h ${minutes1}m`;
+    } else {
+      result = `${minutes1}m`;
+    }
+    var buttonGrid = document.createElement('div');
+    buttonGrid.className = "button-grid inputs";
+    buttonGrid.id = `response-${r.id}`;
+    buttonGrid.innerHTML = `<input type="text" autocomplete="off" class="small" id="response-id-input" value="${r.id}" disabled hidden />${(r.flagged == '1') ? `<button square data-unflag-response><i class="bi bi-flag-fill"></i></button>` : `<button square data-flag-response><i class="bi bi-flag"></i></button>`}<input type="text" autocomplete="off" class="small" id="response-segment-input" value="${r.segment}" disabled data-segment /><input type="text" autocomplete="off" class="small" id="response-question-input" value="${questions.find(q => q.id == r.question_id).number}" disabled data-question /><input type="text" autocomplete="off" class="small" id="response-seat-code-input" value="${r.seatCode}" disabled data-seat-code /><input type="text" autocomplete="off" class="small" id="response-time-taken-input" value="${timeTaken}" disabled data-time-taken${(typeof timeDifference != 'undefined') ? ` time="${timeDifference}"` : ''} /><input type="text" autocomplete="off" class="small" id="response-time-taken-input" value="${timeTakenToRevise}" disabled data-time-taken${(typeof timeDifference != 'undefined') ? ` time="${timeDifference}"` : ''} /><input type="text" autocomplete="off" class="small" id="response-time-taken-input" value="${result}" disabled data-time-taken /><input type="text" autocomplete="off" id="response-response-input" value="${responseString}" disabled />${(r.status === 'Incorrect') ? `<button square data-edit-reason><i class="bi bi-reply${(r.reason) ? '-fill' : ''}"></i></button>` : ''}<input type="text" autocomplete="off" class="smedium" id="response-timestamp-input" value="${date.getMonth() + 1}/${date.getDate()} ${hours % 12 || 12}:${minutes < 10 ? '0' + minutes : minutes} ${hours >= 12 ? 'PM' : 'AM'}" disabled /><button square id="mark-correct-button"${(r.status === 'Correct') ? ' disabled' : ''}><i class="bi bi-check-circle${(r.status === 'Correct') ? '-fill' : ''}"></i></button><button square id="mark-incorrect-button"${(r.status === 'Incorrect') ? ' disabled' : ''}><i class="bi bi-x-circle${(r.status === 'Incorrect') ? '-fill' : ''}"></i></button>`;
+    document.querySelector('.responses .section').appendChild(buttonGrid);
+    if ((r.status === 'Invalid Format') || (r.status === 'Unknown, Recorded')) document.querySelector('.awaitingResponses .section').appendChild(buttonGrid);
+    var trend = trendingResponses.find(t => (t.segment === r.segment) && (t.question_id === r.question_id) && (t.response === responseString) && (t.status === r.status));
+    if (trend) {
+      trend.count++;
+    } else {
+      trendingResponses.push({
+        segment: r.segment,
+        question_id: r.question_id,
+        response: r.response,
+        status: r.status,
+        count: 1
+      });
+    }
+  });
+  const stdDev = calculateStandardDeviation(timedResponses);
+  // console.log("Standard Deviation:", stdDev);
+  document.querySelectorAll('[data-time-taken]').forEach(d => {
+    if (d.hasAttribute('time') && (Number(d.getAttribute('time')) > stdDev)) d.classList.add('disabled');
+  });
   trendingResponses.filter(t => t.count > 1).forEach(r => {
     var buttonGrid = document.createElement('div');
     buttonGrid.className = "button-grid inputs";
-    buttonGrid.innerHTML = `<input type="text" autocomplete="off" class="small" id="response-segment-input" value="${r.segment}" disabled /><input type="text" autocomplete="off" class="small" id="response-question-input" value="${questions.find(q => q.id == r.question_id).number}" disabled /><input type="text" autocomplete="off" id="response-response-input" value="${r.response}" disabled /><input type="text" autocomplete="off" class="small" id="response-count-input" value="${r.count}" disabled /><button square id="mark-correct-button"${(r.status === 'Correct') ? ' disabled' : ''}><i class="bi bi-check-circle${(r.status === 'Correct') ? '-fill' : ''}"></i></button><button square id="mark-incorrect-button"${(r.status === 'Incorrect') ? ' disabled' : ''}><i class="bi bi-x-circle${(r.status === 'Incorrect') ? '-fill' : ''}"></i></button>`;
+    buttonGrid.innerHTML = `<input type="text" autocomplete="off" class="small" id="response-segment-input" value="${r.segment}" disabled data-segment /><input type="text" autocomplete="off" class="small" id="response-question-input" value="${questions.find(q => q.id == r.question_id).number}" disabled data-question /><input type="text" autocomplete="off" id="response-response-input" value="${r.response}" disabled /><input type="text" autocomplete="off" class="small" id="response-count-input" value="${r.count}" disabled /><button square id="mark-correct-button"${(r.status === 'Correct') ? ' disabled' : ''}><i class="bi bi-check-circle${(r.status === 'Correct') ? '-fill' : ''}"></i></button><button square id="mark-incorrect-button"${(r.status === 'Incorrect') ? ' disabled' : ''}><i class="bi bi-x-circle${(r.status === 'Incorrect') ? '-fill' : ''}"></i></button>`;
     document.querySelector('.trendingResponses .section').appendChild(buttonGrid);
   });
   document.querySelectorAll('#mark-correct-button').forEach(a => a.addEventListener('click', markCorrect));
   document.querySelectorAll('#mark-incorrect-button').forEach(a => a.addEventListener('click', markIncorrect));
   document.querySelectorAll('[data-flag-response]').forEach(a => a.addEventListener('click', flagResponse));
   document.querySelectorAll('[data-unflag-response]').forEach(a => a.addEventListener('click', unflagResponse));
+  document.querySelectorAll('[data-edit-reason]').forEach(a => a.addEventListener('click', editReason));
   active = true;
+}
+
+function calculateTimeDifference(currentDate, previousTimestamp) {
+  const lastResponseDate = new Date(previousTimestamp);
+  return (currentDate - lastResponseDate) / 60000;
+}
+
+function formatTimeDifference(timeDifference) {
+  if (timeDifference >= 1440) {
+    const days = Math.floor(timeDifference / 1440);
+    const hours = Math.floor((timeDifference % 1440) / 60);
+    return `${days}d ${hours > 0 ? `${hours}h` : ''}`.trim();
+  } else if (timeDifference >= 60) {
+    const hours = Math.floor(timeDifference / 60);
+    const minutes = Math.floor(timeDifference % 60);
+    return `${hours}h ${minutes > 0 ? `${minutes}m` : ''}`.trim();
+  } else {
+    return `${Math.floor(timeDifference)} min${Math.floor(timeDifference) === 1 ? '' : 's'}`;
+  }
+}
+
+function calculateStandardDeviation(arr) {
+  if (arr.length === 0) return 0;
+  const mean = arr.reduce((sum, value) => sum + value, 0) / arr.length;
+  const variance = arr.reduce((sum, value) => {
+      const diff = value - mean;
+      return sum + diff * diff;
+  }, 0) / arr.length;
+  return Math.sqrt(variance);
 }
 
 function flagResponse() {
@@ -863,7 +945,7 @@ function markCorrect() {
     },
     body: JSON.stringify({
       question_id: questions.find(q => q.number == this.parentElement.querySelector('#response-question-input').value).id,
-      answer: this.parentElement.querySelector('#response-response-input').value
+      answer: responses.find(q => q.id == this.parentElement.querySelector('#response-id-input').value).response
     }),
   })
     .then(q => q.json())
@@ -915,7 +997,7 @@ function markIncorrectConfirm(reason, e) {
     },
     body: JSON.stringify({
       question_id: questions.find(q => q.number == e.parentElement.querySelector('#response-question-input').value).id,
-      answer: e.parentElement.querySelector('#response-response-input').value,
+      answer: responses.find(q => q.id == e.parentElement.querySelector('#response-id-input').value).response,
       reason: reason
     }),
   })
@@ -929,4 +1011,32 @@ function markIncorrectConfirm(reason, e) {
       ui.view("api-fail");
       if (document.querySelector('[data-polling]')) pollingOff();
     });
+}
+
+function editReason() {
+  if (!active) return;
+  ui.modal({
+    title: 'Edit Reason',
+    body: '<p>Edit your reason that this response is incorrect.</p>',
+    input: {
+      type: 'text',
+      placeholder: responses.find(r => r.id == this.parentElement.querySelector('#response-id-input').value).reason || '',
+      defaultValue: responses.find(r => r.id == this.parentElement.querySelector('#response-id-input').value).reason || '',
+    },
+    buttons: [
+      {
+        text: 'Cancel',
+        class: 'cancel-button',
+        close: true,
+      },
+      {
+        text: 'Continue',
+        class: 'submit-button',
+        onclick: (inputValue) => {
+          markIncorrectConfirm(inputValue, this);
+        },
+        close: true,
+      },
+    ],
+  });
 }

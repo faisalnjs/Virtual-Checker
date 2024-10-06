@@ -131,6 +131,11 @@ select:disabled {
   pointer-events: auto;
 }
 
+input.disabled:disabled,
+select.disabled:disabled {
+  opacity: 0.25;
+}
+
 .drag {
   height: 2.25em;
   width: 2.25em;
@@ -409,6 +414,7 @@ div.ML__keyboard {
   }
 
   .small,
+  .smedium,
   .medium,
   square {
     max-width: unset !important;
@@ -445,6 +451,10 @@ div.ML__keyboard {
 
 .small {
   max-width: 75px;
+}
+
+.smedium {
+  max-width: 125px;
 }
 
 .medium {
@@ -644,7 +654,8 @@ body:has(.selecting) #controls-container [data-delete-multiple] {
   display: none;
 }
 
-hidden {
+hidden,
+[hidden] {
   display: none;
 }
 
@@ -713,7 +724,7 @@ hidden {
 #history-feed button button {
   width: -webkit-fill-available;
   background-color: var(--background-color);
-  color: var(--accent-text-color);
+  color: var(--text-color);
   margin: 5px 0;
 }
 
@@ -728,4 +739,16 @@ hidden {
 
 #history-feed button button i {
   font-size: 12px;
+}
+
+#checker:not(.timestamps) [data-time-taken] {
+  display: none;
+}
+
+#checker.timestamps [data-unflag-response],
+#checker.timestamps [data-flag-response],
+#checker.timestamps [data-segment],
+#checker.timestamps [data-question],
+#checker.timestamps .inputs > label[square] {
+  display: none;
 }
