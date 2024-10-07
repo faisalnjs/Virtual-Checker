@@ -384,8 +384,10 @@ async function updateQuestion() {
   document.querySelector('.hiddenOnLoad').classList.remove('show');
   document.querySelector('[data-question-title]').setAttribute('hidden', '');
   if (!question) return;
-  document.querySelector('[data-question-title]').innerText = question.question;
-  document.querySelector('[data-question-title]').removeAttribute('hidden');
+  if ((question.question.length > 0) && (question.question != ' ')) {
+    document.querySelector('[data-question-title]').innerText = question.question;
+    document.querySelector('[data-question-title]').removeAttribute('hidden');
+  }
   JSON.parse(question.images).forEach(image => {
     var i = document.createElement('img');
     i.src = image;
