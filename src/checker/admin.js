@@ -142,7 +142,6 @@ async function init() {
       console.error(e);
       ui.view("api-fail");
       if (document.querySelector('[data-polling]')) pollingOff();
-      polling = false;
     });
   if (document.getElementById("course-period-input")) {
     document.querySelector('.course-reorder').style.display = 'none';
@@ -235,6 +234,63 @@ function updateSegments() {
   const course = courses.find(c => c.id == document.getElementById("course-period-input").value);
   document.getElementById("course-input").value = course.name;
   var c = segments.filter(s => s.course == course.id);
+  if (course.syllabus) {
+    if (document.querySelector('[data-syllabus-upload]')) document.querySelector('[data-syllabus-upload]').setAttribute('hidden', '');
+    if (document.querySelector('[data-syllabus-remove]')) document.querySelector('[data-syllabus-remove]').parentElement.removeAttribute('hidden');
+    if (document.querySelector('[data-syllabus-download]')) document.querySelector('[data-syllabus-download]').addEventListener("click", () => {
+      window.open(course.syllabus, '_blank');
+    });
+    if (document.querySelector('[data-syllabus-remove]')) document.querySelector('[data-syllabus-remove]').addEventListener("click", () => {
+      fetch(domain + '/syllabus', {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          course_id: course.id
+        }),
+      })
+        .then(s => s.json())
+        .then(() => {
+          init();
+        })
+        .catch((e) => {
+          console.error(e);
+          ui.view("api-fail");
+          if (document.querySelector('[data-polling]')) pollingOff();
+        });
+    });
+  } else {
+    if (document.querySelector('[data-syllabus-remove]')) document.querySelector('[data-syllabus-remove]').parentElement.setAttribute('hidden', '');
+    if (document.querySelector('[data-syllabus-upload]')) document.querySelector('[data-syllabus-upload]').removeAttribute('hidden');
+    if (document.querySelector('[data-syllabus-upload]')) {
+      document.querySelector('[data-syllabus-upload]').addEventListener("click", () => {
+        const url = '/admin/upload.html?syllabus=' + course.id;
+        const width = 600;
+        const height = 150;
+        const left = (window.screen.width / 2) - (width / 2);
+        const top = (window.screen.height / 2) - (height / 2);
+        const windowFeatures = `width=${width},height=${height},resizable=no,scrollbars=no,status=yes,left=${left},top=${top}`;
+        const newWindow = window.open(url, '_blank', windowFeatures);
+        let uploadSSuccessful = false;
+        window.addEventListener('message', (event) => {
+          if (event.origin !== (window.location.protocol + '//' + window.location.hostname + (window.location.port ? ':' + window.location.port : ''))) return;
+          if (event.data === 'uploadSuccess') uploadSSuccessful = true;
+        }, false);
+        const checkWindowClosed = setInterval(function () {
+          if (newWindow && newWindow.closed) {
+            clearInterval(checkWindowClosed);
+            if (uploadSSuccessful) {
+              ui.modeless(`<i class="bi bi-cloud-upload"></i>`, "Uploaded");
+            } else {
+              ui.modeless(`<i class="bi bi-exclamation-triangle"></i>`, "Upload Cancelled");
+            }
+            init();
+          }
+        }, 1000);
+      });
+    }
+  }
   if (c.length > 0) {
     document.querySelector('.segments .section').innerHTML = '';
     c.forEach(s => {
@@ -718,7 +774,7 @@ async function renderPond() {
   const newWindow = window.open(url, '_blank', windowFeatures);
   let uploadSuccessful = false;
   window.addEventListener('message', (event) => {
-    if (event.origin !== (window.location.protocol + '//' + window.location.hostname + (window.location.port ? ':' + window.location.port : ''))) return;  
+    if (event.origin !== (window.location.protocol + '//' + window.location.hostname + (window.location.port ? ':' + window.location.port : ''))) return;
     if (event.data === 'uploadSuccess') uploadSuccessful = true;
   }, false);
   const checkWindowClosed = setInterval(function () {
@@ -884,8 +940,8 @@ function calculateStandardDeviation(arr) {
   if (arr.length === 0) return 0;
   const mean = arr.reduce((sum, value) => sum + value, 0) / arr.length;
   const variance = arr.reduce((sum, value) => {
-      const diff = value - mean;
-      return sum + diff * diff;
+    const diff = value - mean;
+    return sum + diff * diff;
   }, 0) / arr.length;
   return Math.sqrt(variance);
 }
