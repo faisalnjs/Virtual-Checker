@@ -320,6 +320,16 @@ async function updateCode() {
       const coursesData = await coursesResponse.json();
       const course = coursesData.find(c => c.period === Number(code.slice(0, 1)));
       if (document.getElementById("course-input")) document.getElementById("course-input").value = course.name || "Unknown Course";
+      if (document.querySelector('[data-syllabus-download]')) {
+        if (course.syllabus) {
+          document.querySelector('[data-syllabus-download]').removeAttribute('hidden', '');
+          document.querySelector('[data-syllabus-download]').addEventListener('click', () => {
+            window.open(course.syllabus, '_blank');
+          });
+        } else {
+          document.querySelector('[data-syllabus-download]').setAttribute('hidden', '');
+        }
+      }
       const segmentsResponse = await fetch(`${domain}/segments?course=${course.id}`, {
         method: "GET",
         headers: { "Content-Type": "application/json" },
