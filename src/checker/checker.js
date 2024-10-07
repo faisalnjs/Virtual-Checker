@@ -382,7 +382,10 @@ async function updateQuestion() {
   prevQuestionButtons.forEach(btn => btn.disabled = true);
   document.getElementById("submit-button").disabled = true;
   document.querySelector('.hiddenOnLoad').classList.remove('show');
+  document.querySelector('[data-question-title]').setAttribute('hidden', '');
   if (!question) return;
+  document.querySelector('[data-question-title]').innerText = question.question;
+  document.querySelector('[data-question-title]').removeAttribute('hidden');
   JSON.parse(question.images).forEach(image => {
     var i = document.createElement('img');
     i.src = image;
@@ -588,7 +591,6 @@ function updateHistory() {
         .then(r => r.json())
         .then(r => ({ ...r, item }))
         .catch(e => {
-          console.error(e);
           return { error: e, item };
         })
     );
@@ -597,7 +599,6 @@ function updateHistory() {
       results.forEach(({ item, ...r }) => {
         if (r.error) {
           console.log(r.error);
-          ui.view("api-fail");
           return;
         }
         const button = document.createElement("button");

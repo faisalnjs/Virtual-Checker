@@ -752,3 +752,8 @@ hidden,
 #checker.timestamps .inputs > label[square] {
   display: none;
 }
+
+[data-question-title] {
+  font-size: 20px;
+  margin-top: 10px;
+}
