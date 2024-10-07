@@ -67,6 +67,7 @@ div.spacer {
   font-size: 1.25rem;
   font-weight: 700;
   text-decoration: none;
+  line-height: 1.5;
 }
 
 #header .info {
