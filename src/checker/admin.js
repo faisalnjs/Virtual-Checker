@@ -869,6 +869,7 @@ function updateResponses() {
     }
     var [daysPart, z, timePart] = r.timeTaken.split(' ');
     const days = parseInt(daysPart, 10);
+    timePart = timePart || daysPart;
     const [hours1, minutes1] = timePart.split(':').map(part => parseInt(part, 10));
     const totalHours = days * 24 + hours1;
     let result;
