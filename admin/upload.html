@@ -23,18 +23,20 @@
         const urlParams = new URLSearchParams(window.location.search);
         const question = urlParams.get('question');
         const syllabus = urlParams.get('syllabus');
-        if (!question && !syllabus) window.location.href = '/admin';
+        const segment = urlParams.get('segment');
+        if (!question && !syllabus && !segment) window.location.href = '/admin';
         const inputElement = document.querySelector('input[type="file"]');
         const domain = ((window.location.hostname.search('check') != -1) || (window.location.hostname.search('127') != -1)) ? 'https://api.check.vssfalcons.com' : 'http://localhost:5000';
         FilePond.registerPlugin(FilePondPluginFileValidateType);
         const pond = FilePond.create(inputElement, {
-            server: domain + ((question) ? '/upload' : '/syllabus'),
+            server: domain + ((question) ? '/upload' : (segment) ? '/speedModeUpload' : '/syllabus'),
             credits: false,
             allowMultiple: (question) ? true : false,
-            acceptedFileTypes: (question) ? ['image/*'] : ['image/*', 'application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
+            acceptedFileTypes: (question || segment) ? ['image/*'] : ['image/*', 'application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
         });
         pond.on('initfile', (item) => {
             if (question) item.setMetadata('question', question);
+            if (segment) item.setMetadata('segment', segment);
             if (syllabus) item.setMetadata('course', syllabus);
         });
         pond.on('processfile', (error, file) => {
