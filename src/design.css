@@ -618,6 +618,10 @@ body:has(.selecting) #controls-container .bi-x {
   display: block;
 }
 
+body:has(.selecting) #controls-container button:has(.bi-lightning-charge) {
+  display: none;
+}
+
 body:has(.selecting) #controls-container [data-delete-multiple] {
   display: block;
 }

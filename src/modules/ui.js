@@ -260,6 +260,7 @@ export function view(path) {
   }
   const pages = path.split("/");
   const target = document.querySelector(`[data-modal-page="${pages[pages.length - 1]}"]`);
+  if (!target) return;
   const title = target.getAttribute("data-page-title") || path;
   for (let i = 0; i < pages.length; i++) {
     const query = pages

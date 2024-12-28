@@ -1,8 +1,5 @@
 import * as ui from "/src/modules/ui.js";
 
-import { convertLatexToAsciiMath, convertLatexToMarkup, renderMathInElement } from "mathlive";
-``;
-
 const domain = ((window.location.hostname.search('check') != -1) || (window.location.hostname.search('127') != -1)) ? 'https://api.check.vssfalcons.com' : 'http://localhost:5000';
 if (window.location.pathname.split('?')[0].endsWith('/admin')) window.location.pathname = '/admin/';
 
@@ -16,6 +13,7 @@ var formData = new FormData();
 var polling = false;
 var active = false;
 var timestamps = false;
+var speed = false;
 
 async function init() {
   formData = new FormData();
@@ -79,6 +77,7 @@ async function init() {
         .then(async c => {
           segments = c;
           if (document.getElementById("course-period-input")) updateSegments();
+          if (document.getElementById("speed-mode-segments")) updateSpeedModeSegments();
           await fetch(domain + '/questions', {
             method: "GET",
             headers: {
@@ -159,6 +158,8 @@ if (document.querySelector('[data-select]')) document.querySelector('[data-selec
 if (document.querySelector('[data-select]')) document.querySelector('[data-delete-multiple]').addEventListener("click", deleteMultiple);
 if (document.querySelector('[data-polling]')) document.querySelector('[data-polling]').addEventListener("click", togglePolling);
 if (document.querySelector('[data-timestamps]')) document.querySelector('[data-timestamps]').addEventListener("click", toggleTimestamps);
+if (document.querySelector('[data-speed]')) document.querySelector('[data-speed]').addEventListener("click", toggleSpeedMode);
+if (document.getElementById('enable-speed-mode-button')) document.getElementById('enable-speed-mode-button').addEventListener("click", enableSpeedMode);
 
 function toggleSelecting() {
   if (!active) return;
@@ -1096,4 +1097,72 @@ function editReason() {
       },
     ],
   });
+}
+
+function toggleSpeedMode() {
+  if (!active) return;
+  if (!speed) return ui.view("speed");
+  speed = false;
+  document.querySelector('[data-speed] .bi-lightning-charge').style.display = "block";
+  document.querySelector('[data-speed] .bi-lightning-charge-fill').style.display = "none";
+}
+
+function updateSpeedModeSegments() {
+  document.getElementById("speed-mode-segments").innerHTML = '';
+  segments.forEach(segment => {
+    var option = document.createElement('option');
+    option.value = segment.number;
+    option.innerHTML = segment.name;
+    document.getElementById("speed-mode-segments").appendChild(option);
+  });
+}
+
+function enableSpeedMode() {
+  document.querySelector(`[data-modal-page="speed"]`).removeAttribute('open');
+  document.querySelector(`[data-modal-page="speed"]`).removeAttribute('data-open');
+  document.querySelector(`[data-modal-page="speed"]`).removeAttribute('style');
+  speed = true;
+  document.querySelector('[data-speed] .bi-lightning-charge').style.display = "none";
+  document.querySelector('[data-speed] .bi-lightning-charge-fill').style.display = "block";
+  var segmentId = document.getElementById("speed-mode-segments").value;
+  renderSpeedPond(segmentId);
+}
+
+function disableSpeedMode() {
+  document.querySelector(`[data-modal-page="speed"]`).removeAttribute('open');
+  document.querySelector(`[data-modal-page="speed"]`).removeAttribute('data-open');
+  document.querySelector(`[data-modal-page="speed"]`).removeAttribute('style');
+  speed = false;
+  document.querySelector('[data-speed] .bi-lightning-charge').style.display = "block";
+  document.querySelector('[data-speed] .bi-lightning-charge-fill').style.display = "none";
+  ui.modeless(`<i class="bi bi-check2-circle"></i>`, "Speed Mode Ended");
+  window.location.reload();
+}
+
+async function renderSpeedPond(segment) {
+  if (!active) return;
+  const url = '/admin/upload.html?segment=' + segment;
+  const width = 600;
+  const height = 150;
+  const left = (window.screen.width / 2) - (width / 2);
+  const top = (window.screen.height / 2) - (height / 2);
+  const windowFeatures = `width=${width},height=${height},resizable=no,scrollbars=no,status=yes,left=${left},top=${top}`;
+  const newWindow = window.open(url, '_blank', windowFeatures);
+  let uploadSuccessful = false;
+  window.addEventListener('message', (event) => {
+    if (event.origin !== (window.location.protocol + '//' + window.location.hostname + (window.location.port ? ':' + window.location.port : ''))) return;
+    if (event.data === 'uploadSuccess') uploadSuccessful = true;
+  }, false);
+  const checkWindowClosed = setInterval(function () {
+    if (newWindow && newWindow.closed) {
+      clearInterval(checkWindowClosed);
+      if (uploadSuccessful) {
+        ui.modeless(`<i class="bi bi-cloud-upload"></i>`, "Uploaded");
+        renderSpeedPond(segment);
+      } else {
+        disableSpeedMode();
+      }
+      init();
+    }
+  }, 1000);
 }
