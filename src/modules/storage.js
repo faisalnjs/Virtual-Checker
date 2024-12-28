@@ -41,9 +41,6 @@ class Storage {
     const cookieData = getCookie(this.id);
     if (cookieData) {
       localStorage.setItem(this.id, cookieData);
-      console.log(`Synchronized localStorage with cookie data: ${cookieData}`);
-    } else {
-      console.log(`No cookie data found for id: ${this.id}`);
     }
   }
 }
@@ -55,9 +52,7 @@ function setCookie(name, value, days) {
     date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
     expires = "; expires=" + date.toUTCString();
   }
-  const domain = ".vssfalcons.com";
-  document.cookie = name + "=" + (value || "") + expires + "; path=/; domain=" + domain;
-  console.log(`Set cookie: ${name}=${value}; domain=${domain}`);
+  document.cookie = `${name}=${(value || "")}${expires}; path=/; domain=.${document.domain}`;
 }
 
 function getCookie(name) {
@@ -71,4 +66,4 @@ function getCookie(name) {
   return null;
 }
 
-export default new Storage("virtual-checker-2");
+export default new Storage("virtual-falcons");

@@ -26,7 +26,7 @@
         const segment = urlParams.get('segment');
         if (!question && !syllabus && !segment) window.location.href = '/admin';
         const inputElement = document.querySelector('input[type="file"]');
-        const domain = ((window.location.hostname.search('check') != -1) || (window.location.hostname.search('127') != -1)) ? 'https://api.check.vssfalcons.com' : 'http://localhost:5000';
+        const domain = ((window.location.hostname.search('check') != -1) || (window.location.hostname.search('127') != -1)) ? 'https://api.check.vssfalcons.com' : `http://${document.domain}:5000`;
         FilePond.registerPlugin(FilePondPluginFileValidateType);
         const pond = FilePond.create(inputElement, {
             server: domain + ((question) ? '/upload' : (segment) ? '/speedModeUpload' : '/syllabus'),
