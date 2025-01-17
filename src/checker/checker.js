@@ -541,10 +541,11 @@ document.getElementById("history-last").addEventListener("click", () => {
 function getHistoryDates() {
   const data = (storage.get("history") || []).map((entry) => {
     const day = entry.timestamp;
-    return { ...entry, day: day };
+    const date = new Date(entry.timestamp).toISOString().split("T")[0];
+    return { ...entry, day: day, date: date };
   });
   const unique = data
-    .map((entry) => entry.day)
+    .map((entry) => entry.date)
     .filter((value, i, array) => {
       return array.indexOf(value) === i;
     })
@@ -556,9 +557,10 @@ function getHistoryDates() {
 function filterHistory() {
   const data = (storage.get("history") || []).map((entry) => {
     const day = entry.timestamp;
-    return { ...entry, day: day };
+    const date = new Date(entry.timestamp).toISOString().split("T")[0];
+    return { ...entry, day: day, date: date };
   });
-  return data.filter((entry) => entry.day === getHistoryDates()[historyIndex]);
+  return data.filter((entry) => entry.date === getHistoryDates()[historyIndex]);
 }
 
 // Update history feed
