@@ -540,7 +540,7 @@ document.getElementById("history-last").addEventListener("click", () => {
 // Count number of unique days
 function getHistoryDates() {
   const data = (storage.get("history") || []).map((entry) => {
-    const day = new Date(entry.timestamp).toISOString().split("T")[0];
+    const day = entry.timestamp;
     return { ...entry, day: day };
   });
   const unique = data
@@ -555,7 +555,7 @@ function getHistoryDates() {
 // Filter history by date
 function filterHistory() {
   const data = (storage.get("history") || []).map((entry) => {
-    const day = new Date(entry.timestamp).toISOString().split("T")[0];
+    const day = entry.timestamp;
     return { ...entry, day: day };
   });
   return data.filter((entry) => entry.day === getHistoryDates()[historyIndex]);
@@ -571,7 +571,7 @@ function updateHistory() {
       year: "numeric",
       month: "long",
       day: "numeric",
-    }).format(new Date(history[0]?.day));
+    }).format(history[0]?.day);
 
   // Update history navigation
   document.getElementById("history-first").disabled = historyIndex === getHistoryDates().length - 1;
