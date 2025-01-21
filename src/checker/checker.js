@@ -119,24 +119,7 @@ if (document.getElementById("course-input")) {
       })();
     if (storage.get("code")) {
       if (segment && question && answer) {
-        // Check if code matches current period
-        const matchesCurrentPeriod =
-          parseInt(storage.get("code").slice(0, 1)) === getPeriod() + 1 || true;
-        if (!matchesCurrentPeriod) {
-          ui.prompt("Are you sure you want to submit?", "Your seat code isn't for this period!", [
-            {
-              text: "Cancel",
-              close: true,
-            },
-            {
-              text: "Submit Anyways",
-              close: true,
-              onclick: submit,
-            },
-          ]);
-        } else {
           submit();
-        }
       }
       if (!answer) {
         if (mode === "input") {
