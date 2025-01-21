@@ -16,7 +16,6 @@ export function getPeriod(date) {
 // Converts hh:mm to milliseconds
 export function timeToMs(time) {
   const now = new Date();
-  const hours = time.split(":")[0];
-  const minutes = time.split(":")[1];
+  const [hours, minutes] = time.split(":").map(Number);
   return new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes).getTime();
 }
