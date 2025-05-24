@@ -1,6 +1,11 @@
 import schedule from "./schedule.json";
+import extendedSchedule from "./extendedSchedule.json";
 
 const timestamps = schedule.map((period) => {
+  return [timeToMs(period[0]), timeToMs(period[1])];
+});
+
+const extendedTimestamps = extendedSchedule.map((period) => {
   return [timeToMs(period[0]), timeToMs(period[1])];
 });
 
@@ -8,6 +13,14 @@ const timestamps = schedule.map((period) => {
 export function getPeriod(date) {
   date = date || Date.now();
   const period = timestamps.findIndex((periods) => {
+    return date >= periods[0] && date < periods[1];
+  });
+  return period;
+}
+
+export function getExtendedPeriod(date) {
+  date = date || Date.now();
+  const period = extendedTimestamps.findIndex((periods) => {
     return date >= periods[0] && date < periods[1];
   });
   return period;

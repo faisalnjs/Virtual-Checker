@@ -66,4 +66,6 @@ function getCookie(name) {
   return null;
 }
 
-export default new Storage("virtual-falcons");
+const storageInstance = new Storage("virtual-falcons");
+
+export default storageInstance;

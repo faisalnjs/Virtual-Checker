@@ -21,6 +21,35 @@ dialog:modal {
   max-height: calc(100vh - 2rem);
 }
 
+dialog img {
+  box-shadow: inset 0 0 0px 1000px var(--accent-color);
+  border-radius: 0.5rem;
+}
+
+dialog #version-string {
+  margin: -55px auto 20px auto;
+  width: fit-content;
+  z-index: 1;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+dialog #version-string p {
+  font-size: 25px;
+  font-weight: 600;
+  background: linear-gradient(0, white 50%, transparent);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+dialog #version-string code {
+  font-size: 15px;
+  color: var(--text-color) !important;
+}
+
 div[data-modal-page] {
   display: flex;
   flex-direction: column;

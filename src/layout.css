@@ -123,10 +123,14 @@ div.spacer {
   border-radius: 0.5rem;
 }
 
-[data-answer-mode="input"] {
+[data-answer-mode] {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
+}
+
+[data-answer-mode="input"] {
+  flex-direction: column-reverse !important;
 }
 
 #answer-textarea-container {
@@ -175,6 +179,38 @@ div.spacer {
 
 [data-answer-mode="math"] > math-field {
   width: 100%;
+}
+
+[data-answer-mode="frq"] .frq-parts {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+[data-answer-mode="frq"] .frq-parts .part {
+  display: flex;
+  gap: .25rem;
+  width: -webkit-fill-available;
+  position: relative;
+}
+
+[data-answer-mode="frq"] .frq-parts .part .prefix {
+  background-color: var(--accent-color);
+  color: var(--accent-text-color);
+  position: absolute;
+  height: -webkit-fill-available;
+  margin: 5px;
+  padding: 2.5px 5px;
+  border-radius: 5px;
+}
+
+[data-answer-mode="frq"] .frq-parts .part input {
+  width: -webkit-fill-available;
+  padding-left: 35px;
+}
+
+[data-answer-mode="frq"] .frq-parts .part button {
+  width: fit-content !important;
 }
 
 #insert-row {

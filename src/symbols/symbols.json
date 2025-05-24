@@ -30,5 +30,10 @@
   "infinity": "∞",
   "radical": "√",
   "root": "√",
-  "approx": "≈"
+  "approx": "≈",
+  "alpha": "α",
+  "beta": "β",
+  "mu": "μ",
+  "lambda": "λ",
+  "gamma": "γ"
 }
