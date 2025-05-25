@@ -274,7 +274,7 @@ try {
       .then(r => {
         window.scroll(0, 0);
         if (typeof r.correct != 'undefined') {
-          ui.modeless(`<i class="bi bi-${(r.correct) ? 'check' : 'x'}-lg"></i>`, (r.correct) ? 'Correct' : 'Try Again');
+          ui.modeless(`<i class="bi bi-${(r.correct) ? 'check' : 'x'}-lg"></i>`, (r.correct) ? 'Correct' : 'Try Again', r.reason || null);
           qA.push({ "segment": segment, "question": question, "status": (r.correct) ? 'Correct' : 'In Progress' });
         } else if (typeof r.error != 'undefined') {
           ui.modeless(`<i class="bi bi-exclamation-triangle"></i>`, 'Error');
