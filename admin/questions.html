@@ -160,15 +160,17 @@
   </dialog>
   <!-- Settings -->
   <dialog data-modal-page="settings" data-page-title="Settings">
-    <p id="version-string"><span class="version"></span></p>
+    <img src="banner-transparent.png" alt="Virtual Checker Banner">
+    <span class="version" id="version-string"></span>
     <!-- <button data-modal-view="settings/code">Seat Code</button> -->
     <button data-modal-view="settings/theme">Theme</button>
     <button data-modal-view="settings/keybinds">Keyboard Shortcuts</button>
     <button data-modal-view="settings/reset">Reset</button>
+    <button data-modal-view="settings/credits">Credits</button>
     <!-- <div class="row center">
-        <a href="https://dangoweb.com/?from=virtual-checker" class="icon"><i class="bi bi-cloud-fill"></i></a>
-        <a href="https://github.com/faisalnjs/virtual-checker" class="icon"><i class="bi bi-github"></i></a>
-      </div> -->
+      <a href="https://github.com/faisalnjs/virtual-checker" class="icon"><i class="bi bi-github"></i></a>
+      <a href="https://dangoweb.com/?from=virtual-checker" class="icon"><i class="bi bi-cloud-fill"></i></a>
+    </div> -->
     <div data-modal-page="code" data-page-title="Seat Code">
       <input type="text" inputmode="numeric" placeholder="000" maxlength="3" id="code-input" />
       <button data-modal-view="settings/code/help">Need help?</button>
@@ -274,8 +276,15 @@
       <p><kbd>Shift</kbd> + <kbd>R</kbd> Reset theme</p>
     </div>
     <div data-modal-page="reset" data-page-title="Reset">
-      <button data-reset="history">Clear Responses</button>
+      <button data-reset="history">Clear History</button>
       <button data-reset="all">Reset All Settings</button>
+      <button data-reset="cache">Force Reset Cache</button>
+      <button onclick="window.open('/resetcookies')">How To Reset Cookies</button>
+    </div>
+    <div data-modal-page="credits" data-page-title="Credits">
+      <img src="banner-transparent.png" alt="Virtual Checker Banner">
+      <p><a href="https://github.com/khui0">khui0</a> - Base Virtual Clicker commits before 5/21/2024</p>
+      <p><a href="https://github.com/faisalnjs">faisalnjs</a> - Virtual Checker, base Virtual Clicker commits after 5/21/2024</p>
     </div>
   </dialog>
   <dialog data-modal-page="clear-data-fix" data-page-title="Settings May Not Save">
