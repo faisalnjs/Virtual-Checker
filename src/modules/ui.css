@@ -30,7 +30,9 @@ dialog #version-string {
   margin: -55px auto 20px auto;
   width: fit-content;
   z-index: 1;
-  background: transparent;
+  background: var(--background-color);
+  padding: 0 7.5px;
+  border-radius: 5px;
   display: flex;
   align-items: center;
   gap: 7px;
@@ -39,7 +41,7 @@ dialog #version-string {
 dialog #version-string p {
   font-size: 25px;
   font-weight: 600;
-  background: linear-gradient(0, white 50%, transparent);
+  background: linear-gradient(0, var(--text-color) 50%, transparent);
   background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;

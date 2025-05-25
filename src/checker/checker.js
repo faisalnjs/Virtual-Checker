@@ -103,7 +103,7 @@ try {
     if (!storage.get("questionsAnswered")) storage.set("questionsAnswered", []);
   };
 
-  // Process click
+  // Process check
   function processCheck(part = null) {
     document.getElementById("submit-button").disabled = true;
     const mode = ui.getButtonSelectValue(document.getElementById("answer-mode-selector"));
@@ -286,15 +286,15 @@ try {
         resetInputs();
         nextQuestion();
         updateQuestion();
+        var storageClickMode = "text";
         if (mode === "math" && !multipleChoice) {
-          storeClick(storage.get("code"), question, mf.value, "latex");
+          storageClickMode = "latex";
         } else if (mode === "set" && !multipleChoice) {
-          storeClick(storage.get("code"), question, answer, "array");
+          storageClickMode = "array";
         } else if (mode === "frq" && !multipleChoice) {
-          storeClick(storage.get("code"), question, answer, "frq");
-        } else {
-          storeClick(storage.get("code"), question, answer, "text");
-        }
+          storageClickMode = "frq";
+        };
+        storeClick(storage.get("code"), segment, question, answer, r.reason, storageClickMode);
         if (mode === "frq") {
           if (part) {
             if (document.querySelector(`[data-frq-part="${part}"]`).parentElement.nextElementSibling && (document.querySelector(`[data-frq-part="${part}"]`).parentElement.nextElementSibling.classList.contains('part'))) {
@@ -609,7 +609,7 @@ try {
   }
 
   // Update history feed
-  function updateHistory() {
+  async function updateHistory() {
     const history = filterHistory();
     const date =
       history[0] &&
@@ -629,6 +629,12 @@ try {
 
     const feed = document.getElementById("history-feed");
     if (history.length != 0) {
+      const questionsResponse = await fetch(`${domain}/questions`, {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+      });
+      questionsArray = await questionsResponse.json();
+
       feed.innerHTML = "";
       const fetchPromises = history.sort((a, b) => a.timestamp - b.timestamp).map(item =>
         fetch(`${domain}/response?seatCode=${storage.get("code")}&segment=${item.segment}&question=${item.question}&answer=${item.answer}`, {
@@ -656,7 +662,8 @@ try {
           const frq = item.type === "frq";
           button.id = r.id;
           button.classList = (r.status === "Incorrect") ? 'incorrect' : (r.status === "Correct") ? 'correct' : '';
-          var response = `${((r.status != "Correct") && (r.status != "Incorrect")) ? `<br><b>Status:</b> ${r.status.includes('Unknown') ? r.status.split('Unknown, ')[1] : r.status}` : ''}${(r.reason) ? `<br><b>Response:</b> ${r.reason}` : ''}${(r.status === "Incorrect") ? `<br><button data-flag-response${(r.flagged == '1') ? ' disabled' : ''}><i class="bi bi-flag-fill"></i> Flag for Review</button>` : ''}`;
+          var response = `${((r.status != "Correct") && (r.status != "Incorrect")) ? `${latex ? '' : '<br>'}<b>Status:</b> ${r.status.includes('Unknown') ? r.status.split('Unknown, ')[1] : r.status}` : ''}${(r.reason) ? `<br><b>Response:</b> ${r.reason}` : ''}${(r.status === "Incorrect") ? `<br><button data-flag-response${(r.flagged == '1') ? ' disabled' : ''}><i class="bi bi-flag-fill"></i> Flag for Review</button>` : ''}`;
+          item.question = questionsArray.find(question => question.id === Number(item.question)).number;
           if (!latex) {
             if (!array) {
               if (!frq) {
@@ -665,10 +672,10 @@ try {
                 button.innerHTML = `<p><b>Segment ${item.segment} Question #${item.question}.</b> ${unixToTimeString(item.timestamp)} (${item.code})</p>\n<p>${item.answer}${(item.question === '1') ? '/9' : ''}${response}</p>`;
               }
             } else {
-              button.innerHTML = `<p><b>Segment ${item.segment} Question #${item.question}.</b> ${unixToTimeString(item.timestamp)} (${item.code})</p>\n<p>${item.answer.split('[')[1].split(']')[0]}${response}</p>`;
+              button.innerHTML = `<p><b>Segment ${item.segment} Question #${item.question}.</b> ${unixToTimeString(item.timestamp)} (${item.code})</p>\n<p>${item.answer.slice(1, -1)}${response}</p>`;
             }
           } else {
-            button.innerHTML = `<p><b>Segment ${item.segment} Question #${item.question}.</b> ${unixToTimeString(item.timestamp)} (${item.code})</p>\n${convertLatexToMarkup(item.answer)}\n<p class="hint">(Equation may not display properly)${response}</p>`;
+            button.innerHTML = `<p><b>Segment ${item.segment} Question #${item.question}.</b> ${unixToTimeString(item.timestamp)} (${item.code})</p>\n${convertLatexToMarkup(item.answer)}\n<p class="hint">(Equation may not display properly)</p>${response}</p>`;
           }
           feed.prepend(button);
           renderMathInElement(button);
