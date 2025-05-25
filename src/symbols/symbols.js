@@ -10,8 +10,6 @@ class Autocomplete {
     this.input = input;
     this.suggestion = suggestion;
 
-    if (!this.input) return;
-
     this.input.addEventListener("keydown", (e) => {
       if (e.key == "Tab" && this.matches.length != 0) {
         e.preventDefault();
@@ -81,13 +79,32 @@ export const autocomplete = new Autocomplete(
   document.getElementById("answer-suggestion"),
 );
 
+// Track input focus
+let lastFocusedInput = null;
+let currentFocusedInput = null;
+document.addEventListener('focusin', (event) => {
+  if ((event.target.tagName.toLowerCase() === 'input') && event.target.getAttribute("type") && (event.target.getAttribute("type") === "text")) {
+    lastFocusedInput = currentFocusedInput;
+    currentFocusedInput = event.target;
+  };
+});
+
 // Insert symbol by index
 document.querySelectorAll("[data-insert-symbol]").forEach((button) => {
   const index = button.getAttribute("data-insert-symbol");
   const symbol = Object.values(symbols)[index];
   button.innerHTML = symbol;
   button.addEventListener("click", () => {
-    insert(symbol);
+    var answerMode = document.querySelector('#answer-mode-selector [aria-selected="true"]').getAttribute("data-value");
+    if (currentFocusedInput && document.querySelector(`[data-answer-mode="${answerMode}"]`).contains(currentFocusedInput)) {
+      insert(symbol, currentFocusedInput);
+    } else if (lastFocusedInput && document.querySelector(`[data-answer-mode="${answerMode}"]`).contains(lastFocusedInput)) {
+      insert(symbol, lastFocusedInput);
+    } else if (button.getAttribute("data-target-input") && document.getElementById(button.getAttribute("data-target-input"))) {
+      insert(symbol, document.getElementById(button.getAttribute("data-target-input")));
+    } else {
+      insert(symbol);
+    };
   });
 });
 
@@ -98,7 +115,16 @@ uniqueSymbols.forEach((symbol) => {
       // Close the modal
       ui.view("");
       // Insert symbol
-      insert(symbol);
+      var answerMode = document.querySelector('#answer-mode-selector [aria-selected="true"]').getAttribute("data-value");
+      if (currentFocusedInput && document.querySelector(`[data-answer-mode="${answerMode}"]`).contains(currentFocusedInput)) {
+        insert(symbol, currentFocusedInput);
+      } else if (lastFocusedInput && document.querySelector(`[data-answer-mode="${answerMode}"]`).contains(lastFocusedInput)) {
+        insert(symbol, lastFocusedInput);
+      } else if (button.getAttribute("data-target-input") && document.getElementById(button.getAttribute("data-target-input"))) {
+        insert(symbol, document.getElementById(button.getAttribute("data-target-input")));
+      } else {
+        insert(symbol);
+      };
     },
   }).element;
   // Show symbol name
@@ -120,9 +146,14 @@ for (let i = 0; i < emptySpaces; i++) {
 }
 
 // Insert symbol at cursor position
-function insert(symbol) {
-  answerInput.setRangeText(symbol, answerInput.selectionStart, answerInput.selectionEnd, "end");
-  answerInput.focus();
+function insert(symbol, customInput) {
+  if (customInput) {
+    customInput.setRangeText(symbol, customInput.selectionStart, customInput.selectionEnd, "end");
+    customInput.focus();
+  } else {
+    answerInput.setRangeText(symbol, answerInput.selectionStart, answerInput.selectionEnd, "end");
+    answerInput.focus();
+  };
   autocomplete.update();
 }
 
