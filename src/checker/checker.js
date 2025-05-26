@@ -382,7 +382,7 @@ try {
         const segmentsData = await segmentsResponse.json();
         segments.innerHTML = '';
         segmentsArray = segmentsData;
-        segmentsData.forEach(segment => {
+        segmentsData.sort((a, b) => a.order - b.order).forEach(segment => {
           const option = document.createElement('option');
           option.value = segment.number;
           option.innerHTML = segment.name;
