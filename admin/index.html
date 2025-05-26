@@ -62,7 +62,7 @@
   <div id="checker">
     <div class="section">
       <h1>Courses</h1>
-      <div class="section course-selector">
+      <div class="section selector">
         <div class="button-grid inputs">
           <div class="input-group">
             <label for="course-period-input">Period</label>
@@ -82,54 +82,56 @@
           <button data-syllabus-download>Download Syllabus</button>
           <button data-syllabus-remove>Remove Syllabus</button>
         </div>
-        <button class="space" id="reorder-courses-button">Reorder Courses & Periods</button>
       </div>
       <div class="section course-reorder">
         <div class="button-grid reorder"></div>
-        <div class="button-grid inputs">
-          <button class="space" id="save-course-order-button">Save Order</button>
-          <button class="space" id="cancel-reorder-courses-button">Cancel</button>
-        </div>
+        <button class="space" id="save-course-order-button">Save Order</button>
       </div>
     </div>
-    <div class="section segments">
+    <div class="section">
       <h1>Segments</h1>
-      <div class="button-grid inputs">
-        <label style="width: -webkit-fill-available" class="small">Number</label>
-        <label style="width: -webkit-fill-available">Name</label>
-      </div>
-      <div class="section">
-        <button square data-select><i class="bi bi-circle"></i><i class="bi bi-circle-fill"></i></button>
+      <div class="section segments selector">
         <div class="button-grid inputs">
-          <div class="input-group small">
-            <div class="space" id="question-container">
-              <input type="text" autocomplete="off" />
-            </div>
-          </div>
-          <div class="input-group">
-            <div class="space" id="question-container">
-              <input type="text" autocomplete="off" />
-            </div>
-          </div>
-          <button square><i class="bi bi-plus"></i></button>
-          <button square><i class="bi bi-dash"></i></button>
+          <label style="width: -webkit-fill-available" class="small">Number</label>
+          <label style="width: -webkit-fill-available">Name</label>
         </div>
-        <div class="questions">
+        <div class="section">
+          <button square data-select><i class="bi bi-circle"></i><i class="bi bi-circle-fill"></i></button>
           <div class="button-grid inputs">
             <div class="input-group small">
-              <label>Name</label>
-              <label>ID</label>
+              <div class="space" id="question-container">
+                <input type="text" autocomplete="off" />
+              </div>
             </div>
             <div class="input-group">
-              <input type="text" autocomplete="off" />
-              <input type="number" autocomplete="off" />
+              <div class="space" id="question-container">
+                <input type="text" autocomplete="off" />
+              </div>
             </div>
-            <div class="input-group fit">
-              <button square><i class="bi bi-plus"></i></button>
-              <button square><i class="bi bi-dash"></i></button>
+            <button square><i class="bi bi-plus"></i></button>
+            <button square><i class="bi bi-dash"></i></button>
+          </div>
+          <div class="questions">
+            <div class="button-grid inputs">
+              <div class="input-group small">
+                <label>Name</label>
+                <label>ID</label>
+              </div>
+              <div class="input-group">
+                <input type="text" autocomplete="off" />
+                <input type="number" autocomplete="off" />
+              </div>
+              <div class="input-group fit">
+                <button square><i class="bi bi-plus"></i></button>
+                <button square><i class="bi bi-dash"></i></button>
+              </div>
             </div>
           </div>
         </div>
+      </div>
+      <div class="section segment-reorder">
+        <div class="button-grid reorder"></div>
+        <button class="space" id="save-segment-order-button">Save Order</button>
       </div>
     </div>
     <button class="space" id="save-button">Save</button>
@@ -149,6 +151,10 @@
     <button class="icon" data-speed data-modal-view="speedMode">
       <i class="bi bi-lightning-charge"></i>
       <i class="bi bi-lightning-charge-fill" style="display: none;"></i>
+    </button>
+    <button class="icon" data-reorder>
+      <i class="bi bi-arrows-move"></i>
+      <i class="bi bi-x"></i>
     </button>
     <!-- <button class="pill" data-modal-view="settings/code">
         <span class="code">000</span>
@@ -309,7 +315,8 @@
     <div data-modal-page="credits" data-page-title="Credits">
       <img src="../banner-transparent.png" alt="Virtual Checker Banner">
       <p><a href="https://github.com/khui0">khui0</a> - Base Virtual Clicker commits before 5/21/2024</p>
-      <p><a href="https://github.com/faisalnjs">faisalnjs</a> - Virtual Checker, base Virtual Clicker commits after 5/21/2024</p>
+      <p><a href="https://github.com/faisalnjs">faisalnjs</a> - Virtual Checker, base Virtual Clicker commits after
+        5/21/2024</p>
     </div>
   </dialog>
   <dialog data-modal-page="clear-data-fix" data-page-title="Settings May Not Save">
@@ -342,7 +349,8 @@
   </dialog>
   <dialog data-modal-page="speed" data-page-title="Speed Mode">
     <p>
-      Rapidly add questions to a segment by pasting or uploading images - one for each. Images will be saved to a new integer numbered question. To quit, close the popup.
+      Rapidly add questions to a segment by pasting or uploading images - one for each. Images will be saved to a new
+      integer numbered question. To quit, close the popup.
     </p>
     <select id="speed-mode-segments"></select>
     <button id="enable-speed-mode-button">Start</button>

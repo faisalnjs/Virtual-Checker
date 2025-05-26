@@ -74,10 +74,10 @@ class Autocomplete {
 const uniqueSymbols = [...new Set(Object.values(symbols))];
 const answerInput = document.getElementById("answer-input");
 
-export const autocomplete = new Autocomplete(
+export const autocomplete = (answerInput && document.getElementById("answer-suggestion")) ? new Autocomplete(
   answerInput,
   document.getElementById("answer-suggestion"),
-);
+) : null;
 
 // Track input focus
 let lastFocusedInput = null;

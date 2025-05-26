@@ -16,6 +16,7 @@ var polling = false;
 var active = false;
 var timestamps = false;
 var speed = false;
+var reorder = false;
 
 try {
   async function init() {
@@ -47,7 +48,7 @@ try {
             elem.classList = "button-grid inputs";
             elem.style = "flex-wrap: nowrap;";
             elem.innerHTML = `<input type="text" autocomplete="off" id="course-${course.id}" value="${course.name || ''}" /><div class="drag"><i class="bi bi-grip-vertical"></i></div>`;
-            document.querySelector(".reorder").appendChild(elem);
+            document.querySelector(".course-reorder .reorder").appendChild(elem);
           });
           const course = courses.find(c => c.id == document.getElementById("course-period-input").value);
           document.getElementById("course-input").value = course.name;
@@ -55,7 +56,7 @@ try {
             item.setAttribute('draggable', true);
             item.addEventListener('dragstart', handleDragStart);
             item.addEventListener('dragover', handleDragOver);
-            item.addEventListener('drop', handleDrop);
+            item.addEventListener('drop', handleDropCourse);
           });
         }
         if (document.getElementById("sort-course-input")) {
@@ -147,6 +148,7 @@ try {
       });
     if (document.getElementById("course-period-input")) {
       document.querySelector('.course-reorder').style.display = 'none';
+      document.querySelector('.segment-reorder').style.display = 'none';
       document.querySelectorAll('[data-remove-segment-input]').forEach(a => a.removeEventListener('click', removeSegment));
       document.querySelectorAll('[data-remove-segment-input]').forEach(a => a.addEventListener('click', removeSegment));
       document.getElementById("course-period-input").value = courses.find(c => c.id == segments.sort((a, b) => a.course - b.course)[0].course).id;
@@ -163,6 +165,7 @@ try {
   if (document.querySelector('[data-timestamps]')) document.querySelector('[data-timestamps]').addEventListener("click", toggleTimestamps);
   if (document.querySelector('[data-speed]')) document.querySelector('[data-speed]').addEventListener("click", toggleSpeedMode);
   if (document.getElementById('enable-speed-mode-button')) document.getElementById('enable-speed-mode-button').addEventListener("click", enableSpeedMode);
+  if (document.querySelector('[data-reorder]')) document.querySelector('[data-reorder]').addEventListener("click", toggleReorder);
 
   function toggleSelecting() {
     if (!active) return;
@@ -297,7 +300,8 @@ try {
     }
     if (c.length > 0) {
       document.querySelector('.segments .section').innerHTML = '';
-      c.forEach(s => {
+      document.querySelector(".segment-reorder .reorder").innerHTML = '';
+      c.sort((a, b) => a.order - b.order).forEach(s => {
         var segment = document.createElement('div');
         segment.className = "section";
         segment.id = `segment-${s.number}`;
@@ -314,6 +318,11 @@ try {
         questions.innerHTML = `<div class="button-grid inputs"><div class="input-group small"><label>Name</label><label>ID</label></div>${questionsString}<div class="input-group fit"><button square data-add-segment-question-input><i class="bi bi-plus"></i></button><button square data-remove-segment-question-input${(JSON.parse(s.question_ids).length === 1) ? ' disabled' : ''}><i class="bi bi-dash"></i></button></div></div>`;
         segment.appendChild(questions);
         document.querySelector('.segments .section').appendChild(segment);
+        const elem = document.createElement("div");
+        elem.classList = "button-grid inputs";
+        elem.style = "flex-wrap: nowrap;";
+        elem.innerHTML = `<input type="text" autocomplete="off" id="segment-${s.number}" value="${s.name || ''}" /><div class="drag"><i class="bi bi-grip-vertical"></i></div>`;
+        document.querySelector(".segment-reorder .reorder").appendChild(elem);
       });
       document.querySelector('.segments .section').innerHTML += '<button data-add-segment-input>Add Segment</button>';
     } else {
@@ -325,6 +334,12 @@ try {
     document.querySelectorAll('[data-remove-segment-question-input]').forEach(a => a.addEventListener('click', removeSegmentQuestion));
     document.querySelectorAll('[data-toggle-segment]').forEach(a => a.addEventListener('click', toggleSegment));
     document.querySelectorAll('[data-select]').forEach(a => a.addEventListener('click', toggleSelected));
+    document.querySelectorAll('.drag').forEach(item => {
+      item.setAttribute('draggable', true);
+      item.addEventListener('dragstart', handleDragStart);
+      item.addEventListener('dragover', handleDragOver);
+      item.addEventListener('drop', handleDropSegment);
+    });
   }
 
   function toggleSegment() {
@@ -345,134 +360,91 @@ try {
     return totalHeight;
   }
 
-  if (document.getElementById("reorder-courses-button")) {
-    document.getElementById("reorder-courses-button").addEventListener("click", () => {
-      if (!active) return;
-      const current = document.querySelector('.course-selector');
-      const fromHeight = current?.getBoundingClientRect().height;
-      document.querySelector('.course-reorder').style.display = 'flex';
-      document.querySelector('.course-selector').style.display = 'none';
-      document.querySelectorAll('#save-button').forEach(w => w.style.display = 'none');
-      const container = document.querySelector('.section');
-      const target = document.querySelector('.course-reorder');
-      const toHeight = target.getBoundingClientRect().height + calculateButtonHeights(target);
-      ui.animate(
-        container,
-        fromHeight
-          ? {
-            height: fromHeight + "px",
-          }
-          : undefined,
-        {
-          height: toHeight + "px",
-        },
-        500,
-        false,
-      );
-    });
-
-    document.getElementById("cancel-reorder-courses-button").addEventListener("click", () => {
-      if (!active) return;
-      const current = document.querySelector('.course-reorder');
-      const fromHeight = current?.getBoundingClientRect().height;
-      document.querySelector('.course-selector').style.display = 'flex';
-      document.querySelectorAll('#save-button').forEach(w => w.style.display = '');
-      document.querySelector('.course-reorder').style.display = 'none';
-      const container = document.querySelector('.section');
-      const target = document.querySelector('.course-selector');
-      const toHeight = target.getBoundingClientRect().height + calculateButtonHeights(target);
-      ui.animate(
-        container,
-        fromHeight
-          ? {
-            height: fromHeight + "px",
-          }
-          : undefined,
-        {
-          height: toHeight + "px",
-        },
-        500,
-        false,
-      );
-    });
-
-    document.getElementById("save-course-order-button").addEventListener("click", () => {
-      if (!active) return;
-      const current = document.querySelector('.course-reorder');
-      const fromHeight = current?.getBoundingClientRect().height;
-      document.querySelector('.course-selector').style.display = 'flex';
-      document.querySelectorAll('#save-button').forEach(w => w.style.display = '');
-      document.querySelector('.course-reorder').style.display = 'none';
-      const container = document.querySelector('.section');
-      const target = document.querySelector('.course-selector');
-      const toHeight = target.getBoundingClientRect().height + calculateButtonHeights(target);
-      ui.animate(
-        container,
-        fromHeight
-          ? {
-            height: fromHeight + "px",
-          }
-          : undefined,
-        {
-          height: toHeight + "px",
-        },
-        500,
-        false,
-      );
-    });
-
-    // Save Course Order
-    document.getElementById("save-course-order-button").addEventListener("click", () => {
-      if (!active) return;
-      var updatedCourses = [...document.querySelector(".reorder").children].map((course, i) => {
-        const courseId = course.querySelector('input').id.split('-')[1];
-        return {
-          id: courseId,
-          name: document.getElementById(`course-${courseId}`).value,
-          period: i + 1
-        };
-      }).sort((a, b) => a.period - b.period);
-      fetch(domain + '/courses', {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(updatedCourses)
-      })
-        .then(r => r.json())
-        .then(c => {
-          courses = c;
-          document.querySelector(".reorder").innerHTML = "";
-          document.getElementById("course-period-input").innerHTML = "";
-          c.sort((a, b) => a.period - b.period).forEach(course => {
-            const option = document.createElement("option");
-            option.value = course.id;
-            option.innerHTML = course.period;
-            document.getElementById("course-period-input").appendChild(option);
-            const elem = document.createElement("div");
-            elem.classList = "button-grid inputs";
-            elem.style = "flex-wrap: nowrap;";
-            elem.innerHTML = `<input type="text" autocomplete="off" id="course-${course.id}" value="${course.name || ''}" placeholder="${course.name || ''}" /><div class="drag"><i class="bi bi-grip-vertical"></i></div>`;
-            document.querySelector(".reorder").appendChild(elem);
-          });
-          const course = courses.find(c => c.id == document.getElementById("course-period-input").value);
-          document.getElementById("course-input").value = course.name;
-          document.querySelectorAll('.drag').forEach(item => {
-            item.setAttribute('draggable', true);
-            item.addEventListener('dragstart', handleDragStart);
-            item.addEventListener('dragover', handleDragOver);
-            item.addEventListener('drop', handleDrop);
-          });
-        })
-        .catch((e) => {
-          console.error(e);
-          ui.view("api-fail");
-          if (document.querySelector('[data-polling]')) pollingOff();
+  // Save Course Order
+  document.getElementById("save-course-order-button")?.addEventListener("click", () => {
+    if (!active) return;
+    var updatedCourses = [...document.querySelector(".reorder").children].map((course, i) => {
+      const courseId = course.querySelector('input').id.split('-')[1];
+      return {
+        id: courseId,
+        name: document.getElementById(`course-${courseId}`).value,
+        period: i + 1
+      };
+    }).sort((a, b) => a.period - b.period);
+    fetch(domain + '/courses', {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(updatedCourses)
+    })
+      .then(r => r.json())
+      .then(c => {
+        courses = c;
+        document.querySelector(".course-reorder .reorder").innerHTML = "";
+        document.getElementById("course-period-input").innerHTML = "";
+        c.sort((a, b) => a.period - b.period).forEach(course => {
+          const option = document.createElement("option");
+          option.value = course.id;
+          option.innerHTML = course.period;
+          document.getElementById("course-period-input").appendChild(option);
+          const elem = document.createElement("div");
+          elem.classList = "button-grid inputs";
+          elem.style = "flex-wrap: nowrap;";
+          elem.innerHTML = `<input type="text" autocomplete="off" id="course-${course.id}" value="${course.name || ''}" placeholder="${course.name || ''}" /><div class="drag"><i class="bi bi-grip-vertical"></i></div>`;
+          document.querySelector(".course-reorder .reorder").appendChild(elem);
         });
-      // Show submit confirmation
-      ui.modeless(`<i class="bi bi-check-lg"></i>`, "Saved");
-    });
-  }
+        const course = courses.find(c => c.id == document.getElementById("course-period-input").value);
+        document.getElementById("course-input").value = course.name;
+        document.querySelectorAll('.drag').forEach(item => {
+          item.setAttribute('draggable', true);
+          item.addEventListener('dragstart', handleDragStart);
+          item.addEventListener('dragover', handleDragOver);
+          item.addEventListener('drop', handleDropCourse);
+        });
+      })
+      .catch((e) => {
+        console.error(e);
+        ui.view("api-fail");
+        if (document.querySelector('[data-polling]')) pollingOff();
+      });
+    // Show submit confirmation
+    ui.modeless(`<i class="bi bi-check-lg"></i>`, "Saved");
+  });
+
+  // Save Segment Order
+  document.getElementById("save-segment-order-button")?.addEventListener("click", () => {
+    if (!active) return;
+    var updatedSegments = [...document.querySelector(".segment-reorder .reorder").children].map((segment, i) => {
+      const segmentNumber = segment.querySelector('input').id.split('-')[1];
+      return {
+        order: i,
+        number: segmentNumber,
+        name: segment.querySelector('input').value,
+        question_ids: segments.find(s => String(s.number) === String(segmentNumber)).question_ids,
+        course: Number(document.getElementById("course-period-input").value)
+      };
+    }).sort((a, b) => a.order - b.order);
+    fetch(domain + '/segments', {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(updatedSegments)
+    })
+      .then(r => r.json())
+      .then(c => {
+        segments = c;
+        updateSegments();
+      })
+      .catch((e) => {
+        console.error(e);
+        ui.view("api-fail");
+        if (document.querySelector('[data-polling]')) pollingOff();
+      });
+    // Show submit confirmation
+    ui.modeless(`<i class="bi bi-check-lg"></i>`, "Saved");
+  });
 
   // Save
   document.querySelectorAll("#save-button").forEach(w => w.addEventListener("click", save));
@@ -567,7 +539,7 @@ try {
     e.dataTransfer.dropEffect = 'move';
   }
 
-  function handleDrop(e) {
+  function handleDropCourse(e) {
     if (!active) return;
     e.stopPropagation();
     const targetItem = this.parentNode;
@@ -578,7 +550,23 @@ try {
     const newOrder = [...document.querySelectorAll('.dragCourse')].sort((a, b) => {
       return a.getBoundingClientRect().top - b.getBoundingClientRect().top;
     });
-    const parent = document.querySelector('.reorder');
+    const parent = document.querySelector('.course-reorder .reorder');
+    newOrder.forEach(item => parent.appendChild(item));
+    return false;
+  }
+
+  function handleDropSegment(e) {
+    if (!active) return;
+    e.stopPropagation();
+    const targetItem = this.parentNode;
+    if (draggedItem !== targetItem) {
+      let parent = draggedItem.parentNode;
+      parent.insertBefore(draggedItem, targetItem);
+    }
+    const newOrder = [...document.querySelectorAll('.dragSegment')].sort((a, b) => {
+      return a.getBoundingClientRect().top - b.getBoundingClientRect().top;
+    });
+    const parent = document.querySelector('.segment-reorder .reorder');
     newOrder.forEach(item => parent.appendChild(item));
     return false;
   }
@@ -590,7 +578,7 @@ try {
     group.id = 'segment-new';
     var buttonGrid = document.createElement('div');
     buttonGrid.className = "button-grid inputs";
-    buttonGrid.innerHTML = `<button square data-select><i class="bi bi-circle"></i><i class="bi bi-circle-fill"></i></button><div class="input-group small"><div class="space" id="question-container"><input type="text" autocomplete="off" id="segment-number-input" value="0" /></div></div><div class="input-group"><div class="space" id="question-container"><input type="text" autocomplete="off" id="segment-name-input" value="" /></div></div><button square data-remove-segment-input><i class="bi bi-dash"></i></button><button square data-toggle-segment><i class="bi bi-caret-down-fill"></i><i class="bi bi-caret-up-fill"></i></button>`;
+    buttonGrid.innerHTML = `<button square data-select><i class="bi bi-circle"></i><i class="bi bi-circle-fill"></i></button><div class="input-group small"><div class="space" id="question-container"><input type="text" autocomplete="off" id="segment-number-input" value="0" /></div></div><div class="input-group"><div class="space" id="question-container"><input type="text" autocomplete="off" id="segment-name-input" value="" /></div></div><button square data-remove-segment-input><i class="bi bi-dash"></i></button><button square data-toggle-segment><i class="bi bi-caret-down-fill"></i><i class="bi bi-caret-up-fill"></i><div class="drag"><i class="bi bi-grip-vertical"></i></div></button>`;
     group.appendChild(buttonGrid);
     var questions = document.createElement('div');
     questions.classList = "questions";
@@ -603,6 +591,12 @@ try {
     document.querySelectorAll('[data-remove-segment-question-input]').forEach(a => a.addEventListener('click', removeSegmentQuestion));
     document.querySelectorAll('[data-toggle-segment]').forEach(a => a.addEventListener('click', toggleSegment));
     document.querySelectorAll('[data-select]').forEach(a => a.addEventListener('click', toggleSelected));
+    document.querySelectorAll('.drag').forEach(item => {
+      item.setAttribute('draggable', true);
+      item.addEventListener('dragstart', handleDragStart);
+      item.addEventListener('dragover', handleDragOver);
+      item.addEventListener('drop', handleDropSegment);
+    });
   }
 
   function removeSegment() {
@@ -1168,6 +1162,65 @@ try {
         init();
       }
     }, 1000);
+  }
+
+  function toggleReorder() {
+    if (!active) return;
+    if (reorder) {
+      reorder = false;
+      document.querySelector('[data-reorder] .bi-arrows-move').style.display = "block";
+      document.querySelector('[data-reorder] .bi-x').style.display = "none";
+      const reorderSections = document.querySelectorAll(':has(> .reorder)');
+      reorderSections.forEach(reorderSection => {
+        const fromHeight = reorderSection?.getBoundingClientRect().height;
+        reorderSection.parentElement.querySelector('.selector').style.display = 'flex';
+        document.querySelectorAll('#save-button').forEach(w => w.style.display = '');
+        reorderSection.style.display = 'none';
+        const container = reorderSection.parentElement;
+        const target = reorderSection.parentElement.querySelector('.selector');
+        const toHeight = target.getBoundingClientRect().height + calculateButtonHeights(target);
+        ui.animate(
+          container,
+          fromHeight
+            ? {
+              height: fromHeight + "px",
+            }
+            : undefined,
+          {
+            height: toHeight + "px",
+          },
+          500,
+          false,
+        );
+      });
+    } else {
+      reorder = true;
+      document.querySelector('[data-reorder] .bi-arrows-move').style.display = "none";
+      document.querySelector('[data-reorder] .bi-x').style.display = "block";
+      const reorderSections = document.querySelectorAll(':has(> .reorder)');
+      reorderSections.forEach(reorderSection => {
+        const fromHeight = reorderSection.parentElement.querySelector('.selector')?.getBoundingClientRect().height;
+        reorderSection.style.display = 'flex';
+        reorderSection.parentElement.querySelector('.selector').style.display = 'none';
+        document.querySelectorAll('#save-button').forEach(w => w.style.display = 'none');
+        const container = reorderSection.parentElement;
+        const target = reorderSection;
+        const toHeight = target.getBoundingClientRect().height + calculateButtonHeights(target);
+        ui.animate(
+          container,
+          fromHeight
+            ? {
+              height: fromHeight + "px",
+            }
+            : undefined,
+          {
+            height: toHeight + "px",
+          },
+          500,
+          false,
+        );
+      });
+    }
   }
 } catch (error) {
   if (storage.get("developer")) {

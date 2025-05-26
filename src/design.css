@@ -429,6 +429,14 @@ div.ML__keyboard {
   min-width: 36px;
 }
 
+.button-grid.reverse {
+  flex-direction: row-reverse;
+}
+
+.button-grid.reorder {
+  flex-direction: column;
+}
+
 [data-answer-mode="set"] input {
   text-align: center;
   width: -webkit-fill-available;
@@ -662,6 +670,10 @@ body:has(.selecting) #controls-container button:has(.bi-lightning-charge) {
 
 body:has(.selecting) #controls-container [data-delete-multiple] {
   display: block;
+}
+
+body:has(.selecting) #controls-container button:has(.bi-arrows-move) {
+  display: none;
 }
 
 .section:not(:has(.expanded)) {
