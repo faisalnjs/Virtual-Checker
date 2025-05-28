@@ -91,6 +91,10 @@ button.icon {
   border-radius: 50%;
 }
 
+button.fit {
+  width: fit-content !important;
+}
+
 button:disabled {
   opacity: 0.5;
   pointer-events: none;
@@ -604,11 +608,7 @@ div.ML__keyboard {
 }
 
 .segments .section.expanded .questions,
-.questions .section.expanded .attachments {
-  max-height: 100px;
-  transition: 0.25s var(--easing);
-}
-
+.questions .section.expanded .attachments,
 .questions .section.expanded .answers {
   max-height: 1000px;
   transition: 0.25s var(--easing);

@@ -130,6 +130,10 @@
         </div>
       </div>
       <div class="section segment-reorder">
+        <div class="button-grid">
+          <button class="space fit" id="sort-segments-increasing">Sort Increasing (1A-9Z)</button>
+          <button class="space fit" id="sort-segments-decreasing">Sort Decreasing (9Z-1A)</button>
+        </div>
         <div class="button-grid reorder"></div>
         <button class="space" id="save-segment-order-button">Save Order</button>
       </div>
@@ -354,6 +358,17 @@
     </p>
     <select id="speed-mode-segments"></select>
     <button id="enable-speed-mode-button">Start</button>
+  </dialog>
+  <dialog data-modal-page="sort-segments" data-page-title="Sort Segments">
+    <p>
+      Force segments to be sorted by a specific order. This will not change the segment numbers, but will change the
+      order of the segments. This action is not reversible.
+    </p>
+    <select id="sort-segments-types">
+      <option value="az">Increasing (1A-9Z)</option>
+      <option value="za">Decreasing (9Z-1A)</option>
+    </select>
+    <button id="sort-segments-button">Sort</button>
   </dialog>
   <script src="../src/admin.js" type="module"></script>
 </body>

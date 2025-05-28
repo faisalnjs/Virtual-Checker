@@ -46,7 +46,7 @@ try {
             document.getElementById("course-period-input").appendChild(option);
             const elem = document.createElement("div");
             elem.classList = "button-grid inputs";
-            elem.style = "flex-wrap: nowrap;";
+            elem.style = "flex-wrap: nowrap !important;";
             elem.innerHTML = `<input type="text" autocomplete="off" id="course-${course.id}" value="${course.name || ''}" /><div class="drag"><i class="bi bi-grip-vertical"></i></div>`;
             document.querySelector(".course-reorder .reorder").appendChild(elem);
           });
@@ -166,6 +166,9 @@ try {
   if (document.querySelector('[data-speed]')) document.querySelector('[data-speed]').addEventListener("click", toggleSpeedMode);
   if (document.getElementById('enable-speed-mode-button')) document.getElementById('enable-speed-mode-button').addEventListener("click", enableSpeedMode);
   if (document.querySelector('[data-reorder]')) document.querySelector('[data-reorder]').addEventListener("click", toggleReorder);
+  if (document.getElementById('sort-segments-increasing')) document.getElementById('sort-segments-increasing').addEventListener("click", sortSegmentsIncreasing);
+  if (document.getElementById('sort-segments-decreasing')) document.getElementById('sort-segments-decreasing').addEventListener("click", sortSegmentsDecreasing);
+  if (document.getElementById('sort-segments-button')) document.getElementById('sort-segments-button').addEventListener("click", sortSegments);
 
   function toggleSelecting() {
     if (!active) return;
@@ -307,7 +310,7 @@ try {
         segment.id = `segment-${s.number}`;
         var buttonGrid = document.createElement('div');
         buttonGrid.className = "button-grid inputs";
-        buttonGrid.innerHTML = `<button square data-select><i class="bi bi-circle"></i><i class="bi bi-circle-fill"></i></button><div class="input-group small"><div class="space" id="question-container"><input type="text" autocomplete="off" id="segment-number-input" value="${s.number}" placeholder="${s.number}" /></div></div><div class="input-group"><div class="space" id="question-container"><input type="text" autocomplete="off" id="segment-name-input" value="${s.name}" placeholder="${s.name}" /></div></div><button square data-remove-segment-input><i class="bi bi-dash"></i></button><button square data-toggle-segment><i class="bi bi-caret-down-fill"></i><i class="bi bi-caret-up-fill"></i></button>`;
+        buttonGrid.innerHTML = `<button square data-select><i class="bi bi-circle"></i><i class="bi bi-circle-fill"></i></button><div class="input-group small"><div class="space" id="question-container"><input type="text" autocomplete="off" id="segment-number-input" value="${s.number}" placeholder="${s.number}" /></div></div><div class="input-group"><div class="space" id="question-container"><input type="text" autocomplete="off" id="segment-name-input" value="${s.name}" placeholder="${s.name}" /></div></div><button square data-remove-segment-input><i class="bi bi-trash"></i></button><button square data-toggle-segment><i class="bi bi-caret-down-fill"></i><i class="bi bi-caret-up-fill"></i></button>`;
         segment.appendChild(buttonGrid);
         var questionsString = "";
         var questions = document.createElement('div');
@@ -320,7 +323,7 @@ try {
         document.querySelector('.segments .section').appendChild(segment);
         const elem = document.createElement("div");
         elem.classList = "button-grid inputs";
-        elem.style = "flex-wrap: nowrap;";
+        elem.style = "flex-wrap: nowrap !important;";
         elem.innerHTML = `<input type="text" autocomplete="off" id="segment-${s.number}" value="${s.name || ''}" /><div class="drag"><i class="bi bi-grip-vertical"></i></div>`;
         document.querySelector(".segment-reorder .reorder").appendChild(elem);
       });
@@ -390,7 +393,7 @@ try {
           document.getElementById("course-period-input").appendChild(option);
           const elem = document.createElement("div");
           elem.classList = "button-grid inputs";
-          elem.style = "flex-wrap: nowrap;";
+          elem.style = "flex-wrap: nowrap !important;";
           elem.innerHTML = `<input type="text" autocomplete="off" id="course-${course.id}" value="${course.name || ''}" placeholder="${course.name || ''}" /><div class="drag"><i class="bi bi-grip-vertical"></i></div>`;
           document.querySelector(".course-reorder .reorder").appendChild(elem);
         });
@@ -578,7 +581,7 @@ try {
     group.id = 'segment-new';
     var buttonGrid = document.createElement('div');
     buttonGrid.className = "button-grid inputs";
-    buttonGrid.innerHTML = `<button square data-select><i class="bi bi-circle"></i><i class="bi bi-circle-fill"></i></button><div class="input-group small"><div class="space" id="question-container"><input type="text" autocomplete="off" id="segment-number-input" value="0" /></div></div><div class="input-group"><div class="space" id="question-container"><input type="text" autocomplete="off" id="segment-name-input" value="" /></div></div><button square data-remove-segment-input><i class="bi bi-dash"></i></button><button square data-toggle-segment><i class="bi bi-caret-down-fill"></i><i class="bi bi-caret-up-fill"></i><div class="drag"><i class="bi bi-grip-vertical"></i></div></button>`;
+    buttonGrid.innerHTML = `<button square data-select><i class="bi bi-circle"></i><i class="bi bi-circle-fill"></i></button><div class="input-group small"><div class="space" id="question-container"><input type="text" autocomplete="off" id="segment-number-input" value="0" /></div></div><div class="input-group"><div class="space" id="question-container"><input type="text" autocomplete="off" id="segment-name-input" value="" /></div></div><button square data-remove-segment-input><i class="bi bi-trash"></i></button><button square data-toggle-segment><i class="bi bi-caret-down-fill"></i><i class="bi bi-caret-up-fill"></i><div class="drag"><i class="bi bi-grip-vertical"></i></div></button>`;
     group.appendChild(buttonGrid);
     var questions = document.createElement('div');
     questions.classList = "questions";
@@ -633,7 +636,7 @@ try {
         buttonGrid.className = "button-grid inputs";
         var segmentsString = "";
         segments.forEach(s => segmentsString += `<option value="${s.number}"${(segments.filter(e => JSON.parse(e.question_ids).find(qId => qId.id == q.id))[0].number === s.number) ? ' selected' : ''}>${s.number}</option>`);
-        buttonGrid.innerHTML = `<button square data-select><i class="bi bi-circle"></i><i class="bi bi-circle-fill"></i></button><div class="input-group small"><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-id-input" value="${q.id}" disabled /></div></div><div class="input-group small"><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-number-input" value="${q.number}" placeholder="${q.number}" /></div></div><div class="input-group small"><div class="space" id="question-container"><select id="question-segment-input">${segmentsString}</select></div></div><div class="input-group"><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-text-input" value="${q.question}" placeholder="${q.question}" /></div></div><button square data-remove-question-input><i class="bi bi-dash"></i></button><button square data-toggle-question><i class="bi bi-caret-down-fill"></i><i class="bi bi-caret-up-fill"></i></button>`;
+        buttonGrid.innerHTML = `<button square data-select><i class="bi bi-circle"></i><i class="bi bi-circle-fill"></i></button><div class="input-group small"><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-id-input" value="${q.id}" disabled /></div></div><div class="input-group small"><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-number-input" value="${q.number}" placeholder="${q.number}" /></div></div><div class="input-group small"><div class="space" id="question-container"><select id="question-segment-input">${segmentsString}</select></div></div><div class="input-group"><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-text-input" value="${q.question}" placeholder="${q.question}" /></div></div><button square data-remove-question-input><i class="bi bi-trash"></i></button><button square data-toggle-question><i class="bi bi-caret-down-fill"></i><i class="bi bi-caret-up-fill"></i></button>`;
         question.appendChild(buttonGrid);
         var images = document.createElement('div');
         images.classList = "attachments";
@@ -745,7 +748,7 @@ try {
     buttonGrid.className = "button-grid inputs";
     var segmentsString = "";
     segments.forEach(s => segmentsString += `<option value="${s.number}">${s.number}</option>`);
-    buttonGrid.innerHTML = `<button square data-select><i class="bi bi-circle"></i><i class="bi bi-circle-fill"></i></button><div class="input-group small"><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-id-input" value="" disabled /></div></div><div class="input-group small"><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-number-input" value="" /></div></div><div class="input-group small"><div class="space" id="question-container"><select id="question-segment-input">${segmentsString}</select></div></div><div class="input-group"><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-text-input" value="" /></div></div><button square data-remove-question-input><i class="bi bi-dash"></i></button><button square data-toggle-question><i class="bi bi-caret-down-fill"></i><i class="bi bi-caret-up-fill"></i></button>`;
+    buttonGrid.innerHTML = `<button square data-select><i class="bi bi-circle"></i><i class="bi bi-circle-fill"></i></button><div class="input-group small"><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-id-input" value="" disabled /></div></div><div class="input-group small"><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-number-input" value="" /></div></div><div class="input-group small"><div class="space" id="question-container"><select id="question-segment-input">${segmentsString}</select></div></div><div class="input-group"><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-text-input" value="" /></div></div><button square data-remove-question-input><i class="bi bi-trash"></i></button><button square data-toggle-question><i class="bi bi-caret-down-fill"></i><i class="bi bi-caret-up-fill"></i></button>`;
     group.appendChild(buttonGrid);
     this.parentElement.insertBefore(group, this.parentElement.children[this.parentElement.children.length - 1]);
     document.querySelectorAll('[data-add-question-input]').forEach(a => a.addEventListener('click', addQuestion));
@@ -1115,9 +1118,7 @@ try {
   }
 
   function enableSpeedMode() {
-    document.querySelector(`[data-modal-page="speed"]`).removeAttribute('open');
-    document.querySelector(`[data-modal-page="speed"]`).removeAttribute('data-open');
-    document.querySelector(`[data-modal-page="speed"]`).removeAttribute('style');
+    ui.view();
     speed = true;
     document.querySelector('[data-speed] .bi-lightning-charge').style.display = "none";
     document.querySelector('[data-speed] .bi-lightning-charge-fill').style.display = "block";
@@ -1126,9 +1127,7 @@ try {
   }
 
   function disableSpeedMode() {
-    document.querySelector(`[data-modal-page="speed"]`).removeAttribute('open');
-    document.querySelector(`[data-modal-page="speed"]`).removeAttribute('data-open');
-    document.querySelector(`[data-modal-page="speed"]`).removeAttribute('style');
+    ui.view();
     speed = false;
     document.querySelector('[data-speed] .bi-lightning-charge').style.display = "block";
     document.querySelector('[data-speed] .bi-lightning-charge-fill').style.display = "none";
@@ -1221,6 +1220,80 @@ try {
         );
       });
     }
+  }
+
+  function sortSegmentsIncreasing() {
+    if (!active) return;
+    document.getElementById('sort-segments-types').value = 'az';
+    return ui.view("sort-segments");
+  }
+
+  function sortSegmentsDecreasing() {
+    if (!active) return;
+    document.getElementById('sort-segments-types').value = 'za';
+    return ui.view("sort-segments");
+  }
+
+  function sortSegments() {
+    if (!active) return;
+    var updatedSegments = [...document.querySelector(".segment-reorder .reorder").children].map((segment, i) => {
+      const segmentNumber = segment.querySelector('input').id.split('-')[1];
+      return {
+        order: i,
+        number: segmentNumber,
+        name: segment.querySelector('input').value,
+        question_ids: segments.find(s => String(s.number) === String(segmentNumber)).question_ids,
+        course: Number(document.getElementById("course-period-input").value)
+      };
+    });
+    switch(document.getElementById('sort-segments-types').value) {
+      case 'az':
+        updatedSegments.sort((a, b) => {
+          const alphaA = (a.number.match(/[a-zA-Z]+/) || [''])[0];
+          const alphaB = (b.number.match(/[a-zA-Z]+/) || [''])[0];
+          const numA = parseInt(a.number.match(/\d+/) ? a.number.match(/\d+/)[0] : '0');
+          const numB = parseInt(b.number.match(/\d+/) ? b.number.match(/\d+/)[0] : '0');
+          if (alphaA < alphaB) return -1;
+          if (alphaA > alphaB) return 1;
+          return numA - numB;
+        });
+        break;
+      case 'za':
+        updatedSegments.sort((a, b) => {
+          const alphaA = (a.number.match(/[a-zA-Z]+/) || [''])[0];
+          const alphaB = (b.number.match(/[a-zA-Z]+/) || [''])[0];
+          const numA = parseInt(a.number.match(/\d+/) ? a.number.match(/\d+/)[0] : '0');
+          const numB = parseInt(b.number.match(/\d+/) ? b.number.match(/\d+/)[0] : '0');
+          if (alphaA < alphaB) return -1;
+          if (alphaA > alphaB) return 1;
+          return numA - numB;
+        });
+        updatedSegments.reverse();
+        break;
+      default:
+        break;
+    }
+    for (let i = 0; i < updatedSegments.length; i++) {
+      updatedSegments[i].order = i;
+    }
+    fetch(domain + '/segments', {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(updatedSegments)
+    })
+      .then(r => r.json())
+      .then(c => {
+        segments = c;
+        updateSegments();
+        ui.view();
+      })
+      .catch((e) => {
+        console.error(e);
+        ui.view("api-fail");
+        if (document.querySelector('[data-polling]')) pollingOff();
+      });
   }
 } catch (error) {
   if (storage.get("developer")) {
