@@ -115,6 +115,7 @@ try {
                           updateResponses();
                         } else {
                           active = true;
+                          ui.toast("Data loaded.", 1000, "info", "bi bi-cloud-arrow-down");
                         }
                       })
                       .catch((e) => {
@@ -503,7 +504,8 @@ try {
                 answer: q.querySelector('#question-incorrect-answer-input').value,
                 reason: q.querySelector('#question-incorrect-answer-reason-input').value
               };
-            })
+            }),
+            latex: question.querySelector('[data-toggle-latex] i').classList.contains('bi-calculator-fill')
           });
         });
     }
@@ -636,7 +638,7 @@ try {
         buttonGrid.className = "button-grid inputs";
         var segmentsString = "";
         segments.forEach(s => segmentsString += `<option value="${s.number}"${(segments.filter(e => JSON.parse(e.question_ids).find(qId => qId.id == q.id))[0].number === s.number) ? ' selected' : ''}>${s.number}</option>`);
-        buttonGrid.innerHTML = `<button square data-select><i class="bi bi-circle"></i><i class="bi bi-circle-fill"></i></button><div class="input-group small"><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-id-input" value="${q.id}" disabled /></div></div><div class="input-group small"><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-number-input" value="${q.number}" placeholder="${q.number}" /></div></div><div class="input-group small"><div class="space" id="question-container"><select id="question-segment-input">${segmentsString}</select></div></div><div class="input-group"><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-text-input" value="${q.question}" placeholder="${q.question}" /></div></div><button square data-remove-question-input><i class="bi bi-trash"></i></button><button square data-toggle-question><i class="bi bi-caret-down-fill"></i><i class="bi bi-caret-up-fill"></i></button>`;
+        buttonGrid.innerHTML = `<button square data-select><i class="bi bi-circle"></i><i class="bi bi-circle-fill"></i></button><div class="input-group small"><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-id-input" value="${q.id}" disabled /></div></div><div class="input-group small"><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-number-input" value="${q.number}" placeholder="${q.number}" /></div></div><div class="input-group small"><div class="space" id="question-container"><select id="question-segment-input">${segmentsString}</select></div></div><div class="input-group"><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-text-input" value="${q.question}" placeholder="${q.question}" /></div></div><button square data-toggle-latex><i class="bi bi-${q.latex ? 'calculator-fill' : 'cursor-text'}"></i></button><button square data-remove-question-input><i class="bi bi-trash"></i></button><button square data-toggle-question><i class="bi bi-caret-down-fill"></i><i class="bi bi-caret-up-fill"></i></button>`;
         question.appendChild(buttonGrid);
         var images = document.createElement('div');
         images.classList = "attachments";
@@ -688,6 +690,7 @@ try {
     document.querySelectorAll('[data-add-incorrect-answer-input]').forEach(a => a.addEventListener('click', addIncorrectAnswer));
     document.querySelectorAll('[data-remove-correct-answer-input]').forEach(a => a.addEventListener('click', removeCorrectAnswer));
     document.querySelectorAll('[data-remove-incorrect-answer-input]').forEach(a => a.addEventListener('click', removeIncorrectAnswer));
+    document.querySelectorAll('[data-toggle-latex]').forEach(a => a.addEventListener('click', toggleQuestionLatex));
   }
 
   function addCorrectAnswer() {
@@ -720,6 +723,42 @@ try {
     this.parentElement.remove();
   }
 
+  function toggleQuestionLatex() {
+    if (!active) return;
+    this.disabled = true;
+    const icon = this.querySelector('i');
+    const question_id = this.parentElement.querySelector('#question-id-input').value;
+    var isLatex = false;
+    if (!icon.classList.contains('bi-cursor-text')) isLatex = true;
+    fetch(domain + `/question/${isLatex ? 'not_' : ''}latex`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        question_id
+      })
+    })
+      .then(r => r.json())
+      .then(q => {
+        if (icon.classList.contains('bi-cursor-text')) {
+          icon.classList.remove('bi-cursor-text');
+          icon.classList.add('bi-calculator-fill');
+          ui.toast("Question name marked as LaTeX.", 3000, "success", "bi bi-calculator-fill");
+        } else {
+          icon.classList.remove('bi-calculator-fill');
+          icon.classList.add('bi-cursor-text');
+          ui.toast("Question name marked as plain text.", 3000, "success", "bi bi-cursor-text");
+        }
+        this.disabled = false;
+      })
+      .catch((e) => {
+        console.error(e);
+        ui.view("api-fail");
+        if (document.querySelector('[data-polling]')) pollingOff();
+      });
+  }
+
   function toggleQuestion() {
     if (!active) return;
     if (this.parentElement.parentElement.classList.contains('expanded')) {
@@ -748,7 +787,7 @@ try {
     buttonGrid.className = "button-grid inputs";
     var segmentsString = "";
     segments.forEach(s => segmentsString += `<option value="${s.number}">${s.number}</option>`);
-    buttonGrid.innerHTML = `<button square data-select><i class="bi bi-circle"></i><i class="bi bi-circle-fill"></i></button><div class="input-group small"><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-id-input" value="" disabled /></div></div><div class="input-group small"><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-number-input" value="" /></div></div><div class="input-group small"><div class="space" id="question-container"><select id="question-segment-input">${segmentsString}</select></div></div><div class="input-group"><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-text-input" value="" /></div></div><button square data-remove-question-input><i class="bi bi-trash"></i></button><button square data-toggle-question><i class="bi bi-caret-down-fill"></i><i class="bi bi-caret-up-fill"></i></button>`;
+    buttonGrid.innerHTML = `<button square data-select><i class="bi bi-circle"></i><i class="bi bi-circle-fill"></i></button><div class="input-group small"><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-id-input" value="" disabled /></div></div><div class="input-group small"><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-number-input" value="" /></div></div><div class="input-group small"><div class="space" id="question-container"><select id="question-segment-input">${segmentsString}</select></div></div><div class="input-group"><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-text-input" value="" /></div></div><button square data-toggle-latex disabled><i class="bi bi-cursor-text"></i></button><button square data-remove-question-input><i class="bi bi-trash"></i></button><button square data-toggle-question><i class="bi bi-caret-down-fill"></i><i class="bi bi-caret-up-fill"></i></button>`;
     group.appendChild(buttonGrid);
     this.parentElement.insertBefore(group, this.parentElement.children[this.parentElement.children.length - 1]);
     document.querySelectorAll('[data-add-question-input]').forEach(a => a.addEventListener('click', addQuestion));
@@ -917,6 +956,7 @@ try {
     document.querySelectorAll('[data-unflag-response]').forEach(a => a.addEventListener('click', unflagResponse));
     document.querySelectorAll('[data-edit-reason]').forEach(a => a.addEventListener('click', editReason));
     active = true;
+    ui.toast("Data loaded.", 1000, "info", "bi bi-cloud-arrow-down");
   }
 
   function calculateTimeDifference(currentDate, previousTimestamp) {

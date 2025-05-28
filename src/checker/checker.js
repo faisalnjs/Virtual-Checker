@@ -356,7 +356,7 @@ try {
       document.querySelectorAll("span.code").forEach((element) => {
         element.innerHTML = storage.get("code") + (storage.get("makeUpDate") ? '*' : '');
       });
-      document.title = `Virtual Clicker (${storage.get("code")}${storage.get("makeUpDate") ? '*' : ''})`;
+      document.title = `Virtual Checker (${storage.get("code")}${storage.get("makeUpDate") ? '*' : ''})`;
       try {
         const coursesResponse = await fetch(`${domain}/courses`, {
           method: "GET",
@@ -430,7 +430,12 @@ try {
     document.querySelector('[data-question-title]').setAttribute('hidden', '');
     if (!question) return;
     if ((question.question.length > 0) && (question.question != ' ')) {
-      document.querySelector('[data-question-title]').innerText = question.question;
+      if (question.latex) {
+        document.querySelector('[data-question-title]').innerHTML = convertLatexToMarkup(question.question);
+        renderMathInElement(document.querySelector('[data-question-title]'));
+      } else {
+        document.querySelector('[data-question-title]').innerText = question.question;
+      };
       document.querySelector('[data-question-title]').removeAttribute('hidden');
     }
     JSON.parse(question.images).forEach(image => {

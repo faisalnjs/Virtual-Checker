@@ -812,3 +812,7 @@ hidden,
   margin-top: 10px;
   line-height: 1.5;
 }
+
+.ML__latex .ML__vlist {
+  height: fit-content !important;
+}
