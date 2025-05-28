@@ -23,6 +23,7 @@ try {
       element.innerHTML = "<p>v" + version + "</p>" + (DEVELOPER_MODE ? " <code>dev</code>" : "");
     });
   }
+
   document.querySelectorAll(".hostname").forEach((element) => {
     element.innerHTML = window.location.hostname;
   });
