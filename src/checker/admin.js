@@ -115,7 +115,7 @@ try {
                           updateResponses();
                         } else {
                           active = true;
-                          ui.toast("Data loaded.", 1000, "info", "bi bi-cloud-arrow-down");
+                          ui.toast("Data restored.", 1000, "info", "bi bi-cloud-arrow-down");
                         }
                       })
                       .catch((e) => {
@@ -428,7 +428,8 @@ try {
         number: segmentNumber,
         name: segment.querySelector('input').value,
         question_ids: segments.find(s => String(s.number) === String(segmentNumber)).question_ids,
-        course: Number(document.getElementById("course-period-input").value)
+        course: Number(document.getElementById("course-period-input").value),
+        due: segments.find(s => String(s.number) === String(segmentNumber)).due
       };
     }).sort((a, b) => a.order - b.order);
     fetch(domain + '/segments', {
@@ -956,7 +957,7 @@ try {
     document.querySelectorAll('[data-unflag-response]').forEach(a => a.addEventListener('click', unflagResponse));
     document.querySelectorAll('[data-edit-reason]').forEach(a => a.addEventListener('click', editReason));
     active = true;
-    ui.toast("Data loaded.", 1000, "info", "bi bi-cloud-arrow-down");
+    ui.toast("Data restored.", 1000, "info", "bi bi-cloud-arrow-down");
   }
 
   function calculateTimeDifference(currentDate, previousTimestamp) {
@@ -1284,7 +1285,7 @@ try {
         name: segment.querySelector('input').value,
         question_ids: segments.find(s => String(s.number) === String(segmentNumber)).question_ids,
         course: Number(document.getElementById("course-period-input").value),
-        due: segment.querySelector('#segment-due-date').value || null,
+        due: segments.find(s => String(s.number) === String(segmentNumber)).due
       };
     });
     switch (document.getElementById('sort-segments-types').value) {
