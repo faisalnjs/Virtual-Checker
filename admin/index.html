@@ -94,6 +94,8 @@
         <div class="button-grid inputs">
           <label style="width: -webkit-fill-available" class="small">Number</label>
           <label style="width: -webkit-fill-available">Name</label>
+          <label style="width: -webkit-fill-available" class="mediumll">Due</label>
+          <div square hidden-spacer></div>
         </div>
         <div class="section">
           <button square data-select><i class="bi bi-circle"></i><i class="bi bi-circle-fill"></i></button>
@@ -108,8 +110,12 @@
                 <input type="text" autocomplete="off" />
               </div>
             </div>
-            <button square><i class="bi bi-plus"></i></button>
-            <button square><i class="bi bi-dash"></i></button>
+            <div class="input-group mediuml">
+              <div class="space" id="question-container">
+                <input type="date" id="date-input">
+              </div>
+            </div>
+            <button square><i class="bi bi-caret-down-fill"></i></button>
           </div>
           <div class="questions">
             <div class="button-grid inputs">

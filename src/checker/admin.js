@@ -311,7 +311,7 @@ try {
         segment.id = `segment-${s.number}`;
         var buttonGrid = document.createElement('div');
         buttonGrid.className = "button-grid inputs";
-        buttonGrid.innerHTML = `<button square data-select><i class="bi bi-circle"></i><i class="bi bi-circle-fill"></i></button><div class="input-group small"><div class="space" id="question-container"><input type="text" autocomplete="off" id="segment-number-input" value="${s.number}" placeholder="${s.number}" /></div></div><div class="input-group"><div class="space" id="question-container"><input type="text" autocomplete="off" id="segment-name-input" value="${s.name}" placeholder="${s.name}" /></div></div><button square data-remove-segment-input><i class="bi bi-trash"></i></button><button square data-toggle-segment><i class="bi bi-caret-down-fill"></i><i class="bi bi-caret-up-fill"></i></button>`;
+        buttonGrid.innerHTML = `<button square data-select><i class="bi bi-circle"></i><i class="bi bi-circle-fill"></i></button><div class="input-group small"><div class="space" id="question-container"><input type="text" autocomplete="off" id="segment-number-input" value="${s.number}" placeholder="${s.number}" /></div></div><div class="input-group"><div class="space" id="question-container"><input type="text" autocomplete="off" id="segment-name-input" value="${s.name}" placeholder="${s.name}" /></div></div><div class="input-group mediuml"><div class="space" id="question-container"><input type="date" id="segment-due-date" value="${s.due}"></div></div><button square data-remove-segment-input><i class="bi bi-trash"></i></button><button square data-toggle-segment><i class="bi bi-caret-down-fill"></i><i class="bi bi-caret-up-fill"></i></button>`;
         segment.appendChild(buttonGrid);
         var questionsString = "";
         var questions = document.createElement('div');
@@ -468,10 +468,12 @@ try {
         },
         segments: []
       };
+      var segmentOrder = 0;
       Array.from(document.querySelectorAll('.segments .section .section'))
         .filter(w => w.id)
         .forEach(segment => {
           updatedInfo.segments.push({
+            order: segmentOrder,
             id: segment.id.split('-')[1],
             number: segment.querySelector('#segment-number-input').value,
             name: segment.querySelector('#segment-name-input').value,
@@ -480,8 +482,10 @@ try {
                 name: q.value,
                 id: q.nextElementSibling.value
               };
-            }))
+            })),
+            due: segment.querySelector('#segment-due-date').value || null,
           });
+          segmentOrder++;
         });
     } else if (document.querySelector('.questions.section')) {
       updatedInfo = {
@@ -585,7 +589,7 @@ try {
     group.id = 'segment-new';
     var buttonGrid = document.createElement('div');
     buttonGrid.className = "button-grid inputs";
-    buttonGrid.innerHTML = `<button square data-select><i class="bi bi-circle"></i><i class="bi bi-circle-fill"></i></button><div class="input-group small"><div class="space" id="question-container"><input type="text" autocomplete="off" id="segment-number-input" value="0" /></div></div><div class="input-group"><div class="space" id="question-container"><input type="text" autocomplete="off" id="segment-name-input" value="" /></div></div><button square data-remove-segment-input><i class="bi bi-trash"></i></button><button square data-toggle-segment><i class="bi bi-caret-down-fill"></i><i class="bi bi-caret-up-fill"></i></button>`;
+    buttonGrid.innerHTML = `<button square data-select><i class="bi bi-circle"></i><i class="bi bi-circle-fill"></i></button><div class="input-group small"><div class="space" id="question-container"><input type="text" autocomplete="off" id="segment-number-input" value="0" /></div></div><div class="input-group"><div class="space" id="question-container"><input type="text" autocomplete="off" id="segment-name-input" value="" /></div></div><div class="input-group mediuml"><div class="space" id="question-container"><input type="date" id="segment-due-date"></div></div><button square data-remove-segment-input><i class="bi bi-trash"></i></button><button square data-toggle-segment><i class="bi bi-caret-down-fill"></i><i class="bi bi-caret-up-fill"></i></button>`;
     group.appendChild(buttonGrid);
     var questions = document.createElement('div');
     questions.classList = "questions";
@@ -1279,7 +1283,8 @@ try {
         number: segmentNumber,
         name: segment.querySelector('input').value,
         question_ids: segments.find(s => String(s.number) === String(segmentNumber)).question_ids,
-        course: Number(document.getElementById("course-period-input").value)
+        course: Number(document.getElementById("course-period-input").value),
+        due: segment.querySelector('#segment-due-date').value || null,
       };
     });
     switch (document.getElementById('sort-segments-types').value) {

@@ -423,6 +423,8 @@ div.ML__keyboard {
   .small,
   .smedium,
   .medium,
+  .mediuml,
+  .mediumll,
   square {
     max-width: unset !important;
   }
@@ -511,6 +513,14 @@ div.ML__keyboard {
   max-width: 175px;
 }
 
+.mediuml {
+  max-width: 225px;
+}
+
+.mediumll {
+  max-width: 265px;
+}
+
 .fit {
   width: fit-content;
 }
@@ -585,7 +595,8 @@ div.ML__keyboard {
 }
 
 .segments .section [data-remove-segment-input],
-.questions .section [data-remove-question-input] {
+.questions .section [data-remove-question-input],
+.segments:not(:has(.section:first-child.expanded)) [hidden-spacer] {
   display: none;
 }
 
@@ -811,6 +822,16 @@ hidden,
   font-size: 20px;
   margin-top: 10px;
   line-height: 1.5;
+}
+
+[data-segment-due] {
+  font-size: 15px;
+  margin-bottom: -15px;
+  line-height: 1.5;
+}
+
+[data-segment-due] i {
+  padding-right: 2.5px;
 }
 
 .ML__latex .ML__vlist {

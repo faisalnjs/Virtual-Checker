@@ -385,7 +385,7 @@ try {
         segmentsData.sort((a, b) => a.order - b.order).forEach(segment => {
           const option = document.createElement('option');
           option.value = segment.number;
-          option.innerHTML = segment.name;
+          option.innerHTML = `${segment.name}${segment.due ? ` (Due ${new Date(segment.due).toLocaleDateString()})` : ''}`;
           segments.append(option);
         });
         segments.removeEventListener("change", updateSegment);
@@ -415,6 +415,11 @@ try {
         questions.append(questionOption);
       }
     });
+    document.querySelector('[data-segment-due]').setAttribute('hidden', '');
+    if (selectedSegment.due) {
+      document.querySelector('[data-segment-due]').innerHTML = `<i class="bi bi-calendar3"></i> Due ${new Date(selectedSegment.due).toLocaleDateString()}`;
+      document.querySelector('[data-segment-due]').removeAttribute('hidden');
+    };
     questions.removeEventListener("change", updateQuestion);
     questions.addEventListener("change", updateQuestion);
     await updateQuestion();
