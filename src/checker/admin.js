@@ -317,9 +317,9 @@ try {
         var questions = document.createElement('div');
         questions.classList = "questions";
         JSON.parse(s.question_ids).forEach(q => {
-          questionsString += `<div class="input-group"><input type="text" autocomplete="off" id="segment-question-name-input" value="${q.name}" placeholder="${q.name}" /><input type="number" autocomplete="off" id="segment-question-id-input" value="${q.id}" placeholder="${q.id}" /></div>`;
+          questionsString += `<div class="input-group"><div class="drag"><i class="bi bi-grip-vertical"></i></div><input type="text" autocomplete="off" id="segment-question-name-input" value="${q.name}" placeholder="${q.name}" /><input type="number" autocomplete="off" id="segment-question-id-input" value="${q.id}" placeholder="${q.id}" /></div>`;
         });
-        questions.innerHTML = `<div class="button-grid inputs"><div class="input-group small"><label>Name</label><label>ID</label></div>${questionsString}<div class="input-group fit"><button square data-add-segment-question-input><i class="bi bi-plus"></i></button><button square data-remove-segment-question-input${(JSON.parse(s.question_ids).length === 1) ? ' disabled' : ''}><i class="bi bi-dash"></i></button></div></div>`;
+        questions.innerHTML = `<div class="button-grid"><button class="space fit" id="sort-segment-questions-increasing">Sort Increasing (1A-9Z)</button><button class="space fit" id="sort-segment-questions-decreasing">Sort Decreasing (9Z-1A)</button></div><br><div class="button-grid inputs"><div class="input-group small"><label>Name</label><label>ID</label></div>${questionsString}<div class="input-group fit"><button square data-add-segment-question-input><i class="bi bi-plus"></i></button><button square data-remove-segment-question-input${(JSON.parse(s.question_ids).length === 1) ? ' disabled' : ''}><i class="bi bi-dash"></i></button></div></div>`;
         segment.appendChild(questions);
         document.querySelector('.segments .section').appendChild(segment);
         const elem = document.createElement("div");
@@ -338,6 +338,8 @@ try {
     document.querySelectorAll('[data-remove-segment-question-input]').forEach(a => a.addEventListener('click', removeSegmentQuestion));
     document.querySelectorAll('[data-toggle-segment]').forEach(a => a.addEventListener('click', toggleSegment));
     document.querySelectorAll('[data-select]').forEach(a => a.addEventListener('click', toggleSelected));
+    if (document.getElementById('sort-segment-questions-increasing')) document.getElementById('sort-segment-questions-increasing').addEventListener('click', sortSegmentQuestionsIncreasing);
+    if (document.getElementById('sort-segment-questions-decreasing')) document.getElementById('sort-segment-questions-decreasing').addEventListener('click', sortSegmentQuestionsDecreasing);
     document.querySelectorAll('.drag').forEach(item => {
       item.setAttribute('draggable', true);
       item.addEventListener('dragstart', handleDragStart);
@@ -583,7 +585,7 @@ try {
     group.id = 'segment-new';
     var buttonGrid = document.createElement('div');
     buttonGrid.className = "button-grid inputs";
-    buttonGrid.innerHTML = `<button square data-select><i class="bi bi-circle"></i><i class="bi bi-circle-fill"></i></button><div class="input-group small"><div class="space" id="question-container"><input type="text" autocomplete="off" id="segment-number-input" value="0" /></div></div><div class="input-group"><div class="space" id="question-container"><input type="text" autocomplete="off" id="segment-name-input" value="" /></div></div><button square data-remove-segment-input><i class="bi bi-trash"></i></button><button square data-toggle-segment><i class="bi bi-caret-down-fill"></i><i class="bi bi-caret-up-fill"></i><div class="drag"><i class="bi bi-grip-vertical"></i></div></button>`;
+    buttonGrid.innerHTML = `<button square data-select><i class="bi bi-circle"></i><i class="bi bi-circle-fill"></i></button><div class="input-group small"><div class="space" id="question-container"><input type="text" autocomplete="off" id="segment-number-input" value="0" /></div></div><div class="input-group"><div class="space" id="question-container"><input type="text" autocomplete="off" id="segment-name-input" value="" /></div></div><button square data-remove-segment-input><i class="bi bi-trash"></i></button><button square data-toggle-segment><i class="bi bi-caret-down-fill"></i><i class="bi bi-caret-up-fill"></i></button>`;
     group.appendChild(buttonGrid);
     var questions = document.createElement('div');
     questions.classList = "questions";
@@ -596,12 +598,6 @@ try {
     document.querySelectorAll('[data-remove-segment-question-input]').forEach(a => a.addEventListener('click', removeSegmentQuestion));
     document.querySelectorAll('[data-toggle-segment]').forEach(a => a.addEventListener('click', toggleSegment));
     document.querySelectorAll('[data-select]').forEach(a => a.addEventListener('click', toggleSelected));
-    document.querySelectorAll('.drag').forEach(item => {
-      item.setAttribute('draggable', true);
-      item.addEventListener('dragstart', handleDragStart);
-      item.addEventListener('dragover', handleDragOver);
-      item.addEventListener('drop', handleDropSegment);
-    });
   }
 
   function removeSegment() {
@@ -1286,27 +1282,33 @@ try {
         course: Number(document.getElementById("course-period-input").value)
       };
     });
-    switch(document.getElementById('sort-segments-types').value) {
+    switch (document.getElementById('sort-segments-types').value) {
       case 'az':
         updatedSegments.sort((a, b) => {
-          const alphaA = (a.number.match(/[a-zA-Z]+/) || [''])[0];
-          const alphaB = (b.number.match(/[a-zA-Z]+/) || [''])[0];
-          const numA = parseInt(a.number.match(/\d+/) ? a.number.match(/\d+/)[0] : '0');
-          const numB = parseInt(b.number.match(/\d+/) ? b.number.match(/\d+/)[0] : '0');
+          const nameA = a.number;
+          const nameB = b.number;
+          const numA = parseInt(nameA.match(/\d+/) ? nameA.match(/\d+/)[0] : '0');
+          const numB = parseInt(nameB.match(/\d+/) ? nameB.match(/\d+/)[0] : '0');
+          const alphaA = (nameA.match(/[a-zA-Z]+/) || [''])[0];
+          const alphaB = (nameB.match(/[a-zA-Z]+/) || [''])[0];
+          if (numA !== numB) return numA - numB;
           if (alphaA < alphaB) return -1;
           if (alphaA > alphaB) return 1;
-          return numA - numB;
+          return 0;
         });
         break;
       case 'za':
         updatedSegments.sort((a, b) => {
-          const alphaA = (a.number.match(/[a-zA-Z]+/) || [''])[0];
-          const alphaB = (b.number.match(/[a-zA-Z]+/) || [''])[0];
-          const numA = parseInt(a.number.match(/\d+/) ? a.number.match(/\d+/)[0] : '0');
-          const numB = parseInt(b.number.match(/\d+/) ? b.number.match(/\d+/)[0] : '0');
+          const nameA = a.number;
+          const nameB = b.number;
+          const numA = parseInt(nameA.match(/\d+/) ? nameA.match(/\d+/)[0] : '0');
+          const numB = parseInt(nameB.match(/\d+/) ? nameB.match(/\d+/)[0] : '0');
+          const alphaA = (nameA.match(/[a-zA-Z]+/) || [''])[0];
+          const alphaB = (nameB.match(/[a-zA-Z]+/) || [''])[0];
+          if (numA !== numB) return numA - numB;
           if (alphaA < alphaB) return -1;
           if (alphaA > alphaB) return 1;
-          return numA - numB;
+          return 0;
         });
         updatedSegments.reverse();
         break;
@@ -1334,6 +1336,68 @@ try {
         ui.view("api-fail");
         if (document.querySelector('[data-polling]')) pollingOff();
       });
+  }
+
+  function sortSegmentQuestionsIncreasing() {
+    if (!active) return;
+    sortSegmentQuestions(this, 'az');
+  }
+
+  function sortSegmentQuestionsDecreasing() {
+    if (!active) return;
+    sortSegmentQuestions(this, 'za');
+  }
+
+  function sortSegmentQuestions(event, type) {
+    if (!active) return;
+    var updatedQuestions = [...event.parentElement.parentElement.querySelector('.inputs').children].filter(q => q.classList.value === 'input-group');
+    switch (type) {
+      case 'az':
+        updatedQuestions.sort((a, b) => {
+          const nameA = a.querySelector('#segment-question-name-input').value;
+          const nameB = b.querySelector('#segment-question-name-input').value;
+          const numA = parseInt(nameA.match(/\d+/) ? nameA.match(/\d+/)[0] : '0');
+          const numB = parseInt(nameB.match(/\d+/) ? nameB.match(/\d+/)[0] : '0');
+          const alphaA = (nameA.match(/[a-zA-Z]+/) || [''])[0];
+          const alphaB = (nameB.match(/[a-zA-Z]+/) || [''])[0];
+          if (numA !== numB) return numA - numB;
+          if (alphaA < alphaB) return -1;
+          if (alphaA > alphaB) return 1;
+          return 0;
+        });
+        break;
+      case 'za':
+        updatedQuestions.sort((a, b) => {
+          const nameA = a.querySelector('#segment-question-name-input').value;
+          const nameB = b.querySelector('#segment-question-name-input').value;
+          const numA = parseInt(nameA.match(/\d+/) ? nameA.match(/\d+/)[0] : '0');
+          const numB = parseInt(nameB.match(/\d+/) ? nameB.match(/\d+/)[0] : '0');
+          const alphaA = (nameA.match(/[a-zA-Z]+/) || [''])[0];
+          const alphaB = (nameB.match(/[a-zA-Z]+/) || [''])[0];
+          if (numA !== numB) return numA - numB;
+          if (alphaA < alphaB) return -1;
+          if (alphaA > alphaB) return 1;
+          return 0;
+        });
+        updatedQuestions.reverse();
+        break;
+      default:
+        break;
+    }
+    var updatedQuestionsString = '<div class="input-group small"><label>Name</label><label>ID</label></div>';
+    for (let i = 0; i < updatedQuestions.length; i++) {
+      updatedQuestionsString += `<div class="input-group"><div class="drag"><i class="bi bi-grip-vertical"></i></div><input type="text" autocomplete="off" id="segment-question-name-input" value="${updatedQuestions[i].querySelector('#segment-question-name-input').value}" /><input type="number" autocomplete="off" id="segment-question-id-input" value="${updatedQuestions[i].querySelector('#segment-question-id-input').value}" /></div>`;
+    }
+    updatedQuestionsString += '<div class="input-group fit"><button square="" data-add-segment-question-input=""><i class="bi bi-plus"></i></button><button square="" data-remove-segment-question-input=""><i class="bi bi-dash"></i></button></div>';
+    event.parentElement.parentElement.querySelector('.inputs').innerHTML = updatedQuestionsString;
+    document.querySelectorAll('[data-add-segment-question-input]').forEach(a => a.addEventListener('click', addSegmentQuestion));
+    document.querySelectorAll('[data-remove-segment-question-input]').forEach(a => a.addEventListener('click', removeSegmentQuestion));
+    document.querySelectorAll('.drag').forEach(item => {
+      item.setAttribute('draggable', true);
+      item.addEventListener('dragstart', handleDragStart);
+      item.addEventListener('dragover', handleDragOver);
+      item.addEventListener('drop', handleDropSegment);
+    });
   }
 } catch (error) {
   if (storage.get("developer")) {
