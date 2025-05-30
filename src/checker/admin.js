@@ -167,6 +167,7 @@ try {
   if (document.querySelector('[data-speed]')) document.querySelector('[data-speed]').addEventListener("click", toggleSpeedMode);
   if (document.getElementById('enable-speed-mode-button')) document.getElementById('enable-speed-mode-button').addEventListener("click", enableSpeedMode);
   if (document.querySelector('[data-reorder]')) document.querySelector('[data-reorder]').addEventListener("click", toggleReorder);
+  if (document.getElementById('sort-segments-due')) document.getElementById('sort-segments-due').addEventListener("click", sortSegmentsDue);
   if (document.getElementById('sort-segments-increasing')) document.getElementById('sort-segments-increasing').addEventListener("click", sortSegmentsIncreasing);
   if (document.getElementById('sort-segments-decreasing')) document.getElementById('sort-segments-decreasing').addEventListener("click", sortSegmentsDecreasing);
   if (document.getElementById('sort-segments-button')) document.getElementById('sort-segments-button').addEventListener("click", sortSegments);
@@ -1263,6 +1264,12 @@ try {
     }
   }
 
+  function sortSegmentsDue() {
+    if (!active) return;
+    document.getElementById('sort-segments-types').value = 'due';
+    return ui.view("sort-segments");
+  }
+
   function sortSegmentsIncreasing() {
     if (!active) return;
     document.getElementById('sort-segments-types').value = 'az';
@@ -1319,6 +1326,17 @@ try {
         updatedSegments.reverse();
         break;
       default:
+        updatedSegments.sort((a, b) => {
+          const dueA = a.due ? new Date(a.due) : null;
+          const dueB = b.due ? new Date(b.due) : null;
+          if (!dueA && dueB) return 1;
+          if (dueA && !dueB) return -1;
+          if (!dueA && !dueB) return 0;
+          if (dueA < dueB) return -1;
+          if (dueA > dueB) return 1;
+          return 0;
+        });
+        break;
         break;
     }
     for (let i = 0; i < updatedSegments.length; i++) {
@@ -1336,6 +1354,7 @@ try {
         segments = c;
         updateSegments();
         ui.view();
+        ui.toast("Successfully sorted segments.", 3000, "success", "bi bi-sort-down");
       })
       .catch((e) => {
         console.error(e);

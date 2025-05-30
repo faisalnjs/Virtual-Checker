@@ -687,6 +687,10 @@ body:has(.selecting) #controls-container button:has(.bi-arrows-move) {
   display: none;
 }
 
+body:has(.selecting) #controls-container button:has(.bi-sort-down) {
+  display: none;
+}
+
 .section:not(:has(.expanded)) {
   gap: 7.5px;
   transition: 0.25s gap var(--easing);
