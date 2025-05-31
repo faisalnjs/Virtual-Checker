@@ -18,9 +18,28 @@ export function getPeriod(date) {
   return period;
 }
 
+// Returns zero-indexed period time range
+export function getPeriodRange(date) {
+  date = date || Date.now();
+  const period = timestamps.find((periods) => {
+    return date >= periods[0] && date < periods[1];
+  });
+  return period;
+}
+
+// Returns zero-indexed extended period
 export function getExtendedPeriod(date) {
   date = date || Date.now();
   const period = extendedTimestamps.findIndex((periods) => {
+    return date >= periods[0] && date < periods[1];
+  });
+  return period;
+}
+
+// Returns zero-indexed extended period time range
+export function getExtendedPeriodRange(date) {
+  date = date || Date.now();
+  const period = extendedTimestamps.find((periods) => {
     return date >= periods[0] && date < periods[1];
   });
   return period;
