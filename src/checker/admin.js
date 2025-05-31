@@ -1337,7 +1337,6 @@ try {
           return 0;
         });
         break;
-        break;
     }
     for (let i = 0; i < updatedSegments.length; i++) {
       updatedSegments[i].order = i;

@@ -5,7 +5,7 @@ import storage from "/src/modules/storage.js";
 
 import { autocomplete } from "/src/symbols/symbols.js";
 import { unixToTimeString } from "/src/modules/time.js";
-import { getExtendedPeriod } from "/src/periods/periods";
+import { getExtendedPeriod, getExtendedPeriodRange } from "/src/periods/periods";
 import { convertLatexToAsciiMath, convertLatexToMarkup, renderMathInElement } from "mathlive";
 ``;
 
@@ -354,9 +354,11 @@ try {
     if (code) {
       document.getElementById("code-input").value = storage.get("code");
       document.querySelectorAll("span.code").forEach((element) => {
-        element.innerHTML = storage.get("code") + (storage.get("makeUpDate") ? '*' : '');
+        element.innerHTML = storage.get("code");
       });
-      document.title = `Virtual Checker (${storage.get("code")}${storage.get("makeUpDate") ? '*' : ''})`;
+      document.title = `Virtual Checker (${storage.get("code")})`;
+      const periodRange = getExtendedPeriodRange(null, Number(code.slice(0, 1)));
+      console.log(periodRange)
       try {
         const coursesResponse = await fetch(`${domain}/courses`, {
           method: "GET",
@@ -382,12 +384,20 @@ try {
         const segmentsData = await segmentsResponse.json();
         segments.innerHTML = '';
         segmentsArray = segmentsData;
-        segmentsData.sort((a, b) => a.order - b.order).forEach(segment => {
+        segmentsArray.sort((a, b) => a.order - b.order).forEach(segment => {
           const option = document.createElement('option');
           option.value = segment.number;
-          option.innerHTML = `${segment.name}${segment.due ? ` (Due ${new Date(segment.due).toLocaleDateString()})` : ''}`;
+          option.innerHTML = `${segment.name}${segment.due ? ` (Due ${new Date(`${segment.due}T00:00:00`).toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })})` : ''}`;
+          option.setAttribute('due', segment.due || '');
           segments.append(option);
         });
+        segments.value = segmentsArray.find(s => {
+          if (!s.due) return false;
+          return (new Date(`${s.due}T00:00:00`).toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' }) === new Date().toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric', }) && new Date().getTime() <= periodRange[1]);
+        })?.number || segmentsArray.find(s => {
+          if (!s.due) return false;
+          return (new Date(`${s.due}T00:00:00`).getTime() > periodRange[1] && new Date(`${s.due}T00:00:00`).getTime() <= periodRange[0] + 86400000);
+        })?.number || segmentsArray.find(s => !s.due)?.number || segmentsArray[0]?.number;
         segments.removeEventListener("change", updateSegment);
         segments.addEventListener("change", updateSegment);
         const questionsResponse = await fetch(`${domain}/questions`, {
@@ -417,7 +427,7 @@ try {
     });
     document.querySelector('[data-segment-due]').setAttribute('hidden', '');
     if (selectedSegment.due) {
-      document.querySelector('[data-segment-due]').innerHTML = `<i class="bi bi-calendar3"></i> Due ${new Date(selectedSegment.due).toLocaleDateString()}`;
+      document.querySelector('[data-segment-due]').innerHTML = `<i class="bi bi-calendar3"></i> Due ${new Date(`${selectedSegment.due}T00:00:00`).toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })}`;
       document.querySelector('[data-segment-due]').removeAttribute('hidden');
     };
     questions.removeEventListener("change", updateQuestion);
