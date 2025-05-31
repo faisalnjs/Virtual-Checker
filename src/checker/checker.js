@@ -5,8 +5,9 @@ import storage from "/src/modules/storage.js";
 
 import { autocomplete } from "/src/symbols/symbols.js";
 import { unixToTimeString } from "/src/modules/time.js";
-import { getExtendedPeriod, getExtendedPeriodRange } from "/src/periods/periods";
+import { getExtendedPeriodRange } from "/src/periods/periods";
 import { convertLatexToAsciiMath, convertLatexToMarkup, renderMathInElement } from "mathlive";
+import mediumZoom from "medium-zoom";
 ``;
 
 try {
@@ -358,7 +359,6 @@ try {
       });
       document.title = `Virtual Checker (${storage.get("code")})`;
       const periodRange = getExtendedPeriodRange(null, Number(code.slice(0, 1)));
-      console.log(periodRange)
       try {
         const coursesResponse = await fetch(`${domain}/courses`, {
           method: "GET",
@@ -457,6 +457,9 @@ try {
       var i = document.createElement('img');
       i.src = image;
       questionImages.append(i);
+    });
+    mediumZoom(".images img", {
+      background: "transparent"
     });
     const questionOptions = questions.querySelectorAll('option');
     const selectedQuestionOption = questions.querySelector('option:checked');

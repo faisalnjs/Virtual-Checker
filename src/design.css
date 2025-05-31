@@ -841,3 +841,11 @@ hidden,
 .ML__latex .ML__vlist {
   height: fit-content !important;
 }
+
+.medium-zoom-overlay {
+  background: var(--background-color) !important;
+}
+
+.medium-zoom-image {
+  border-radius: 5px;
+}
