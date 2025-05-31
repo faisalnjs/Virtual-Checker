@@ -10,8 +10,7 @@ const extendedTimestamps = extendedSchedule.map((period) => {
 });
 
 // Returns zero-indexed period
-export function getPeriod(date) {
-  date = date || Date.now();
+export function getPeriod(date = Date.now()) {
   const period = timestamps.findIndex((periods) => {
     return date >= periods[0] && date < periods[1];
   });
@@ -19,17 +18,15 @@ export function getPeriod(date) {
 }
 
 // Returns zero-indexed period time range
-export function getPeriodRange(date) {
-  date = date || Date.now();
-  const period = timestamps.find((periods) => {
+export function getPeriodRange(date = Date.now(), period) {
+  const range = period ? timestamps[period - 1] : timestamps.find((periods) => {
     return date >= periods[0] && date < periods[1];
   });
-  return period;
+  return range;
 }
 
 // Returns zero-indexed extended period
-export function getExtendedPeriod(date) {
-  date = date || Date.now();
+export function getExtendedPeriod(date = Date.now()) {
   const period = extendedTimestamps.findIndex((periods) => {
     return date >= periods[0] && date < periods[1];
   });
@@ -37,12 +34,11 @@ export function getExtendedPeriod(date) {
 }
 
 // Returns zero-indexed extended period time range
-export function getExtendedPeriodRange(date) {
-  date = date || Date.now();
-  const period = extendedTimestamps.find((periods) => {
+export function getExtendedPeriodRange(date = Date.now(), period) {
+  const range = period ? extendedTimestamps[period - 1] : extendedTimestamps.find((periods) => {
     return date >= periods[0] && date < periods[1];
   });
-  return period;
+  return range;
 }
 
 // Converts hh:mm to milliseconds
