@@ -81,6 +81,7 @@ button {
   font: inherit;
   transition: 100ms var(--easing);
   cursor: pointer;
+  min-width: fit-content;
 }
 
 button.icon {
@@ -88,6 +89,10 @@ button.icon {
   height: 2.25em;
   padding: 0;
   border-radius: 50%;
+}
+
+button.fit {
+  width: fit-content !important;
 }
 
 button:disabled {
@@ -187,6 +192,7 @@ code {
   height: 1.5em;
   padding: 0 0.25rem;
   border-radius: 0.25rem;
+  color: var(--accent-text-color);
   background-color: var(--surface-color);
 }
 
@@ -331,17 +337,18 @@ div.ML__keyboard {
 
 [data-button-select] {
   display: flex;
-  gap: 0.25rem;
+  gap: 0.3rem 0.25rem;
   padding: 0.25rem;
   background-color: var(--surface-color);
   border-radius: 0.5rem;
   width: fit-content;
+  flex-wrap: wrap;
 }
 
 [data-button-select] > button {
   height: unset;
+  min-height: 1.75em;
   border-radius: 0.25rem;
-  padding: 5px 12.5px;
   cursor: pointer;
 }
 
@@ -406,7 +413,7 @@ div.ML__keyboard {
 
 @media screen and (max-width: 900px) {
   .button-grid {
-    flex-wrap: wrap;
+    flex-wrap: wrap !important;
   }
 
   label {
@@ -416,6 +423,8 @@ div.ML__keyboard {
   .small,
   .smedium,
   .medium,
+  .mediuml,
+  .mediumll,
   square {
     max-width: unset !important;
   }
@@ -436,17 +445,60 @@ div.ML__keyboard {
 
 [data-answer-mode="set"] input {
   text-align: center;
-}
-
-.questions:not(:has(.section)) {
   width: -webkit-fill-available;
+  min-width: 50px;
 }
 
-.questions:not(:has(.section)) label {
-  justify-content: center;
-  padding: 0 0.5em;
-  text-align: right;
-  height: 2.25em;
+[data-answer-mode="frq"] h1 {
+  text-align: center;
+  padding-bottom: 10px;
+}
+
+#frq-input {
+  color: var(--accent-color);
+  -webkit-appearance: none;
+  width: -webkit-fill-available;
+  height: 20px;
+  border-radius: 10px;
+  background: var(--surface-color);
+  outline: none;
+  margin: 20px 0;
+}
+
+#frq-input::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+#frq-input::-webkit-slider-thumb {
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  background: var(--accent-color);
+  cursor: grab;
+  box-shadow: 0px 0px 5px 5px var(--surface-color);
+  transition: 0.25s;
+}
+
+#frq-input::-moz-range-thumb {
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  background: var(--accent-color);
+  cursor: grab;
+  box-shadow: 0px 0px 5px 5px var(--surface-color);
+  transition: 0.25s;
+}
+
+#frq-input::-webkit-slider-thumb:active {
+  width: 40px;
+  height: 40px;
+  cursor: grabbing;
+  transition: 0.25s;
+}
+
+#checker:has([data-value="frq"][aria-selected="true"]) #answer-container {
+  overflow: visible !important;
 }
 
 .small {
@@ -459,6 +511,14 @@ div.ML__keyboard {
 
 .medium {
   max-width: 175px;
+}
+
+.mediuml {
+  max-width: 225px;
+}
+
+.mediumll {
+  max-width: 265px;
 }
 
 .fit {
@@ -535,7 +595,8 @@ div.ML__keyboard {
 }
 
 .segments .section [data-remove-segment-input],
-.questions .section [data-remove-question-input] {
+.questions .section [data-remove-question-input],
+.segments:not(:has(.section:first-child.expanded)) [hidden-spacer] {
   display: none;
 }
 
@@ -558,11 +619,7 @@ div.ML__keyboard {
 }
 
 .segments .section.expanded .questions,
-.questions .section.expanded .attachments {
-  max-height: 100px;
-  transition: 0.25s var(--easing);
-}
-
+.questions .section.expanded .attachments,
 .questions .section.expanded .answers {
   max-height: 1000px;
   transition: 0.25s var(--easing);
@@ -624,6 +681,14 @@ body:has(.selecting) #controls-container button:has(.bi-lightning-charge) {
 
 body:has(.selecting) #controls-container [data-delete-multiple] {
   display: block;
+}
+
+body:has(.selecting) #controls-container button:has(.bi-arrows-move) {
+  display: none;
+}
+
+body:has(.selecting) #controls-container button:has(.bi-sort-down) {
+  display: none;
 }
 
 .section:not(:has(.expanded)) {
@@ -761,4 +826,26 @@ hidden,
   font-size: 20px;
   margin-top: 10px;
   line-height: 1.5;
+}
+
+[data-segment-due] {
+  font-size: 15px;
+  margin-bottom: -15px;
+  line-height: 1.5;
+}
+
+[data-segment-due] i {
+  padding-right: 2.5px;
+}
+
+.ML__latex .ML__vlist {
+  height: fit-content !important;
+}
+
+.medium-zoom-overlay {
+  background: var(--background-color) !important;
+}
+
+.medium-zoom-image {
+  border-radius: 5px;
 }

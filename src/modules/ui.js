@@ -301,16 +301,20 @@ export function view(path) {
     });
   }
   show(document.querySelector(`[data-modal-page="${pages[0]}"]`), title, buttons);
+  if (path === "api-fail") startLoader();
   const event = new Event("view");
   target.dispatchEvent(event);
 }
 
-export function modeless(icon, message) {
+export function modeless(icon, message, description = null) {
   document.querySelector("div.modeless")?.remove();
   const element = document.createElement("div");
   const keyframes = [{ opacity: 0 }, { opacity: 1 }];
   element.className = "modeless";
   element.append(new Element("h2", icon).element, new Element("p", message).element);
+  if (description) {
+    element.append(new Element("p", description).element);
+  }
   element.animate(keyframes, {
     duration: 100,
     fill: "forwards",
@@ -324,7 +328,7 @@ export function modeless(icon, message) {
     setTimeout(() => {
       element.remove();
     }, 100);
-  }, 2400);
+  }, description ? 5000 : 2400);
   document.body.append(element);
 }
 
@@ -556,4 +560,14 @@ export function toast(message, duration = 3000, type = "info", icon = null) {
     document.body.appendChild(container);
     return container;
   }
+}
+
+export function startLoader() {
+  const loader = document.getElementById("loader");
+  if (loader) loader.classList.add("active");
+}
+
+export function stopLoader() {
+  const loader = document.getElementById("loader");
+  if (loader) loader.classList.remove("active");
 }
