@@ -42,7 +42,7 @@ body[data-theme="butterfly"] :is(#header, #checker) {
   background-color: transparent;
 }
 
-body[data-theme="butterfly"] #answer-mode-selector {
+body[data-theme="butterfly"] [data-button-select] {
   background-color: var(--surface-color);
 }
 
