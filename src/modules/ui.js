@@ -301,6 +301,7 @@ export function view(path) {
     });
   }
   show(document.querySelector(`[data-modal-page="${pages[0]}"]`), title, buttons);
+  if (path === "api-fail") startLoader();
   const event = new Event("view");
   target.dispatchEvent(event);
 }
@@ -559,4 +560,14 @@ export function toast(message, duration = 3000, type = "info", icon = null) {
     document.body.appendChild(container);
     return container;
   }
+}
+
+export function startLoader() {
+  const loader = document.getElementById("loader");
+  if (loader) loader.classList.add("active");
+}
+
+export function stopLoader() {
+  const loader = document.getElementById("loader");
+  if (loader) loader.classList.remove("active");
 }

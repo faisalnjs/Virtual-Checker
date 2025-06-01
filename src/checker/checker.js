@@ -407,6 +407,7 @@ try {
         questionsArray = await questionsResponse.json();
         updateSegment();
         if (document.querySelector('#checker .images').innerHTML === '') await updateQuestion();
+        ui.stopLoader();
       } catch (error) {
         ui.view("api-fail");
       }

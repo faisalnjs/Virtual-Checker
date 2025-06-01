@@ -143,3 +143,37 @@ div[data-color-input] > div[data-color-preview] {
 div[data-color-input] > div[data-color-preview]:hover {
   cursor: pointer;
 }
+
+@keyframes fadeIn {
+  from {
+    opacity: 0.5;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+#loader {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--background-color);
+  z-index: 9999;
+  opacity: 0;
+  transition: 0.5s opacity;
+}
+
+#loader > * {
+  animation: fadeIn 1s ease-in-out infinite alternate;
+}
+
+#loader.active {
+  display: flex;
+  opacity: 1;
+  transition: 0.5s opacity;
+}
