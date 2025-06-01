@@ -42,16 +42,16 @@ try {
           c.sort((a, b) => a.period - b.period).forEach(course => {
             const option = document.createElement("option");
             option.value = course.id;
-            option.innerHTML = course.period;
+            option.innerHTML = document.getElementById("course-input") ? course.period : `${course.period}${course.name ? ` (${course.name})` : ''}`;
             document.getElementById("course-period-input").appendChild(option);
             const elem = document.createElement("div");
             elem.classList = "button-grid inputs";
             elem.style = "flex-wrap: nowrap !important;";
             elem.innerHTML = `<input type="text" autocomplete="off" id="course-${course.id}" value="${course.name || ''}" /><div class="drag"><i class="bi bi-grip-vertical"></i></div>`;
-            document.querySelector(".course-reorder .reorder").appendChild(elem);
+            if (document.querySelector(".course-reorder .reorder")) document.querySelector(".course-reorder .reorder").appendChild(elem);
           });
           const course = courses.find(c => c.id == document.getElementById("course-period-input").value);
-          document.getElementById("course-input").value = course.name;
+          if (document.getElementById("course-input")) document.getElementById("course-input").value = course.name;
           document.querySelectorAll('.drag').forEach(item => {
             item.setAttribute('draggable', true);
             item.addEventListener('dragstart', handleDragStart);
@@ -110,7 +110,7 @@ try {
                       .then(r => r.json())
                       .then(r => {
                         responses = r;
-                        if (document.querySelector('.responses.section')) {
+                        if (document.querySelector('.responses.section') || document.querySelector('.seat-code-reports')) {
                           document.getElementById("sort-course-input").value = courses.find(c => c.id == String(responses.sort((a, b) => String(a.seatCode)[0] - String(b.seatCode)[0])[0].seatCode)[0]).id;
                           updateResponses();
                         } else {
@@ -149,8 +149,8 @@ try {
         if (document.querySelector('[data-polling]')) pollingOff();
       });
     if (document.getElementById("course-period-input")) {
-      document.querySelector('.course-reorder').style.display = 'none';
-      document.querySelector('.segment-reorder').style.display = 'none';
+      if (document.querySelector('.course-reorder')) document.querySelector('.course-reorder').style.display = 'none';
+      if (document.querySelector('.segment-reorder')) document.querySelector('.segment-reorder').style.display = 'none';
       document.querySelectorAll('[data-remove-segment-input]').forEach(a => a.removeEventListener('click', removeSegment));
       document.querySelectorAll('[data-remove-segment-input]').forEach(a => a.addEventListener('click', removeSegment));
       document.getElementById("course-period-input").value = courses.find(c => c.id == segments.sort((a, b) => a.course - b.course)[0].course).id;
@@ -245,7 +245,7 @@ try {
   function updateSegments() {
     if (!active) return;
     const course = courses.find(c => c.id == document.getElementById("course-period-input").value);
-    document.getElementById("course-input").value = course.name;
+    if (document.getElementById("course-input")) document.getElementById("course-input").value = course.name;
     var c = segments.filter(s => s.course == course.id);
     if (course.syllabus) {
       if (document.querySelector('[data-syllabus-upload]')) document.querySelector('[data-syllabus-upload]').setAttribute('hidden', '');
@@ -305,34 +305,40 @@ try {
       }
     }
     if (c.length > 0) {
-      document.querySelector('.segments .section').innerHTML = '';
-      document.querySelector(".segment-reorder .reorder").innerHTML = '';
-      c.sort((a, b) => a.order - b.order).forEach(s => {
-        var segment = document.createElement('div');
-        segment.className = "section";
-        segment.id = `segment-${s.number}`;
-        var buttonGrid = document.createElement('div');
-        buttonGrid.className = "button-grid inputs";
-        buttonGrid.innerHTML = `<button square data-select><i class="bi bi-circle"></i><i class="bi bi-circle-fill"></i></button><div class="input-group small"><div class="space" id="question-container"><input type="text" autocomplete="off" id="segment-number-input" value="${s.number}" placeholder="${s.number}" /></div></div><div class="input-group"><div class="space" id="question-container"><input type="text" autocomplete="off" id="segment-name-input" value="${s.name}" placeholder="${s.name}" /></div></div><div class="input-group mediuml"><div class="space" id="question-container"><input type="date" id="segment-due-date" value="${s.due || ''}"></div></div><button square data-remove-segment-input><i class="bi bi-trash"></i></button><button square data-toggle-segment><i class="bi bi-caret-down-fill"></i><i class="bi bi-caret-up-fill"></i></button>`;
-        segment.appendChild(buttonGrid);
-        var questionsString = "";
-        var questions = document.createElement('div');
-        questions.classList = "questions";
-        JSON.parse(s.question_ids).forEach(q => {
-          questionsString += `<div class="input-group"><div class="drag"><i class="bi bi-grip-vertical"></i></div><input type="text" autocomplete="off" id="segment-question-name-input" value="${q.name}" placeholder="${q.name}" /><input type="number" autocomplete="off" id="segment-question-id-input" value="${q.id}" placeholder="${q.id}" /></div>`;
+      if (document.querySelector('.segments .section')) document.querySelector('.segments .section').innerHTML = '';
+      if (document.querySelector(".segment-reorder .reorder")) document.querySelector(".segment-reorder .reorder").innerHTML = '';
+      if (document.querySelector('.segments .section') || document.querySelector(".segment-reorder .reorder")) {
+        c.sort((a, b) => a.order - b.order).forEach(s => {
+          if (document.querySelector('.segments .section')) {
+            var segment = document.createElement('div');
+            segment.className = "section";
+            segment.id = `segment-${s.number}`;
+            var buttonGrid = document.createElement('div');
+            buttonGrid.className = "button-grid inputs";
+            buttonGrid.innerHTML = `<button square data-select><i class="bi bi-circle"></i><i class="bi bi-circle-fill"></i></button><div class="input-group small"><div class="space" id="question-container"><input type="text" autocomplete="off" id="segment-number-input" value="${s.number}" placeholder="${s.number}" /></div></div><div class="input-group"><div class="space" id="question-container"><input type="text" autocomplete="off" id="segment-name-input" value="${s.name}" placeholder="${s.name}" /></div></div><div class="input-group mediuml"><div class="space" id="question-container"><input type="date" id="segment-due-date" value="${s.due || ''}"></div></div><button square data-remove-segment-input><i class="bi bi-trash"></i></button><button square data-toggle-segment><i class="bi bi-caret-down-fill"></i><i class="bi bi-caret-up-fill"></i></button>`;
+            segment.appendChild(buttonGrid);
+            var questionsString = "";
+            var questions = document.createElement('div');
+            questions.classList = "questions";
+            JSON.parse(s.question_ids).forEach(q => {
+              questionsString += `<div class="input-group"><div class="drag"><i class="bi bi-grip-vertical"></i></div><input type="text" autocomplete="off" id="segment-question-name-input" value="${q.name}" placeholder="${q.name}" /><input type="number" autocomplete="off" id="segment-question-id-input" value="${q.id}" placeholder="${q.id}" /></div>`;
+            });
+            questions.innerHTML = `<div class="button-grid"><button class="space fit" id="sort-segment-questions-increasing">Sort Increasing (1A-9Z)</button><button class="space fit" id="sort-segment-questions-decreasing">Sort Decreasing (9Z-1A)</button></div><br><div class="button-grid inputs"><div class="input-group small"><label>Name</label><label>ID</label></div>${questionsString}<div class="input-group fit"><button square data-add-segment-question-input><i class="bi bi-plus"></i></button><button square data-remove-segment-question-input${(JSON.parse(s.question_ids).length === 1) ? ' disabled' : ''}><i class="bi bi-dash"></i></button></div></div>`;
+            segment.appendChild(questions);
+            document.querySelector('.segments .section').appendChild(segment);
+          }
+          if (document.querySelector(".segment-reorder .reorder")) {
+            const elem = document.createElement("div");
+            elem.classList = "button-grid inputs";
+            elem.style = "flex-wrap: nowrap !important;";
+            elem.innerHTML = `<input type="text" autocomplete="off" id="segment-${s.number}" value="${s.name || ''}" /><div class="drag"><i class="bi bi-grip-vertical"></i></div>`;
+            document.querySelector(".segment-reorder .reorder").appendChild(elem);
+          }
         });
-        questions.innerHTML = `<div class="button-grid"><button class="space fit" id="sort-segment-questions-increasing">Sort Increasing (1A-9Z)</button><button class="space fit" id="sort-segment-questions-decreasing">Sort Decreasing (9Z-1A)</button></div><br><div class="button-grid inputs"><div class="input-group small"><label>Name</label><label>ID</label></div>${questionsString}<div class="input-group fit"><button square data-add-segment-question-input><i class="bi bi-plus"></i></button><button square data-remove-segment-question-input${(JSON.parse(s.question_ids).length === 1) ? ' disabled' : ''}><i class="bi bi-dash"></i></button></div></div>`;
-        segment.appendChild(questions);
-        document.querySelector('.segments .section').appendChild(segment);
-        const elem = document.createElement("div");
-        elem.classList = "button-grid inputs";
-        elem.style = "flex-wrap: nowrap !important;";
-        elem.innerHTML = `<input type="text" autocomplete="off" id="segment-${s.number}" value="${s.name || ''}" /><div class="drag"><i class="bi bi-grip-vertical"></i></div>`;
-        document.querySelector(".segment-reorder .reorder").appendChild(elem);
-      });
-      document.querySelector('.segments .section').innerHTML += '<button data-add-segment-input>Add Segment</button>';
+      }
+      if (document.querySelector('.segments .section')) document.querySelector('.segments .section').innerHTML += '<button data-add-segment-input>Add Segment</button>';
     } else {
-      document.querySelector('.segments .section').innerHTML = '<button data-add-segment-input>Add Segment</button>';
+      if (document.querySelector('.segments .section')) document.querySelector('.segments .section').innerHTML = '<button data-add-segment-input>Add Segment</button>';
     }
     document.querySelectorAll('[data-add-segment-input]').forEach(a => a.addEventListener('click', addSegment));
     document.querySelectorAll('[data-remove-segment-input]').forEach(a => a.addEventListener('click', removeSegment));
@@ -389,21 +395,21 @@ try {
       .then(r => r.json())
       .then(c => {
         courses = c;
-        document.querySelector(".course-reorder .reorder").innerHTML = "";
+        if (document.querySelector(".course-reorder .reorder")) document.querySelector(".course-reorder .reorder").innerHTML = "";
         document.getElementById("course-period-input").innerHTML = "";
         c.sort((a, b) => a.period - b.period).forEach(course => {
           const option = document.createElement("option");
           option.value = course.id;
-          option.innerHTML = course.period;
+          option.innerHTML = document.getElementById("course-input") ? course.period : `${course.period}${course.name ? ` (${course.name})` : ''}`;
           document.getElementById("course-period-input").appendChild(option);
           const elem = document.createElement("div");
           elem.classList = "button-grid inputs";
           elem.style = "flex-wrap: nowrap !important;";
           elem.innerHTML = `<input type="text" autocomplete="off" id="course-${course.id}" value="${course.name || ''}" placeholder="${course.name || ''}" /><div class="drag"><i class="bi bi-grip-vertical"></i></div>`;
-          document.querySelector(".course-reorder .reorder").appendChild(elem);
+          if (document.querySelector(".course-reorder .reorder")) document.querySelector(".course-reorder .reorder").appendChild(elem);
         });
         const course = courses.find(c => c.id == document.getElementById("course-period-input").value);
-        document.getElementById("course-input").value = course.name;
+        if (document.getElementById("course-input")) document.getElementById("course-input").value = course.name;
         document.querySelectorAll('.drag').forEach(item => {
           item.setAttribute('draggable', true);
           item.addEventListener('dragstart', handleDragStart);
@@ -867,68 +873,71 @@ try {
   }
 
   function updateResponses() {
-    document.querySelector('.awaitingResponses .section').innerHTML = '';
-    document.querySelector('.trendingResponses .section').innerHTML = '';
-    document.querySelector('.responses .section').innerHTML = '';
+    if (document.querySelector('.awaitingResponses .section')) document.querySelector('.awaitingResponses .section').innerHTML = '';
+    if (document.querySelector('.trendingResponses .section')) document.querySelector('.trendingResponses .section').innerHTML = '';
+    if (document.querySelector('.responses .section')) document.querySelector('.responses .section').innerHTML = '';
     var trendingResponses = [];
     var timedResponses = [];
     var responses1 = responses
-      .filter(r => String(r.seatCode)[0] == document.getElementById("sort-course-input").value)
-      .filter(r => String(r.segment).startsWith(document.getElementById("sort-segment-input").value))
-      .filter(r => questions.find(q => q.id == r.question_id).number.startsWith(document.getElementById("sort-question-input").value))
-      .filter(r => String(r.seatCode).startsWith(document.getElementById("sort-seat-input").value))
+      .filter(r => String(r.seatCode)[0] == document.getElementById("sort-course-input")?.value)
+      .filter(r => String(r.segment).startsWith(document.getElementById("sort-segment-input")?.value))
+      .filter(r => questions.find(q => q.id == r.question_id).number.startsWith(document.getElementById("sort-question-input")?.value))
+      .filter(r => String(r.seatCode).startsWith(document.getElementById("sort-seat-input")?.value))
       .sort((a, b) => {
         if (a.flagged && !b.flagged) return -1;
         if (!a.flagged && b.flagged) return 1;
         return b.id - a.id;
       });
+    var seatCodes = [];
     responses1.forEach(r => {
-      var responseString = r.response;
-      if (responseString.includes('[')) {
-        var parsedResponse = JSON.parse(r.response);
-        responseString = parsedResponse.join(', ');
+      if (document.querySelector('.responses .section') || document.querySelector('.awaitingResponses .section')) {
+        var responseString = r.response;
+        if (responseString.includes('[')) {
+          var parsedResponse = JSON.parse(r.response);
+          responseString = parsedResponse.join(', ');
+        }
+        const date = new Date(r.timestamp);
+        let hours = date.getHours();
+        const minutes = date.getMinutes();
+        const currentDate = new Date(r.timestamp);
+        var timeTaken = "N/A";
+        var timeTakenToRevise = "N/A";
+        const sameSeatCodeResponses = responses1.filter(a => a.seatCode === r.seatCode).sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+        const sameQuestionResponses = sameSeatCodeResponses.filter(a => a.question_id === r.question_id);
+        const lastResponseIndex = sameSeatCodeResponses.findIndex(a => new Date(a.timestamp) >= currentDate) - 1;
+        const lastResponse = lastResponseIndex >= 0 ? sameSeatCodeResponses[lastResponseIndex] : null;
+        const lastSameQuestionResponseIndex = sameQuestionResponses.findIndex(a => new Date(a.timestamp) >= currentDate) - 1;
+        const lastSameQuestionResponse = lastSameQuestionResponseIndex >= 0 ? sameQuestionResponses[lastSameQuestionResponseIndex] : null;
+        let timeDifference;
+        if (lastResponse) {
+          timeDifference = calculateTimeDifference(currentDate, lastResponse.timestamp);
+          timeTaken = formatTimeDifference(timeDifference);
+          timedResponses.push(timeDifference);
+        }
+        if (lastSameQuestionResponse) {
+          timeDifference = calculateTimeDifference(currentDate, lastSameQuestionResponse.timestamp);
+          timeTakenToRevise = formatTimeDifference(timeDifference);
+        }
+        var [daysPart, z, timePart] = r.timeTaken.split(' ');
+        const days = parseInt(daysPart, 10);
+        timePart = timePart || daysPart;
+        const [hours1, minutes1] = timePart.split(':').map(part => parseInt(part, 10));
+        const totalHours = days * 24 + hours1;
+        let result;
+        if (totalHours >= 24) {
+          result = `${days}d ${hours1}h`;
+        } else if (totalHours >= 1) {
+          result = `${hours1}h ${minutes1}m`;
+        } else {
+          result = `${minutes1}m`;
+        }
+        var buttonGrid = document.createElement('div');
+        buttonGrid.className = "button-grid inputs";
+        buttonGrid.id = `response-${r.id}`;
+        buttonGrid.innerHTML = `<input type="text" autocomplete="off" class="small" id="response-id-input" value="${r.id}" disabled hidden />${(r.flagged == '1') ? `<button square data-unflag-response><i class="bi bi-flag-fill"></i></button>` : `<button square data-flag-response><i class="bi bi-flag"></i></button>`}<input type="text" autocomplete="off" class="small" id="response-segment-input" value="${r.segment}" disabled data-segment /><input type="text" autocomplete="off" class="small" id="response-question-input" value="${questions.find(q => q.id == r.question_id).number}" disabled data-question /><input type="text" autocomplete="off" class="small" id="response-seat-code-input" value="${r.seatCode}" disabled data-seat-code /><input type="text" autocomplete="off" class="small" id="response-time-taken-input" value="${timeTaken}" disabled data-time-taken${(typeof timeDifference != 'undefined') ? ` time="${timeDifference}"` : ''} /><input type="text" autocomplete="off" class="small" id="response-time-taken-input" value="${timeTakenToRevise}" disabled data-time-taken${(typeof timeDifference != 'undefined') ? ` time="${timeDifference}"` : ''} /><!--<input type="text" autocomplete="off" class="small" id="response-time-taken-input" value="${result}" disabled data-time-taken />--><input type="text" autocomplete="off" id="response-response-input" value="${responseString}" disabled />${(r.status === 'Incorrect') ? `<button square data-edit-reason><i class="bi bi-reply${(r.reason) ? '-fill' : ''}"></i></button>` : ''}<input type="text" autocomplete="off" class="smedium" id="response-timestamp-input" value="${date.getMonth() + 1}/${date.getDate()} ${hours % 12 || 12}:${minutes < 10 ? '0' + minutes : minutes} ${hours >= 12 ? 'PM' : 'AM'}" disabled /><button square id="mark-correct-button"${(r.status === 'Correct') ? ' disabled' : ''}><i class="bi bi-check-circle${(r.status === 'Correct') ? '-fill' : ''}"></i></button><button square id="mark-incorrect-button"${(r.status === 'Incorrect') ? ' disabled' : ''}><i class="bi bi-x-circle${(r.status === 'Incorrect') ? '-fill' : ''}"></i></button>`;
+        if (document.querySelector('.responses .section')) document.querySelector('.responses .section').appendChild(buttonGrid);
+        if (((r.status === 'Invalid Format') || (r.status === 'Unknown, Recorded')) && document.querySelector('.awaitingResponses .section')) document.querySelector('.awaitingResponses .section').appendChild(buttonGrid);
       }
-      const date = new Date(r.timestamp);
-      let hours = date.getHours();
-      const minutes = date.getMinutes();
-      const currentDate = new Date(r.timestamp);
-      var timeTaken = "N/A";
-      var timeTakenToRevise = "N/A";
-      const sameSeatCodeResponses = responses1.filter(a => a.seatCode === r.seatCode).sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-      const sameQuestionResponses = sameSeatCodeResponses.filter(a => a.question_id === r.question_id);
-      const lastResponseIndex = sameSeatCodeResponses.findIndex(a => new Date(a.timestamp) >= currentDate) - 1;
-      const lastResponse = lastResponseIndex >= 0 ? sameSeatCodeResponses[lastResponseIndex] : null;
-      const lastSameQuestionResponseIndex = sameQuestionResponses.findIndex(a => new Date(a.timestamp) >= currentDate) - 1;
-      const lastSameQuestionResponse = lastSameQuestionResponseIndex >= 0 ? sameQuestionResponses[lastSameQuestionResponseIndex] : null;
-      let timeDifference;
-      if (lastResponse) {
-        timeDifference = calculateTimeDifference(currentDate, lastResponse.timestamp);
-        timeTaken = formatTimeDifference(timeDifference);
-        timedResponses.push(timeDifference);
-      }
-      if (lastSameQuestionResponse) {
-        timeDifference = calculateTimeDifference(currentDate, lastSameQuestionResponse.timestamp);
-        timeTakenToRevise = formatTimeDifference(timeDifference);
-      }
-      var [daysPart, z, timePart] = r.timeTaken.split(' ');
-      const days = parseInt(daysPart, 10);
-      timePart = timePart || daysPart;
-      const [hours1, minutes1] = timePart.split(':').map(part => parseInt(part, 10));
-      const totalHours = days * 24 + hours1;
-      let result;
-      if (totalHours >= 24) {
-        result = `${days}d ${hours1}h`;
-      } else if (totalHours >= 1) {
-        result = `${hours1}h ${minutes1}m`;
-      } else {
-        result = `${minutes1}m`;
-      }
-      var buttonGrid = document.createElement('div');
-      buttonGrid.className = "button-grid inputs";
-      buttonGrid.id = `response-${r.id}`;
-      buttonGrid.innerHTML = `<input type="text" autocomplete="off" class="small" id="response-id-input" value="${r.id}" disabled hidden />${(r.flagged == '1') ? `<button square data-unflag-response><i class="bi bi-flag-fill"></i></button>` : `<button square data-flag-response><i class="bi bi-flag"></i></button>`}<input type="text" autocomplete="off" class="small" id="response-segment-input" value="${r.segment}" disabled data-segment /><input type="text" autocomplete="off" class="small" id="response-question-input" value="${questions.find(q => q.id == r.question_id).number}" disabled data-question /><input type="text" autocomplete="off" class="small" id="response-seat-code-input" value="${r.seatCode}" disabled data-seat-code /><input type="text" autocomplete="off" class="small" id="response-time-taken-input" value="${timeTaken}" disabled data-time-taken${(typeof timeDifference != 'undefined') ? ` time="${timeDifference}"` : ''} /><input type="text" autocomplete="off" class="small" id="response-time-taken-input" value="${timeTakenToRevise}" disabled data-time-taken${(typeof timeDifference != 'undefined') ? ` time="${timeDifference}"` : ''} /><!--<input type="text" autocomplete="off" class="small" id="response-time-taken-input" value="${result}" disabled data-time-taken />--><input type="text" autocomplete="off" id="response-response-input" value="${responseString}" disabled />${(r.status === 'Incorrect') ? `<button square data-edit-reason><i class="bi bi-reply${(r.reason) ? '-fill' : ''}"></i></button>` : ''}<input type="text" autocomplete="off" class="smedium" id="response-timestamp-input" value="${date.getMonth() + 1}/${date.getDate()} ${hours % 12 || 12}:${minutes < 10 ? '0' + minutes : minutes} ${hours >= 12 ? 'PM' : 'AM'}" disabled /><button square id="mark-correct-button"${(r.status === 'Correct') ? ' disabled' : ''}><i class="bi bi-check-circle${(r.status === 'Correct') ? '-fill' : ''}"></i></button><button square id="mark-incorrect-button"${(r.status === 'Incorrect') ? ' disabled' : ''}><i class="bi bi-x-circle${(r.status === 'Incorrect') ? '-fill' : ''}"></i></button>`;
-      document.querySelector('.responses .section').appendChild(buttonGrid);
-      if ((r.status === 'Invalid Format') || (r.status === 'Unknown, Recorded')) document.querySelector('.awaitingResponses .section').appendChild(buttonGrid);
       var trend = trendingResponses.find(t => (t.segment === r.segment) && (t.question_id === r.question_id) && (t.response === responseString) && (t.status === r.status));
       if (trend) {
         trend.count++;
@@ -941,7 +950,45 @@ try {
           count: 1
         });
       }
+      if (document.querySelector('.seat-code-reports')) {
+        if (seatCodes.find(seatCode => seatCode.code === r.seatCode)) {
+          const seatCode = seatCodes.find(seatCode => seatCode.code === r.seatCode);
+          if (r.status === 'Correct') {
+            seatCode.correct++;
+          } else if (r.status === 'Incorrect') {
+            seatCode.incorrect++;
+          } else if (r.status.includes('Recorded')) {
+            seatCode.waiting++;
+          } else {
+            seatCode.other++;
+          }
+          seatCode.total++;
+        } else {
+          seatCodes.push({
+            code: r.seatCode,
+            correct: (r.status === 'Correct') ? 1 : 0,
+            incorrect: (r.status === 'Incorrect') ? 1 : 0,
+            other: ((r.status !== 'Correct') && (r.status !== 'Incorrect') && !r.status.includes('Recorded')) ? 1 : 0,
+            waiting: (r.status.includes('Recorded')) ? 1 : 0,
+            total: 1
+          });
+        }
+      }
     });
+    if (document.querySelector('.seat-code-reports')) {
+      document.querySelector('.seat-code-reports').innerHTML = '';
+      seatCodes.forEach(seatCode => {
+        document.querySelector('.seat-code-reports').innerHTML += `<div class="seat-code-report">
+          <b>${seatCode.code} (${seatCode.total} Total Responses)</b>
+          <div class="barcount-wrapper">
+            <div class="barcount correct" style="width: calc(${seatCode.correct / seatCode.total} * 100%)">${seatCode.correct}</div>
+            <div class="barcount incorrect" style="width: calc(${seatCode.incorrect / seatCode.total} * 100%)">${seatCode.incorrect}</div>
+            <div class="barcount other" style="width: calc(${seatCode.other / seatCode.total} * 100%)">${seatCode.other}</div>
+            <div class="barcount waiting" style="width: calc(${seatCode.waiting / seatCode.total} * 100%)">${seatCode.waiting}</div>
+          </div>
+        </div>`;
+      });
+    }
     const stdDev = calculateStandardDeviation(timedResponses);
     // console.log("Standard Deviation:", stdDev);
     document.querySelectorAll('[data-time-taken]').forEach(d => {

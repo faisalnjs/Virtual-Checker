@@ -849,3 +849,88 @@ hidden,
 .medium-zoom-image {
   border-radius: 5px;
 }
+
+.color-info {
+  display: flex;
+  align-items: center;
+  gap: 7.5px 10px;
+  flex-wrap: wrap;
+}
+
+.color {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.color-box {
+  height: 15px;
+  width: 15px;
+  border: 1px solid var(--surface-color);
+  border-radius: 100%;
+}
+
+.color-box.correct {
+  background: mediumseagreen;
+}
+
+.color-box.incorrect {
+  background: indianred;
+}
+
+.color-box.other {
+  background: dimgray;
+}
+
+.color-box.waiting {
+  background: darkorange;
+}
+
+.seat-code-report {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  width: -webkit-fill-available;
+}
+
+.barcount-wrapper {
+  display: flex;
+  align-items: stretch;
+  min-width: 250px;
+}
+
+.barcount {
+  padding: 5px 7.5px;
+  display: flex;
+  justify-content: center;
+  width: -webkit-fill-available;
+  min-width: 10%;
+  max-width: 70%;
+  color: white;
+}
+
+.barcount.correct {
+  background: mediumseagreen;
+}
+
+.barcount.incorrect {
+  background: indianred;
+}
+
+.barcount.other {
+  background: dimgray;
+}
+
+.barcount.waiting {
+  background: darkorange;
+}
+
+.barcount:first-child {
+  border-radius: 10px 0 0 10px;
+}
+
+.barcount:last-child {
+  border-radius: 0 10px 10px 0;
+}
