@@ -963,14 +963,16 @@ try {
             seatCode.other++;
           }
           seatCode.total++;
+          seatCode.responses.push(r);
         } else {
           seatCodes.push({
             code: r.seatCode,
             correct: (r.status === 'Correct') ? 1 : 0,
             incorrect: (r.status === 'Incorrect') ? 1 : 0,
             other: ((r.status !== 'Correct') && (r.status !== 'Incorrect') && !r.status.includes('Recorded')) ? 1 : 0,
-            waiting: (r.status.includes('Recorded')) ? 1 : 0,
-            total: 1
+            waiting: r.status.includes('Recorded') ? 1 : 0,
+            total: 1,
+            responses: [r],
           });
         }
       }
@@ -978,7 +980,17 @@ try {
     if (document.querySelector('.seat-code-reports')) {
       document.querySelector('.seat-code-reports').innerHTML = '';
       seatCodes.sort((a, b) => Number(a.code) - Number(b.code)).forEach(seatCode => {
-        document.querySelector('.seat-code-reports').innerHTML += `<div class="seat-code-report">
+        var detailedReport = '';
+        seatCode.responses.forEach(r => {
+          detailedReport += questions.find(q => q.id == r.question_id).number ? `<div class="detailed-report-question">
+            <p>Segment ${r.segment} Question ${questions.find(q => q.id == r.question_id).number}</p>
+            <div class="color">
+              <span class="color-box ${(r.status === 'Correct') ? 'correct' : (r.status === 'Incorrect') ? 'incorrect' : r.status.includes('Recorded') ? 'waiting' : 'other'}"></span>
+              <span class="color-name">${r.status}</span>
+            </div>
+          </div>` : '';
+        });
+        document.querySelector('.seat-code-reports').innerHTML += `<div class="seat-code-report" report="seat-code-${seatCode.code}">
           <b>${seatCode.code} (${seatCode.total} Total Responses)</b>
           <div class="barcount-wrapper">
             <div class="barcount correct" style="width: calc(${seatCode.correct / seatCode.total} * 100%)">${seatCode.correct}</div>
@@ -986,6 +998,9 @@ try {
             <div class="barcount other" style="width: calc(${seatCode.other / seatCode.total} * 100%)">${seatCode.other}</div>
             <div class="barcount waiting" style="width: calc(${seatCode.waiting / seatCode.total} * 100%)">${seatCode.waiting}</div>
           </div>
+        </div>
+        <div class="section detailed-report" id="seat-code-${seatCode.code}">
+          ${detailedReport}
         </div>`;
       });
     }
@@ -1005,6 +1020,7 @@ try {
     document.querySelectorAll('[data-flag-response]').forEach(a => a.addEventListener('click', flagResponse));
     document.querySelectorAll('[data-unflag-response]').forEach(a => a.addEventListener('click', unflagResponse));
     document.querySelectorAll('[data-edit-reason]').forEach(a => a.addEventListener('click', editReason));
+    document.querySelectorAll('.seat-code-report').forEach(a => a.addEventListener('click', toggleDetailedReport));
   }
 
   function calculateTimeDifference(currentDate, previousTimestamp) {
@@ -1468,6 +1484,11 @@ try {
       item.addEventListener('dragover', handleDragOver);
       item.addEventListener('drop', handleDropSegment);
     });
+  }
+
+  function toggleDetailedReport() {
+    if (!this.getAttribute('report') && document.getElementById(this.getAttribute('report'))) return;
+    document.getElementById(this.getAttribute('report')).classList.toggle('active');
   }
 } catch (error) {
   if (storage.get("developer")) {

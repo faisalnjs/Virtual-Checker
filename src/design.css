@@ -893,6 +893,7 @@ hidden,
   flex-wrap: wrap;
   gap: 10px;
   width: -webkit-fill-available;
+  cursor: pointer;
 }
 
 .barcount-wrapper {
@@ -933,4 +934,17 @@ hidden,
 
 .barcount:last-child {
   border-radius: 0 10px 10px 0;
+}
+
+.detailed-report {
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  width: -webkit-fill-available;
+}
+
+.detailed-report.active {
+  display: flex;
 }
