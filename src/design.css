@@ -886,6 +886,10 @@ hidden,
   background: darkorange;
 }
 
+.seat-code-reports {
+  gap: 12.5px !important;
+}
+
 .seat-code-report {
   display: flex;
   align-items: center;
@@ -947,4 +951,13 @@ hidden,
 
 .detailed-report.active {
   display: flex;
+}
+
+.detailed-report-question {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  width: -webkit-fill-available;
 }

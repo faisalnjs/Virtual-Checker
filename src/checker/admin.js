@@ -1,6 +1,7 @@
 /* eslint-disable no-inner-declarations */
 import * as ui from "/src/modules/ui.js";
 import storage from "/src/modules/storage.js";
+import * as time from "/src/modules/time.js";
 
 const domain = ((window.location.hostname.search('check') != -1) || (window.location.hostname.search('127') != -1)) ? 'https://api.check.vssfalcons.com' : `http://${document.domain}:5000`;
 if (window.location.pathname.split('?')[0].endsWith('/admin')) window.location.pathname = '/admin/';
@@ -981,17 +982,20 @@ try {
       document.querySelector('.seat-code-reports').innerHTML = '';
       seatCodes.sort((a, b) => Number(a.code) - Number(b.code)).forEach(seatCode => {
         var detailedReport = '';
-        seatCode.responses.forEach(r => {
+        seatCode.responses.sort((a, b) => a.timestamp - b.timestamp).forEach(r => {
           detailedReport += questions.find(q => q.id == r.question_id).number ? `<div class="detailed-report-question">
-            <p>Segment ${r.segment} Question ${questions.find(q => q.id == r.question_id).number}</p>
             <div class="color">
               <span class="color-box ${(r.status === 'Correct') ? 'correct' : (r.status === 'Incorrect') ? 'incorrect' : r.status.includes('Recorded') ? 'waiting' : 'other'}"></span>
+              <span class="color-name">Segment ${r.segment} Question ${questions.find(q => q.id == r.question_id).number} (${time.unixToString(r.timestamp)})</span>
+            </div>
+            <div class="color">
               <span class="color-name">${r.status}</span>
+              <span class="color-box ${(r.status === 'Correct') ? 'correct' : (r.status === 'Incorrect') ? 'incorrect' : r.status.includes('Recorded') ? 'waiting' : 'other'}"></span>
             </div>
           </div>` : '';
         });
         document.querySelector('.seat-code-reports').innerHTML += `<div class="seat-code-report" report="seat-code-${seatCode.code}">
-          <b>${seatCode.code} (${seatCode.total} Total Responses)</b>
+          <b>${seatCode.code} (${seatCode.total} Total Response${seatCode.total != 1 ? 's' : ''})</b>
           <div class="barcount-wrapper">
             <div class="barcount correct" style="width: calc(${seatCode.correct / seatCode.total} * 100%)">${seatCode.correct}</div>
             <div class="barcount incorrect" style="width: calc(${seatCode.incorrect / seatCode.total} * 100%)">${seatCode.incorrect}</div>
