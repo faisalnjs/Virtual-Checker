@@ -108,45 +108,44 @@ try {
                       }
                     })
                       .then(r => r.json())
-                      .then(r => {
+                      .then(async r => {
                         responses = r;
                         if (document.querySelector('.responses.section') || document.querySelector('.seat-code-reports')) {
                           document.getElementById("sort-course-input").value = courses.find(c => c.id == String(responses.sort((a, b) => String(a.seatCode)[0] - String(b.seatCode)[0])[0].seatCode)[0]).id;
-                          updateResponses();
-                        } else {
-                          active = true;
-                          ui.stopLoader();
-                          ui.toast("Data restored.", 1000, "info", "bi bi-cloud-arrow-down");
+                          await updateResponses();
                         }
+                        active = true;
+                        ui.stopLoader();
+                        if (!polling) ui.toast("Data restored.", 1000, "info", "bi bi-cloud-arrow-down");
                       })
                       .catch((e) => {
                         console.error(e);
                         ui.view("api-fail");
-                        if (document.querySelector('[data-polling]')) pollingOff();
+                        pollingOff();
                       });
                   })
                   .catch((e) => {
                     console.error(e);
                     ui.view("api-fail");
-                    if (document.querySelector('[data-polling]')) pollingOff();
+                    pollingOff();
                   });
               })
               .catch((e) => {
                 console.error(e);
                 ui.view("api-fail");
-                if (document.querySelector('[data-polling]')) pollingOff();
+                pollingOff();
               });
           })
           .catch((e) => {
             console.error(e);
             ui.view("api-fail");
-            if (document.querySelector('[data-polling]')) pollingOff();
+            pollingOff();
           });
       })
       .catch((e) => {
         console.error(e);
         ui.view("api-fail");
-        if (document.querySelector('[data-polling]')) pollingOff();
+        pollingOff();
       });
     if (document.getElementById("course-period-input")) {
       if (document.querySelector('.course-reorder')) document.querySelector('.course-reorder').style.display = 'none';
@@ -222,6 +221,7 @@ try {
 
   function pollingOff() {
     if (!active) return;
+    if (!document.querySelector('[data-polling]')) return;
     polling = false;
     document.querySelector('[data-polling] .bi-skip-forward-circle-fill').style.display = "block";
     document.querySelector('[data-polling] .bi-stop-circle-fill').style.display = "none";
@@ -270,7 +270,7 @@ try {
           .catch((e) => {
             console.error(e);
             ui.view("api-fail");
-            if (document.querySelector('[data-polling]')) pollingOff();
+            pollingOff();
           });
       });
     } else {
@@ -420,7 +420,7 @@ try {
       .catch((e) => {
         console.error(e);
         ui.view("api-fail");
-        if (document.querySelector('[data-polling]')) pollingOff();
+        pollingOff();
       });
     // Show submit confirmation
     ui.modeless(`<i class="bi bi-check-lg"></i>`, "Saved");
@@ -455,7 +455,7 @@ try {
       .catch((e) => {
         console.error(e);
         ui.view("api-fail");
-        if (document.querySelector('[data-polling]')) pollingOff();
+        pollingOff();
       });
     // Show submit confirmation
     ui.modeless(`<i class="bi bi-check-lg"></i>`, "Saved");
@@ -536,7 +536,7 @@ try {
       .catch((e) => {
         console.error(e);
         ui.view("api-fail");
-        if (document.querySelector('[data-polling]')) pollingOff();
+        pollingOff();
       });
     document.querySelectorAll("#save-button").forEach(w => w.disabled = true);
     window.scroll(0, 0);
@@ -764,7 +764,7 @@ try {
       .catch((e) => {
         console.error(e);
         ui.view("api-fail");
-        if (document.querySelector('[data-polling]')) pollingOff();
+        pollingOff();
       });
   }
 
@@ -865,14 +865,14 @@ try {
         .catch((e) => {
           console.error(e);
           ui.view("api-fail");
-          if (document.querySelector('[data-polling]')) pollingOff();
+          pollingOff();
         });
     } else {
       window.open(event.target.src);
     }
   }
 
-  function updateResponses() {
+  async function updateResponses() {
     if (document.querySelector('.awaitingResponses .section')) document.querySelector('.awaitingResponses .section').innerHTML = '';
     if (document.querySelector('.trendingResponses .section')) document.querySelector('.trendingResponses .section').innerHTML = '';
     if (document.querySelector('.responses .section')) document.querySelector('.responses .section').innerHTML = '';
@@ -977,7 +977,7 @@ try {
     });
     if (document.querySelector('.seat-code-reports')) {
       document.querySelector('.seat-code-reports').innerHTML = '';
-      seatCodes.forEach(seatCode => {
+      seatCodes.sort((a, b) => Number(a.code) - Number(b.code)).forEach(seatCode => {
         document.querySelector('.seat-code-reports').innerHTML += `<div class="seat-code-report">
           <b>${seatCode.code} (${seatCode.total} Total Responses)</b>
           <div class="barcount-wrapper">
@@ -1005,9 +1005,6 @@ try {
     document.querySelectorAll('[data-flag-response]').forEach(a => a.addEventListener('click', flagResponse));
     document.querySelectorAll('[data-unflag-response]').forEach(a => a.addEventListener('click', unflagResponse));
     document.querySelectorAll('[data-edit-reason]').forEach(a => a.addEventListener('click', editReason));
-    active = true;
-    ui.stopLoader();
-    ui.toast("Data restored.", 1000, "info", "bi bi-cloud-arrow-down");
   }
 
   function calculateTimeDifference(currentDate, previousTimestamp) {
@@ -1105,7 +1102,7 @@ try {
       .catch((e) => {
         console.error(e);
         ui.view("api-fail");
-        if (document.querySelector('[data-polling]')) pollingOff();
+        pollingOff();
       });
   }
 
@@ -1158,7 +1155,7 @@ try {
       .catch((e) => {
         console.error(e);
         ui.view("api-fail");
-        if (document.querySelector('[data-polling]')) pollingOff();
+        pollingOff();
       });
   }
 
@@ -1407,7 +1404,7 @@ try {
       .catch((e) => {
         console.error(e);
         ui.view("api-fail");
-        if (document.querySelector('[data-polling]')) pollingOff();
+        pollingOff();
       });
   }
 
