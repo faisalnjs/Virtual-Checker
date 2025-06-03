@@ -955,7 +955,8 @@ hidden,
 .detailed-report.active {
   display: flex;
   border-left: 2px solid var(--accent-color);
-  padding-left: 7.5px;
+  padding: 5px 7.5px;
+  margin-top: -5px;
 }
 
 .detailed-report-question {
