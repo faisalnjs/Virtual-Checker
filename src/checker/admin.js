@@ -338,6 +338,31 @@ try {
         });
       }
       if (document.querySelector('.segments .section')) document.querySelector('.segments .section').innerHTML += '<button data-add-segment-input>Add Segment</button>';
+      if (document.querySelector('.segment-reports')) {
+        document.querySelector('.segment-reports').innerHTML = '';
+        c.sort((a, b) => a.order - b.order).forEach(segment => {
+          var detailedReport = '';
+          JSON.parse(segment.question_ids).forEach(q => {
+            var question = questions.find(q1 => q1.id == q.id);
+            var questionResponses = responses.filter(r => String(r.segment) === String(segment.id)).filter(r => r.question_id === question.id);
+            detailedReport += `<div class="detailed-report-question">
+              <b>Question ${question.number} (Total Response${questionResponses.length != 1 ? 's' : ''})</b>
+              <div class="barcount-wrapper">
+                <div class="barcount correct" style="width: calc(${questionResponses.filter(r => r.status === 'Correct').length / questionResponses.length} * 100%)">${questionResponses.filter(r => r.status === 'Correct').length}</div>
+                <div class="barcount incorrect" style="width: calc(${questionResponses.filter(r => r.status === 'Incorrect').length / questionResponses.length} * 100%)">${questionResponses.filter(r => r.status === 'Incorrect').length}</div>
+                <div class="barcount other" style="width: calc(${questionResponses.filter(r => ((r.status !== 'Correct') && (r.status !== 'Incorrect') && !r.status.includes('Recorded'))).length / questionResponses.length} * 100%)">${questionResponses.filter(r => ((r.status !== 'Correct') && (r.status !== 'Incorrect') && !r.status.includes('Recorded'))).length}</div>
+                <div class="barcount waiting" style="width: calc(${questionResponses.filter(r => r.status.includes('Recorded')).length / questionResponses.length} * 100%)">${questionResponses.filter(r => r.status.includes('Recorded')).length}</div>
+              </div>
+            </div>`;
+          });
+          document.querySelector('.segment-reports').innerHTML += `<div class="segment-report" report="segment-${segment.id}">
+            <b>Segment ${segment.number} (${segment.question_ids.length} Total Question${segment.question_ids.length != 1 ? 's' : ''})</b>
+          </div>
+          <div class="section detailed-report" id="segment-${segment.id}">
+            ${detailedReport}
+          </div>`;
+        });
+      }
     } else {
       if (document.querySelector('.segments .section')) document.querySelector('.segments .section').innerHTML = '<button data-add-segment-input>Add Segment</button>';
     }
