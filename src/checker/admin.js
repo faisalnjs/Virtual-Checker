@@ -172,6 +172,7 @@ try {
   if (document.getElementById('sort-segments-increasing')) document.getElementById('sort-segments-increasing').addEventListener("click", sortSegmentsIncreasing);
   if (document.getElementById('sort-segments-decreasing')) document.getElementById('sort-segments-decreasing').addEventListener("click", sortSegmentsDecreasing);
   if (document.getElementById('sort-segments-button')) document.getElementById('sort-segments-button').addEventListener("click", sortSegments);
+  if (document.getElementById('hideIncorrectAttempts')) document.getElementById('hideIncorrectAttempts').addEventListener("change", updateResponses);
 
   function toggleSelecting() {
     if (!active) return;
@@ -1007,7 +1008,9 @@ try {
       document.querySelector('.seat-code-reports').innerHTML = '';
       seatCodes.sort((a, b) => Number(a.code) - Number(b.code)).forEach(seatCode => {
         var detailedReport = '';
-        seatCode.responses.sort((a, b) => a.timestamp - b.timestamp).forEach(r => {
+        var seatCodeResponses = seatCode.responses.sort((a, b) => a.timestamp - b.timestamp);
+        if (document.getElementById('hideIncorrectAttempts').checked) seatCodeResponses = seatCodeResponses.filter((r, index, self) => r.status === 'Correct' || !self.some(other => other.question_id === r.question_id && other.status === 'Correct'));
+        seatCodeResponses.forEach(r => {
           detailedReport += questions.find(q => q.id == r.question_id).number ? `<div class="detailed-report-question">
             <div class="color">
               <span class="color-box ${(r.status === 'Correct') ? 'correct' : (r.status === 'Incorrect') ? 'incorrect' : r.status.includes('Recorded') ? 'waiting' : 'other'}"></span>

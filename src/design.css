@@ -961,3 +961,30 @@ hidden,
   gap: 10px;
   width: -webkit-fill-available;
 }
+
+.checkboxGroup {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 7.5px;
+  cursor: pointer;
+}
+
+.checkboxGroup:has(input:checked) .checkbox::before {
+  content: " ";
+  position: absolute;
+  top: 15%;
+  left: 15%;
+  height: 70%;
+  width: 70%;
+  background: var(--accent-color);
+  border-radius: 0.15rem;
+}
+
+.checkbox {
+  height: 20px;
+  width: 20px;
+  background: var(--surface-color);
+  border-radius: 0.25rem;
+  position: relative;
+}
