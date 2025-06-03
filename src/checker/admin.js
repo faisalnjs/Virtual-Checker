@@ -175,6 +175,7 @@ try {
   if (document.getElementById('sort-segments-increasing')) document.getElementById('sort-segments-increasing').addEventListener("click", sortSegmentsIncreasing);
   if (document.getElementById('sort-segments-decreasing')) document.getElementById('sort-segments-decreasing').addEventListener("click", sortSegmentsDecreasing);
   if (document.getElementById('sort-segments-button')) document.getElementById('sort-segments-button').addEventListener("click", sortSegments);
+  if (document.getElementById('hideIncorrectAttempts')) document.getElementById('hideIncorrectAttempts').addEventListener("change", updateSegments);
   if (document.getElementById('hideIncorrectAttempts')) document.getElementById('hideIncorrectAttempts').addEventListener("change", updateResponses);
 
   function toggleSelecting() {
@@ -348,6 +349,7 @@ try {
           JSON.parse(segment.question_ids).forEach(q => {
             var question = questions.find(q1 => q1.id == q.id);
             var questionResponses = responses.filter(r => String(r.segment) === String(segment.number)).filter(r => r.question_id === question.id);
+            if (document.getElementById('hideIncorrectAttempts').checked) questionResponses = questionResponses.filter((r, index, self) => r.status === 'Correct' || !self.some(other => other.question_id === r.question_id && other.status === 'Correct'));
             detailedReport += `<div class="detailed-report-question">
               <b>Question ${question.number} (${questionResponses.length} Response${(questionResponses.length != 1) ? 's' : ''})</b>
               <div class="barcount-wrapper">
@@ -1026,12 +1028,12 @@ try {
           </div>` : '';
         });
         document.querySelector('.seat-code-reports').innerHTML += `<div class="seat-code-report" report="seat-code-${seatCode.code}">
-          <b>${seatCode.code} (${seatCode.total} Response${(seatCode.total != 1) ? 's' : ''})</b>
+          <b>${seatCode.code} (${seatCodeResponses.length} Response${(seatCodeResponses.length != 1) ? 's' : ''})</b>
           <div class="barcount-wrapper">
-            <div class="barcount correct"${(seatCode.total != 0) ? ` style="width: calc(${seatCode.correct / (seatCode.total || 1)} * 100%)"` : ''}>${seatCode.correct}</div>
-            <div class="barcount incorrect"${(seatCode.total != 0) ? ` style="width: calc(${seatCode.incorrect / (seatCode.total || 1)} * 100%)"` : ''}>${seatCode.incorrect}</div>
-            <div class="barcount other"${(seatCode.total != 0) ? ` style="width: calc(${seatCode.other / (seatCode.total || 1)} * 100%)"` : ''}>${seatCode.other}</div>
-            <div class="barcount waiting"${(seatCode.total != 0) ? ` style="width: calc(${seatCode.waiting / (seatCode.total || 1)} * 100%)"` : ''}>${seatCode.waiting}</div>
+            <div class="barcount correct"${(seatCodeResponses.length != 0) ? ` style="width: calc(${seatCodeResponses.filter(r => r.status === 'Correct').length / (seatCodeResponses.length || 1)} * 100%)"` : ''}>${seatCodeResponses.filter(r => r.status === 'Correct').length}</div>
+            <div class="barcount incorrect"${(seatCodeResponses.length != 0) ? ` style="width: calc(${seatCodeResponses.filter(r => r.status === 'Incorrect').length / (seatCodeResponses.length || 1)} * 100%)"` : ''}>${seatCodeResponses.filter(r => r.status === 'Incorrect').length}</div>
+            <div class="barcount other"${(seatCodeResponses.length != 0) ? ` style="width: calc(${seatCodeResponses.filter(r => (r.status != 'Correct') && (r.status != 'Incorrect') && !r.status.includes('Recorded')).length / (seatCodeResponses.length || 1)} * 100%)"` : ''}>${seatCodeResponses.filter(r => (r.status != 'Correct') && (r.status != 'Incorrect') && !r.status.includes('Recorded')).length}</div>
+            <div class="barcount waiting"${(seatCodeResponses.length != 0) ? ` style="width: calc(${seatCodeResponses.filter(r => r.status.includes('Recorded')).length / (seatCodeResponses.length || 1)} * 100%)"` : ''}>${seatCodeResponses.filter(r => r.status.includes('Recorded')).length}</div>
           </div>
         </div>
         <div class="section detailed-report" id="seat-code-${seatCode.code}">

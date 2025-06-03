@@ -976,14 +976,11 @@ hidden,
 }
 
 .checkboxGroup:has(input:checked) .checkbox::before {
-  content: " ";
-  position: absolute;
   top: 15%;
   left: 15%;
   height: 70%;
   width: 70%;
-  background: var(--accent-color);
-  border-radius: 0.15rem;
+  transition: 0.25s top ease, 0.25s left ease, 0.25s height ease, 0.25s width ease;
 }
 
 .checkbox {
@@ -992,4 +989,16 @@ hidden,
   background: var(--surface-color);
   border-radius: 0.25rem;
   position: relative;
+}
+
+.checkbox::before {
+  content: " ";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  height: 0%;
+  width: 0%;
+  background: var(--accent-color);
+  border-radius: 0.15rem;
+  transition: 0.25s top ease, 0.25s left ease, 0.25s height ease, 0.25s width ease;
 }
