@@ -177,6 +177,7 @@ try {
   if (document.getElementById('sort-segments-button')) document.getElementById('sort-segments-button').addEventListener("click", sortSegments);
   if (document.getElementById('hideIncorrectAttempts')) document.getElementById('hideIncorrectAttempts').addEventListener("change", updateSegments);
   if (document.getElementById('hideIncorrectAttempts')) document.getElementById('hideIncorrectAttempts').addEventListener("change", updateResponses);
+  if (document.querySelector('[data-expand-reports]')) document.querySelector('[data-expand-reports]').addEventListener("click", toggleAllReports);
 
   function toggleSelecting() {
     if (!active) return;
@@ -1541,8 +1542,31 @@ try {
   }
 
   function toggleDetailedReport() {
-    if (!this.getAttribute('report') || !document.getElementById(this.getAttribute('report'))) return;
+    if (!active || !this.getAttribute('report') || !document.getElementById(this.getAttribute('report'))) return;
     document.getElementById(this.getAttribute('report')).classList.toggle('active');
+    syncExpandAllReportsButton();
+  }
+
+  function syncExpandAllReportsButton() {
+    if (!active) return;
+    var openReports = document.querySelectorAll('.detailed-report.active');
+    if (openReports.length > 0) {
+      document.querySelector('[data-expand-reports] .bi-chevron-bar-expand').style.display = "none";
+      document.querySelector('[data-expand-reports] .bi-chevron-bar-contract').style.display = "block";
+    } else {
+      document.querySelector('[data-expand-reports] .bi-chevron-bar-expand').style.display = "block";
+      document.querySelector('[data-expand-reports] .bi-chevron-bar-contract').style.display = "none";
+    }
+  }
+
+  function toggleAllReports() {
+    if (!active) return;
+    var reports = document.querySelectorAll('.detailed-report');
+    var openReports = document.querySelectorAll('.detailed-report.active');
+    reports.forEach(report => {
+      (openReports.length > 0) ? report.classList.remove('active') : report.classList.add('active');
+    });
+    syncExpandAllReportsButton();
   }
 } catch (error) {
   if (storage.get("developer")) {
