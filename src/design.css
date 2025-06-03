@@ -897,6 +897,9 @@ hidden,
   flex-wrap: wrap;
   gap: 10px;
   width: -webkit-fill-available;
+}
+
+[report] {
   cursor: pointer;
 }
 
@@ -951,6 +954,8 @@ hidden,
 
 .detailed-report.active {
   display: flex;
+  border-left: 2px solid var(--accent-color);
+  padding-left: 7.5px;
 }
 
 .detailed-report-question {

@@ -2,6 +2,7 @@
 import * as ui from "/src/modules/ui.js";
 import storage from "/src/modules/storage.js";
 import * as time from "/src/modules/time.js";
+import { convertLatexToSpeakableText } from "mathlive";
 
 const domain = ((window.location.hostname.search('check') != -1) || (window.location.hostname.search('127') != -1)) ? 'https://api.check.vssfalcons.com' : `http://${document.domain}:5000`;
 if (window.location.pathname.split('?')[0].endsWith('/admin')) window.location.pathname = '/admin/';
@@ -115,6 +116,7 @@ try {
                           document.getElementById("sort-course-input").value = courses.find(c => c.id == String(responses.sort((a, b) => String(a.seatCode)[0] - String(b.seatCode)[0])[0].seatCode)[0]).id;
                           await updateResponses();
                         }
+                        if (document.querySelector('.segment-reports')) updateSegments();
                         active = true;
                         ui.stopLoader();
                         if (!polling) ui.toast("Data restored.", 1000, "info", "bi bi-cloud-arrow-down");
@@ -168,6 +170,7 @@ try {
   if (document.querySelector('[data-speed]')) document.querySelector('[data-speed]').addEventListener("click", toggleSpeedMode);
   if (document.getElementById('enable-speed-mode-button')) document.getElementById('enable-speed-mode-button').addEventListener("click", enableSpeedMode);
   if (document.querySelector('[data-reorder]')) document.querySelector('[data-reorder]').addEventListener("click", toggleReorder);
+  if (document.getElementById('sort-course-input')) document.getElementById('sort-course-input').addEventListener("change", updateSegments);
   if (document.getElementById('sort-segments-due')) document.getElementById('sort-segments-due').addEventListener("click", sortSegmentsDue);
   if (document.getElementById('sort-segments-increasing')) document.getElementById('sort-segments-increasing').addEventListener("click", sortSegmentsIncreasing);
   if (document.getElementById('sort-segments-decreasing')) document.getElementById('sort-segments-decreasing').addEventListener("click", sortSegmentsDecreasing);
@@ -245,8 +248,7 @@ try {
   }
 
   function updateSegments() {
-    if (!active) return;
-    const course = courses.find(c => c.id == document.getElementById("course-period-input").value);
+    const course = courses.find(c => c.id == (document.getElementById("course-period-input") ? document.getElementById("course-period-input").value : document.getElementById("sort-course-input") ? document.getElementById("sort-course-input").value - 1 : null));
     if (document.getElementById("course-input")) document.getElementById("course-input").value = course.name;
     var c = segments.filter(s => s.course == course.id);
     if (course.syllabus) {
@@ -306,6 +308,7 @@ try {
         });
       }
     }
+    if (document.querySelector('.segment-reports')) document.querySelector('.segment-reports').innerHTML = '';
     if (c.length > 0) {
       if (document.querySelector('.segments .section')) document.querySelector('.segments .section').innerHTML = '';
       if (document.querySelector(".segment-reorder .reorder")) document.querySelector(".segment-reorder .reorder").innerHTML = '';
@@ -340,28 +343,27 @@ try {
       }
       if (document.querySelector('.segments .section')) document.querySelector('.segments .section').innerHTML += '<button data-add-segment-input>Add Segment</button>';
       if (document.querySelector('.segment-reports')) {
-        document.querySelector('.segment-reports').innerHTML = '';
         c.sort((a, b) => a.order - b.order).forEach(segment => {
           var detailedReport = '';
           JSON.parse(segment.question_ids).forEach(q => {
             var question = questions.find(q1 => q1.id == q.id);
-            var questionResponses = responses.filter(r => String(r.segment) === String(segment.id)).filter(r => r.question_id === question.id);
+            var questionResponses = responses.filter(r => String(r.segment) === String(segment.number)).filter(r => r.question_id === question.id);
             detailedReport += `<div class="detailed-report-question">
-              <b>Question ${question.number} (Total Response${questionResponses.length != 1 ? 's' : ''})</b>
+              <b>Question ${question.number} (${questionResponses.length} Response${(questionResponses.length != 1) ? 's' : ''})</b>
               <div class="barcount-wrapper">
-                <div class="barcount correct" style="width: calc(${questionResponses.filter(r => r.status === 'Correct').length / questionResponses.length} * 100%)">${questionResponses.filter(r => r.status === 'Correct').length}</div>
-                <div class="barcount incorrect" style="width: calc(${questionResponses.filter(r => r.status === 'Incorrect').length / questionResponses.length} * 100%)">${questionResponses.filter(r => r.status === 'Incorrect').length}</div>
-                <div class="barcount other" style="width: calc(${questionResponses.filter(r => ((r.status !== 'Correct') && (r.status !== 'Incorrect') && !r.status.includes('Recorded'))).length / questionResponses.length} * 100%)">${questionResponses.filter(r => ((r.status !== 'Correct') && (r.status !== 'Incorrect') && !r.status.includes('Recorded'))).length}</div>
-                <div class="barcount waiting" style="width: calc(${questionResponses.filter(r => r.status.includes('Recorded')).length / questionResponses.length} * 100%)">${questionResponses.filter(r => r.status.includes('Recorded')).length}</div>
+                <div class="barcount correct"${(questionResponses.length != 0) ? ` style="width: calc(${questionResponses.filter(r => r.status === 'Correct').length / (questionResponses.length || 1)} * 100%)"` : ''}>${questionResponses.filter(r => r.status === 'Correct').length}</div>
+                <div class="barcount incorrect"${(questionResponses.length != 0) ? ` style="width: calc(${questionResponses.filter(r => r.status === 'Incorrect').length / (questionResponses.length || 1)} * 100%)"` : ''}>${questionResponses.filter(r => r.status === 'Incorrect').length}</div>
+                <div class="barcount other"${(questionResponses.length != 0) ? ` style="width: calc(${questionResponses.filter(r => ((r.status !== 'Correct') && (r.status !== 'Incorrect') && !r.status.includes('Recorded'))).length / (questionResponses.length || 1)} * 100%)"` : ''}>${questionResponses.filter(r => ((r.status !== 'Correct') && (r.status !== 'Incorrect') && !r.status.includes('Recorded'))).length}</div>
+                <div class="barcount waiting"${(questionResponses.length != 0) ? ` style="width: calc(${questionResponses.filter(r => r.status.includes('Recorded')).length / (questionResponses.length || 1)} * 100%)"` : ''}>${questionResponses.filter(r => r.status.includes('Recorded')).length}</div>
               </div>
             </div>`;
           });
-          document.querySelector('.segment-reports').innerHTML += `<div class="segment-report" report="segment-${segment.id}">
-            <b>Segment ${segment.number} (${segment.question_ids.length} Total Question${segment.question_ids.length != 1 ? 's' : ''})</b>
+          document.querySelector('.segment-reports').innerHTML += `<div class="segment-report"${(JSON.parse(segment.question_ids) != 0) ? ` report="segment-${segment.number}"` : ''}>
+            <b>Segment ${segment.number} (${JSON.parse(segment.question_ids).length} Question${JSON.parse(segment.question_ids).length != 1 ? 's' : ''})</b>
           </div>
-          <div class="section detailed-report" id="segment-${segment.id}">
+          ${(JSON.parse(segment.question_ids) != 0) ? ` <div class="section detailed-report" id="segment-${segment.number}">
             ${detailedReport}
-          </div>`;
+          </div>` : ''}`;
         });
       }
     } else {
@@ -381,6 +383,7 @@ try {
       item.addEventListener('dragover', handleDragOver);
       item.addEventListener('drop', handleDropSegment);
     });
+    document.querySelectorAll('[report]').forEach(a => a.addEventListener('click', toggleDetailedReport));
   }
 
   function toggleSegment() {
@@ -903,6 +906,7 @@ try {
     if (document.querySelector('.awaitingResponses .section')) document.querySelector('.awaitingResponses .section').innerHTML = '';
     if (document.querySelector('.trendingResponses .section')) document.querySelector('.trendingResponses .section').innerHTML = '';
     if (document.querySelector('.responses .section')) document.querySelector('.responses .section').innerHTML = '';
+    if (document.querySelector('.seat-code-reports')) document.querySelector('.seat-code-reports').innerHTML = '';
     var trendingResponses = [];
     var timedResponses = [];
     var responses1 = responses
@@ -1005,7 +1009,6 @@ try {
       }
     });
     if (document.querySelector('.seat-code-reports')) {
-      document.querySelector('.seat-code-reports').innerHTML = '';
       seatCodes.sort((a, b) => Number(a.code) - Number(b.code)).forEach(seatCode => {
         var detailedReport = '';
         var seatCodeResponses = seatCode.responses.sort((a, b) => a.timestamp - b.timestamp);
@@ -1023,12 +1026,12 @@ try {
           </div>` : '';
         });
         document.querySelector('.seat-code-reports').innerHTML += `<div class="seat-code-report" report="seat-code-${seatCode.code}">
-          <b>${seatCode.code} (${seatCode.total} Total Response${seatCode.total != 1 ? 's' : ''})</b>
+          <b>${seatCode.code} (${seatCode.total} Response${(seatCode.total != 1) ? 's' : ''})</b>
           <div class="barcount-wrapper">
-            <div class="barcount correct" style="width: calc(${seatCode.correct / seatCode.total} * 100%)">${seatCode.correct}</div>
-            <div class="barcount incorrect" style="width: calc(${seatCode.incorrect / seatCode.total} * 100%)">${seatCode.incorrect}</div>
-            <div class="barcount other" style="width: calc(${seatCode.other / seatCode.total} * 100%)">${seatCode.other}</div>
-            <div class="barcount waiting" style="width: calc(${seatCode.waiting / seatCode.total} * 100%)">${seatCode.waiting}</div>
+            <div class="barcount correct"${(seatCode.total != 0) ? ` style="width: calc(${seatCode.correct / (seatCode.total || 1)} * 100%)"` : ''}>${seatCode.correct}</div>
+            <div class="barcount incorrect"${(seatCode.total != 0) ? ` style="width: calc(${seatCode.incorrect / (seatCode.total || 1)} * 100%)"` : ''}>${seatCode.incorrect}</div>
+            <div class="barcount other"${(seatCode.total != 0) ? ` style="width: calc(${seatCode.other / (seatCode.total || 1)} * 100%)"` : ''}>${seatCode.other}</div>
+            <div class="barcount waiting"${(seatCode.total != 0) ? ` style="width: calc(${seatCode.waiting / (seatCode.total || 1)} * 100%)"` : ''}>${seatCode.waiting}</div>
           </div>
         </div>
         <div class="section detailed-report" id="seat-code-${seatCode.code}">
@@ -1052,7 +1055,7 @@ try {
     document.querySelectorAll('[data-flag-response]').forEach(a => a.addEventListener('click', flagResponse));
     document.querySelectorAll('[data-unflag-response]').forEach(a => a.addEventListener('click', unflagResponse));
     document.querySelectorAll('[data-edit-reason]').forEach(a => a.addEventListener('click', editReason));
-    document.querySelectorAll('.seat-code-report').forEach(a => a.addEventListener('click', toggleDetailedReport));
+    document.querySelectorAll('[report]').forEach(a => a.addEventListener('click', toggleDetailedReport));
   }
 
   function calculateTimeDifference(currentDate, previousTimestamp) {
@@ -1519,7 +1522,7 @@ try {
   }
 
   function toggleDetailedReport() {
-    if (!this.getAttribute('report') && document.getElementById(this.getAttribute('report'))) return;
+    if (!this.getAttribute('report') || !document.getElementById(this.getAttribute('report'))) return;
     document.getElementById(this.getAttribute('report')).classList.toggle('active');
   }
 } catch (error) {
