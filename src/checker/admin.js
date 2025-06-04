@@ -1645,10 +1645,15 @@ try {
   function addExistingQuestion() {
     if (!active || !document.getElementById("add-question-input").selectedOptions[0]) return;
     var div = document.createElement('div');
-    div.classList = "button-grid inputs";
+    div.classList = "button-grid inputs question";
     div.innerHTML = `<div class="input-group">
       <div class="space" id="question-container">
         <input type="text" id="${document.getElementById("add-question-input").value}" value="${document.getElementById("add-question-input").selectedOptions[0].innerHTML}" disabled>
+      </div>
+    </div>
+    <div class="input-group small">
+      <div class="space" id="question-container">
+        <input type="text" value="${document.getElementById("add-question-input").selectedOptions[0].innerHTML.split('#')[1].split(' ')[0]}">
       </div>
     </div>
     <button class="space" id="remove-existing-question-button" square><i class="bi bi-trash"></i></button>`;
