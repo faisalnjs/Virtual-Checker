@@ -362,7 +362,7 @@ try {
               detailedReport1 += `<div class="detailed-report-question">
                 <div class="color">
                   <span class="color-box ${(r.status === 'Correct') ? 'correct' : (r.status === 'Incorrect') ? 'incorrect' : r.status.includes('Recorded') ? 'waiting' : 'other'}"></span>
-                  <span class="color-name">${r.seatCode}</span>
+                  <span class="color-name">${r.seatCode}<p class="showonhover"> (${time.unixToString(r.timestamp)})</p>: ${r.response}</span>
                 </div>
                 <div class="color">
                   <span class="color-name">${r.status}</span>
@@ -1047,7 +1047,7 @@ try {
           detailedReport += questions.find(q => q.id == r.question_id).number ? `<div class="detailed-report-question">
             <div class="color">
               <span class="color-box ${(r.status === 'Correct') ? 'correct' : (r.status === 'Incorrect') ? 'incorrect' : r.status.includes('Recorded') ? 'waiting' : 'other'}"></span>
-              <span class="color-name">Segment ${r.segment} Question ${questions.find(q => q.id == r.question_id).number} (${time.unixToString(r.timestamp)})</span>
+              <span class="color-name">Segment ${r.segment} #${questions.find(q => q.id == r.question_id).number}<p class="showonhover"> (${time.unixToString(r.timestamp)})</p>: ${r.response}</span>
             </div>
             <div class="color">
               <span class="color-name">${r.status}</span>
@@ -1595,7 +1595,7 @@ try {
         detailedReport += `<div class="detailed-report-question">
           <div class="color">
             <span class="color-box ${(r.status === 'Correct') ? 'correct' : (r.status === 'Incorrect') ? 'incorrect' : r.status.includes('Recorded') ? 'waiting' : 'other'}"></span>
-            <span class="color-name">${r.seatCode}</span>
+            <span class="color-name">${r.seatCode}<p class="showonhover"> (${time.unixToString(r.timestamp)})</p>: ${r.response}</span>
           </div>
           <div class="color">
             <span class="color-name">${r.status}</span>
