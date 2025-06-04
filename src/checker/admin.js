@@ -19,6 +19,7 @@ var active = false;
 var timestamps = false;
 var speed = false;
 var reorder = false;
+var expandedReports = [];
 
 try {
   async function init() {
@@ -250,6 +251,8 @@ try {
   }
 
   function updateSegments() {
+    expandedReports = [];
+    document.querySelectorAll('.detailed-report.active').forEach(dr => expandedReports.push(dr.id));
     const course = courses.find(c => c.id == (document.getElementById("course-period-input") ? document.getElementById("course-period-input").value : document.getElementById("sort-course-input") ? document.getElementById("sort-course-input").value - 1 : null));
     if (document.getElementById("course-input")) document.getElementById("course-input").value = course.name;
     var c = segments.filter(s => s.course == course.id);
@@ -389,6 +392,9 @@ try {
     } else {
       if (document.querySelector('.segments .section')) document.querySelector('.segments .section').innerHTML = '<button data-add-segment-input>Add Segment</button>';
     }
+    expandedReports.forEach(er => {
+      if (document.getElementById(er)) document.getElementById(er).classList.add('active');
+    });
     document.querySelectorAll('[data-add-segment-input]').forEach(a => a.addEventListener('click', addSegment));
     document.querySelectorAll('[data-remove-segment-input]').forEach(a => a.addEventListener('click', removeSegment));
     document.querySelectorAll('[data-add-segment-question-input]').forEach(a => a.addEventListener('click', addSegmentQuestion));
@@ -923,6 +929,8 @@ try {
   }
 
   async function updateResponses() {
+    expandedReports = [];
+    document.querySelectorAll('.detailed-report.active').forEach(dr => expandedReports.push(dr.id));
     if (document.querySelector('.awaitingResponses .section')) document.querySelector('.awaitingResponses .section').innerHTML = '';
     if (document.querySelector('.trendingResponses .section')) document.querySelector('.trendingResponses .section').innerHTML = '';
     if (document.querySelector('.responses .section')) document.querySelector('.responses .section').innerHTML = '';
@@ -1069,6 +1077,9 @@ try {
       buttonGrid.className = "button-grid inputs";
       buttonGrid.innerHTML = `<input type="text" autocomplete="off" class="small" id="response-segment-input" value="${r.segment}" disabled data-segment /><input type="text" autocomplete="off" class="small" id="response-question-input" value="${questions.find(q => q.id == r.question_id).number}" disabled data-question /><input type="text" autocomplete="off" id="response-response-input" value="${r.response}" disabled /><input type="text" autocomplete="off" class="small" id="response-count-input" value="${r.count}" disabled /><button square id="mark-correct-button"${(r.status === 'Correct') ? ' disabled' : ''}><i class="bi bi-check-circle${(r.status === 'Correct') ? '-fill' : ''}"></i></button><button square id="mark-incorrect-button"${(r.status === 'Incorrect') ? ' disabled' : ''}><i class="bi bi-x-circle${(r.status === 'Incorrect') ? '-fill' : ''}"></i></button>`;
       document.querySelector('.trendingResponses .section').appendChild(buttonGrid);
+    });
+    expandedReports.forEach(er => {
+      if (document.getElementById(er)) document.getElementById(er).classList.add('active');
     });
     document.querySelectorAll('#mark-correct-button').forEach(a => a.addEventListener('click', markCorrect));
     document.querySelectorAll('#mark-incorrect-button').forEach(a => a.addEventListener('click', markIncorrect));
