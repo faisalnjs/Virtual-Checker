@@ -347,7 +347,7 @@ try {
             JSON.parse(s.question_ids).forEach(q => {
               questionsString += `<div class="input-group"><div class="drag"><i class="bi bi-grip-vertical"></i></div><input type="text" autocomplete="off" id="segment-question-name-input" value="${q.name}" placeholder="${q.name}" /><input type="number" autocomplete="off" id="segment-question-id-input" value="${q.id}" placeholder="${q.id}" /></div>`;
             });
-            questions.innerHTML = `<div class="button-grid"><button class="space fit" id="sort-segment-questions-increasing">Sort Increasing (1A-9Z)</button><button class="space fit" id="sort-segment-questions-decreasing">Sort Decreasing (9Z-1A)</button></div><br><div class="button-grid inputs"><div class="input-group small"><label>Name</label><label>ID</label></div>${questionsString}<div class="input-group fit"><button square data-add-segment-question-input><i class="bi bi-plus"></i></button><button square data-remove-segment-question-input${(JSON.parse(s.question_ids).length === 1) ? ' disabled' : ''}><i class="bi bi-dash"></i></button></div></div>`;
+            questions.innerHTML = `<div class="button-grid"><button class="space fit" sort-segment-questions-increasing>Sort Increasing (1A-9Z)</button><button class="space fit" sort-segment-questions-decreasing>Sort Decreasing (9Z-1A)</button></div><br><div class="button-grid inputs"><div class="input-group small"><label>Name</label><label>ID</label></div>${questionsString}<div class="input-group fit"><button square data-add-segment-question-input><i class="bi bi-plus"></i></button><button square data-remove-segment-question-input${(JSON.parse(s.question_ids).length === 1) ? ' disabled' : ''}><i class="bi bi-dash"></i></button></div></div>`;
             segment.appendChild(questions);
             document.querySelector('.segments .section').appendChild(segment);
           }
@@ -415,8 +415,8 @@ try {
     document.querySelectorAll('[data-remove-segment-question-input]').forEach(a => a.addEventListener('click', removeSegmentQuestion));
     document.querySelectorAll('[data-toggle-segment]').forEach(a => a.addEventListener('click', toggleSegment));
     document.querySelectorAll('[data-select]').forEach(a => a.addEventListener('click', toggleSelected));
-    if (document.getElementById('sort-segment-questions-increasing')) document.getElementById('sort-segment-questions-increasing').addEventListener('click', sortSegmentQuestionsIncreasing);
-    if (document.getElementById('sort-segment-questions-decreasing')) document.getElementById('sort-segment-questions-decreasing').addEventListener('click', sortSegmentQuestionsDecreasing);
+    document.querySelectorAll('[sort-segment-questions-increasing]').forEach(a => a.addEventListener('click', sortSegmentQuestionsIncreasing));
+    document.querySelectorAll('[sort-segment-questions-decreasing]').forEach(a => a.addEventListener('click', sortSegmentQuestionsDecreasing));
     document.querySelectorAll('.drag').forEach(item => {
       item.setAttribute('draggable', true);
       item.addEventListener('dragstart', handleDragStart);
