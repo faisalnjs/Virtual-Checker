@@ -1,6 +1,8 @@
 /* eslint-disable no-inner-declarations */
 import * as ui from "/src/modules/ui.js";
 import storage from "/src/modules/storage.js";
+import * as time from "/src/modules/time.js";
+import { convertLatexToSpeakableText } from "mathlive";
 
 const domain = ((window.location.hostname.search('check') != -1) || (window.location.hostname.search('127') != -1)) ? 'https://api.check.vssfalcons.com' : `http://${document.domain}:5000`;
 if (window.location.pathname.split('?')[0].endsWith('/admin')) window.location.pathname = '/admin/';
@@ -17,6 +19,7 @@ var active = false;
 var timestamps = false;
 var speed = false;
 var reorder = false;
+var expandedReports = [];
 
 try {
   async function init() {
@@ -42,16 +45,16 @@ try {
           c.sort((a, b) => a.period - b.period).forEach(course => {
             const option = document.createElement("option");
             option.value = course.id;
-            option.innerHTML = course.period;
+            option.innerHTML = document.getElementById("course-input") ? course.period : `${course.period}${course.name ? ` (${course.name})` : ''}`;
             document.getElementById("course-period-input").appendChild(option);
             const elem = document.createElement("div");
             elem.classList = "button-grid inputs";
             elem.style = "flex-wrap: nowrap !important;";
             elem.innerHTML = `<input type="text" autocomplete="off" id="course-${course.id}" value="${course.name || ''}" /><div class="drag"><i class="bi bi-grip-vertical"></i></div>`;
-            document.querySelector(".course-reorder .reorder").appendChild(elem);
+            if (document.querySelector(".course-reorder .reorder")) document.querySelector(".course-reorder .reorder").appendChild(elem);
           });
           const course = courses.find(c => c.id == document.getElementById("course-period-input").value);
-          document.getElementById("course-input").value = course.name;
+          if (document.getElementById("course-input")) document.getElementById("course-input").value = course.name;
           document.querySelectorAll('.drag').forEach(item => {
             item.setAttribute('draggable', true);
             item.addEventListener('dragstart', handleDragStart);
@@ -108,49 +111,50 @@ try {
                       }
                     })
                       .then(r => r.json())
-                      .then(r => {
+                      .then(async r => {
                         responses = r;
-                        if (document.querySelector('.responses.section')) {
+                        if (document.querySelector('.responses.section') || document.querySelector('.seat-code-reports')) {
                           document.getElementById("sort-course-input").value = courses.find(c => c.id == String(responses.sort((a, b) => String(a.seatCode)[0] - String(b.seatCode)[0])[0].seatCode)[0]).id;
-                          updateResponses();
-                        } else {
-                          active = true;
-                          ui.stopLoader();
-                          ui.toast("Data restored.", 1000, "info", "bi bi-cloud-arrow-down");
+                          await updateResponses();
                         }
+                        if (document.querySelector('.segment-reports')) updateSegments();
+                        if (document.querySelector('.question-reports')) updateQuestionReports();
+                        active = true;
+                        ui.stopLoader();
+                        if (!polling) ui.toast("Data restored.", 1000, "info", "bi bi-cloud-arrow-down");
                       })
                       .catch((e) => {
                         console.error(e);
                         ui.view("api-fail");
-                        if (document.querySelector('[data-polling]')) pollingOff();
+                        pollingOff();
                       });
                   })
                   .catch((e) => {
                     console.error(e);
                     ui.view("api-fail");
-                    if (document.querySelector('[data-polling]')) pollingOff();
+                    pollingOff();
                   });
               })
               .catch((e) => {
                 console.error(e);
                 ui.view("api-fail");
-                if (document.querySelector('[data-polling]')) pollingOff();
+                pollingOff();
               });
           })
           .catch((e) => {
             console.error(e);
             ui.view("api-fail");
-            if (document.querySelector('[data-polling]')) pollingOff();
+            pollingOff();
           });
       })
       .catch((e) => {
         console.error(e);
         ui.view("api-fail");
-        if (document.querySelector('[data-polling]')) pollingOff();
+        pollingOff();
       });
     if (document.getElementById("course-period-input")) {
-      document.querySelector('.course-reorder').style.display = 'none';
-      document.querySelector('.segment-reorder').style.display = 'none';
+      if (document.querySelector('.course-reorder')) document.querySelector('.course-reorder').style.display = 'none';
+      if (document.querySelector('.segment-reorder')) document.querySelector('.segment-reorder').style.display = 'none';
       document.querySelectorAll('[data-remove-segment-input]').forEach(a => a.removeEventListener('click', removeSegment));
       document.querySelectorAll('[data-remove-segment-input]').forEach(a => a.addEventListener('click', removeSegment));
       document.getElementById("course-period-input").value = courses.find(c => c.id == segments.sort((a, b) => a.course - b.course)[0].course).id;
@@ -168,10 +172,15 @@ try {
   if (document.querySelector('[data-speed]')) document.querySelector('[data-speed]').addEventListener("click", toggleSpeedMode);
   if (document.getElementById('enable-speed-mode-button')) document.getElementById('enable-speed-mode-button').addEventListener("click", enableSpeedMode);
   if (document.querySelector('[data-reorder]')) document.querySelector('[data-reorder]').addEventListener("click", toggleReorder);
+  if (document.getElementById('sort-course-input')) document.getElementById('sort-course-input').addEventListener("change", updateSegments);
   if (document.getElementById('sort-segments-due')) document.getElementById('sort-segments-due').addEventListener("click", sortSegmentsDue);
   if (document.getElementById('sort-segments-increasing')) document.getElementById('sort-segments-increasing').addEventListener("click", sortSegmentsIncreasing);
   if (document.getElementById('sort-segments-decreasing')) document.getElementById('sort-segments-decreasing').addEventListener("click", sortSegmentsDecreasing);
   if (document.getElementById('sort-segments-button')) document.getElementById('sort-segments-button').addEventListener("click", sortSegments);
+  if (document.getElementById('hideIncorrectAttempts')) document.getElementById('hideIncorrectAttempts').addEventListener("change", updateSegments);
+  if (document.getElementById('hideIncorrectAttempts')) document.getElementById('hideIncorrectAttempts').addEventListener("change", updateResponses);
+  if (document.getElementById('hideIncorrectAttempts')) document.getElementById('hideIncorrectAttempts').addEventListener("change", updateQuestionReports);
+  if (document.querySelector('[data-expand-reports]')) document.querySelector('[data-expand-reports]').addEventListener("click", toggleAllReports);
 
   function toggleSelecting() {
     if (!active) return;
@@ -222,6 +231,7 @@ try {
 
   function pollingOff() {
     if (!active) return;
+    if (!document.querySelector('[data-polling]')) return;
     polling = false;
     document.querySelector('[data-polling] .bi-skip-forward-circle-fill').style.display = "block";
     document.querySelector('[data-polling] .bi-stop-circle-fill').style.display = "none";
@@ -243,9 +253,10 @@ try {
   }
 
   function updateSegments() {
-    if (!active) return;
-    const course = courses.find(c => c.id == document.getElementById("course-period-input").value);
-    document.getElementById("course-input").value = course.name;
+    expandedReports = [];
+    document.querySelectorAll('.detailed-report.active').forEach(dr => expandedReports.push(dr.id));
+    const course = courses.find(c => c.id == (document.getElementById("course-period-input") ? document.getElementById("course-period-input").value : document.getElementById("sort-course-input") ? document.getElementById("sort-course-input").value - 1 : null));
+    if (document.getElementById("course-input")) document.getElementById("course-input").value = course.name;
     var c = segments.filter(s => s.course == course.id);
     if (course.syllabus) {
       if (document.querySelector('[data-syllabus-upload]')) document.querySelector('[data-syllabus-upload]').setAttribute('hidden', '');
@@ -270,7 +281,7 @@ try {
           .catch((e) => {
             console.error(e);
             ui.view("api-fail");
-            if (document.querySelector('[data-polling]')) pollingOff();
+            pollingOff();
           });
       });
     } else {
@@ -304,36 +315,88 @@ try {
         });
       }
     }
+    if (document.querySelector('.segment-reports')) document.querySelector('.segment-reports').innerHTML = '';
     if (c.length > 0) {
-      document.querySelector('.segments .section').innerHTML = '';
-      document.querySelector(".segment-reorder .reorder").innerHTML = '';
-      c.sort((a, b) => a.order - b.order).forEach(s => {
-        var segment = document.createElement('div');
-        segment.className = "section";
-        segment.id = `segment-${s.number}`;
-        var buttonGrid = document.createElement('div');
-        buttonGrid.className = "button-grid inputs";
-        buttonGrid.innerHTML = `<button square data-select><i class="bi bi-circle"></i><i class="bi bi-circle-fill"></i></button><div class="input-group small"><div class="space" id="question-container"><input type="text" autocomplete="off" id="segment-number-input" value="${s.number}" placeholder="${s.number}" /></div></div><div class="input-group"><div class="space" id="question-container"><input type="text" autocomplete="off" id="segment-name-input" value="${s.name}" placeholder="${s.name}" /></div></div><div class="input-group mediuml"><div class="space" id="question-container"><input type="date" id="segment-due-date" value="${s.due || ''}"></div></div><button square data-remove-segment-input><i class="bi bi-trash"></i></button><button square data-toggle-segment><i class="bi bi-caret-down-fill"></i><i class="bi bi-caret-up-fill"></i></button>`;
-        segment.appendChild(buttonGrid);
-        var questionsString = "";
-        var questions = document.createElement('div');
-        questions.classList = "questions";
-        JSON.parse(s.question_ids).forEach(q => {
-          questionsString += `<div class="input-group"><div class="drag"><i class="bi bi-grip-vertical"></i></div><input type="text" autocomplete="off" id="segment-question-name-input" value="${q.name}" placeholder="${q.name}" /><input type="number" autocomplete="off" id="segment-question-id-input" value="${q.id}" placeholder="${q.id}" /></div>`;
+      if (document.querySelector('.segments .section')) document.querySelector('.segments .section').innerHTML = '';
+      if (document.querySelector(".segment-reorder .reorder")) document.querySelector(".segment-reorder .reorder").innerHTML = '';
+      if (document.querySelector('.segments .section') || document.querySelector(".segment-reorder .reorder")) {
+        c.sort((a, b) => a.order - b.order).forEach(s => {
+          if (document.querySelector('.segments .section')) {
+            var segment = document.createElement('div');
+            segment.className = "section";
+            segment.id = `segment-${s.number}`;
+            var buttonGrid = document.createElement('div');
+            buttonGrid.className = "button-grid inputs";
+            buttonGrid.innerHTML = `<button square data-select><i class="bi bi-circle"></i><i class="bi bi-circle-fill"></i></button><div class="input-group small"><div class="space" id="question-container"><input type="text" autocomplete="off" id="segment-number-input" value="${s.number}" placeholder="${s.number}" /></div></div><div class="input-group"><div class="space" id="question-container"><input type="text" autocomplete="off" id="segment-name-input" value="${s.name}" placeholder="${s.name}" /></div></div><div class="input-group mediuml"><div class="space" id="question-container"><input type="date" id="segment-due-date" value="${s.due || ''}"></div></div><button square data-remove-segment-input><i class="bi bi-trash"></i></button><button square data-toggle-segment><i class="bi bi-caret-down-fill"></i><i class="bi bi-caret-up-fill"></i></button>`;
+            segment.appendChild(buttonGrid);
+            var questionsString = "";
+            var questions = document.createElement('div');
+            questions.classList = "questions";
+            JSON.parse(s.question_ids).forEach(q => {
+              questionsString += `<div class="input-group"><div class="drag"><i class="bi bi-grip-vertical"></i></div><input type="text" autocomplete="off" id="segment-question-name-input" value="${q.name}" placeholder="${q.name}" /><input type="number" autocomplete="off" id="segment-question-id-input" value="${q.id}" placeholder="${q.id}" /></div>`;
+            });
+            questions.innerHTML = `<div class="button-grid"><button class="space fit" id="sort-segment-questions-increasing">Sort Increasing (1A-9Z)</button><button class="space fit" id="sort-segment-questions-decreasing">Sort Decreasing (9Z-1A)</button></div><br><div class="button-grid inputs"><div class="input-group small"><label>Name</label><label>ID</label></div>${questionsString}<div class="input-group fit"><button square data-add-segment-question-input><i class="bi bi-plus"></i></button><button square data-remove-segment-question-input${(JSON.parse(s.question_ids).length === 1) ? ' disabled' : ''}><i class="bi bi-dash"></i></button></div></div>`;
+            segment.appendChild(questions);
+            document.querySelector('.segments .section').appendChild(segment);
+          }
+          if (document.querySelector(".segment-reorder .reorder")) {
+            const elem = document.createElement("div");
+            elem.classList = "button-grid inputs";
+            elem.style = "flex-wrap: nowrap !important;";
+            elem.innerHTML = `<input type="text" autocomplete="off" id="segment-${s.number}" value="${s.name || ''}" /><div class="drag"><i class="bi bi-grip-vertical"></i></div>`;
+            document.querySelector(".segment-reorder .reorder").appendChild(elem);
+          }
         });
-        questions.innerHTML = `<div class="button-grid"><button class="space fit" id="sort-segment-questions-increasing">Sort Increasing (1A-9Z)</button><button class="space fit" id="sort-segment-questions-decreasing">Sort Decreasing (9Z-1A)</button></div><br><div class="button-grid inputs"><div class="input-group small"><label>Name</label><label>ID</label></div>${questionsString}<div class="input-group fit"><button square data-add-segment-question-input><i class="bi bi-plus"></i></button><button square data-remove-segment-question-input${(JSON.parse(s.question_ids).length === 1) ? ' disabled' : ''}><i class="bi bi-dash"></i></button></div></div>`;
-        segment.appendChild(questions);
-        document.querySelector('.segments .section').appendChild(segment);
-        const elem = document.createElement("div");
-        elem.classList = "button-grid inputs";
-        elem.style = "flex-wrap: nowrap !important;";
-        elem.innerHTML = `<input type="text" autocomplete="off" id="segment-${s.number}" value="${s.name || ''}" /><div class="drag"><i class="bi bi-grip-vertical"></i></div>`;
-        document.querySelector(".segment-reorder .reorder").appendChild(elem);
-      });
-      document.querySelector('.segments .section').innerHTML += '<button data-add-segment-input>Add Segment</button>';
+      }
+      if (document.querySelector('.segments .section')) document.querySelector('.segments .section').innerHTML += '<button data-add-segment-input>Add Segment</button>';
+      if (document.querySelector('.segment-reports')) {
+        c.sort((a, b) => a.order - b.order).forEach(segment => {
+          var detailedReport = '';
+          JSON.parse(segment.question_ids).forEach(q => {
+            var question = questions.find(q1 => q1.id == q.id);
+            if (!question) return;
+            var questionResponses = responses.filter(r => String(r.segment) === String(segment.number)).filter(r => r.question_id === question.id);
+            if (document.getElementById('hideIncorrectAttempts').checked) questionResponses = questionResponses.filter((r, index, self) => r.status === 'Correct' || !self.some(other => other.question_id === r.question_id && other.status === 'Correct'));
+            var detailedReport1 = '';
+            questionResponses.forEach(r => {
+              detailedReport1 += `<div class="detailed-report-question">
+                <div class="color">
+                  <span class="color-box ${(r.status === 'Correct') ? 'correct' : (r.status === 'Incorrect') ? 'incorrect' : r.status.includes('Recorded') ? 'waiting' : 'other'}"></span>
+                  <span class="color-name">${r.seatCode}<p class="showonhover"> (${time.unixToString(r.timestamp)})</p>: ${r.response}</span>
+                </div>
+                <div class="color">
+                  <span class="color-name">${r.status}</span>
+                  <span class="color-box ${(r.status === 'Correct') ? 'correct' : (r.status === 'Incorrect') ? 'incorrect' : r.status.includes('Recorded') ? 'waiting' : 'other'}"></span>
+                </div>
+              </div>`
+            });
+            detailedReport += `<div class="detailed-report-question"${(questionResponses.length != 0) ? ` report="segment-question-${q.id}"` : ''}>
+              <b>Question ${question.number} (${questionResponses.length} Response${(questionResponses.length != 1) ? 's' : ''})</b>
+              <div class="barcount-wrapper">
+                <div class="barcount correct"${(questionResponses.length != 0) ? ` style="width: calc(${questionResponses.filter(r => r.status === 'Correct').length / (questionResponses.length || 1)} * 100%)"` : ''}>${questionResponses.filter(r => r.status === 'Correct').length}</div>
+                <div class="barcount incorrect"${(questionResponses.length != 0) ? ` style="width: calc(${questionResponses.filter(r => r.status === 'Incorrect').length / (questionResponses.length || 1)} * 100%)"` : ''}>${questionResponses.filter(r => r.status === 'Incorrect').length}</div>
+                <div class="barcount other"${(questionResponses.length != 0) ? ` style="width: calc(${questionResponses.filter(r => ((r.status !== 'Correct') && (r.status !== 'Incorrect') && !r.status.includes('Recorded'))).length / (questionResponses.length || 1)} * 100%)"` : ''}>${questionResponses.filter(r => ((r.status !== 'Correct') && (r.status !== 'Incorrect') && !r.status.includes('Recorded'))).length}</div>
+                <div class="barcount waiting"${(questionResponses.length != 0) ? ` style="width: calc(${questionResponses.filter(r => r.status.includes('Recorded')).length / (questionResponses.length || 1)} * 100%)"` : ''}>${questionResponses.filter(r => r.status.includes('Recorded')).length}</div>
+              </div>
+            </div>
+            ${(questionResponses.length != 0) ? `<div class="section detailed-report" id="segment-question-${q.id}">
+              ${detailedReport1}
+            </div>` : ''}`;
+          });
+          document.querySelector('.segment-reports').innerHTML += `<div class="segment-report"${(JSON.parse(segment.question_ids) != 0) ? ` report="segment-${segment.number}"` : ''}>
+            <b>Segment ${segment.number} (${JSON.parse(segment.question_ids).length} Question${JSON.parse(segment.question_ids).length != 1 ? 's' : ''})</b>
+          </div>
+          ${(JSON.parse(segment.question_ids).length != 0) ? `<div class="section detailed-report" id="segment-${segment.number}">
+            ${detailedReport}
+          </div>` : ''}`;
+        });
+      }
     } else {
-      document.querySelector('.segments .section').innerHTML = '<button data-add-segment-input>Add Segment</button>';
+      if (document.querySelector('.segments .section')) document.querySelector('.segments .section').innerHTML = '<button data-add-segment-input>Add Segment</button>';
     }
+    expandedReports.forEach(er => {
+      if (document.getElementById(er)) document.getElementById(er).classList.add('active');
+    });
     document.querySelectorAll('[data-add-segment-input]').forEach(a => a.addEventListener('click', addSegment));
     document.querySelectorAll('[data-remove-segment-input]').forEach(a => a.addEventListener('click', removeSegment));
     document.querySelectorAll('[data-add-segment-question-input]').forEach(a => a.addEventListener('click', addSegmentQuestion));
@@ -348,6 +411,7 @@ try {
       item.addEventListener('dragover', handleDragOver);
       item.addEventListener('drop', handleDropSegment);
     });
+    document.querySelectorAll('[report]').forEach(a => a.addEventListener('click', toggleDetailedReport));
   }
 
   function toggleSegment() {
@@ -389,21 +453,21 @@ try {
       .then(r => r.json())
       .then(c => {
         courses = c;
-        document.querySelector(".course-reorder .reorder").innerHTML = "";
+        if (document.querySelector(".course-reorder .reorder")) document.querySelector(".course-reorder .reorder").innerHTML = "";
         document.getElementById("course-period-input").innerHTML = "";
         c.sort((a, b) => a.period - b.period).forEach(course => {
           const option = document.createElement("option");
           option.value = course.id;
-          option.innerHTML = course.period;
+          option.innerHTML = document.getElementById("course-input") ? course.period : `${course.period}${course.name ? ` (${course.name})` : ''}`;
           document.getElementById("course-period-input").appendChild(option);
           const elem = document.createElement("div");
           elem.classList = "button-grid inputs";
           elem.style = "flex-wrap: nowrap !important;";
           elem.innerHTML = `<input type="text" autocomplete="off" id="course-${course.id}" value="${course.name || ''}" placeholder="${course.name || ''}" /><div class="drag"><i class="bi bi-grip-vertical"></i></div>`;
-          document.querySelector(".course-reorder .reorder").appendChild(elem);
+          if (document.querySelector(".course-reorder .reorder")) document.querySelector(".course-reorder .reorder").appendChild(elem);
         });
         const course = courses.find(c => c.id == document.getElementById("course-period-input").value);
-        document.getElementById("course-input").value = course.name;
+        if (document.getElementById("course-input")) document.getElementById("course-input").value = course.name;
         document.querySelectorAll('.drag').forEach(item => {
           item.setAttribute('draggable', true);
           item.addEventListener('dragstart', handleDragStart);
@@ -414,7 +478,7 @@ try {
       .catch((e) => {
         console.error(e);
         ui.view("api-fail");
-        if (document.querySelector('[data-polling]')) pollingOff();
+        pollingOff();
       });
     // Show submit confirmation
     ui.modeless(`<i class="bi bi-check-lg"></i>`, "Saved");
@@ -449,7 +513,7 @@ try {
       .catch((e) => {
         console.error(e);
         ui.view("api-fail");
-        if (document.querySelector('[data-polling]')) pollingOff();
+        pollingOff();
       });
     // Show submit confirmation
     ui.modeless(`<i class="bi bi-check-lg"></i>`, "Saved");
@@ -530,7 +594,7 @@ try {
       .catch((e) => {
         console.error(e);
         ui.view("api-fail");
-        if (document.querySelector('[data-polling]')) pollingOff();
+        pollingOff();
       });
     document.querySelectorAll("#save-button").forEach(w => w.disabled = true);
     window.scroll(0, 0);
@@ -758,7 +822,7 @@ try {
       .catch((e) => {
         console.error(e);
         ui.view("api-fail");
-        if (document.querySelector('[data-polling]')) pollingOff();
+        pollingOff();
       });
   }
 
@@ -859,76 +923,82 @@ try {
         .catch((e) => {
           console.error(e);
           ui.view("api-fail");
-          if (document.querySelector('[data-polling]')) pollingOff();
+          pollingOff();
         });
     } else {
       window.open(event.target.src);
     }
   }
 
-  function updateResponses() {
-    document.querySelector('.awaitingResponses .section').innerHTML = '';
-    document.querySelector('.trendingResponses .section').innerHTML = '';
-    document.querySelector('.responses .section').innerHTML = '';
+  async function updateResponses() {
+    expandedReports = [];
+    document.querySelectorAll('.detailed-report.active').forEach(dr => expandedReports.push(dr.id));
+    if (document.querySelector('.awaitingResponses .section')) document.querySelector('.awaitingResponses .section').innerHTML = '';
+    if (document.querySelector('.trendingResponses .section')) document.querySelector('.trendingResponses .section').innerHTML = '';
+    if (document.querySelector('.responses .section')) document.querySelector('.responses .section').innerHTML = '';
+    if (document.querySelector('.seat-code-reports')) document.querySelector('.seat-code-reports').innerHTML = '';
     var trendingResponses = [];
     var timedResponses = [];
     var responses1 = responses
-      .filter(r => String(r.seatCode)[0] == document.getElementById("sort-course-input").value)
-      .filter(r => String(r.segment).startsWith(document.getElementById("sort-segment-input").value))
-      .filter(r => questions.find(q => q.id == r.question_id).number.startsWith(document.getElementById("sort-question-input").value))
-      .filter(r => String(r.seatCode).startsWith(document.getElementById("sort-seat-input").value))
+      .filter(r => String(r.seatCode)[0] == document.getElementById("sort-course-input")?.value)
+      .filter(r => String(r.segment).startsWith(document.getElementById("sort-segment-input")?.value))
+      .filter(r => questions.find(q => q.id == r.question_id).number.startsWith(document.getElementById("sort-question-input")?.value))
+      .filter(r => String(r.seatCode).startsWith(document.getElementById("sort-seat-input")?.value))
       .sort((a, b) => {
         if (a.flagged && !b.flagged) return -1;
         if (!a.flagged && b.flagged) return 1;
         return b.id - a.id;
       });
+    var seatCodes = [];
     responses1.forEach(r => {
-      var responseString = r.response;
-      if (responseString.includes('[')) {
-        var parsedResponse = JSON.parse(r.response);
-        responseString = parsedResponse.join(', ');
+      if (document.querySelector('.responses .section') || document.querySelector('.awaitingResponses .section')) {
+        var responseString = r.response;
+        if (responseString.includes('[')) {
+          var parsedResponse = JSON.parse(r.response);
+          responseString = parsedResponse.join(', ');
+        }
+        const date = new Date(r.timestamp);
+        let hours = date.getHours();
+        const minutes = date.getMinutes();
+        const currentDate = new Date(r.timestamp);
+        var timeTaken = "N/A";
+        var timeTakenToRevise = "N/A";
+        const sameSeatCodeResponses = responses1.filter(a => a.seatCode === r.seatCode).sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+        const sameQuestionResponses = sameSeatCodeResponses.filter(a => a.question_id === r.question_id);
+        const lastResponseIndex = sameSeatCodeResponses.findIndex(a => new Date(a.timestamp) >= currentDate) - 1;
+        const lastResponse = lastResponseIndex >= 0 ? sameSeatCodeResponses[lastResponseIndex] : null;
+        const lastSameQuestionResponseIndex = sameQuestionResponses.findIndex(a => new Date(a.timestamp) >= currentDate) - 1;
+        const lastSameQuestionResponse = lastSameQuestionResponseIndex >= 0 ? sameQuestionResponses[lastSameQuestionResponseIndex] : null;
+        let timeDifference;
+        if (lastResponse) {
+          timeDifference = calculateTimeDifference(currentDate, lastResponse.timestamp);
+          timeTaken = formatTimeDifference(timeDifference);
+          timedResponses.push(timeDifference);
+        }
+        if (lastSameQuestionResponse) {
+          timeDifference = calculateTimeDifference(currentDate, lastSameQuestionResponse.timestamp);
+          timeTakenToRevise = formatTimeDifference(timeDifference);
+        }
+        var [daysPart, z, timePart] = r.timeTaken.split(' ');
+        const days = parseInt(daysPart, 10);
+        timePart = timePart || daysPart;
+        const [hours1, minutes1] = timePart.split(':').map(part => parseInt(part, 10));
+        const totalHours = days * 24 + hours1;
+        let result;
+        if (totalHours >= 24) {
+          result = `${days}d ${hours1}h`;
+        } else if (totalHours >= 1) {
+          result = `${hours1}h ${minutes1}m`;
+        } else {
+          result = `${minutes1}m`;
+        }
+        var buttonGrid = document.createElement('div');
+        buttonGrid.className = "button-grid inputs";
+        buttonGrid.id = `response-${r.id}`;
+        buttonGrid.innerHTML = `<input type="text" autocomplete="off" class="small" id="response-id-input" value="${r.id}" disabled hidden />${(r.flagged == '1') ? `<button square data-unflag-response><i class="bi bi-flag-fill"></i></button>` : `<button square data-flag-response><i class="bi bi-flag"></i></button>`}<input type="text" autocomplete="off" class="small" id="response-segment-input" value="${r.segment}" disabled data-segment /><input type="text" autocomplete="off" class="small" id="response-question-input" value="${questions.find(q => q.id == r.question_id).number}" disabled data-question /><input type="text" autocomplete="off" class="small" id="response-seat-code-input" value="${r.seatCode}" disabled data-seat-code /><input type="text" autocomplete="off" class="small" id="response-time-taken-input" value="${timeTaken}" disabled data-time-taken${(typeof timeDifference != 'undefined') ? ` time="${timeDifference}"` : ''} /><input type="text" autocomplete="off" class="small" id="response-time-taken-input" value="${timeTakenToRevise}" disabled data-time-taken${(typeof timeDifference != 'undefined') ? ` time="${timeDifference}"` : ''} /><!--<input type="text" autocomplete="off" class="small" id="response-time-taken-input" value="${result}" disabled data-time-taken />--><input type="text" autocomplete="off" id="response-response-input" value="${responseString}" disabled />${(r.status === 'Incorrect') ? `<button square data-edit-reason><i class="bi bi-reply${(r.reason) ? '-fill' : ''}"></i></button>` : ''}<input type="text" autocomplete="off" class="smedium" id="response-timestamp-input" value="${date.getMonth() + 1}/${date.getDate()} ${hours % 12 || 12}:${minutes < 10 ? '0' + minutes : minutes} ${hours >= 12 ? 'PM' : 'AM'}" disabled /><button square id="mark-correct-button"${(r.status === 'Correct') ? ' disabled' : ''}><i class="bi bi-check-circle${(r.status === 'Correct') ? '-fill' : ''}"></i></button><button square id="mark-incorrect-button"${(r.status === 'Incorrect') ? ' disabled' : ''}><i class="bi bi-x-circle${(r.status === 'Incorrect') ? '-fill' : ''}"></i></button>`;
+        if (document.querySelector('.responses .section')) document.querySelector('.responses .section').appendChild(buttonGrid);
+        if (((r.status === 'Invalid Format') || (r.status === 'Unknown, Recorded')) && document.querySelector('.awaitingResponses .section')) document.querySelector('.awaitingResponses .section').appendChild(buttonGrid);
       }
-      const date = new Date(r.timestamp);
-      let hours = date.getHours();
-      const minutes = date.getMinutes();
-      const currentDate = new Date(r.timestamp);
-      var timeTaken = "N/A";
-      var timeTakenToRevise = "N/A";
-      const sameSeatCodeResponses = responses1.filter(a => a.seatCode === r.seatCode).sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-      const sameQuestionResponses = sameSeatCodeResponses.filter(a => a.question_id === r.question_id);
-      const lastResponseIndex = sameSeatCodeResponses.findIndex(a => new Date(a.timestamp) >= currentDate) - 1;
-      const lastResponse = lastResponseIndex >= 0 ? sameSeatCodeResponses[lastResponseIndex] : null;
-      const lastSameQuestionResponseIndex = sameQuestionResponses.findIndex(a => new Date(a.timestamp) >= currentDate) - 1;
-      const lastSameQuestionResponse = lastSameQuestionResponseIndex >= 0 ? sameQuestionResponses[lastSameQuestionResponseIndex] : null;
-      let timeDifference;
-      if (lastResponse) {
-        timeDifference = calculateTimeDifference(currentDate, lastResponse.timestamp);
-        timeTaken = formatTimeDifference(timeDifference);
-        timedResponses.push(timeDifference);
-      }
-      if (lastSameQuestionResponse) {
-        timeDifference = calculateTimeDifference(currentDate, lastSameQuestionResponse.timestamp);
-        timeTakenToRevise = formatTimeDifference(timeDifference);
-      }
-      var [daysPart, z, timePart] = r.timeTaken.split(' ');
-      const days = parseInt(daysPart, 10);
-      timePart = timePart || daysPart;
-      const [hours1, minutes1] = timePart.split(':').map(part => parseInt(part, 10));
-      const totalHours = days * 24 + hours1;
-      let result;
-      if (totalHours >= 24) {
-        result = `${days}d ${hours1}h`;
-      } else if (totalHours >= 1) {
-        result = `${hours1}h ${minutes1}m`;
-      } else {
-        result = `${minutes1}m`;
-      }
-      var buttonGrid = document.createElement('div');
-      buttonGrid.className = "button-grid inputs";
-      buttonGrid.id = `response-${r.id}`;
-      buttonGrid.innerHTML = `<input type="text" autocomplete="off" class="small" id="response-id-input" value="${r.id}" disabled hidden />${(r.flagged == '1') ? `<button square data-unflag-response><i class="bi bi-flag-fill"></i></button>` : `<button square data-flag-response><i class="bi bi-flag"></i></button>`}<input type="text" autocomplete="off" class="small" id="response-segment-input" value="${r.segment}" disabled data-segment /><input type="text" autocomplete="off" class="small" id="response-question-input" value="${questions.find(q => q.id == r.question_id).number}" disabled data-question /><input type="text" autocomplete="off" class="small" id="response-seat-code-input" value="${r.seatCode}" disabled data-seat-code /><input type="text" autocomplete="off" class="small" id="response-time-taken-input" value="${timeTaken}" disabled data-time-taken${(typeof timeDifference != 'undefined') ? ` time="${timeDifference}"` : ''} /><input type="text" autocomplete="off" class="small" id="response-time-taken-input" value="${timeTakenToRevise}" disabled data-time-taken${(typeof timeDifference != 'undefined') ? ` time="${timeDifference}"` : ''} /><!--<input type="text" autocomplete="off" class="small" id="response-time-taken-input" value="${result}" disabled data-time-taken />--><input type="text" autocomplete="off" id="response-response-input" value="${responseString}" disabled />${(r.status === 'Incorrect') ? `<button square data-edit-reason><i class="bi bi-reply${(r.reason) ? '-fill' : ''}"></i></button>` : ''}<input type="text" autocomplete="off" class="smedium" id="response-timestamp-input" value="${date.getMonth() + 1}/${date.getDate()} ${hours % 12 || 12}:${minutes < 10 ? '0' + minutes : minutes} ${hours >= 12 ? 'PM' : 'AM'}" disabled /><button square id="mark-correct-button"${(r.status === 'Correct') ? ' disabled' : ''}><i class="bi bi-check-circle${(r.status === 'Correct') ? '-fill' : ''}"></i></button><button square id="mark-incorrect-button"${(r.status === 'Incorrect') ? ' disabled' : ''}><i class="bi bi-x-circle${(r.status === 'Incorrect') ? '-fill' : ''}"></i></button>`;
-      document.querySelector('.responses .section').appendChild(buttonGrid);
-      if ((r.status === 'Invalid Format') || (r.status === 'Unknown, Recorded')) document.querySelector('.awaitingResponses .section').appendChild(buttonGrid);
       var trend = trendingResponses.find(t => (t.segment === r.segment) && (t.question_id === r.question_id) && (t.response === responseString) && (t.status === r.status));
       if (trend) {
         trend.count++;
@@ -941,7 +1011,64 @@ try {
           count: 1
         });
       }
+      if (document.querySelector('.seat-code-reports')) {
+        if (seatCodes.find(seatCode => seatCode.code === r.seatCode)) {
+          const seatCode = seatCodes.find(seatCode => seatCode.code === r.seatCode);
+          if (r.status === 'Correct') {
+            seatCode.correct++;
+          } else if (r.status === 'Incorrect') {
+            seatCode.incorrect++;
+          } else if (r.status.includes('Recorded')) {
+            seatCode.waiting++;
+          } else {
+            seatCode.other++;
+          }
+          seatCode.total++;
+          seatCode.responses.push(r);
+        } else {
+          seatCodes.push({
+            code: r.seatCode,
+            correct: (r.status === 'Correct') ? 1 : 0,
+            incorrect: (r.status === 'Incorrect') ? 1 : 0,
+            other: ((r.status !== 'Correct') && (r.status !== 'Incorrect') && !r.status.includes('Recorded')) ? 1 : 0,
+            waiting: r.status.includes('Recorded') ? 1 : 0,
+            total: 1,
+            responses: [r],
+          });
+        }
+      }
     });
+    if (document.querySelector('.seat-code-reports')) {
+      seatCodes.sort((a, b) => Number(a.code) - Number(b.code)).forEach(seatCode => {
+        var detailedReport = '';
+        var seatCodeResponses = seatCode.responses.sort((a, b) => a.timestamp - b.timestamp);
+        if (document.getElementById('hideIncorrectAttempts').checked) seatCodeResponses = seatCodeResponses.filter((r, index, self) => r.status === 'Correct' || !self.some(other => other.question_id === r.question_id && other.status === 'Correct'));
+        seatCodeResponses.forEach(r => {
+          detailedReport += questions.find(q => q.id == r.question_id).number ? `<div class="detailed-report-question">
+            <div class="color">
+              <span class="color-box ${(r.status === 'Correct') ? 'correct' : (r.status === 'Incorrect') ? 'incorrect' : r.status.includes('Recorded') ? 'waiting' : 'other'}"></span>
+              <span class="color-name">Segment ${r.segment} #${questions.find(q => q.id == r.question_id).number}<p class="showonhover"> (${time.unixToString(r.timestamp)})</p>: ${r.response}</span>
+            </div>
+            <div class="color">
+              <span class="color-name">${r.status}</span>
+              <span class="color-box ${(r.status === 'Correct') ? 'correct' : (r.status === 'Incorrect') ? 'incorrect' : r.status.includes('Recorded') ? 'waiting' : 'other'}"></span>
+            </div>
+          </div>` : '';
+        });
+        document.querySelector('.seat-code-reports').innerHTML += `<div class="seat-code-report" report="seat-code-${seatCode.code}">
+          <b>${seatCode.code} (${seatCodeResponses.length} Response${(seatCodeResponses.length != 1) ? 's' : ''})</b>
+          <div class="barcount-wrapper">
+            <div class="barcount correct"${(seatCodeResponses.length != 0) ? ` style="width: calc(${seatCodeResponses.filter(r => r.status === 'Correct').length / (seatCodeResponses.length || 1)} * 100%)"` : ''}>${seatCodeResponses.filter(r => r.status === 'Correct').length}</div>
+            <div class="barcount incorrect"${(seatCodeResponses.length != 0) ? ` style="width: calc(${seatCodeResponses.filter(r => r.status === 'Incorrect').length / (seatCodeResponses.length || 1)} * 100%)"` : ''}>${seatCodeResponses.filter(r => r.status === 'Incorrect').length}</div>
+            <div class="barcount other"${(seatCodeResponses.length != 0) ? ` style="width: calc(${seatCodeResponses.filter(r => (r.status != 'Correct') && (r.status != 'Incorrect') && !r.status.includes('Recorded')).length / (seatCodeResponses.length || 1)} * 100%)"` : ''}>${seatCodeResponses.filter(r => (r.status != 'Correct') && (r.status != 'Incorrect') && !r.status.includes('Recorded')).length}</div>
+            <div class="barcount waiting"${(seatCodeResponses.length != 0) ? ` style="width: calc(${seatCodeResponses.filter(r => r.status.includes('Recorded')).length / (seatCodeResponses.length || 1)} * 100%)"` : ''}>${seatCodeResponses.filter(r => r.status.includes('Recorded')).length}</div>
+          </div>
+        </div>
+        <div class="section detailed-report" id="seat-code-${seatCode.code}">
+          ${detailedReport}
+        </div>`;
+      });
+    }
     const stdDev = calculateStandardDeviation(timedResponses);
     // console.log("Standard Deviation:", stdDev);
     document.querySelectorAll('[data-time-taken]').forEach(d => {
@@ -953,14 +1080,15 @@ try {
       buttonGrid.innerHTML = `<input type="text" autocomplete="off" class="small" id="response-segment-input" value="${r.segment}" disabled data-segment /><input type="text" autocomplete="off" class="small" id="response-question-input" value="${questions.find(q => q.id == r.question_id).number}" disabled data-question /><input type="text" autocomplete="off" id="response-response-input" value="${r.response}" disabled /><input type="text" autocomplete="off" class="small" id="response-count-input" value="${r.count}" disabled /><button square id="mark-correct-button"${(r.status === 'Correct') ? ' disabled' : ''}><i class="bi bi-check-circle${(r.status === 'Correct') ? '-fill' : ''}"></i></button><button square id="mark-incorrect-button"${(r.status === 'Incorrect') ? ' disabled' : ''}><i class="bi bi-x-circle${(r.status === 'Incorrect') ? '-fill' : ''}"></i></button>`;
       document.querySelector('.trendingResponses .section').appendChild(buttonGrid);
     });
+    expandedReports.forEach(er => {
+      if (document.getElementById(er)) document.getElementById(er).classList.add('active');
+    });
     document.querySelectorAll('#mark-correct-button').forEach(a => a.addEventListener('click', markCorrect));
     document.querySelectorAll('#mark-incorrect-button').forEach(a => a.addEventListener('click', markIncorrect));
     document.querySelectorAll('[data-flag-response]').forEach(a => a.addEventListener('click', flagResponse));
     document.querySelectorAll('[data-unflag-response]').forEach(a => a.addEventListener('click', unflagResponse));
     document.querySelectorAll('[data-edit-reason]').forEach(a => a.addEventListener('click', editReason));
-    active = true;
-    ui.stopLoader();
-    ui.toast("Data restored.", 1000, "info", "bi bi-cloud-arrow-down");
+    document.querySelectorAll('[report]').forEach(a => a.addEventListener('click', toggleDetailedReport));
   }
 
   function calculateTimeDifference(currentDate, previousTimestamp) {
@@ -1058,7 +1186,7 @@ try {
       .catch((e) => {
         console.error(e);
         ui.view("api-fail");
-        if (document.querySelector('[data-polling]')) pollingOff();
+        pollingOff();
       });
   }
 
@@ -1111,7 +1239,7 @@ try {
       .catch((e) => {
         console.error(e);
         ui.view("api-fail");
-        if (document.querySelector('[data-polling]')) pollingOff();
+        pollingOff();
       });
   }
 
@@ -1360,7 +1488,7 @@ try {
       .catch((e) => {
         console.error(e);
         ui.view("api-fail");
-        if (document.querySelector('[data-polling]')) pollingOff();
+        pollingOff();
       });
   }
 
@@ -1424,6 +1552,74 @@ try {
       item.addEventListener('dragover', handleDragOver);
       item.addEventListener('drop', handleDropSegment);
     });
+  }
+
+  function toggleDetailedReport() {
+    if (!active || !this.getAttribute('report') || !document.getElementById(this.getAttribute('report'))) return;
+    document.getElementById(this.getAttribute('report')).classList.toggle('active');
+    syncExpandAllReportsButton();
+  }
+
+  function syncExpandAllReportsButton() {
+    if (!active) return;
+    var openReports = document.querySelectorAll('.detailed-report.active');
+    if (openReports.length > 0) {
+      document.querySelector('[data-expand-reports] .bi-chevron-bar-expand').style.display = "none";
+      document.querySelector('[data-expand-reports] .bi-chevron-bar-contract').style.display = "block";
+    } else {
+      document.querySelector('[data-expand-reports] .bi-chevron-bar-expand').style.display = "block";
+      document.querySelector('[data-expand-reports] .bi-chevron-bar-contract').style.display = "none";
+    }
+  }
+
+  function toggleAllReports() {
+    if (!active) return;
+    var reports = document.querySelectorAll('.detailed-report');
+    var openReports = document.querySelectorAll('.detailed-report.active');
+    reports.forEach(report => {
+      (openReports.length > 0) ? report.classList.remove('active') : report.classList.add('active');
+    });
+    syncExpandAllReportsButton();
+  }
+
+  function updateQuestionReports() {
+    expandedReports = [];
+    document.querySelectorAll('.detailed-report.active').forEach(dr => expandedReports.push(dr.id));
+    if (!document.querySelector('.question-reports') || (questions.length === 0)) return;
+    document.querySelector('.question-reports').innerHTML = '';
+    questions.sort((a, b) => a.id - b.id).forEach(question => {
+      var questionResponses = responses.filter(r => r.question_id === question.id);
+      if (document.getElementById('hideIncorrectAttempts').checked) questionResponses = questionResponses.filter((r, index, self) => r.status === 'Correct' || !self.some(other => other.question_id === r.question_id && other.status === 'Correct'));
+      var detailedReport = '';
+      questionResponses.forEach(r => {
+        detailedReport += `<div class="detailed-report-question">
+          <div class="color">
+            <span class="color-box ${(r.status === 'Correct') ? 'correct' : (r.status === 'Incorrect') ? 'incorrect' : r.status.includes('Recorded') ? 'waiting' : 'other'}"></span>
+            <span class="color-name">${r.seatCode}<p class="showonhover"> (${time.unixToString(r.timestamp)})</p>: ${r.response}</span>
+          </div>
+          <div class="color">
+            <span class="color-name">${r.status}</span>
+            <span class="color-box ${(r.status === 'Correct') ? 'correct' : (r.status === 'Incorrect') ? 'incorrect' : r.status.includes('Recorded') ? 'waiting' : 'other'}"></span>
+          </div>
+        </div>`
+      });
+      document.querySelector('.question-reports').innerHTML += `<div class="detailed-report-question"${(questionResponses.length != 0) ? ` report="question-${question.id}"` : ''}>
+        <b>Question ${question.number} (${questionResponses.length} Response${(questionResponses.length != 1) ? 's' : ''})</b>
+        <div class="barcount-wrapper">
+          <div class="barcount correct"${(questionResponses.length != 0) ? ` style="width: calc(${questionResponses.filter(r => r.status === 'Correct').length / (questionResponses.length || 1)} * 100%)"` : ''}>${questionResponses.filter(r => r.status === 'Correct').length}</div>
+          <div class="barcount incorrect"${(questionResponses.length != 0) ? ` style="width: calc(${questionResponses.filter(r => r.status === 'Incorrect').length / (questionResponses.length || 1)} * 100%)"` : ''}>${questionResponses.filter(r => r.status === 'Incorrect').length}</div>
+          <div class="barcount other"${(questionResponses.length != 0) ? ` style="width: calc(${questionResponses.filter(r => ((r.status !== 'Correct') && (r.status !== 'Incorrect') && !r.status.includes('Recorded'))).length / (questionResponses.length || 1)} * 100%)"` : ''}>${questionResponses.filter(r => ((r.status !== 'Correct') && (r.status !== 'Incorrect') && !r.status.includes('Recorded'))).length}</div>
+          <div class="barcount waiting"${(questionResponses.length != 0) ? ` style="width: calc(${questionResponses.filter(r => r.status.includes('Recorded')).length / (questionResponses.length || 1)} * 100%)"` : ''}>${questionResponses.filter(r => r.status.includes('Recorded')).length}</div>
+        </div>
+      </div>
+      ${(questionResponses.length != 0) ? `<div class="section detailed-report" id="question-${question.id}">
+        ${detailedReport}
+      </div>` : ''}`;
+    });
+    expandedReports.forEach(er => {
+      if (document.getElementById(er)) document.getElementById(er).classList.add('active');
+    });
+    document.querySelectorAll('[report]').forEach(a => a.addEventListener('click', toggleDetailedReport));
   }
 } catch (error) {
   if (storage.get("developer")) {
