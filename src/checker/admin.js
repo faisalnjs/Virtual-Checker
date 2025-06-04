@@ -1308,10 +1308,10 @@ try {
     speed = true;
     document.querySelector('[data-speed] .bi-lightning-charge').style.display = "none";
     document.querySelector('[data-speed] .bi-lightning-charge-fill').style.display = "block";
+    var segmentId = 0;
     if (document.getElementById("speed-mode-segments")) {
-      var segmentId = document.getElementById("speed-mode-segments").value;
+      segmentId = document.getElementById("speed-mode-segments").value;
     } else if (document.getElementById("create-button")) {
-      var segmentId = createSegment();
     } else {
       return;
     }
@@ -1324,10 +1324,9 @@ try {
     document.querySelector('[data-speed] .bi-lightning-charge').style.display = "block";
     document.querySelector('[data-speed] .bi-lightning-charge-fill').style.display = "none";
     ui.modeless(`<i class="bi bi-check2-circle"></i>`, "Speed Mode Ended");
-    window.location.reload();
   }
 
-  async function renderSpeedPond(segment) {
+  async function renderSpeedPond(segment = 0) {
     if (!active) return;
     const url = '/admin/upload.html?segment=' + segment;
     const width = 600;
@@ -1351,6 +1350,9 @@ try {
           disableSpeedMode();
         }
         init();
+        if (segment === 0) {
+          addExistingQuestion();
+        }
       }
     }, 1000);
   }
@@ -1643,20 +1645,37 @@ try {
   }
 
   function addExistingQuestion() {
-    if (!active || !document.getElementById("add-question-input").selectedOptions[0]) return;
+    if (!active) return;
     var div = document.createElement('div');
-    div.classList = "button-grid inputs question";
-    div.innerHTML = `<div class="input-group">
-      <div class="space" id="question-container">
-        <input type="text" id="${document.getElementById("add-question-input").value}" value="${document.getElementById("add-question-input").selectedOptions[0].innerHTML}" disabled>
+    if (this) {
+      if (!document.getElementById("add-question-input").selectedOptions[0]) return;
+      div.classList = "button-grid inputs question";
+      div.innerHTML = `<div class="input-group">
+        <div class="space" id="question-container">
+          <input type="text" id="${document.getElementById("add-question-input").value}" value="${document.getElementById("add-question-input").selectedOptions[0].innerHTML}" disabled>
+        </div>
       </div>
-    </div>
-    <div class="input-group small">
-      <div class="space" id="question-container">
-        <input type="text" value="${document.getElementById("add-question-input").selectedOptions[0].innerHTML.split('#')[1].split(' ')[0]}">
+      <div class="input-group small">
+        <div class="space" id="question-container">
+          <input type="text" value="${document.getElementById("add-question-input").selectedOptions[0].innerHTML.split('#')[1].split(' ')[0]}">
+        </div>
       </div>
-    </div>
-    <button class="space" id="remove-existing-question-button" square><i class="bi bi-trash"></i></button>`;
+      <button class="space" id="remove-existing-question-button" square><i class="bi bi-trash"></i></button>`;
+    } else {
+      var newQuestion = document.getElementById("add-question-input").children[document.getElementById("add-question-input").children.length - 1];
+      div.classList = "button-grid inputs question";
+      div.innerHTML = `<div class="input-group">
+        <div class="space" id="question-container">
+          <input type="text" id="${newQuestion.value}" value="${newQuestion.innerHTML}" disabled>
+        </div>
+      </div>
+      <div class="input-group small">
+        <div class="space" id="question-container">
+          <input type="text" value="${newQuestion.innerHTML.split('#')[1].split(' ')[0]}">
+        </div>
+      </div>
+      <button class="space" id="remove-existing-question-button" square><i class="bi bi-trash"></i></button>`;
+    }
     document.getElementById("question-list").appendChild(div);
     document.querySelectorAll('#remove-existing-question-button').forEach(a => a.addEventListener('click', removeExistingQuestion));
     document.getElementById("add-question-input").removeChild(document.getElementById("add-question-input").selectedOptions[0]);

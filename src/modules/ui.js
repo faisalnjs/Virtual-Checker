@@ -255,7 +255,7 @@ export function show(dialog, title, buttons, actions, blur, effects = true) {
 export function view(path) {
   if (!path) {
     const event = new Event("triggerclose");
-    document.querySelector("dialog[open]").dispatchEvent(event);
+    document.querySelector("dialog[open]")?.dispatchEvent(event);
     return;
   }
   const pages = path.split("/");
