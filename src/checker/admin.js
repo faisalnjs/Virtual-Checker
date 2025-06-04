@@ -521,6 +521,7 @@ try {
 
   // Save
   document.querySelectorAll("#save-button").forEach(w => w.addEventListener("click", save));
+  document.querySelectorAll("#create-button").forEach(w => w.addEventListener("click", createSegment));
 
   async function save(hideResult) {
     if (!active) return;
@@ -1294,7 +1295,13 @@ try {
     speed = true;
     document.querySelector('[data-speed] .bi-lightning-charge').style.display = "none";
     document.querySelector('[data-speed] .bi-lightning-charge-fill').style.display = "block";
-    var segmentId = document.getElementById("speed-mode-segments").value;
+    if (document.getElementById("speed-mode-segments")) {
+      var segmentId = document.getElementById("speed-mode-segments").value;
+    } else if (document.getElementById("create-button")) {
+      var segmentId = createSegment();
+    } else {
+      return;
+    }
     renderSpeedPond(segmentId);
   }
 
@@ -1620,6 +1627,12 @@ try {
       if (document.getElementById(er)) document.getElementById(er).classList.add('active');
     });
     document.querySelectorAll('[report]').forEach(a => a.addEventListener('click', toggleDetailedReport));
+  }
+
+  function createSegment() {
+    // Create Segment
+    // Return Segment ID
+    return document.getElementById("segment-id-input").value;
   }
 } catch (error) {
   if (storage.get("developer")) {
