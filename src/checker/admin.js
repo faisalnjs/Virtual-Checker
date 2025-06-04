@@ -118,6 +118,7 @@ try {
                           await updateResponses();
                         }
                         if (document.querySelector('.segment-reports')) updateSegments();
+                        if (document.querySelector('.question-reports')) updateQuestionReports();
                         active = true;
                         ui.stopLoader();
                         if (!polling) ui.toast("Data restored.", 1000, "info", "bi bi-cloud-arrow-down");
@@ -178,6 +179,7 @@ try {
   if (document.getElementById('sort-segments-button')) document.getElementById('sort-segments-button').addEventListener("click", sortSegments);
   if (document.getElementById('hideIncorrectAttempts')) document.getElementById('hideIncorrectAttempts').addEventListener("change", updateSegments);
   if (document.getElementById('hideIncorrectAttempts')) document.getElementById('hideIncorrectAttempts').addEventListener("change", updateResponses);
+  if (document.getElementById('hideIncorrectAttempts')) document.getElementById('hideIncorrectAttempts').addEventListener("change", updateQuestionReports);
   if (document.querySelector('[data-expand-reports]')) document.querySelector('[data-expand-reports]').addEventListener("click", toggleAllReports);
 
   function toggleSelecting() {
@@ -1578,6 +1580,46 @@ try {
       (openReports.length > 0) ? report.classList.remove('active') : report.classList.add('active');
     });
     syncExpandAllReportsButton();
+  }
+
+  function updateQuestionReports() {
+    expandedReports = [];
+    document.querySelectorAll('.detailed-report.active').forEach(dr => expandedReports.push(dr.id));
+    if (!document.querySelector('.question-reports') || (questions.length === 0)) return;
+    document.querySelector('.question-reports').innerHTML = '';
+    questions.sort((a, b) => a.id - b.id).forEach(question => {
+      var questionResponses = responses.filter(r => r.question_id === question.id);
+      if (document.getElementById('hideIncorrectAttempts').checked) questionResponses = questionResponses.filter((r, index, self) => r.status === 'Correct' || !self.some(other => other.question_id === r.question_id && other.status === 'Correct'));
+      var detailedReport = '';
+      questionResponses.forEach(r => {
+        detailedReport += `<div class="detailed-report-question">
+          <div class="color">
+            <span class="color-box ${(r.status === 'Correct') ? 'correct' : (r.status === 'Incorrect') ? 'incorrect' : r.status.includes('Recorded') ? 'waiting' : 'other'}"></span>
+            <span class="color-name">${r.seatCode}</span>
+          </div>
+          <div class="color">
+            <span class="color-name">${r.status}</span>
+            <span class="color-box ${(r.status === 'Correct') ? 'correct' : (r.status === 'Incorrect') ? 'incorrect' : r.status.includes('Recorded') ? 'waiting' : 'other'}"></span>
+          </div>
+        </div>`
+      });
+      document.querySelector('.question-reports').innerHTML += `<div class="detailed-report-question"${(questionResponses.length != 0) ? ` report="question-${question.id}"` : ''}>
+        <b>Question ${question.number} (${questionResponses.length} Response${(questionResponses.length != 1) ? 's' : ''})</b>
+        <div class="barcount-wrapper">
+          <div class="barcount correct"${(questionResponses.length != 0) ? ` style="width: calc(${questionResponses.filter(r => r.status === 'Correct').length / (questionResponses.length || 1)} * 100%)"` : ''}>${questionResponses.filter(r => r.status === 'Correct').length}</div>
+          <div class="barcount incorrect"${(questionResponses.length != 0) ? ` style="width: calc(${questionResponses.filter(r => r.status === 'Incorrect').length / (questionResponses.length || 1)} * 100%)"` : ''}>${questionResponses.filter(r => r.status === 'Incorrect').length}</div>
+          <div class="barcount other"${(questionResponses.length != 0) ? ` style="width: calc(${questionResponses.filter(r => ((r.status !== 'Correct') && (r.status !== 'Incorrect') && !r.status.includes('Recorded'))).length / (questionResponses.length || 1)} * 100%)"` : ''}>${questionResponses.filter(r => ((r.status !== 'Correct') && (r.status !== 'Incorrect') && !r.status.includes('Recorded'))).length}</div>
+          <div class="barcount waiting"${(questionResponses.length != 0) ? ` style="width: calc(${questionResponses.filter(r => r.status.includes('Recorded')).length / (questionResponses.length || 1)} * 100%)"` : ''}>${questionResponses.filter(r => r.status.includes('Recorded')).length}</div>
+        </div>
+      </div>
+      ${(questionResponses.length != 0) ? `<div class="section detailed-report" id="question-${question.id}">
+        ${detailedReport}
+      </div>` : ''}`;
+    });
+    expandedReports.forEach(er => {
+      if (document.getElementById(er)) document.getElementById(er).classList.add('active');
+    });
+    document.querySelectorAll('[report]').forEach(a => a.addEventListener('click', toggleDetailedReport));
   }
 } catch (error) {
   if (storage.get("developer")) {
