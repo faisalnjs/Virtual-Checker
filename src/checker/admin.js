@@ -94,6 +94,16 @@ try {
               .then(q => q.json())
               .then(async q => {
                 questions = q;
+                if (document.getElementById("add-question-input")) {
+                  document.getElementById("add-question-input").innerHTML = '';
+                  questions.sort((a, b) => a.number - b.number).forEach(question => {
+                    const option = document.createElement("option");
+                    option.value = question.id;
+                    option.innerHTML = `ID ${question.id} #${question.number} - ${question.question}`;
+                    document.getElementById("add-question-input").appendChild(option);
+                  });
+                  if (questions.length === 0) document.getElementById("add-existing-question-button").disabled = true;
+                }
                 await fetch(domain + '/answers', {
                   method: "GET",
                   headers: {
@@ -181,6 +191,8 @@ try {
   if (document.getElementById('hideIncorrectAttempts')) document.getElementById('hideIncorrectAttempts').addEventListener("change", updateResponses);
   if (document.getElementById('hideIncorrectAttempts')) document.getElementById('hideIncorrectAttempts').addEventListener("change", updateQuestionReports);
   if (document.querySelector('[data-expand-reports]')) document.querySelector('[data-expand-reports]').addEventListener("click", toggleAllReports);
+  if (document.getElementById('launch-speed-mode')) document.getElementById('launch-speed-mode').addEventListener("click", toggleSpeedMode);
+  if (document.getElementById('add-existing-question-button')) document.getElementById('add-existing-question-button').addEventListener("click", addExistingQuestion);
 
   function toggleSelecting() {
     if (!active) return;
@@ -652,24 +664,25 @@ try {
 
   function addSegment() {
     if (!active) return;
-    var group = document.createElement('div');
-    group.className = "section";
-    group.id = 'segment-new';
-    var buttonGrid = document.createElement('div');
-    buttonGrid.className = "button-grid inputs";
-    buttonGrid.innerHTML = `<button square data-select><i class="bi bi-circle"></i><i class="bi bi-circle-fill"></i></button><div class="input-group small"><div class="space" id="question-container"><input type="text" autocomplete="off" id="segment-number-input" value="0" /></div></div><div class="input-group"><div class="space" id="question-container"><input type="text" autocomplete="off" id="segment-name-input" value="" /></div></div><div class="input-group mediuml"><div class="space" id="question-container"><input type="date" id="segment-due-date"></div></div><button square data-remove-segment-input><i class="bi bi-trash"></i></button><button square data-toggle-segment><i class="bi bi-caret-down-fill"></i><i class="bi bi-caret-up-fill"></i></button>`;
-    group.appendChild(buttonGrid);
-    var questions = document.createElement('div');
-    questions.classList = "questions";
-    questions.innerHTML = `<div class="button-grid inputs"><div class="input-group small"><label>Name</label><label>ID</label></div><div class="input-group"><input type="text" autocomplete="off" id="segment-question-name-input" value="" /><input type="text" autocomplete="off" id="segment-question-id-input" value="" /></div><div class="input-group fit"><button square data-add-segment-question-input><i class="bi bi-plus"></i></button><button square data-remove-segment-question-input disabled><i class="bi bi-dash"></i></button></div></div>`;
-    group.appendChild(questions);
-    this.parentElement.insertBefore(group, this.parentElement.children[this.parentElement.children.length - 1]);
-    document.querySelectorAll('[data-remove-segment-input]').forEach(a => a.removeEventListener('click', removeSegment));
-    document.querySelectorAll('[data-remove-segment-input]').forEach(a => a.addEventListener('click', removeSegment));
-    document.querySelectorAll('[data-add-segment-question-input]').forEach(a => a.addEventListener('click', addSegmentQuestion));
-    document.querySelectorAll('[data-remove-segment-question-input]').forEach(a => a.addEventListener('click', removeSegmentQuestion));
-    document.querySelectorAll('[data-toggle-segment]').forEach(a => a.addEventListener('click', toggleSegment));
-    document.querySelectorAll('[data-select]').forEach(a => a.addEventListener('click', toggleSelected));
+    return window.location.href = '/admin/newsegment';
+    // var group = document.createElement('div');
+    // group.className = "section";
+    // group.id = 'segment-new';
+    // var buttonGrid = document.createElement('div');
+    // buttonGrid.className = "button-grid inputs";
+    // buttonGrid.innerHTML = `<button square data-select><i class="bi bi-circle"></i><i class="bi bi-circle-fill"></i></button><div class="input-group small"><div class="space" id="question-container"><input type="text" autocomplete="off" id="segment-number-input" value="0" /></div></div><div class="input-group"><div class="space" id="question-container"><input type="text" autocomplete="off" id="segment-name-input" value="" /></div></div><div class="input-group mediuml"><div class="space" id="question-container"><input type="date" id="segment-due-date"></div></div><button square data-remove-segment-input><i class="bi bi-trash"></i></button><button square data-toggle-segment><i class="bi bi-caret-down-fill"></i><i class="bi bi-caret-up-fill"></i></button>`;
+    // group.appendChild(buttonGrid);
+    // var questions = document.createElement('div');
+    // questions.classList = "questions";
+    // questions.innerHTML = `<div class="button-grid inputs"><div class="input-group small"><label>Name</label><label>ID</label></div><div class="input-group"><input type="text" autocomplete="off" id="segment-question-name-input" value="" /><input type="text" autocomplete="off" id="segment-question-id-input" value="" /></div><div class="input-group fit"><button square data-add-segment-question-input><i class="bi bi-plus"></i></button><button square data-remove-segment-question-input disabled><i class="bi bi-dash"></i></button></div></div>`;
+    // group.appendChild(questions);
+    // this.parentElement.insertBefore(group, this.parentElement.children[this.parentElement.children.length - 1]);
+    // document.querySelectorAll('[data-remove-segment-input]').forEach(a => a.removeEventListener('click', removeSegment));
+    // document.querySelectorAll('[data-remove-segment-input]').forEach(a => a.addEventListener('click', removeSegment));
+    // document.querySelectorAll('[data-add-segment-question-input]').forEach(a => a.addEventListener('click', addSegmentQuestion));
+    // document.querySelectorAll('[data-remove-segment-question-input]').forEach(a => a.addEventListener('click', removeSegmentQuestion));
+    // document.querySelectorAll('[data-toggle-segment]').forEach(a => a.addEventListener('click', toggleSegment));
+    // document.querySelectorAll('[data-select]').forEach(a => a.addEventListener('click', toggleSelected));
   }
 
   function removeSegment() {
@@ -1629,7 +1642,39 @@ try {
     document.querySelectorAll('[report]').forEach(a => a.addEventListener('click', toggleDetailedReport));
   }
 
+  function addExistingQuestion() {
+    if (!active || !document.getElementById("add-question-input").selectedOptions[0]) return;
+    var div = document.createElement('div');
+    div.classList = "button-grid inputs";
+    div.innerHTML = `<div class="input-group">
+      <div class="space" id="question-container">
+        <input type="text" id="${document.getElementById("add-question-input").value}" value="${document.getElementById("add-question-input").selectedOptions[0].innerHTML}" disabled>
+      </div>
+    </div>
+    <button class="space" id="remove-existing-question-button" square><i class="bi bi-trash"></i></button>`;
+    document.getElementById("question-list").appendChild(div);
+    document.querySelectorAll('#remove-existing-question-button').forEach(a => a.addEventListener('click', removeExistingQuestion));
+    document.getElementById("add-question-input").removeChild(document.getElementById("add-question-input").selectedOptions[0]);
+    document.getElementById("add-existing-question-button").disabled = (document.getElementById("add-question-input").children.length === 0) ? true : false;
+  }
+
+  function removeExistingQuestion() {
+    if (!active) return;
+    const option = document.createElement("option");
+    option.value = this.parentElement.querySelector('input').id;
+    option.innerHTML = this.parentElement.querySelector('input').value;
+    document.getElementById("add-question-input").appendChild(option);
+    this.parentElement.remove();
+    let select = document.getElementById("add-question-input");
+    let options = Array.from(select.options);
+    options.sort((a, b) => a.value.localeCompare(b.value));
+    select.innerHTML = "";
+    options.forEach(option => select.add(option));
+    document.getElementById("add-existing-question-button").disabled = (document.getElementById("add-question-input").children.length === 0) ? true : false;
+  }
+
   function createSegment() {
+    if (!active) return;
     // Create Segment
     // Return Segment ID
     return document.getElementById("segment-id-input").value;

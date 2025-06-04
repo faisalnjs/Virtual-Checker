@@ -62,7 +62,7 @@
   </div>
   <div id="checker">
     <div class="section">
-      <h1>General</h1>
+      <h1>Information</h1>
       <div class="input-group">
         <label for="sort-course-input">Course</label>
         <div class="space" id="question-container">
@@ -70,7 +70,7 @@
         </div>
       </div>
       <div class="button-grid inputs">
-        <div class="input-group hidden">
+        <div class="input-group" hidden>
           <label for="segment-id-input">ID</label>
           <div class="space" id="question-container">
             <input type="text" autocomplete="off" id="segment-id-input" value="" />
@@ -95,6 +95,20 @@
           <input type="date" id="segment-due-date-input">
         </div>
       </div>
+    </div>
+    <div class="section">
+      <h1>Questions</h1>
+      <div class="section" id="question-list"></div>
+      <div class="button-grid inputs">
+        <div class="input-group">
+          <label for="add-question-input">Existing Question</label>
+          <div class="space" id="question-container">
+            <select id="add-question-input"></select>
+          </div>
+        </div>
+        <button class="space small" id="add-existing-question-button">Add</button>
+      </div>
+      <button class="space" id="launch-speed-mode">Launch Speed Mode</button>
     </div>
     <button class="space" id="create-button">Create</button>
   </div>
@@ -300,7 +314,7 @@
   </dialog>
   <dialog data-modal-page="speed" data-page-title="Speed Mode">
     <p>
-      Rapidly add questions to a segment by pasting or uploading images - one for each. Images will be saved to a new
+      Rapidly create new questions by pasting or uploading images - one for each. Images will be saved to a new
       integer numbered question. To quit, close the popup.
     </p>
     <button id="enable-speed-mode-button">Start</button>
