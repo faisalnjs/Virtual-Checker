@@ -69,10 +69,10 @@ try {
             option.innerHTML = `Period ${course.period}${course.name ? ` - ${course.name}` : ''}`;
             document.getElementById("sort-course-input").appendChild(option);
           });
-          document.getElementById("sort-course-input").addEventListener("change", updateResponses);
-          document.getElementById("sort-segment-input").addEventListener("input", updateResponses);
-          document.getElementById("sort-question-input").addEventListener("input", updateResponses);
-          document.getElementById("sort-seat-input").addEventListener("input", updateResponses);
+          if (document.getElementById("sort-course-input")) document.getElementById("sort-course-input").addEventListener("change", updateResponses);
+          if (document.getElementById("sort-segment-input")) document.getElementById("sort-segment-input").addEventListener("input", updateResponses);
+          if (document.getElementById("sort-question-input")) document.getElementById("sort-question-input").addEventListener("input", updateResponses);
+          if (document.getElementById("sort-seat-input")) document.getElementById("sort-seat-input").addEventListener("input", updateResponses);
         }
         await fetch(domain + '/segments', {
           method: "GET",
@@ -113,7 +113,7 @@ try {
                       .then(r => r.json())
                       .then(async r => {
                         responses = r;
-                        if (document.querySelector('.responses.section') || document.querySelector('.seat-code-reports')) {
+                        if (document.querySelector('.responses.section') || document.querySelector('.seat-code-reports'))) {
                           document.getElementById("sort-course-input").value = courses.find(c => c.id == String(responses.sort((a, b) => String(a.seatCode)[0] - String(b.seatCode)[0])[0].seatCode)[0]).id;
                           await updateResponses();
                         }
