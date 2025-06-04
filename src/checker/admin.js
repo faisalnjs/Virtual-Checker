@@ -1699,9 +1699,53 @@ try {
 
   function createSegment() {
     if (!active) return;
-    // Create Segment
-    // Return Segment ID
-    return document.getElementById("segment-id-input").value;
+    const course = document.getElementById("sort-course-input");
+    const number = document.getElementById("segment-number-input");
+    const name = document.getElementById("segment-name-input");
+    const due = document.getElementById("segment-due-date-input").value || null;
+    course.classList.remove("attention");
+    number.classList.remove("attention");
+    name.classList.remove("attention");
+    if (!course.value) {
+      course.classList.add("attention");
+      return course.focus();
+    } else if (!number.value) {
+      number.classList.add("attention");
+      return number.focus();
+    } else if (!name.value) {
+      name.classList.add("attention");
+      return name.focus();
+    }
+    document.querySelector("#create-button").disabled = true;
+    const question_ids = JSON.stringify(Array.from(document.querySelectorAll('.question')).filter(q => (q.querySelectorAll('input')[1].value.length > 0) && (q.querySelectorAll('input')[1].value != ' ')).map(q => {
+      return {
+        name: q.querySelectorAll('input')[1].value,
+        id: q.querySelectorAll('input')[0].id
+      };
+    }));
+    ui.toast("Creating segment...", 3000, "info", "bi bi-plus-circle-fill");
+    fetch(domain + '/segment', {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        course: course.value - 1,
+        number: number.value,
+        name: name.value,
+        due,
+        question_ids
+      })
+    })
+      .then(r => r.json())
+      .then(s => {
+        ui.toast("Segment created successfully.", 3000, "success", "bi bi-check-circle-fill");
+        return window.location.href = '/admin/';
+      })
+      .catch((e) => {
+        console.error(e);
+        ui.view("api-fail");
+      });
   }
 } catch (error) {
   if (storage.get("developer")) {
