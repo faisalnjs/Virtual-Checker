@@ -113,7 +113,7 @@ try {
                       .then(r => r.json())
                       .then(async r => {
                         responses = r;
-                        if (document.querySelector('.responses.section') || document.querySelector('.seat-code-reports'))) {
+                        if (document.getElementById("sort-course-input")) {
                           document.getElementById("sort-course-input").value = courses.find(c => c.id == String(responses.sort((a, b) => String(a.seatCode)[0] - String(b.seatCode)[0])[0].seatCode)[0]).id;
                           await updateResponses();
                         }
