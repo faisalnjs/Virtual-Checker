@@ -720,7 +720,10 @@ try {
         var buttonGrid = document.createElement('div');
         buttonGrid.className = "button-grid inputs";
         var segmentsString = "";
-        segments.forEach(s => segmentsString += `<option value="${s.number}"${(segments.filter(e => JSON.parse(e.question_ids).find(qId => qId.id == q.id))[0].number === s.number) ? ' selected' : ''}>${s.number}</option>`);
+        segments.forEach(s => {
+          var allSegmentsQuestionIsIn = segments.filter(e => JSON.parse(e.question_ids).find(qId => qId.id == q.id));
+          segmentsString += `<option value="${s.number}"${(allSegmentsQuestionIsIn[0] && (allSegmentsQuestionIsIn[0].number === s.number)) ? ' selected' : ''}>${s.number}</option>`;
+        });
         buttonGrid.innerHTML = `<button square data-select><i class="bi bi-circle"></i><i class="bi bi-circle-fill"></i></button><div class="input-group small"><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-id-input" value="${q.id}" disabled /></div></div><div class="input-group small"><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-number-input" value="${q.number}" placeholder="${q.number}" /></div></div><div class="input-group small"><div class="space" id="question-container"><select id="question-segment-input">${segmentsString}</select></div></div><div class="input-group"><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-text-input" value="${q.question}" placeholder="${q.question}" /></div></div><button square data-toggle-latex><i class="bi bi-${q.latex ? 'calculator-fill' : 'cursor-text'}"></i></button><button square data-remove-question-input><i class="bi bi-trash"></i></button><button square data-toggle-question><i class="bi bi-caret-down-fill"></i><i class="bi bi-caret-up-fill"></i></button>`;
         question.appendChild(buttonGrid);
         var images = document.createElement('div');
