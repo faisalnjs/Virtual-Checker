@@ -42,6 +42,7 @@ try {
       .then(async c => {
         courses = c;
         if (document.getElementById("course-period-input")) {
+          if (document.querySelector(".course-reorder .reorder")) document.querySelector(".course-reorder .reorder").innerHTML = "";
           c.sort((a, b) => a.period - b.period).forEach(course => {
             const option = document.createElement("option");
             option.value = course.id;
@@ -104,6 +105,7 @@ try {
                   });
                   if (questions.length === 0) document.getElementById("add-existing-question-button").disabled = true;
                 }
+                if (document.getElementById("speed-mode-starting-question")) updateSpeedModeStartingQuestion();
                 await fetch(domain + '/answers', {
                   method: "GET",
                   headers: {
@@ -1303,19 +1305,26 @@ try {
     });
   }
 
+  function updateSpeedModeStartingQuestion() {
+    document.getElementById("speed-mode-starting-question").value = questions.sort((a, b) => a.id - b.id)[questions.length - 1].id + 1;
+    document.getElementById("speed-mode-starting-question").min = questions.sort((a, b) => a.id - b.id)[questions.length - 1].id + 1;
+  }
+
   function enableSpeedMode() {
     ui.view();
     speed = true;
     document.querySelector('[data-speed] .bi-lightning-charge').style.display = "none";
     document.querySelector('[data-speed] .bi-lightning-charge-fill').style.display = "block";
     var segmentId = 0;
+    var startingQuestionId = null;
     if (document.getElementById("speed-mode-segments")) {
       segmentId = document.getElementById("speed-mode-segments").value;
-    } else if (document.getElementById("create-button")) {
+    } else if (document.getElementById("speed-mode-starting-question")) {
+      startingQuestionId = document.getElementById("speed-mode-starting-question").value;
     } else {
       return;
     }
-    renderSpeedPond(segmentId);
+    renderSpeedPond(segmentId, startingQuestionId);
   }
 
   function disableSpeedMode() {
@@ -1326,9 +1335,9 @@ try {
     ui.modeless(`<i class="bi bi-check2-circle"></i>`, "Speed Mode Ended");
   }
 
-  async function renderSpeedPond(segment = 0) {
+  async function renderSpeedPond(segment = 0, startingQuestionId) {
     if (!active) return;
-    const url = '/admin/upload.html?segment=' + segment;
+    const url = `/admin/upload.html?segment=${segment}${startingQuestionId ? `&startingQuestion=${startingQuestionId}` : ''}`;
     const width = 600;
     const height = 150;
     const left = (window.screen.width / 2) - (width / 2);
