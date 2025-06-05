@@ -33,7 +33,7 @@
         const pond = FilePond.create(inputElement, {
             server: domain + (question ? '/upload' : segment ? '/speedModeUpload' : '/syllabus'),
             credits: false,
-            allowMultiple: question ? true : false,
+            allowMultiple: (question || segment) ? true : false,
             acceptedFileTypes: (question || segment) ? ['image/*'] : ['image/*', 'application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
         });
         pond.on('initfile', (item) => {
