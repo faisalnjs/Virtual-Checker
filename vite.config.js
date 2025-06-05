@@ -14,6 +14,7 @@ export default {
         questions: new URL('admin/questions.html', import.meta.url).pathname,
         upload: new URL('admin/upload.html', import.meta.url).pathname,
         responses: new URL('admin/responses.html', import.meta.url).pathname,
+        reports: new URL('admin/reports.html', import.meta.url).pathname,
         newsegment: new URL('admin/newsegment.html', import.meta.url).pathname,
       },
     },
