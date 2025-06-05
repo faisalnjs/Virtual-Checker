@@ -11,20 +11,34 @@
         ::-webkit-scrollbar {
             display: none;
         }
+
+        button#paste {
+            background: dodgerblue;
+            width: -webkit-fill-available;
+            border: 1px solid aliceblue;
+            border-radius: 5px;
+            padding: 10px;
+            font-size: 12.5px;
+            font-weight: bold;
+            color: white;
+            cursor: pointer;
+        }
+
+        button#paste:hover {
+            opacity: 0.75;
+        }
     </style>
 </head>
 
 <body>
     <link href="https://unpkg.com/filepond@^4/dist/filepond.css" rel="stylesheet" />
-    <link
-        href="https://unpkg.com/filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css"
-        rel="stylesheet"
-    />
+    <link href="https://unpkg.com/filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css"
+        rel="stylesheet" />
     <input type="file" />
+    <button id="paste" onclick="paste()">Paste</button>
     <script
         src="https://unpkg.com/filepond-plugin-file-validate-type/dist/filepond-plugin-file-validate-type.js"></script>
-    <script
-        src="https://unpkg.com/filepond-plugin-image-preview/dist/filepond-plugin-image-preview.js"></script>
+    <script src="https://unpkg.com/filepond-plugin-image-preview/dist/filepond-plugin-image-preview.js"></script>
     <script src="https://unpkg.com/filepond@^4/dist/filepond.js"></script>
     <script>
         const urlParams = new URLSearchParams(window.location.search);
@@ -56,6 +70,15 @@
                 window.close();
             }, 500);
         });
+        if (!navigator.clipboard) document.getElementById("paste").remove();
+        async function paste() {
+            var items = await navigator.clipboard.read();
+            if (!items) return;
+            items = items.filter(item => item.types.includes('image/png') || item.types.includes('image/jpeg') || item.types.includes('image/gif') || item.types.includes('image/webp'));
+            const item = items[0];
+            if (!item) return;
+            pond.addFile(await item.getType(item.types.filter(type => type.startsWith('image/'))[0]));
+        };
     </script>
 </body>
 

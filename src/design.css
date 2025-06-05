@@ -391,7 +391,7 @@ div.ML__keyboard {
 #checker > .images img {
   border-radius: 5px;
   border: 5px solid var(--surface-color);
-  background: url(<path-to-image>) lightgray 50% / cover no-repeat;
+  background: url(<path-to-image>) var(--surface-color) 50% / cover no-repeat;
 }
 
 .input-group {
