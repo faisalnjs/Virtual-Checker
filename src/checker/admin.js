@@ -64,6 +64,7 @@ try {
           });
         }
         if (document.getElementById("sort-course-input")) {
+          document.getElementById("sort-course-input").innerHTML = '';
           c.sort((a, b) => a.period - b.period).forEach(course => {
             const option = document.createElement("option");
             option.value = course.period;
@@ -1363,7 +1364,7 @@ try {
         clearInterval(checkWindowClosed);
         if (uploadSuccessful) {
           ui.modeless(`<i class="bi bi-cloud-upload"></i>`, "Uploaded");
-          renderSpeedPond(segment);
+          startingQuestionId ? renderSpeedPond(segment, Number(startingQuestionId) + 1) : renderSpeedPond(segment);
           await init();
           if (segment === 0) addExistingQuestion();
         } else {
@@ -1766,6 +1767,10 @@ try {
         ui.view("api-fail");
       });
   }
+
+  document.getElementById("speed-mode-starting-question")?.addEventListener('focusout', () => {
+    document.getElementById("speed-mode-starting-question").value = Math.round(document.getElementById("speed-mode-starting-question").value);
+  });
 } catch (error) {
   if (storage.get("developer")) {
     alert(`Error @ admin.js: ${error.message}`);
