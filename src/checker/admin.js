@@ -98,6 +98,7 @@ try {
                 if (document.getElementById("add-question-input")) {
                   document.getElementById("add-question-input").innerHTML = '';
                   questions.sort((a, b) => a.number - b.number).forEach(question => {
+                    if (document.querySelector(`#question-list .question:has(input[id="${question.id}"])`)) return;
                     const option = document.createElement("option");
                     option.value = question.id;
                     option.innerHTML = `ID ${question.id} #${question.number} - ${question.question}`;
@@ -1352,18 +1353,17 @@ try {
       if (event.origin !== (window.location.protocol + '//' + window.location.hostname + (window.location.port ? ':' + window.location.port : ''))) return;
       if (event.data === 'uploadSuccess') uploadSuccessful = true;
     }, false);
-    const checkWindowClosed = setInterval(function () {
+    const checkWindowClosed = setInterval(async function () {
       if (newWindow && newWindow.closed) {
         clearInterval(checkWindowClosed);
         if (uploadSuccessful) {
           ui.modeless(`<i class="bi bi-cloud-upload"></i>`, "Uploaded");
           renderSpeedPond(segment);
+          await init();
+          if (segment === 0) addExistingQuestion();
         } else {
           disableSpeedMode();
-        }
-        init();
-        if (segment === 0) {
-          addExistingQuestion();
+          init();
         }
       }
     }, 1000);
