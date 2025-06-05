@@ -49,7 +49,7 @@
             if (syllabus) item.setMetadata('course', syllabus);
             if (startingQuestion) item.setMetadata('startingQuestion', startingQuestion);
         });
-        pond.on('processfile', (error, file) => {
+        pond.on('processfiles', (error, file) => {
             if (error) return;
             window.opener.postMessage('uploadSuccess', window.location.protocol + '//' + window.location.hostname + (window.location.port ? ':' + window.location.port : ''));
             setTimeout(() => {
