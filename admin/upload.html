@@ -16,9 +16,15 @@
 
 <body>
     <link href="https://unpkg.com/filepond@^4/dist/filepond.css" rel="stylesheet" />
+    <link
+        href="https://unpkg.com/filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css"
+        rel="stylesheet"
+    />
     <input type="file" />
     <script
         src="https://unpkg.com/filepond-plugin-file-validate-type/dist/filepond-plugin-file-validate-type.js"></script>
+    <script
+        src="https://unpkg.com/filepond-plugin-image-preview/dist/filepond-plugin-image-preview.js"></script>
     <script src="https://unpkg.com/filepond@^4/dist/filepond.js"></script>
     <script>
         const urlParams = new URLSearchParams(window.location.search);
@@ -29,11 +35,12 @@
         if (!question && !syllabus && !segment) window.location.href = '/admin';
         const inputElement = document.querySelector('input[type="file"]');
         const domain = ((window.location.hostname.search('check') != -1) || (window.location.hostname.search('127') != -1)) ? 'https://api.check.vssfalcons.com' : `http://${document.domain}:5000`;
-        FilePond.registerPlugin(FilePondPluginFileValidateType);
+        FilePond.registerPlugin(FilePondPluginFileValidateType, FilePondPluginImagePreview);
         const pond = FilePond.create(inputElement, {
             server: domain + (question ? '/upload' : segment ? '/speedModeUpload' : '/syllabus'),
             credits: false,
             allowMultiple: (question || segment) ? true : false,
+            instantUpload: (question || segment) ? false : true,
             acceptedFileTypes: (question || segment) ? ['image/*'] : ['image/*', 'application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
         });
         pond.on('initfile', (item) => {
