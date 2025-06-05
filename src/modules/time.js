@@ -1,6 +1,7 @@
 export function unixToString(timestamp) {
   let date = new Date(timestamp);
   if (timestamp) {
+    let year = date.getFullYear();
     let month = date.getMonth() + 1;
     let day = date.getDate();
     let hours = date.getHours();
@@ -15,7 +16,7 @@ export function unixToString(timestamp) {
     if (hours == 0) {
       hours = 12;
     }
-    return `${month}/${day} ${hours}:${minutes} ${period}`;
+    return `${month}/${day}${(year != new Date().getFullYear()) ? `/${year}` : ''} ${hours}:${minutes} ${period}`;
   }
 }
 
