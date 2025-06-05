@@ -135,6 +135,11 @@ try {
                         active = true;
                         ui.stopLoader();
                         if (!polling) ui.toast("Data restored.", 1000, "info", "bi bi-cloud-arrow-down");
+                        if (polling && (expandedReports.length > 0)) {
+                          expandedReports.forEach(er => {
+                            if (document.getElementById(er)) document.getElementById(er).classList.add('active');
+                          });
+                        }
                       })
                       .catch((e) => {
                         console.error(e);
@@ -1596,6 +1601,8 @@ try {
 
   function syncExpandAllReportsButton() {
     if (!active) return;
+    expandedReports = [];
+    document.querySelectorAll('.detailed-report.active').forEach(dr => expandedReports.push(dr.id));
     var openReports = document.querySelectorAll('.detailed-report.active');
     if (openReports.length > 0) {
       document.querySelector('[data-expand-reports] .bi-chevron-bar-expand').style.display = "none";
