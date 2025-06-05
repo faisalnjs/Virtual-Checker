@@ -74,7 +74,7 @@
         async function paste() {
             var items = await navigator.clipboard.read();
             if (!items) return;
-            items = items.filter(item => item.types.includes('image/png') || item.types.includes('image/jpeg') || item.types.includes('image/gif') || item.types.includes('image/webp'));
+            items = items.filter(item => item.types.find(type => type.startsWith('image/')));
             const item = items[0];
             if (!item) return;
             pond.addFile(await item.getType(item.types.filter(type => type.startsWith('image/'))[0]));
