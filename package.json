@@ -26,6 +26,7 @@
     "bootstrap-icons": "^1.11.3",
     "mathlive": "^0.104.0",
     "medium-zoom": "^1.1.0",
+    "swapy": "^1.0.5",
     "vite-plugin-package-version": "^1.1.0"
   }
 }

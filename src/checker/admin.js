@@ -2,7 +2,7 @@
 import * as ui from "/src/modules/ui.js";
 import storage from "/src/modules/storage.js";
 import * as time from "/src/modules/time.js";
-import { convertLatexToSpeakableText } from "mathlive";
+import { createSwapy } from "swapy";
 
 const domain = ((window.location.hostname.search('check') != -1) || (window.location.hostname.search('127') != -1)) ? 'https://api.check.vssfalcons.com' : `http://${document.domain}:5000`;
 if (window.location.pathname.split('?')[0].endsWith('/admin')) window.location.pathname = '/admin/';
@@ -20,6 +20,10 @@ var timestamps = false;
 var speed = false;
 var reorder = false;
 var expandedReports = [];
+
+var draggableQuestionList = null;
+var draggableCourseReorder = null;
+var draggableSegmentReorder = null;
 
 try {
   async function init() {
@@ -42,6 +46,7 @@ try {
       .then(async c => {
         courses = c;
         if (document.getElementById("course-period-input")) {
+          document.getElementById("course-period-input").innerHTML = "";
           if (document.querySelector(".course-reorder .reorder")) document.querySelector(".course-reorder .reorder").innerHTML = "";
           c.sort((a, b) => a.period - b.period).forEach(course => {
             const option = document.createElement("option");
@@ -49,19 +54,24 @@ try {
             option.innerHTML = document.getElementById("course-input") ? course.period : `${course.period}${course.name ? ` (${course.name})` : ''}`;
             document.getElementById("course-period-input").appendChild(option);
             const elem = document.createElement("div");
+            const inner = document.createElement("div");
             elem.classList = "button-grid inputs";
-            elem.style = "flex-wrap: nowrap !important;";
-            elem.innerHTML = `<input type="text" autocomplete="off" id="course-${course.id}" value="${course.name || ''}" /><div class="drag"><i class="bi bi-grip-vertical"></i></div>`;
-            if (document.querySelector(".course-reorder .reorder")) document.querySelector(".course-reorder .reorder").appendChild(elem);
+            inner.classList = "button-grid";
+            elem.setAttribute("data-swapy-slot", `courseReorder-${course.id}`);
+            inner.setAttribute("data-swapy-item", `courseReorder-${course.id}`);
+            inner.style = "flex-wrap: nowrap !important;";
+            inner.innerHTML = `<input type="text" autocomplete="off" id="course-${course.id}" value="${course.name || ''}" placeholder="${course.name || ''}" /><div class="drag" data-swapy-handle><i class="bi bi-grip-vertical"></i></div>`;
+            elem.appendChild(inner);
+            if (document.querySelector(".course-reorder .reorder")){
+              document.querySelector(".course-reorder .reorder").appendChild(elem);
+              if (draggableCourseReorder) draggableCourseReorder.destroy();
+              draggableCourseReorder = createSwapy(document.querySelector(".course-reorder .reorder"), {
+                animation: 'none'
+              });
+            }
           });
           const course = courses.find(c => c.id == document.getElementById("course-period-input").value);
           if (document.getElementById("course-input")) document.getElementById("course-input").value = course.name;
-          document.querySelectorAll('.drag').forEach(item => {
-            item.setAttribute('draggable', true);
-            item.addEventListener('dragstart', handleDragStart);
-            item.addEventListener('dragover', handleDragOver);
-            item.addEventListener('drop', handleDropCourse);
-          });
         }
         if (document.getElementById("sort-course-input")) {
           document.getElementById("sort-course-input").innerHTML = '';
@@ -202,6 +212,7 @@ try {
   if (document.querySelector('[data-expand-reports]')) document.querySelector('[data-expand-reports]').addEventListener("click", toggleAllReports);
   if (document.getElementById('launch-speed-mode')) document.getElementById('launch-speed-mode').addEventListener("click", toggleSpeedMode);
   if (document.getElementById('add-existing-question-button')) document.getElementById('add-existing-question-button').addEventListener("click", addExistingQuestion);
+  if (document.querySelector('[data-syllabus-upload]')) document.querySelector('[data-syllabus-upload]').addEventListener("click", renderSyllabusPond);
 
   function toggleSelecting() {
     if (!active) return;
@@ -308,33 +319,6 @@ try {
     } else {
       if (document.querySelector('[data-syllabus-remove]')) document.querySelector('[data-syllabus-remove]').parentElement.setAttribute('hidden', '');
       if (document.querySelector('[data-syllabus-upload]')) document.querySelector('[data-syllabus-upload]').removeAttribute('hidden');
-      if (document.querySelector('[data-syllabus-upload]')) {
-        document.querySelector('[data-syllabus-upload]').addEventListener("click", () => {
-          const url = '/admin/upload.html?syllabus=' + course.id;
-          const width = 600;
-          const height = 150;
-          const left = (window.screen.width / 2) - (width / 2);
-          const top = (window.screen.height / 2) - (height / 2);
-          const windowFeatures = `width=${width},height=${height},resizable=no,scrollbars=no,status=yes,left=${left},top=${top}`;
-          const newWindow = window.open(url, '_blank', windowFeatures);
-          let uploadSSuccessful = false;
-          window.addEventListener('message', (event) => {
-            if (event.origin !== (window.location.protocol + '//' + window.location.hostname + (window.location.port ? ':' + window.location.port : ''))) return;
-            if (event.data === 'uploadSuccess') uploadSSuccessful = true;
-          }, false);
-          const checkWindowClosed = setInterval(function () {
-            if (newWindow && newWindow.closed) {
-              clearInterval(checkWindowClosed);
-              if (uploadSSuccessful) {
-                ui.modeless(`<i class="bi bi-cloud-upload"></i>`, "Uploaded");
-              } else {
-                ui.modeless(`<i class="bi bi-exclamation-triangle"></i>`, "Upload Cancelled");
-              }
-              init();
-            }
-          }, 1000);
-        });
-      }
     }
     if (document.querySelector('.segment-reports')) document.querySelector('.segment-reports').innerHTML = '';
     if (c.length > 0) {
@@ -350,22 +334,32 @@ try {
             buttonGrid.className = "button-grid inputs";
             buttonGrid.innerHTML = `<button square data-select><i class="bi bi-circle"></i><i class="bi bi-circle-fill"></i></button><div class="input-group small"><div class="space" id="question-container"><input type="text" autocomplete="off" id="segment-number-input" value="${s.number}" placeholder="${s.number}" /></div></div><div class="input-group"><div class="space" id="question-container"><input type="text" autocomplete="off" id="segment-name-input" value="${s.name}" placeholder="${s.name}" /></div></div><div class="input-group mediuml"><div class="space" id="question-container"><input type="date" id="segment-due-date" value="${s.due || ''}"></div></div><button square data-remove-segment-input><i class="bi bi-trash"></i></button><button square data-toggle-segment><i class="bi bi-caret-down-fill"></i><i class="bi bi-caret-up-fill"></i></button>`;
             segment.appendChild(buttonGrid);
-            var questionsString = "";
+            var questionsString = "Use Segment Editor";
             var questions = document.createElement('div');
             questions.classList = "questions";
-            JSON.parse(s.question_ids).forEach(q => {
-              questionsString += `<div class="input-group"><div class="drag"><i class="bi bi-grip-vertical"></i></div><input type="text" autocomplete="off" id="segment-question-name-input" value="${q.name}" placeholder="${q.name}" /><input type="number" autocomplete="off" id="segment-question-id-input" value="${q.id}" placeholder="${q.id}" /></div>`;
-            });
+            // JSON.parse(s.question_ids).forEach(q => {
+            //   questionsString += `<div class="input-group"><div class="drag"><i class="bi bi-grip-vertical"></i></div><input type="text" autocomplete="off" id="segment-question-name-input" value="${q.name}" placeholder="${q.name}" /><input type="number" autocomplete="off" id="segment-question-id-input" value="${q.id}" placeholder="${q.id}" /></div></div>`;
+            // });
             questions.innerHTML = `<div class="button-grid"><button class="space fit" sort-segment-questions-increasing>Sort Increasing (1A-9Z)</button><button class="space fit" sort-segment-questions-decreasing>Sort Decreasing (9Z-1A)</button></div><br><div class="button-grid inputs"><div class="input-group small"><label>Name</label><label>ID</label></div>${questionsString}<div class="input-group fit"><button square data-add-segment-question-input><i class="bi bi-plus"></i></button><button square data-remove-segment-question-input${(JSON.parse(s.question_ids).length === 1) ? ' disabled' : ''}><i class="bi bi-dash"></i></button></div></div>`;
             segment.appendChild(questions);
             document.querySelector('.segments .section').appendChild(segment);
           }
           if (document.querySelector(".segment-reorder .reorder")) {
             const elem = document.createElement("div");
+            var inner = document.createElement("div");
             elem.classList = "button-grid inputs";
             elem.style = "flex-wrap: nowrap !important;";
-            elem.innerHTML = `<input type="text" autocomplete="off" id="segment-${s.number}" value="${s.name || ''}" /><div class="drag"><i class="bi bi-grip-vertical"></i></div>`;
+            inner.classList = "button-grid inputs";
+            inner.style = "flex-wrap: nowrap !important;";
+            elem.setAttribute("data-swapy-slot", `segmentReorder-${s.number}`);
+            inner.setAttribute("data-swapy-item", `segmentReorder-${s.number}`);
+            inner.innerHTML = `<input type="text" autocomplete="off" id="segment-${s.number}" value="${s.name || ''}" /><div class="drag" data-swapy-handle><i class="bi bi-grip-vertical"></i></div>`;
+            elem.appendChild(inner);
             document.querySelector(".segment-reorder .reorder").appendChild(elem);
+            if (draggableSegmentReorder) draggableSegmentReorder.destroy();
+            draggableSegmentReorder = createSwapy(document.querySelector(".segment-reorder .reorder"), {
+              animation: 'none'
+            });
           }
         });
       }
@@ -426,12 +420,6 @@ try {
     document.querySelectorAll('[data-select]').forEach(a => a.addEventListener('click', toggleSelected));
     document.querySelectorAll('[sort-segment-questions-increasing]').forEach(a => a.addEventListener('click', sortSegmentQuestionsIncreasing));
     document.querySelectorAll('[sort-segment-questions-decreasing]').forEach(a => a.addEventListener('click', sortSegmentQuestionsDecreasing));
-    document.querySelectorAll('.drag').forEach(item => {
-      item.setAttribute('draggable', true);
-      item.addEventListener('dragstart', handleDragStart);
-      item.addEventListener('dragover', handleDragOver);
-      item.addEventListener('drop', handleDropSegment);
-    });
     document.querySelectorAll('[report]').forEach(a => a.addEventListener('click', toggleDetailedReport));
   }
 
@@ -482,19 +470,24 @@ try {
           option.innerHTML = document.getElementById("course-input") ? course.period : `${course.period}${course.name ? ` (${course.name})` : ''}`;
           document.getElementById("course-period-input").appendChild(option);
           const elem = document.createElement("div");
+          const inner = document.createElement("div");
           elem.classList = "button-grid inputs";
-          elem.style = "flex-wrap: nowrap !important;";
-          elem.innerHTML = `<input type="text" autocomplete="off" id="course-${course.id}" value="${course.name || ''}" placeholder="${course.name || ''}" /><div class="drag"><i class="bi bi-grip-vertical"></i></div>`;
-          if (document.querySelector(".course-reorder .reorder")) document.querySelector(".course-reorder .reorder").appendChild(elem);
+          inner.classList = "button-grid";
+          elem.setAttribute("data-swapy-slot", `courseReorder-${course.id}`);
+          inner.setAttribute("data-swapy-item", `courseReorder-${course.id}`);
+          inner.style = "flex-wrap: nowrap !important;";
+          inner.innerHTML = `<input type="text" autocomplete="off" id="course-${course.id}" value="${course.name || ''}" /><div class="drag" data-swapy-handle><i class="bi bi-grip-vertical"></i></div>`;
+          elem.appendChild(inner);
+          if (document.querySelector(".course-reorder .reorder")){
+            document.querySelector(".course-reorder .reorder").appendChild(elem);
+            if (draggableCourseReorder) draggableCourseReorder.destroy();
+            draggableCourseReorder = createSwapy(document.querySelector(".course-reorder .reorder"), {
+              animation: 'none'
+            });
+          }
         });
         const course = courses.find(c => c.id == document.getElementById("course-period-input").value);
         if (document.getElementById("course-input")) document.getElementById("course-input").value = course.name;
-        document.querySelectorAll('.drag').forEach(item => {
-          item.setAttribute('draggable', true);
-          item.addEventListener('dragstart', handleDragStart);
-          item.addEventListener('dragover', handleDragOver);
-          item.addEventListener('drop', handleDropCourse);
-        });
       })
       .catch((e) => {
         console.error(e);
@@ -1379,6 +1372,33 @@ try {
     }, 1000);
   }
 
+  async function renderSyllabusPond() {
+    if (!active) return;
+    const url = '/admin/upload.html?syllabus=' + document.getElementById("course-period-input").value;
+    const width = 600;
+    const height = 150;
+    const left = (window.screen.width / 2) - (width / 2);
+    const top = (window.screen.height / 2) - (height / 2);
+    const windowFeatures = `width=${width},height=${height},resizable=no,scrollbars=no,status=yes,left=${left},top=${top}`;
+    const newWindow = window.open(url, '_blank', windowFeatures);
+    let uploadSSuccessful = false;
+    window.addEventListener('message', (event) => {
+      if (event.origin !== (window.location.protocol + '//' + window.location.hostname + (window.location.port ? ':' + window.location.port : ''))) return;
+      if (event.data === 'uploadSuccess') uploadSSuccessful = true;
+    }, false);
+    const checkWindowClosed = setInterval(function () {
+      if (newWindow && newWindow.closed) {
+        clearInterval(checkWindowClosed);
+        if (uploadSSuccessful) {
+          ui.modeless(`<i class="bi bi-cloud-upload"></i>`, "Uploaded");
+        } else {
+          ui.modeless(`<i class="bi bi-exclamation-triangle"></i>`, "Upload Cancelled");
+        }
+        init();
+      }
+    }, 1000);
+  }
+
   function toggleReorder() {
     if (!active) return;
     if (reorder) {
@@ -1582,20 +1602,15 @@ try {
       default:
         break;
     }
-    var updatedQuestionsString = '<div class="input-group small"><label>Name</label><label>ID</label></div>';
-    for (let i = 0; i < updatedQuestions.length; i++) {
-      updatedQuestionsString += `<div class="input-group"><div class="drag"><i class="bi bi-grip-vertical"></i></div><input type="text" autocomplete="off" id="segment-question-name-input" value="${updatedQuestions[i].querySelector('#segment-question-name-input').value}" /><input type="number" autocomplete="off" id="segment-question-id-input" value="${updatedQuestions[i].querySelector('#segment-question-id-input').value}" /></div>`;
-    }
-    updatedQuestionsString += '<div class="input-group fit"><button square="" data-add-segment-question-input=""><i class="bi bi-plus"></i></button><button square="" data-remove-segment-question-input=""><i class="bi bi-dash"></i></button></div>';
-    event.parentElement.parentElement.querySelector('.inputs').innerHTML = updatedQuestionsString;
+    // var updatedQuestionsString = '<div class="input-group small"><label>Name</label><label>ID</label></div>';
+    // for (let i = 0; i < updatedQuestions.length; i++) {
+    //   updatedQuestionsString += `<div class="input-group"><div class="drag"><i class="bi bi-grip-vertical"></i></div><input type="text" autocomplete="off" id="segment-question-name-input" value="${updatedQuestions[i].querySelector('#segment-question-name-input').value}" /><input type="number" autocomplete="off" id="segment-question-id-input" value="${updatedQuestions[i].querySelector('#segment-question-id-input').value}" /></div>`;
+    // }
+    // updatedQuestionsString += '<div class="input-group fit"><button square="" data-add-segment-question-input=""><i class="bi bi-plus"></i></button><button square="" data-remove-segment-question-input=""><i class="bi bi-dash"></i></button></div>';
+    // event.parentElement.parentElement.querySelector('.inputs').innerHTML = updatedQuestionsString;
+    event.parentElement.parentElement.querySelector('.inputs').innerHTML = "Use Segment Editor";
     document.querySelectorAll('[data-add-segment-question-input]').forEach(a => a.addEventListener('click', addSegmentQuestion));
     document.querySelectorAll('[data-remove-segment-question-input]').forEach(a => a.addEventListener('click', removeSegmentQuestion));
-    document.querySelectorAll('.drag').forEach(item => {
-      item.setAttribute('draggable', true);
-      item.addEventListener('dragstart', handleDragStart);
-      item.addEventListener('dragover', handleDragOver);
-      item.addEventListener('drop', handleDropSegment);
-    });
   }
 
   function toggleDetailedReport() {
@@ -1671,10 +1686,15 @@ try {
   function addExistingQuestion() {
     if (!active) return;
     var div = document.createElement('div');
+    var inner = document.createElement('div');
+    div.classList = "button-grid inputs question";
+    inner.classList = "button-grid";
     if (this) {
       if (!document.getElementById("add-question-input").selectedOptions[0]) return;
-      div.classList = "button-grid inputs question";
-      div.innerHTML = `<div class="input-group">
+      div.setAttribute("data-swapy-slot", `questionList-${document.getElementById("add-question-input").value}`);
+      inner.setAttribute("data-swapy-item", `questionList-${document.getElementById("add-question-input").value}`);
+      inner.innerHTML = `<div class="drag" data-swapy-handle><i class="bi bi-grip-vertical"></i></div>
+      <div class="input-group">
         <div class="space" id="question-container">
           <input type="text" id="${document.getElementById("add-question-input").value}" value="${document.getElementById("add-question-input").selectedOptions[0].innerHTML}" disabled>
         </div>
@@ -1687,8 +1707,10 @@ try {
       <button class="space" id="remove-existing-question-button" square><i class="bi bi-trash"></i></button>`;
     } else {
       var newQuestion = document.getElementById("add-question-input").children[document.getElementById("add-question-input").children.length - 1];
-      div.classList = "button-grid inputs question";
-      div.innerHTML = `<div class="input-group">
+      div.setAttribute("data-swapy-slot", `questionList-${newQuestion.value}`);
+      inner.setAttribute("data-swapy-item", `questionList-${newQuestion.value}`);
+      inner.innerHTML = `<div class="drag" data-swapy-handle><i class="bi bi-grip-vertical"></i></div>
+      <div class="input-group">
         <div class="space" id="question-container">
           <input type="text" id="${newQuestion.value}" value="${newQuestion.innerHTML}" disabled>
         </div>
@@ -1700,10 +1722,15 @@ try {
       </div>
       <button class="space" id="remove-existing-question-button" square><i class="bi bi-trash"></i></button>`;
     }
+    div.appendChild(inner);
     document.getElementById("question-list").appendChild(div);
     document.querySelectorAll('#remove-existing-question-button').forEach(a => a.addEventListener('click', removeExistingQuestion));
     document.getElementById("add-question-input").removeChild(document.getElementById("add-question-input").selectedOptions[0]);
     document.getElementById("add-existing-question-button").disabled = (document.getElementById("add-question-input").children.length === 0) ? true : false;
+    if (draggableQuestionList) draggableQuestionList.destroy();
+    draggableQuestionList = createSwapy(document.getElementById("question-list"), {
+      animation: 'none'
+    });
   }
 
   function removeExistingQuestion() {
@@ -1712,7 +1739,7 @@ try {
     option.value = this.parentElement.querySelector('input').id;
     option.innerHTML = this.parentElement.querySelector('input').value;
     document.getElementById("add-question-input").appendChild(option);
-    this.parentElement.remove();
+    this.parentElement.parentElement.remove();
     let select = document.getElementById("add-question-input");
     let options = Array.from(select.options);
     options.sort((a, b) => a.value.localeCompare(b.value));
