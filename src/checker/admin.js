@@ -1316,6 +1316,8 @@ try {
   }
 
   function updateSpeedModeStartingQuestion() {
+    document.getElementById("speed-mode-starting-question-id").value = questions.sort((a, b) => a.id - b.id)[questions.length - 1].id + 1;
+    document.getElementById("speed-mode-starting-question-id").min = questions.sort((a, b) => a.id - b.id)[questions.length - 1].id + 1;
     document.getElementById("speed-mode-starting-question").value = questions.sort((a, b) => a.id - b.id)[questions.length - 1].id + 1;
     document.getElementById("speed-mode-starting-question").min = questions.sort((a, b) => a.id - b.id)[questions.length - 1].id + 1;
   }
@@ -1327,14 +1329,16 @@ try {
     document.querySelector('[data-speed] .bi-lightning-charge-fill').style.display = "block";
     var segmentId = 0;
     var startingQuestionId = null;
+    var startingQuestion = null;
     if (document.getElementById("speed-mode-segments")) {
       segmentId = document.getElementById("speed-mode-segments").value;
-    } else if (document.getElementById("speed-mode-starting-question")) {
-      startingQuestionId = document.getElementById("speed-mode-starting-question").value;
+    } else if (document.getElementById("speed-mode-starting-question-id")) {
+      startingQuestionId = document.getElementById("speed-mode-starting-question-id").value;
+      startingQuestion = document.getElementById("speed-mode-starting-question").value;
     } else {
       return;
     }
-    renderSpeedPond(segmentId, startingQuestionId);
+    renderSpeedPond(segmentId, startingQuestionId, startingQuestion);
   }
 
   function disableSpeedMode() {
@@ -1345,9 +1349,9 @@ try {
     ui.modeless(`<i class="bi bi-check2-circle"></i>`, "Speed Mode Ended");
   }
 
-  async function renderSpeedPond(segment = 0, startingQuestionId) {
+  async function renderSpeedPond(segment = 0, startingQuestionId, startingQuestion) {
     if (!active) return;
-    const url = `/admin/upload.html?segment=${segment}${startingQuestionId ? `&startingQuestion=${startingQuestionId}` : ''}`;
+    const url = `/admin/upload.html?segment=${segment}${(startingQuestionId && startingQuestion) ? `&startingQuestionId=${startingQuestionId}&startingQuestion=${startingQuestion}` : ''}`;
     const width = 600;
     const height = 600;
     const left = (window.screen.width / 2) - (width / 2);
@@ -1364,7 +1368,7 @@ try {
         clearInterval(checkWindowClosed);
         if (uploadSuccessful) {
           ui.modeless(`<i class="bi bi-cloud-upload"></i>`, "Uploaded");
-          startingQuestionId ? renderSpeedPond(segment, Number(startingQuestionId) + 1) : renderSpeedPond(segment);
+          (startingQuestionId && startingQuestion) ? renderSpeedPond(segment, (Number(startingQuestionId) + 1), (Number(startingQuestion) + 1)) : renderSpeedPond(segment);
           await init();
           if (segment === 0) addExistingQuestion();
         } else {

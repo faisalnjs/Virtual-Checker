@@ -27,6 +27,18 @@
         button#paste:hover {
             opacity: 0.75;
         }
+
+        input[type="text"] {
+            height: 2.25em;
+            padding: 0.1em 0.7em;
+            border: none;
+            border-radius: 0.4rem;
+            background-color: #efefef;
+            width: -webkit-fill-available;
+            cursor: pointer;
+            margin-bottom: 1em;
+            font: 14px "Figtree", sans-serif;
+        }
     </style>
 </head>
 
@@ -34,6 +46,7 @@
     <link href="https://unpkg.com/filepond@^4/dist/filepond.css" rel="stylesheet" />
     <link href="https://unpkg.com/filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css"
         rel="stylesheet" />
+    <input type="text" placeholder="Question Text" />
     <input type="file" />
     <button id="paste" onclick="paste()">Paste</button>
     <script
@@ -45,9 +58,11 @@
         const question = urlParams.get('question');
         const syllabus = urlParams.get('syllabus');
         const segment = urlParams.get('segment');
+        const startingQuestionId = urlParams.get('startingQuestionId');
         const startingQuestion = urlParams.get('startingQuestion');
         if (!question && !syllabus && !segment) window.location.href = '/admin';
         const inputElement = document.querySelector('input[type="file"]');
+        const questionElement = document.querySelector('input[type="file"]');
         const domain = ((window.location.hostname.search('check') != -1) || (window.location.hostname.search('127') != -1)) ? 'https://api.check.vssfalcons.com' : `http://${document.domain}:5000`;
         FilePond.registerPlugin(FilePondPluginFileValidateType, FilePondPluginImagePreview);
         const pond = FilePond.create(inputElement, {
@@ -61,7 +76,14 @@
             if (question) item.setMetadata('question', question);
             if (segment) item.setMetadata('segment', segment);
             if (syllabus) item.setMetadata('course', syllabus);
-            if (startingQuestion) item.setMetadata('startingQuestion', startingQuestion);
+            if (startingQuestionId && startingQuestion) item.setMetadata('startingQuestionId', Number(startingQuestionId) + 1);
+            if (startingQuestionId && startingQuestion) item.setMetadata('startingQuestion', startingQuestion);
+        });
+        pond.on('processfilestart', (file) => {
+            if (startingQuestionId && startingQuestion && !file.getMetadata('title')) {
+                file.setMetadata('title', document.querySelector('input[type="text"]').value || startingQuestion);
+                pond.processFile(file);
+            };
         });
         pond.on('processfiles', (error, file) => {
             if (error) return;
@@ -79,6 +101,7 @@
             if (!item) return;
             pond.addFile(await item.getType(item.types.filter(type => type.startsWith('image/'))[0]));
         };
+        if (!startingQuestionId || !startingQuestion) document.querySelector('input[type="text"]').remove();
     </script>
 </body>
 
