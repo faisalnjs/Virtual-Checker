@@ -1756,6 +1756,7 @@ try {
     div.classList = "button-grid inputs question";
     inner.classList = "button-grid";
     if (loadedSegment && (typeof question === 'string')) {
+      console.log(1)
       if (!document.getElementById("add-question-input").selectedOptions[0]) return;
       var addingQuestion = questions.find(q => String(q.id) === String(question));
       if (!addingQuestion) return;
@@ -1765,7 +1766,7 @@ try {
       inner.innerHTML = `<div class="drag" data-swapy-handle><i class="bi bi-grip-vertical"></i></div>
       <div class="input-group">
         <div class="space" id="question-container">
-          <input type="text" id="${addingQuestion.id}" value="${document.getElementById("add-question-input").selectedOptions[0].innerHTML}" disabled>
+          <input type="text" id="${addingQuestion.id}" value="ID ${addingQuestion.id} #${addingQuestion.number} - ${addingQuestion.question}" disabled>
         </div>
       </div>
       <div class="input-group small">
@@ -1775,6 +1776,7 @@ try {
       </div>
       <button class="space" id="remove-existing-question-button" square><i class="bi bi-trash"></i></button>`;
     } else if (this) {
+      console.log(2)
       if (!document.getElementById("add-question-input").selectedOptions[0]) return;
       div.setAttribute("data-swapy-slot", `questionList-${document.getElementById("add-question-input").value}`);
       inner.setAttribute("data-swapy-item", `questionList-${document.getElementById("add-question-input").value}`);
@@ -1791,6 +1793,7 @@ try {
       </div>
       <button class="space" id="remove-existing-question-button" square><i class="bi bi-trash"></i></button>`;
     } else {
+      console.log(3)
       var newQuestion = document.getElementById("add-question-input").children[document.getElementById("add-question-input").children.length - 1];
       div.setAttribute("data-swapy-slot", `questionList-${newQuestion.value}`);
       inner.setAttribute("data-swapy-item", `questionList-${newQuestion.value}`);
@@ -1810,7 +1813,7 @@ try {
     div.appendChild(inner);
     document.getElementById("question-list").appendChild(div);
     document.querySelectorAll('#remove-existing-question-button').forEach(a => a.addEventListener('click', removeExistingQuestion));
-    document.getElementById("add-question-input").removeChild(document.getElementById("add-question-input").selectedOptions[0]);
+    if (document.getElementById("add-question-input").selectedOptions[0]) document.getElementById("add-question-input").removeChild(document.getElementById("add-question-input").selectedOptions[0]);
     document.getElementById("add-existing-question-button").disabled = (document.getElementById("add-question-input").children.length === 0) ? true : false;
     if (draggableQuestionList) draggableQuestionList.destroy();
     draggableQuestionList = createSwapy(document.getElementById("question-list"), {
@@ -1893,6 +1896,7 @@ try {
   });
 
   function loadSegmentEditor() {
+    if (loadedSegmentEditor) return;
     var segment = new URLSearchParams(window.location.search).get('segment');
     if (!segment) return document.querySelector('[data-delete-segment]').remove();
     loadedSegment = segments.find(s => String(s.number) === String(segment));
