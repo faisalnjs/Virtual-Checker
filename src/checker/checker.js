@@ -33,6 +33,7 @@ try {
   let multipleChoice = null;
   let highestDataElement = null;
   let restoredSetType = "";
+  var unsavedChanges = false;
 
   let historyIndex = 0;
 
@@ -102,7 +103,34 @@ try {
     document.getElementById("answer-suggestion").addEventListener("click", () => answerInput.focus());
     // Initialize questionsAnswered if not already set
     if (!storage.get("questionsAnswered")) storage.set("questionsAnswered", []);
+    reloadUnsavedInputs();
   };
+
+  window.addEventListener('beforeunload', function (event) {
+    if (!unsavedChanges) return;
+    const confirmationMessage = 'You have unsaved changes. Do you really want to leave?';
+    event.returnValue = confirmationMessage;
+    return confirmationMessage;
+  });
+
+  function reloadUnsavedInputs() {
+    document.querySelectorAll('textarea').forEach(input => input.addEventListener('input', () => {      
+      unsavedChanges = true;
+    }));
+    document.querySelectorAll('input').forEach(input => input.addEventListener('change', () => {      
+      unsavedChanges = true;
+    }));
+  }
+
+  function promptUnsavedInputs() {
+    if (!unsavedChanges) return;
+    if (confirm("You have unsaved changes. Do you want to continue?")) {
+      unsavedChanges = false;
+      return true;
+    } else {
+      return false;
+    }
+  }
 
   // Process check
   function processCheck(part = null) {
@@ -259,6 +287,7 @@ try {
       window.scroll(0, 0);
       return ui.modeless(`<i class="bi bi-exclamation-lg"></i>`, 'Already Correct');
     }
+    unsavedChanges = true;
     await fetch(domain + '/check_answer', {
       method: "POST",
       headers: {
@@ -273,6 +302,7 @@ try {
     })
       .then(r => r.json())
       .then(r => {
+        unsavedChanges = false;
         window.scroll(0, 0);
         if (typeof r.correct != 'undefined') {
           ui.modeless(`<i class="bi bi-${(r.correct) ? 'check' : 'x'}-lg"></i>`, (r.correct) ? 'Correct' : 'Try Again', r.reason || null);
@@ -309,6 +339,7 @@ try {
         };
       })
       .catch(() => ui.view("api-fail"))
+      reloadUnsavedInputs();
   }
 
   // Limit seat code input to integers
@@ -341,6 +372,7 @@ try {
       const params = new URLSearchParams(window.location.search);
       params.set("code", input);
       history.replaceState({}, "", "?" + params.toString());
+      unsavedChanges = false;
     } else {
       ui.alert("Error", "Seat code isn't possible");
     }
@@ -411,10 +443,12 @@ try {
       } catch (error) {
         ui.view("api-fail");
       }
+      reloadUnsavedInputs();
     }
   }
 
   async function updateSegment() {
+    promptUnsavedInputs();
     const selectedSegment = segmentsArray.find(s => s.number == segments.value);
     questions.innerHTML = '';
     if (!selectedSegment) return updateQuestion();
@@ -434,9 +468,11 @@ try {
     questions.removeEventListener("change", updateQuestion);
     questions.addEventListener("change", updateQuestion);
     await updateQuestion();
+    reloadUnsavedInputs();
   }
 
   async function updateQuestion() {
+    promptUnsavedInputs();
     var question = questionsArray.find(q => q.id == questions.value);
     questionImages.innerHTML = '';
     nextQuestionButtons.forEach(btn => btn.disabled = true);
@@ -479,9 +515,11 @@ try {
       const selectedSegment = segmentsArray.find(s => s.number == segments.value);
       if (i) i.innerHTML = `${JSON.parse(selectedSegment.question_ids).find(q2 => q2.id == q.question).name} - ${q.status}`;
     });
+    reloadUnsavedInputs();
   }
 
   function prevQuestion() {
+    promptUnsavedInputs();
     const questionOptions = questions.querySelectorAll('option');
     const selectedQuestionOption = questions.querySelector('option:checked');
     const selectedQuestionOptionIndex = Array.from(questionOptions).indexOf(selectedQuestionOption);
@@ -492,6 +530,7 @@ try {
   }
 
   function nextQuestion() {
+    promptUnsavedInputs();
     const questionOptions = questions.querySelectorAll('option');
     const selectedQuestionOption = questions.querySelector('option:checked');
     const selectedQuestionOptionIndex = Array.from(questionOptions).indexOf(selectedQuestionOption);
@@ -514,6 +553,7 @@ try {
       "e": ["Sometimes", "Cannot be determined"],
     };
     button.addEventListener("click", (e) => {
+      unsavedChanges = true;
       const choice = e.target.getAttribute("data-multiple-choice");
       // Set content of multiple choice card
       const content = document.querySelector(`[data-answer-mode="choice"]>div`);
@@ -571,6 +611,7 @@ try {
 
   // Store click to storage and history
   function storeClick(code, segment, question, answer, reason, type) {
+    unsavedChanges = true;
     const history = storage.get("history") || [];
     const timestamp = Date.now();
     history.push({
@@ -584,6 +625,7 @@ try {
     });
     storage.set("history", history);
     updateHistory();
+    unsavedChanges = false;
   }
 
   document.getElementById("history-first").addEventListener("click", () => {
@@ -780,9 +822,11 @@ try {
     } else {
       feed.innerHTML = "<p>Submitted clicks will show up here!</p>";
     }
+    reloadUnsavedInputs();
   }
 
   function flagResponse(event) {
+    unsavedChanges = true;
     fetch(domain + '/flag', {
       method: "POST",
       headers: {
@@ -795,6 +839,7 @@ try {
     })
       .then(q => q.json())
       .then(() => {
+        unsavedChanges = false;
         ui.toast("Flagged response for review.", 3000, "success", "bi bi-flag-fill");
         event.srcElement.disabled = true;
       })
@@ -921,6 +966,7 @@ try {
       if (highestDataElement === null || parseInt(element.getAttribute('data-set-input'), 10) > parseInt(highestDataElement.getAttribute('data-set-input'), 10)) highestDataElement = element;
     });
     if (highestDataElement !== null) {
+      unsavedChanges = true;
       var newSetInput = document.createElement('input');
       newSetInput.setAttribute('type', 'text');
       newSetInput.setAttribute('autocomplete', 'off');
@@ -936,6 +982,7 @@ try {
       newSetInput.focus();
       document.querySelector("[data-remove-set-input]").disabled = false;
     }
+    reloadUnsavedInputs();
   }
 
   // Remove set input
@@ -967,12 +1014,14 @@ try {
     }
   }
 
-  //Change FRQ choice
+  // Change FRQ choice
   frqInput.addEventListener("change", (input) => {
+    unsavedChanges = true;
     document.querySelector('[data-answer-mode="frq"] h1').innerText = input.target.value;
   });
 
   frqInput.addEventListener("input", (input) => {
+    unsavedChanges = true;
     document.querySelector('[data-answer-mode="frq"] h1').innerText = input.target.value;
   });
 
@@ -982,6 +1031,7 @@ try {
   }
 
   function addPart() {
+    unsavedChanges = true;
     frqPartInputs = document.querySelectorAll('.frq-parts .part input');
     highestDataElement = frqPartInputs[frqPartInputs.length - 1];
     var newPartLetter = String.fromCharCode(highestDataElement.getAttribute('data-frq-part').charCodeAt(0) + 1);
@@ -997,6 +1047,7 @@ try {
     highestDataElement.querySelector('input').focus();
     document.querySelector("[data-remove-frq-part]").disabled = false;
     if (newPartLetter === 'z') document.querySelector("[data-add-frq-part]").disabled = true;
+    reloadUnsavedInputs();
   }
 
   // Remove FRQ part
