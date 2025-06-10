@@ -15,7 +15,7 @@ export default {
         upload: new URL('admin/upload.html', import.meta.url).pathname,
         responses: new URL('admin/responses.html', import.meta.url).pathname,
         reports: new URL('admin/reports.html', import.meta.url).pathname,
-        newsegment: new URL('admin/newsegment.html', import.meta.url).pathname,
+        editor: new URL('admin/editor.html', import.meta.url).pathname,
       },
     },
   },

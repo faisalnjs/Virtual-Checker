@@ -425,6 +425,7 @@ div.ML__keyboard {
   .medium,
   .mediuml,
   .mediumll,
+  .large,
   square {
     max-width: unset !important;
   }
@@ -521,6 +522,10 @@ div.ML__keyboard {
   max-width: 265px;
 }
 
+.large {
+  max-width: 305px;
+}
+
 .fit {
   width: fit-content;
 }
@@ -594,7 +599,6 @@ div.ML__keyboard {
   transition: 0.5s var(--easing);
 }
 
-.segments .section [data-remove-segment-input],
 .questions .section [data-remove-question-input],
 .segments:not(:has(.section:first-child.expanded)) [hidden-spacer] {
   display: none;
@@ -613,7 +617,6 @@ div.ML__keyboard {
   display: none;
 }
 
-.segments .section.expanded [data-remove-segment-input],
 .questions .section.expanded [data-remove-question-input] {
   display: flex;
 }
