@@ -122,16 +122,6 @@ try {
     }));
   }
 
-  function promptUnsavedInputs() {
-    if (!unsavedChanges) return;
-    if (confirm("You have unsaved changes. Do you want to continue?")) {
-      unsavedChanges = false;
-      return true;
-    } else {
-      return false;
-    }
-  }
-
   // Process check
   function processCheck(part = null) {
     document.getElementById("submit-button").disabled = true;
@@ -448,7 +438,6 @@ try {
   }
 
   async function updateSegment() {
-    promptUnsavedInputs();
     const selectedSegment = segmentsArray.find(s => s.number == segments.value);
     questions.innerHTML = '';
     if (!selectedSegment) return updateQuestion();
@@ -472,7 +461,6 @@ try {
   }
 
   async function updateQuestion() {
-    promptUnsavedInputs();
     var question = questionsArray.find(q => q.id == questions.value);
     questionImages.innerHTML = '';
     nextQuestionButtons.forEach(btn => btn.disabled = true);
@@ -519,7 +507,6 @@ try {
   }
 
   function prevQuestion() {
-    promptUnsavedInputs();
     const questionOptions = questions.querySelectorAll('option');
     const selectedQuestionOption = questions.querySelector('option:checked');
     const selectedQuestionOptionIndex = Array.from(questionOptions).indexOf(selectedQuestionOption);
@@ -530,7 +517,6 @@ try {
   }
 
   function nextQuestion() {
-    promptUnsavedInputs();
     const questionOptions = questions.querySelectorAll('option');
     const selectedQuestionOption = questions.querySelector('option:checked');
     const selectedQuestionOptionIndex = Array.from(questionOptions).indexOf(selectedQuestionOption);
