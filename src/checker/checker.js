@@ -714,7 +714,7 @@ try {
           const frq = item.type === "frq";
           button.id = r.id;
           button.classList = (r.status === "Incorrect") ? 'incorrect' : (r.status === "Correct") ? 'correct' : '';
-          var response = `${((r.status != "Correct") && (r.status != "Incorrect")) ? `${latex ? '' : '<br>'}<b>Status:</b> ${r.status.includes('Unknown') ? r.status.split('Unknown, ')[1] : r.status}` : ''}${(r.reason) ? `<br><b>Response:</b> ${r.reason}` : ''}${(r.status === "Incorrect") ? `<br><button data-flag-response${(r.flagged == '1') ? ' disabled' : ''}><i class="bi bi-flag-fill"></i> Flag for Review</button>` : ''}`;
+          var response = `${((r.status != "Correct") && (r.status != "Incorrect")) ? `${latex ? '' : '<br>'}<b>Status:</b> ${r.status.includes('Unknown') ? r.status.split('Unknown, ')[1] : r.status}` : ''}${(r.reason) ? `<br><b>Response:</b> ${r.reason}` : ''}<br><button data-flag-response${(r.flagged == '1') ? ' disabled' : ''}><i class="bi bi-flag-fill"></i> Flag for Review</button>`;
           item.number = questionsArray.find(question => question.id === Number(item.question)).number;
           if (!latex) {
             if (!array) {
