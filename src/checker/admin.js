@@ -230,8 +230,8 @@ try {
   }
 
   if (document.getElementById("course-period-input")) document.getElementById("course-period-input").addEventListener("change", updateSegments);
-  if (document.querySelector('[data-select]')) document.querySelector('[data-select-multiple]').addEventListener("click", toggleSelecting);
-  if (document.querySelector('[data-select]')) document.querySelector('[data-delete-multiple]').addEventListener("click", deleteMultiple);
+  if (document.querySelector('[data-select-multiple]')) document.querySelector('[data-select-multiple]').addEventListener("click", toggleSelecting);
+  if (document.querySelector('[data-delete-multiple]')) document.querySelector('[data-delete-multiple]').addEventListener("click", deleteMultiple);
   if (document.querySelector('[data-polling]')) document.querySelector('[data-polling]').addEventListener("click", togglePolling);
   if (document.querySelector('[data-timestamps]')) document.querySelector('[data-timestamps]').addEventListener("click", toggleTimestamps);
   if (document.querySelector('[data-speed]')) document.querySelector('[data-speed]').addEventListener("click", toggleSpeedMode);
@@ -1955,9 +1955,9 @@ try {
   function loadSegmentEditor() {
     if (loadedSegmentEditor) return;
     var segment = new URLSearchParams(window.location.search).get('segment');
-    if (!segment) return document.querySelector('[data-delete-segment]').remove();
+    if (!segment) return document.querySelector('[data-delete-segment]')?.remove();
     loadedSegment = segments.find(s => String(s.number) === String(segment));
-    if (!loadedSegment) return document.querySelector('[data-delete-segment]').remove();
+    if (!loadedSegment) return document.querySelector('[data-delete-segment]')?.remove();
     loadedSegmentEditor = true;
     active = true;
     document.getElementById("sort-course-input").value = loadedSegment.course + 1;
@@ -1966,7 +1966,7 @@ try {
     document.getElementById("segment-due-date-input").value = loadedSegment.due;
     JSON.parse(loadedSegment.question_ids).forEach(q => addExistingQuestion(q.id));
     document.getElementById("create-button").innerText = "Save";
-    document.querySelector('[data-delete-segment]').addEventListener('click', deleteSegment);
+    document.querySelector('[data-delete-segment]')?.addEventListener('click', deleteSegment);
   }
 
   function deleteSegment() {
