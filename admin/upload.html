@@ -76,7 +76,7 @@
             if (question) item.setMetadata('question', question);
             if (segment) item.setMetadata('segment', segment);
             if (syllabus) item.setMetadata('course', syllabus);
-            if (startingQuestionId && startingQuestion) item.setMetadata('startingQuestionId', Number(startingQuestionId) + 1);
+            if (startingQuestionId && startingQuestion) item.setMetadata('startingQuestionId', startingQuestionId);
             if (startingQuestionId && startingQuestion) item.setMetadata('startingQuestion', startingQuestion);
         });
         pond.on('processfilestart', (file) => {
