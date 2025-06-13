@@ -1,7 +1,7 @@
 {
   "name": "virtual-checker",
   "private": true,
-  "version": "2.0.0",
+  "version": "3.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite --host",
@@ -26,6 +26,7 @@
     "bootstrap-icons": "^1.11.3",
     "mathlive": "^0.104.0",
     "medium-zoom": "^1.1.0",
+    "swapy": "^1.0.5",
     "vite-plugin-package-version": "^1.1.0"
   }
 }

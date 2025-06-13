@@ -293,6 +293,28 @@ div.spacer {
   text-overflow: ellipsis;
 }
 
+#history-feed > button:has([data-flag-response][disabled]) {
+  position: relative;
+}
+
+#history-feed > button:has([data-flag-response][disabled])::after {
+  display: inline-block;
+  font-family: bootstrap-icons !important;
+  font-style: normal;
+  font-weight: normal !important;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1;
+  vertical-align: -.125em;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  content: "\f3cb";
+  font-size: 20px;
+  position: absolute;
+  top: 15px;
+  right: 15px;
+}
+
 label {
   display: flex;
   flex-direction: column;

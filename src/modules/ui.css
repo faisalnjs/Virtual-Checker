@@ -49,7 +49,6 @@ dialog #version-string p {
 
 dialog #version-string code {
   font-size: 15px;
-  color: var(--text-color) !important;
 }
 
 div[data-modal-page] {

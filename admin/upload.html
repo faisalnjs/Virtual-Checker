@@ -11,42 +11,97 @@
         ::-webkit-scrollbar {
             display: none;
         }
+
+        button#paste {
+            background: dodgerblue;
+            width: -webkit-fill-available;
+            border: 1px solid aliceblue;
+            border-radius: 5px;
+            padding: 10px;
+            font-size: 12.5px;
+            font-weight: bold;
+            color: white;
+            cursor: pointer;
+        }
+
+        button#paste:hover {
+            opacity: 0.75;
+        }
+
+        input[type="text"] {
+            height: 2.25em;
+            padding: 0.1em 0.7em;
+            border: none;
+            border-radius: 0.4rem;
+            background-color: #efefef;
+            width: -webkit-fill-available;
+            cursor: pointer;
+            margin-bottom: 1em;
+            font: 14px "Figtree", sans-serif;
+        }
     </style>
 </head>
 
 <body>
     <link href="https://unpkg.com/filepond@^4/dist/filepond.css" rel="stylesheet" />
+    <link href="https://unpkg.com/filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css"
+        rel="stylesheet" />
+    <input type="text" placeholder="Question Text" />
     <input type="file" />
+    <button id="paste" onclick="paste()">Paste</button>
     <script
         src="https://unpkg.com/filepond-plugin-file-validate-type/dist/filepond-plugin-file-validate-type.js"></script>
+    <script src="https://unpkg.com/filepond-plugin-image-preview/dist/filepond-plugin-image-preview.js"></script>
     <script src="https://unpkg.com/filepond@^4/dist/filepond.js"></script>
     <script>
         const urlParams = new URLSearchParams(window.location.search);
         const question = urlParams.get('question');
         const syllabus = urlParams.get('syllabus');
         const segment = urlParams.get('segment');
+        const startingQuestionId = urlParams.get('startingQuestionId');
+        const startingQuestion = urlParams.get('startingQuestion');
         if (!question && !syllabus && !segment) window.location.href = '/admin';
         const inputElement = document.querySelector('input[type="file"]');
+        const questionElement = document.querySelector('input[type="file"]');
         const domain = ((window.location.hostname.search('check') != -1) || (window.location.hostname.search('127') != -1)) ? 'https://api.check.vssfalcons.com' : `http://${document.domain}:5000`;
-        FilePond.registerPlugin(FilePondPluginFileValidateType);
+        FilePond.registerPlugin(FilePondPluginFileValidateType, FilePondPluginImagePreview);
         const pond = FilePond.create(inputElement, {
-            server: domain + ((question) ? '/upload' : (segment) ? '/speedModeUpload' : '/syllabus'),
+            server: domain + (question ? '/upload' : segment ? '/speedModeUpload' : '/syllabus'),
             credits: false,
-            allowMultiple: (question) ? true : false,
+            allowMultiple: (question || segment) ? true : false,
+            instantUpload: (question || segment) ? false : true,
             acceptedFileTypes: (question || segment) ? ['image/*'] : ['image/*', 'application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
         });
         pond.on('initfile', (item) => {
             if (question) item.setMetadata('question', question);
             if (segment) item.setMetadata('segment', segment);
             if (syllabus) item.setMetadata('course', syllabus);
+            if (startingQuestionId && startingQuestion) item.setMetadata('startingQuestionId', startingQuestionId);
+            if (startingQuestionId && startingQuestion) item.setMetadata('startingQuestion', startingQuestion);
         });
-        pond.on('processfile', (error, file) => {
+        pond.on('processfilestart', (file) => {
+            if (startingQuestionId && startingQuestion && !file.getMetadata('title')) {
+                file.setMetadata('title', document.querySelector('input[type="text"]').value || startingQuestion);
+                pond.processFile(file);
+            };
+        });
+        pond.on('processfiles', (error, file) => {
             if (error) return;
             window.opener.postMessage('uploadSuccess', window.location.protocol + '//' + window.location.hostname + (window.location.port ? ':' + window.location.port : ''));
             setTimeout(() => {
                 window.close();
             }, 500);
         });
+        if (!navigator.clipboard) document.getElementById("paste").remove();
+        async function paste() {
+            var items = await navigator.clipboard.read();
+            if (!items) return;
+            items = items.filter(item => item.types.find(type => type.startsWith('image/')));
+            const item = items[0];
+            if (!item) return;
+            pond.addFile(await item.getType(item.types.filter(type => type.startsWith('image/'))[0]));
+        };
+        if (!startingQuestionId || !startingQuestion) document.querySelector('input[type="text"]').remove();
     </script>
 </body>
 

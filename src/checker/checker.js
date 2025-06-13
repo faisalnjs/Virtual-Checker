@@ -33,6 +33,7 @@ try {
   let multipleChoice = null;
   let highestDataElement = null;
   let restoredSetType = "";
+  var unsavedChanges = false;
 
   let historyIndex = 0;
 
@@ -102,7 +103,24 @@ try {
     document.getElementById("answer-suggestion").addEventListener("click", () => answerInput.focus());
     // Initialize questionsAnswered if not already set
     if (!storage.get("questionsAnswered")) storage.set("questionsAnswered", []);
+    reloadUnsavedInputs();
   };
+
+  window.addEventListener('beforeunload', function (event) {
+    if (!unsavedChanges) return;
+    const confirmationMessage = 'You have unsaved changes. Do you really want to leave?';
+    event.returnValue = confirmationMessage;
+    return confirmationMessage;
+  });
+
+  function reloadUnsavedInputs() {
+    document.querySelectorAll('textarea').forEach(input => input.addEventListener('input', () => {      
+      unsavedChanges = true;
+    }));
+    document.querySelectorAll('input').forEach(input => input.addEventListener('change', () => {      
+      unsavedChanges = true;
+    }));
+  }
 
   // Process check
   function processCheck(part = null) {
@@ -259,6 +277,7 @@ try {
       window.scroll(0, 0);
       return ui.modeless(`<i class="bi bi-exclamation-lg"></i>`, 'Already Correct');
     }
+    unsavedChanges = true;
     await fetch(domain + '/check_answer', {
       method: "POST",
       headers: {
@@ -273,6 +292,7 @@ try {
     })
       .then(r => r.json())
       .then(r => {
+        unsavedChanges = false;
         window.scroll(0, 0);
         if (typeof r.correct != 'undefined') {
           ui.modeless(`<i class="bi bi-${(r.correct) ? 'check' : 'x'}-lg"></i>`, (r.correct) ? 'Correct' : 'Try Again', r.reason || null);
@@ -309,6 +329,7 @@ try {
         };
       })
       .catch(() => ui.view("api-fail"))
+      reloadUnsavedInputs();
   }
 
   // Limit seat code input to integers
@@ -341,6 +362,7 @@ try {
       const params = new URLSearchParams(window.location.search);
       params.set("code", input);
       history.replaceState({}, "", "?" + params.toString());
+      unsavedChanges = false;
     } else {
       ui.alert("Error", "Seat code isn't possible");
     }
@@ -411,6 +433,7 @@ try {
       } catch (error) {
         ui.view("api-fail");
       }
+      reloadUnsavedInputs();
     }
   }
 
@@ -434,17 +457,18 @@ try {
     questions.removeEventListener("change", updateQuestion);
     questions.addEventListener("change", updateQuestion);
     await updateQuestion();
+    reloadUnsavedInputs();
   }
 
   async function updateQuestion() {
-    var question = questionsArray.find(q => q.id == questions.value);
+    var question = questionsArray.find(q => String(q.id) === String(questions.value));
     questionImages.innerHTML = '';
     nextQuestionButtons.forEach(btn => btn.disabled = true);
     prevQuestionButtons.forEach(btn => btn.disabled = true);
     document.getElementById("submit-button").disabled = true;
     document.querySelector('.hiddenOnLoad').classList.remove('show');
     document.querySelector('[data-question-title]').setAttribute('hidden', '');
-    if (!question) return;
+    if (!question) return questionImages.innerHTML = '<p style="padding-top: 10px;">There are no questions in this segment.</p>';
     if ((question.question.length > 0) && (question.question != ' ')) {
       if (question.latex) {
         document.querySelector('[data-question-title]').innerHTML = convertLatexToMarkup(question.question);
@@ -479,6 +503,7 @@ try {
       const selectedSegment = segmentsArray.find(s => s.number == segments.value);
       if (i) i.innerHTML = `${JSON.parse(selectedSegment.question_ids).find(q2 => q2.id == q.question).name} - ${q.status}`;
     });
+    reloadUnsavedInputs();
   }
 
   function prevQuestion() {
@@ -514,6 +539,7 @@ try {
       "e": ["Sometimes", "Cannot be determined"],
     };
     button.addEventListener("click", (e) => {
+      unsavedChanges = true;
       const choice = e.target.getAttribute("data-multiple-choice");
       // Set content of multiple choice card
       const content = document.querySelector(`[data-answer-mode="choice"]>div`);
@@ -571,6 +597,7 @@ try {
 
   // Store click to storage and history
   function storeClick(code, segment, question, answer, reason, type) {
+    unsavedChanges = true;
     const history = storage.get("history") || [];
     const timestamp = Date.now();
     history.push({
@@ -584,6 +611,7 @@ try {
     });
     storage.set("history", history);
     updateHistory();
+    unsavedChanges = false;
   }
 
   document.getElementById("history-first").addEventListener("click", () => {
@@ -686,7 +714,7 @@ try {
           const frq = item.type === "frq";
           button.id = r.id;
           button.classList = (r.status === "Incorrect") ? 'incorrect' : (r.status === "Correct") ? 'correct' : '';
-          var response = `${((r.status != "Correct") && (r.status != "Incorrect")) ? `${latex ? '' : '<br>'}<b>Status:</b> ${r.status.includes('Unknown') ? r.status.split('Unknown, ')[1] : r.status}` : ''}${(r.reason) ? `<br><b>Response:</b> ${r.reason}` : ''}${(r.status === "Incorrect") ? `<br><button data-flag-response${(r.flagged == '1') ? ' disabled' : ''}><i class="bi bi-flag-fill"></i> Flag for Review</button>` : ''}`;
+          var response = `${((r.status != "Correct") && (r.status != "Incorrect")) ? `${latex ? '' : '<br>'}<b>Status:</b> ${r.status.includes('Unknown') ? r.status.split('Unknown, ')[1] : r.status}` : ''}${(r.reason) ? `<br><b>Response:</b> ${r.reason}` : ''}<br><button data-flag-response${(r.flagged == '1') ? ' disabled' : ''}><i class="bi bi-flag-fill"></i> Flag for Review</button>`;
           item.number = questionsArray.find(question => question.id === Number(item.question)).number;
           if (!latex) {
             if (!array) {
@@ -780,9 +808,11 @@ try {
     } else {
       feed.innerHTML = "<p>Submitted clicks will show up here!</p>";
     }
+    reloadUnsavedInputs();
   }
 
   function flagResponse(event) {
+    unsavedChanges = true;
     fetch(domain + '/flag', {
       method: "POST",
       headers: {
@@ -795,6 +825,7 @@ try {
     })
       .then(q => q.json())
       .then(() => {
+        unsavedChanges = false;
         ui.toast("Flagged response for review.", 3000, "success", "bi bi-flag-fill");
         event.srcElement.disabled = true;
       })
@@ -921,6 +952,7 @@ try {
       if (highestDataElement === null || parseInt(element.getAttribute('data-set-input'), 10) > parseInt(highestDataElement.getAttribute('data-set-input'), 10)) highestDataElement = element;
     });
     if (highestDataElement !== null) {
+      unsavedChanges = true;
       var newSetInput = document.createElement('input');
       newSetInput.setAttribute('type', 'text');
       newSetInput.setAttribute('autocomplete', 'off');
@@ -936,6 +968,7 @@ try {
       newSetInput.focus();
       document.querySelector("[data-remove-set-input]").disabled = false;
     }
+    reloadUnsavedInputs();
   }
 
   // Remove set input
@@ -967,12 +1000,14 @@ try {
     }
   }
 
-  //Change FRQ choice
+  // Change FRQ choice
   frqInput.addEventListener("change", (input) => {
+    unsavedChanges = true;
     document.querySelector('[data-answer-mode="frq"] h1').innerText = input.target.value;
   });
 
   frqInput.addEventListener("input", (input) => {
+    unsavedChanges = true;
     document.querySelector('[data-answer-mode="frq"] h1').innerText = input.target.value;
   });
 
@@ -982,6 +1017,7 @@ try {
   }
 
   function addPart() {
+    unsavedChanges = true;
     frqPartInputs = document.querySelectorAll('.frq-parts .part input');
     highestDataElement = frqPartInputs[frqPartInputs.length - 1];
     var newPartLetter = String.fromCharCode(highestDataElement.getAttribute('data-frq-part').charCodeAt(0) + 1);
@@ -997,6 +1033,7 @@ try {
     highestDataElement.querySelector('input').focus();
     document.querySelector("[data-remove-frq-part]").disabled = false;
     if (newPartLetter === 'z') document.querySelector("[data-add-frq-part]").disabled = true;
+    reloadUnsavedInputs();
   }
 
   // Remove FRQ part

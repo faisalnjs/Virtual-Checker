@@ -192,7 +192,7 @@ code {
   height: 1.5em;
   padding: 0 0.25rem;
   border-radius: 0.25rem;
-  color: var(--accent-text-color);
+  color: var(--text-color);
   background-color: var(--surface-color);
 }
 
@@ -391,7 +391,7 @@ div.ML__keyboard {
 #checker > .images img {
   border-radius: 5px;
   border: 5px solid var(--surface-color);
-  background: url(<path-to-image>) lightgray 50% / cover no-repeat;
+  background: url(<path-to-image>) var(--surface-color) 50% / cover no-repeat;
 }
 
 .input-group {
@@ -425,6 +425,7 @@ div.ML__keyboard {
   .medium,
   .mediuml,
   .mediumll,
+  .large,
   square {
     max-width: unset !important;
   }
@@ -521,6 +522,10 @@ div.ML__keyboard {
   max-width: 265px;
 }
 
+.large {
+  max-width: 305px;
+}
+
 .fit {
   width: fit-content;
 }
@@ -594,7 +599,6 @@ div.ML__keyboard {
   transition: 0.5s var(--easing);
 }
 
-.segments .section [data-remove-segment-input],
 .questions .section [data-remove-question-input],
 .segments:not(:has(.section:first-child.expanded)) [hidden-spacer] {
   display: none;
@@ -613,7 +617,6 @@ div.ML__keyboard {
   display: none;
 }
 
-.segments .section.expanded [data-remove-segment-input],
 .questions .section.expanded [data-remove-question-input] {
   display: flex;
 }
@@ -848,4 +851,176 @@ hidden,
 
 .medium-zoom-image {
   border-radius: 5px;
+}
+
+.color-info {
+  display: flex;
+  align-items: center;
+  gap: 7.5px 10px;
+  flex-wrap: wrap;
+}
+
+.color {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.color-box {
+  height: 15px;
+  width: 15px;
+  border: 1px solid var(--surface-color);
+  border-radius: 100%;
+}
+
+.color-box.correct {
+  background: mediumseagreen;
+}
+
+.color-box.incorrect {
+  background: indianred;
+}
+
+.color-box.other {
+  background: dimgray;
+}
+
+.color-box.waiting {
+  background: darkorange;
+}
+
+.seat-code-reports {
+  gap: 12.5px !important;
+}
+
+.seat-code-report {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  width: -webkit-fill-available;
+}
+
+[report] {
+  cursor: pointer;
+}
+
+.barcount-wrapper {
+  display: flex;
+  align-items: stretch;
+  min-width: 250px;
+}
+
+.barcount {
+  padding: 5px 7.5px;
+  display: flex;
+  justify-content: center;
+  width: -webkit-fill-available;
+  min-width: 10%;
+  max-width: 70%;
+  color: white;
+}
+
+.barcount.correct {
+  background: mediumseagreen;
+}
+
+.barcount.incorrect {
+  background: indianred;
+}
+
+.barcount.other {
+  background: dimgray;
+}
+
+.barcount.waiting {
+  background: darkorange;
+}
+
+.barcount:first-child {
+  border-radius: 10px 0 0 10px;
+}
+
+.barcount:last-child {
+  border-radius: 0 10px 10px 0;
+}
+
+.barcount:first-child:last-child {
+  border-radius: 10px;
+}
+
+.detailed-report {
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  width: -webkit-fill-available;
+}
+
+.detailed-report.active {
+  display: flex;
+  border-left: 2px solid var(--accent-color);
+  padding: 5px 7.5px;
+  margin-bottom: 5px;
+}
+
+.detailed-report-question {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  width: -webkit-fill-available;
+}
+
+.checkboxGroup {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 7.5px;
+  cursor: pointer;
+}
+
+.checkboxGroup:has(input:checked) .checkbox::before {
+  top: 15%;
+  left: 15%;
+  height: 70%;
+  width: 70%;
+  transition: 0.25s top ease, 0.25s left ease, 0.25s height ease, 0.25s width ease;
+}
+
+.checkbox {
+  height: 20px;
+  width: 20px;
+  background: var(--surface-color);
+  border-radius: 0.25rem;
+  position: relative;
+}
+
+.checkbox::before {
+  content: " ";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  height: 0%;
+  width: 0%;
+  background: var(--accent-color);
+  border-radius: 0.15rem;
+  transition: 0.25s top ease, 0.25s left ease, 0.25s height ease, 0.25s width ease;
+}
+
+.showonhover {
+  display: none;
+}
+
+*:has(> .showonhover):hover .showonhover {
+  display: inline-block;
+  padding-left: 5px;
+}
+
+.redonhover:hover {
+  color: var(--error-color);
+  cursor: pointer;
 }
