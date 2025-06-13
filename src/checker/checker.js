@@ -461,14 +461,14 @@ try {
   }
 
   async function updateQuestion() {
-    var question = questionsArray.find(q => q.id == questions.value);
+    var question = questionsArray.find(q => String(q.id) === String(questions.value));
     questionImages.innerHTML = '';
     nextQuestionButtons.forEach(btn => btn.disabled = true);
     prevQuestionButtons.forEach(btn => btn.disabled = true);
     document.getElementById("submit-button").disabled = true;
     document.querySelector('.hiddenOnLoad').classList.remove('show');
     document.querySelector('[data-question-title]').setAttribute('hidden', '');
-    if (!question) return;
+    if (!question) return questionImages.innerHTML = 'There are no questions in this segment.';
     if ((question.question.length > 0) && (question.question != ' ')) {
       if (question.latex) {
         document.querySelector('[data-question-title]').innerHTML = convertLatexToMarkup(question.question);
