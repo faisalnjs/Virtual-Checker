@@ -468,7 +468,7 @@ try {
     document.getElementById("submit-button").disabled = true;
     document.querySelector('.hiddenOnLoad').classList.remove('show');
     document.querySelector('[data-question-title]').setAttribute('hidden', '');
-    if (!question) return questionImages.innerHTML = 'There are no questions in this segment.';
+    if (!question) return questionImages.innerHTML = '<p style="padding-top: 10px;">There are no questions in this segment.</p>';
     if ((question.question.length > 0) && (question.question != ' ')) {
       if (question.latex) {
         document.querySelector('[data-question-title]').innerHTML = convertLatexToMarkup(question.question);
