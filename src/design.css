@@ -96,7 +96,7 @@ button.fit {
 }
 
 button:disabled {
-  opacity: 0.5;
+  opacity: 0.75;
   pointer-events: none;
 }
 
@@ -130,7 +130,7 @@ select {
 
 input:disabled,
 select:disabled {
-  opacity: 0.5;
+  opacity: 0.75;
   cursor: not-allowed;
   overflow: auto;
   pointer-events: auto;
@@ -138,7 +138,7 @@ select:disabled {
 
 input.disabled:disabled,
 select.disabled:disabled {
-  opacity: 0.25;
+  opacity: 0.5;
 }
 
 .drag {
