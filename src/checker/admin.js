@@ -2057,7 +2057,7 @@ try {
       });
   }
 
-  function newCourseModal() {
+  function newCourseModal(inputValues) {
     if (!active) return;
     ui.modal({
       title: 'New Course',
@@ -2065,12 +2065,12 @@ try {
       inputs: [{
         type: 'text',
         placeholder: 'Name',
-        defaultValue: '',
+        defaultValue: inputValues[0] || '',
       },
       {
         type: 'number',
         placeholder: 'Assign to a period?',
-        defaultValue: '',
+        defaultValue: inputValues[1] || '',
         min: 1,
         max: 9,
       }],
@@ -2096,11 +2096,16 @@ try {
     if (!active) return;
     if (!inputValues[0]) {
       ui.toast("Please enter a course name.", 3000, "error", "bi bi-exclamation-triangle-fill");
-      return newCourseModal();
+      return newCourseModal(inputValues);
+    }
+    if (inputValues[1]) inputValues[1] = Number(inputValues[1]);
+    if (inputValues[1] && ((inputValues[1] < 1) || (inputValues[1] > 9) || !Number.isInteger(inputValues[1]))) {
+      ui.toast("This period is not possible.", 3000, "error", "bi bi-exclamation-triangle-fill");
+      return newCourseModal(inputValues);
     }
     if (inputValues[1] && courses.find(course => JSON.parse(course.periods).includes(Number(inputValues[1])))) {
       ui.toast(`This period has been taken by course ${courses.find(course => JSON.parse(course.periods).includes(Number(inputValues[1]))).name}.`, 3000, "error", "bi bi-exclamation-triangle-fill");
-      return newCourseModal();
+      return newCourseModal(inputValues);
     }
     ui.toast("Creating course...", 3000, "info", "bi bi-plus-circle-fill");
     unsavedChanges = true;
