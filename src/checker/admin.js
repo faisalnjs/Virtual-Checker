@@ -76,7 +76,7 @@ try {
             }
           }
           const course = courses.find(c => String(c.id) === document.getElementById("course-period-input").value);
-          if (document.getElementById("course-input")) document.getElementById("course-input").value = course.name;
+          if (document.getElementById("course-input") && course) document.getElementById("course-input").value = course.name;
         }
         if (document.getElementById("course-period-input")) document.getElementById("course-period-input").addEventListener("change", updateResponses);
         if (document.getElementById("sort-segment-input")) document.getElementById("sort-segment-input").addEventListener("input", updateResponses);
@@ -154,7 +154,7 @@ try {
                       .then(async r => {
                         responses = r;
                         if (document.getElementById("course-period-input")) {
-                          document.getElementById("course-period-input").value = courses.find(c => JSON.parse(c.periods).includes(Number(String(responses.sort((a, b) => String(a.seatCode)[0] - String(b.seatCode)[0])[0].seatCode)[0]))).id;
+                          document.getElementById("course-period-input").value = courses.find(c => JSON.parse(c.periods).includes(Number(String(responses.sort((a, b) => String(a.seatCode)[0] - String(b.seatCode)[0])[0]?.seatCode)[0]))) ? courses.find(c => JSON.parse(c.periods).includes(Number(String(responses.sort((a, b) => String(a.seatCode)[0] - String(b.seatCode)[0])[0]?.seatCode)[0]))).id : 0;
                           await updateResponses();
                         }
                         if (document.querySelector('.segment-reports')) updateSegments();
@@ -219,10 +219,10 @@ try {
   });
 
   function reloadUnsavedInputs() {
-    document.querySelectorAll('textarea').forEach(input => input.addEventListener('input', () => {      
+    document.querySelectorAll('textarea').forEach(input => input.addEventListener('input', () => {
       unsavedChanges = true;
     }));
-    document.querySelectorAll('input').forEach(input => input.addEventListener('change', () => {      
+    document.querySelectorAll('input').forEach(input => input.addEventListener('change', () => {
       unsavedChanges = true;
     }));
   }
@@ -246,6 +246,7 @@ try {
   if (document.getElementById('launch-speed-mode')) document.getElementById('launch-speed-mode').addEventListener("click", toggleSpeedMode);
   if (document.getElementById('add-existing-question-button')) document.getElementById('add-existing-question-button').addEventListener("click", addExistingQuestion);
   if (document.querySelector('[data-syllabus-upload]')) document.querySelector('[data-syllabus-upload]').addEventListener("click", renderSyllabusPond);
+  if (document.getElementById('new-course-button')) document.getElementById('new-course-button').addEventListener("click", newCourseModal);
 
   function toggleSelecting() {
     if (!active) return;
@@ -322,9 +323,10 @@ try {
     expandedReports = [];
     document.querySelectorAll('.detailed-report.active').forEach(dr => expandedReports.push(dr.id));
     const course = courses.find(c => document.getElementById("course-period-input") ? (String(c.id) === document.getElementById("course-period-input").value) : null);
-    if (document.getElementById("course-input")) document.getElementById("course-input").value = course.name;
+    if (document.getElementById("course-input") && course) document.getElementById("course-input").value = course.name;
     var c = segments.filter(s => String(s.course) === String(course.id));
-    if (course.syllabus) {
+    if (!course) document.querySelector('[data-syllabus-upload]').setAttribute('hidden', '');
+    if (course && course.syllabus) {
       if (document.querySelector('[data-syllabus-upload]')) document.querySelector('[data-syllabus-upload]').setAttribute('hidden', '');
       if (document.querySelector('[data-syllabus-remove]')) document.querySelector('[data-syllabus-remove]').parentElement.removeAttribute('hidden');
       if (document.querySelector('[data-syllabus-download]')) document.querySelector('[data-syllabus-download]').addEventListener("click", () => {
@@ -2048,6 +2050,78 @@ try {
         unsavedChanges = false;
         ui.toast("Segment deleted successfully.", 3000, "success", "bi bi-trash-fill");
         window.location.href = '/admin/';
+      })
+      .catch((e) => {
+        console.error(e);
+        ui.view("api-fail");
+      });
+  }
+
+  function newCourseModal() {
+    if (!active) return;
+    ui.modal({
+      title: 'New Course',
+      body: '<p>Create a new course to add segments to.</p>',
+      inputs: [{
+        type: 'text',
+        placeholder: 'Name',
+        defaultValue: '',
+      },
+      {
+        type: 'number',
+        placeholder: 'Assign to a period?',
+        defaultValue: '',
+        min: 1,
+        max: 9,
+      }],
+      buttons: [
+        {
+          text: 'Cancel',
+          class: 'cancel-button',
+          close: true,
+        },
+        {
+          text: 'Continue',
+          class: 'submit-button',
+          onclick: (inputValues) => {
+            newCourse(inputValues, this);
+          },
+          close: true,
+        },
+      ],
+    });
+  }
+
+  function newCourse(inputValues) {
+    if (!active) return;
+    if (!inputValues[0]) {
+      ui.toast("Please enter a course name.", 3000, "error", "bi bi-exclamation-triangle-fill");
+      return newCourseModal();
+    }
+    if (inputValues[1] && courses.find(course => JSON.parse(course.periods).includes(Number(inputValues[1])))) {
+      ui.toast(`This period has been taken by course ${courses.find(course => JSON.parse(course.periods).includes(Number(inputValues[1]))).name}.`, 3000, "error", "bi bi-exclamation-triangle-fill");
+      return newCourseModal();
+    }
+    ui.toast("Creating course...", 3000, "info", "bi bi-plus-circle-fill");
+    unsavedChanges = true;
+    fetch(domain + '/course', {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        name: inputValues[0],
+        period: inputValues[1],
+      })
+    })
+      .then(r => {
+        if (!r.ok) throw new Error(r.error || r.message || "API error");
+        return r.json();
+      })
+      .then(() => {
+        unsavedChanges = false;
+        ui.toast("Course created successfully.", 3000, "success", "bi bi-check-circle-fill");
+        return window.location.href = '/admin/';
       })
       .catch((e) => {
         console.error(e);
