@@ -46,6 +46,17 @@ export function modal(options) {
     dialog.appendChild(input);
   }
 
+  if (options.inputs) {
+    options.inputs.forEach(input => {
+      const inputElement = document.createElement("input");
+      inputElement.type = input.type || "text";
+      inputElement.placeholder = input.placeholder || "";
+      inputElement.value = input.defaultValue || "";
+      inputElement.className = "dialog-input";
+      dialog.appendChild(inputElement);
+    });
+  }
+
   document.body.append(dialog);
 
   options.buttons.forEach(button => {
