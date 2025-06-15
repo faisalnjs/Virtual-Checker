@@ -252,7 +252,7 @@ export function show(dialog, title, buttons, actions, blur, effects = true) {
   blur && menu.querySelectorAll("[data-modal-buttons]>button").forEach((button) => button.blur());
 }
 
-export function view(path) {
+export function view(path = "") {
   if (!path) {
     const event = new Event("triggerclose");
     document.querySelector("dialog[open]")?.dispatchEvent(event);

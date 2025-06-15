@@ -178,12 +178,21 @@ try {
         if (mode === "input") {
           answerInput.classList.add("attention");
           answerInput.focus();
+          setTimeout(() => {
+            document.getElementById("submit-button").disabled = false;
+          }, 3000);
         } else if (mode === "math") {
           mf.classList.add("attention");
           mf.focus();
+          setTimeout(() => {
+            document.getElementById("submit-button").disabled = false;
+          }, 3000);
         } else if (mode === "set") {
           setInput.classList.add("attention");
           setInput.focus();
+          setTimeout(() => {
+            document.getElementById("submit-button").disabled = false;
+          }, 3000);
         } else if (mode === "frq") {
           if (part) {
             if (document.querySelector(`[data-frq-part="${part}"]`).parentElement.nextElementSibling && (document.querySelector(`[data-frq-part="${part}"]`).parentElement.nextElementSibling.classList.contains('part'))) {
@@ -197,21 +206,27 @@ try {
             frqInput.classList.add("attention");
             frqInput.focus();
           };
+          setTimeout(() => {
+            document.getElementById("submit-button").disabled = false;
+          }, 3000);
         }
       }
       if (!question) {
         questionInput.classList.add("attention");
         questionInput.focus();
+        setTimeout(() => {
+          document.getElementById("submit-button").disabled = false;
+        }, 3000);
       }
     } else {
       ui.view("settings/code");
+      setTimeout(() => {
+        document.getElementById("submit-button").disabled = false;
+      }, 3000);
     }
     function submit() {
       submitClick(storage.get("code"), segment, question, answer, mode, part);
     };
-    setTimeout(() => {
-      document.getElementById("submit-button").disabled = false;
-    }, 3000);
   };
 
   // Submit check
@@ -275,6 +290,10 @@ try {
     var alreadyAnswered = qA.find(q => q.segment == segment && q.question == question)
     if (alreadyAnswered && alreadyAnswered.status == 'Correct') {
       window.scroll(0, 0);
+      unsavedChanges = false;
+      setTimeout(() => {
+        document.getElementById("submit-button").disabled = false;
+      }, 3000);
       return ui.modeless(`<i class="bi bi-exclamation-lg"></i>`, 'Already Correct');
     }
     unsavedChanges = true;
@@ -327,8 +346,16 @@ try {
             frqInput.focus();
           };
         };
+        setTimeout(() => {
+          document.getElementById("submit-button").disabled = false;
+        }, 3000);
       })
-      .catch(() => ui.view("api-fail"))
+      .catch(() => {     
+        setTimeout(() => {
+          document.getElementById("submit-button").disabled = false;
+        }, 3000);
+        ui.view("api-fail");
+      })
       reloadUnsavedInputs();
   }
 
@@ -387,7 +414,13 @@ try {
           headers: { "Content-Type": "application/json" },
         });
         const coursesData = await coursesResponse.json();
-        const course = coursesData.find(c => c.period === Number(code.slice(0, 1)));
+        const course = coursesData.find(c => JSON.parse(c.periods).includes(Number(code.slice(0, 1))));
+        if (course) {
+          ui.view();
+        } else {
+          ui.startLoader();
+          ui.view("no-course");
+        }
         if (document.getElementById("course-input")) document.getElementById("course-input").value = course.name || "Unknown Course";
         if (document.querySelector('[data-syllabus-download]')) {
           if (course.syllabus) {
