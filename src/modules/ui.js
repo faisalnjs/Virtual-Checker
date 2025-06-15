@@ -43,6 +43,8 @@ export function modal(options) {
     input.placeholder = options.input.placeholder || "";
     input.value = options.input.defaultValue || "";
     input.className = "dialog-input";
+    input.min = options.input.min || "";
+    input.max = options.input.max || "";
     dialog.appendChild(input);
   }
 
@@ -53,26 +55,34 @@ export function modal(options) {
       inputElement.placeholder = input.placeholder || "";
       inputElement.value = input.defaultValue || "";
       inputElement.className = "dialog-input";
+      inputElement.min = input.min || "";
+      inputElement.max = input.max || "";
       dialog.appendChild(inputElement);
     });
   }
 
   document.body.append(dialog);
 
-  options.buttons.forEach(button => {
-    const btnElement = new Element("button", button.text, {
-      click: () => {
-        if (button.onclick) {
-          const inputValue = dialog.querySelector(".dialog-input") ? dialog.querySelector(".dialog-input").value : null;
-          button.onclick(inputValue);
-        }
-        if (button.close) {
-          closeModal();
-        }
-      },
-    }, button.class).element;
-    dialog.appendChild(btnElement);
-  });
+  if (options.buttons.length > 0) {
+    var buttonsContainerElement = document.createElement("div");
+    buttonsContainerElement.className = "button-grid";
+    options.buttons.forEach(button => {
+      var btnElement = new Element("button", button.text, {
+        click: () => {
+          if (button.onclick) {
+            const inputValue = dialog.querySelector(".dialog-input") ? dialog.querySelector(".dialog-input").value : null;
+            button.onclick(inputValue);
+          }
+          if (button.close) {
+            closeModal();
+          }
+        },
+      }, button.class).element;
+      btnElement.style.width = "-webkit-fill-available";
+      buttonsContainerElement.appendChild(btnElement);
+    });
+    dialog.appendChild(buttonsContainerElement);
+  }
 
   animate(
     dialog,
