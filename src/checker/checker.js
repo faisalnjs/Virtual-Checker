@@ -315,12 +315,20 @@ try {
         window.scroll(0, 0);
         if (typeof r.correct != 'undefined') {
           ui.modeless(`<i class="bi bi-${(r.correct) ? 'check' : 'x'}-lg"></i>`, (r.correct) ? 'Correct' : 'Try Again', r.reason || null);
-          qA.push({ "segment": segment, "question": question, "status": (r.correct) ? 'Correct' : 'In Progress' });
+          if (qA.find(q => (q.segment === segment) && (q.question === question))) {
+            qA.find(q => (q.segment === segment) && (q.question === question)).status = (r.correct) ? 'Correct' : 'In Progress';
+          } else {
+            qA.push({ "segment": segment, "question": question, "status": (r.correct) ? 'Correct' : 'In Progress' });
+          }
         } else if (typeof r.error != 'undefined') {
           ui.modeless(`<i class="bi bi-exclamation-triangle"></i>`, 'Error');
         } else {
           ui.modeless(`<i class="bi bi-hourglass"></i>`, "Submitted, Awaiting Scoring");
-          qA.push({ "segment": segment, "question": question, "status": 'Pending' });
+          if (qA.find(q => (q.segment === segment) && (q.question === question))) {
+            qA.find(q => (q.segment === segment) && (q.question === question)).status = 'Pending';
+          } else {
+            qA.push({ "segment": segment, "question": question, "status": 'Pending' });
+          }
         }
         storage.set("questionsAnswered", qA);
         resetInputs();
@@ -714,6 +722,8 @@ try {
 
     const feed = document.getElementById("history-feed");
     if (history.length != 0) {
+      var qA = storage.get("questionsAnswered") || [];
+
       const questionsResponse = await fetch(`${domain}/questions`, {
         method: "GET",
         headers: { "Content-Type": "application/json" },
@@ -836,8 +846,12 @@ try {
               }
             });
           }
+          console.log(qA)
+          if (qA.find(q => (q.segment === item.segment) && (q.question === item.question))) qA.find(q => (q.segment === item.segment) && (q.question === item.question)).status = (r.status === "Correct") ? "Correct" : "In Progress";
         });
       });
+
+      storage.set("questionsAnswered", qA);
     } else {
       feed.innerHTML = "<p>Submitted clicks will show up here!</p>";
     }
