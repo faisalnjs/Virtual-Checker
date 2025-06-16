@@ -882,7 +882,6 @@ try {
               }
             });
           }
-          console.log(qA)
           if (qA.find(q => (q.segment === item.segment) && (q.question === item.question))) qA.find(q => (q.segment === item.segment) && (q.question === item.question)).status = (r.status === "Correct") ? "Correct" : "In Progress";
         });
       });

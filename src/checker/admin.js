@@ -1841,7 +1841,7 @@ try {
     } else if (loadedSegmentCreator && (typeof question === 'number')) {
       setTimeout(() => {
         var addingQuestion = questions.find(q => String(q.id) === String(question));
-        console.log(questions, question, addingQuestion)
+        // console.log(questions, question, addingQuestion)
         if (!addingQuestion) return;
         document.getElementById("add-question-input").value = addingQuestion.id;
         div.setAttribute("data-swapy-slot", `questionList-${addingQuestion.id}`);
