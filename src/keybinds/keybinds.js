@@ -23,6 +23,10 @@ try {
       if (e.key == "/" && !anyDialogOpen) {
         ui.view("settings/keybinds");
       }
+      if (e.key == "s" && !anyDialogOpen && document.querySelector('[data-speed]')) {
+        e.preventDefault();
+        document.querySelector('[data-speed]').click();
+      }
     } else if (e.altKey) {
       if (/[1-9]/.test(e.key)) {
         e.preventDefault();
