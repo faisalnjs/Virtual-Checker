@@ -43,7 +43,7 @@ try {
     const params = new URLSearchParams(window.location.search);
     const code = params.get("code");
     // Test for valid seat code
-    const regex = /^[1-9][1-6][1-5]$/;
+    const regex = /^[1-9][0-6][0-5]$/;
     if (regex.test(code)) {
       // Update seat code
       storage.set("code", code);
@@ -387,17 +387,48 @@ try {
   function saveCode() {
     const input = document.getElementById("code-input").value;
     // Tests for valid seat code
-    const regex = /^[1-9][1-6][1-5]$/;
+    const regex = /^[1-9][0-6][0-5]$/;
     if (regex.test(input)) {
-      storage.set("code", input);
-      updateCode();
-      // Close all modals
-      ui.view("");
-      // Update URL parameters with seat code
-      const params = new URLSearchParams(window.location.search);
-      params.set("code", input);
-      history.replaceState({}, "", "?" + params.toString());
-      unsavedChanges = false;
+      if (input.includes('0')) {
+        ui.view("");
+        ui.modal({
+          title: 'Reserved Seat Code',
+          body: '<p>An invalid seat code was entered. Are you sure you want to use this code?</p>',
+          buttons: [
+            {
+              text: 'Cancel',
+              class: 'cancel-button',
+              close: true,
+            },
+            {
+              text: `Use ${input}`,
+              class: 'submit-button',
+              onclick: () => {
+                storage.set("code", input);
+                updateCode();
+                // Close all modals
+                ui.view("");
+                // Update URL parameters with seat code
+                const params = new URLSearchParams(window.location.search);
+                params.set("code", input);
+                history.replaceState({}, "", "?" + params.toString());
+                unsavedChanges = false;
+              },
+              close: true,
+            },
+          ],
+        });
+      } else {
+        storage.set("code", input);
+        updateCode();
+        // Close all modals
+        ui.view("");
+        // Update URL parameters with seat code
+        const params = new URLSearchParams(window.location.search);
+        params.set("code", input);
+        history.replaceState({}, "", "?" + params.toString());
+        unsavedChanges = false;
+      };
     } else {
       ui.alert("Error", "Seat code isn't possible");
     }
