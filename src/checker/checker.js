@@ -396,9 +396,14 @@ try {
           body: '<p>An invalid seat code was entered. Are you sure you want to use this code?</p>',
           buttons: [
             {
-              text: 'Cancel',
+              text: 'Back',
               class: 'cancel-button',
-              close: true,
+              onclick: () => {
+                ui.view("");
+                document.getElementById("code-input").focus();
+                unsavedChanges = true
+                ui.view("settings/code");
+              }
             },
             {
               text: `Use ${input}`,
