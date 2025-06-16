@@ -293,11 +293,11 @@ div.spacer {
   text-overflow: ellipsis;
 }
 
-#history-feed > button:has([data-flag-response][disabled]) {
+#history-feed > button.flagged {
   position: relative;
 }
 
-#history-feed > button:has([data-flag-response][disabled])::after {
+#history-feed > button.flagged::after {
   display: inline-block;
   font-family: bootstrap-icons !important;
   font-style: normal;
@@ -313,6 +313,17 @@ div.spacer {
   position: absolute;
   top: 15px;
   right: 15px;
+}
+
+#history-feed > .flagged-response-alert {
+  height: fit-content;
+  padding: 0.375em 0.75em;
+  border-left: 3px solid darkorange;
+  border-right: 3px solid darkorange;
+  border-radius: 0.5rem;
+  background-color: var(--surface-color);
+  transition: 100ms var(--easing);
+  min-width: fit-content;
 }
 
 label {

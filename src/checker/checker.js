@@ -114,10 +114,10 @@ try {
   });
 
   function reloadUnsavedInputs() {
-    document.querySelectorAll('textarea').forEach(input => input.addEventListener('input', () => {      
+    document.querySelectorAll('textarea').forEach(input => input.addEventListener('input', () => {
       unsavedChanges = true;
     }));
-    document.querySelectorAll('input').forEach(input => input.addEventListener('change', () => {      
+    document.querySelectorAll('input').forEach(input => input.addEventListener('change', () => {
       unsavedChanges = true;
     }));
   }
@@ -358,13 +358,13 @@ try {
           document.getElementById("submit-button").disabled = false;
         }, 3000);
       })
-      .catch(() => {     
+      .catch(() => {
         setTimeout(() => {
           document.getElementById("submit-button").disabled = false;
         }, 3000);
         ui.view("api-fail");
       })
-      reloadUnsavedInputs();
+    reloadUnsavedInputs();
   }
 
   // Limit seat code input to integers
@@ -793,7 +793,8 @@ try {
           const frq = item.type === "frq";
           button.id = r.id;
           button.classList = (r.status === "Incorrect") ? 'incorrect' : (r.status === "Correct") ? 'correct' : '';
-          var response = `${((r.status != "Correct") && (r.status != "Incorrect")) ? `${latex ? '' : '<br>'}<b>Status:</b> ${r.status.includes('Unknown') ? r.status.split('Unknown, ')[1] : r.status}` : ''}${(r.reason) ? `<br><b>Response:</b> ${r.reason}` : ''}<br><button data-flag-response${(r.flagged == '1') ? ' disabled' : ''}><i class="bi bi-flag-fill"></i> Flag for Review</button>`;
+          if (r.flagged == '1') button.classList += 'flagged';
+          var response = `${((r.status != "Correct") && (r.status != "Incorrect")) ? `${latex ? '' : '<br>'}<b>Status:</b> ${r.status.includes('Unknown') ? r.status.split('Unknown, ')[1] : r.status}` : ''}${(r.reason) ? `<br><b>Response:</b> ${r.reason}` : ''}<br><button data-flag-response><i class="bi bi-flag-fill"></i> ${(r.flagged == '1') ? 'Unflag Response' : 'Flag for Review'}</button>`;
           item.number = questionsArray.find(question => question.id === Number(item.question)).number;
           if (!latex) {
             if (!array) {
@@ -813,7 +814,7 @@ try {
           // Resubmit check
           if (r.status != "Correct") {
             button.addEventListener("click", (event) => {
-              if (event.target.hasAttribute('data-flag-response')) return flagResponse(event);
+              if (event.target.hasAttribute('data-flag-response')) return (r.flagged == '1') ? unflagResponse(event) : flagResponse(event);
               questionInput.value = item.question;
               ui.view("");
               if (latex) {
@@ -884,6 +885,12 @@ try {
           }
           if (qA.find(q => (q.segment === item.segment) && (q.question === item.question))) qA.find(q => (q.segment === item.segment) && (q.question === item.question)).status = (r.status === "Correct") ? "Correct" : "In Progress";
         });
+        if (results.find(({ item, ...r }) => r.flagged == '1')) {
+          var p = document.createElement("p");
+          p.classList = "flagged-response-alert";
+          p.innerText = "You have flagged responses to review.";
+          feed.prepend(p);
+        }
       });
 
       storage.set("questionsAnswered", qA);
@@ -894,6 +901,7 @@ try {
   }
 
   function flagResponse(event) {
+    event.srcElement.disabled = true;
     unsavedChanges = true;
     fetch(domain + '/flag', {
       method: "POST",
@@ -909,7 +917,32 @@ try {
       .then(() => {
         unsavedChanges = false;
         ui.toast("Flagged response for review.", 3000, "success", "bi bi-flag-fill");
-        event.srcElement.disabled = true;
+        updateHistory();
+      })
+      .catch((e) => {
+        console.error(e);
+        ui.view("api-fail");
+      });
+  }
+
+  function unflagResponse(event) {
+    event.srcElement.disabled = true;
+    unsavedChanges = true;
+    fetch(domain + '/unflag', {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        question_id: event.srcElement.parentElement.parentElement.id,
+        seatCode: storage.get("code"),
+      }),
+    })
+      .then(q => q.json())
+      .then(() => {
+        unsavedChanges = false;
+        ui.toast("Unflagged response.", 3000, "success", "bi bi-flag-fill");
+        updateHistory();
       })
       .catch((e) => {
         console.error(e);
