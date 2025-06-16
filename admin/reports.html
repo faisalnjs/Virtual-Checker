@@ -335,7 +335,9 @@
       integer numbered question. To quit, close the popup.
     </p>
     <select id="speed-mode-segments"></select>
-    <button id="enable-speed-mode-button">Start</button>
+    <div data-modal-actions>
+      <button id="enable-speed-mode-button">Start</button>
+    </div>
   </dialog>
   <dialog data-modal-page="sort-segments" data-page-title="Sort Segments">
     <p>
@@ -347,7 +349,9 @@
       <option value="az">Increasing (1A-9Z)</option>
       <option value="za">Decreasing (9Z-1A)</option>
     </select>
-    <button id="sort-segments-button">Sort</button>
+    <div data-modal-actions>
+      <button id="sort-segments-button">Sort</button>
+    </div>
   </dialog>
   <div id="loader" class="active">
     <svg xmlns="http://www.w3.org/2000/svg" height="2.5em" viewBox="0 0 1041 732" fill="none"

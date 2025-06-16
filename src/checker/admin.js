@@ -247,6 +247,7 @@ try {
   if (document.getElementById('add-existing-question-button')) document.getElementById('add-existing-question-button').addEventListener("click", addExistingQuestion);
   if (document.querySelector('[data-syllabus-upload]')) document.querySelector('[data-syllabus-upload]').addEventListener("click", renderSyllabusPond);
   if (document.getElementById('new-course-button')) document.getElementById('new-course-button').addEventListener("click", newCourseModal);
+  if (document.getElementById('remove-segments-due-dates-button')) document.getElementById('remove-segments-due-dates-button').addEventListener("click", removeAllSegmentsDueDates);
 
   function toggleSelecting() {
     if (!active) return;
@@ -2126,6 +2127,35 @@ try {
       .then(() => {
         unsavedChanges = false;
         ui.toast("Course created successfully.", 3000, "success", "bi bi-check-circle-fill");
+        return window.location.href = '/admin/';
+      })
+      .catch((e) => {
+        console.error(e);
+        ui.view("api-fail");
+      });
+  }
+
+  function removeAllSegmentsDueDates() {
+    if (!active) return;
+    const course = courses.find(c => document.getElementById("course-period-input") ? (String(c.id) === document.getElementById("course-period-input").value) : null);
+    if (!course) return;
+    unsavedChanges = true;
+    fetch(domain + '/due_dates', {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        course_id: course.id
+      })
+    })
+      .then(r => {
+        if (!r.ok) throw new Error(r.error || r.message || "API error");
+        return r.json();
+      })
+      .then(() => {
+        unsavedChanges = false;
+        ui.toast("Segments due dates removed successfully.", 3000, "success", "bi bi-calendar-minus");
         return window.location.href = '/admin/';
       })
       .catch((e) => {
