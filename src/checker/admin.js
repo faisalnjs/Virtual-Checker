@@ -1417,10 +1417,10 @@ try {
   }
 
   function updateSpeedModeStartingQuestion() {
-    document.getElementById("speed-mode-starting-question-id").value = questions.sort((a, b) => a.id - b.id)[questions.length - 1].id + 1;
-    document.getElementById("speed-mode-starting-question-id").min = questions.sort((a, b) => a.id - b.id)[questions.length - 1].id + 1;
-    document.getElementById("speed-mode-starting-question").value = questions.sort((a, b) => a.id - b.id)[questions.length - 1].id + 1;
-    document.getElementById("speed-mode-starting-question").min = questions.sort((a, b) => a.id - b.id)[questions.length - 1].id + 1;
+    document.getElementById("speed-mode-starting-question-id").value = (questions.sort((a, b) => a.id - b.id)[questions.length - 1]?.id || -1) + 1;
+    document.getElementById("speed-mode-starting-question-id").min = (questions.sort((a, b) => a.id - b.id)[questions.length - 1]?.id || -1) + 1;
+    document.getElementById("speed-mode-starting-question").value = (questions.sort((a, b) => a.id - b.id)[questions.length - 1]?.id || 0) + 1;
+    document.getElementById("speed-mode-starting-question").min = (questions.sort((a, b) => a.id - b.id)[questions.length - 1]?.id || 0) + 1;
   }
 
   function enableSpeedMode() {
