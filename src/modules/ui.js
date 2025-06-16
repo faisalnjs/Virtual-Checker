@@ -70,7 +70,7 @@ export function modal(options) {
       var btnElement = new Element("button", button.text, {
         click: () => {
           if (button.onclick) {
-            const inputValue = (dialog.querySelectorAll(".dialog-input").length > 0) ? [...dialog.querySelectorAll(".dialog-input")].map(dialogInput => {
+            const inputValue = (dialog.querySelectorAll(".dialog-input").length > 1) ? [...dialog.querySelectorAll(".dialog-input")].map(dialogInput => {
               return dialogInput.value;
             }) : (dialog.querySelector(".dialog-input") ? dialog.querySelector(".dialog-input").value : null);
             button.onclick(inputValue);
