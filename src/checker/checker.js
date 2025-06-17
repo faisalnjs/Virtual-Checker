@@ -580,6 +580,95 @@ try {
       const selectedSegment = segmentsArray.find(s => s.number == segments.value);
       if (i) i.innerHTML = `${JSON.parse(selectedSegment.question_ids).find(q2 => q2.id == q.question).name} - ${q.status}`;
     });
+
+    var latestResponse = (storage.get("history") || []).filter(r => (String(r.segment) === String(segments.value)) && (String(r.question) === String(question.id))).sort((a, b) => b.timestamp - a.timestamp)[0];
+    if (latestResponse) {
+      fetch(`${domain}/response?seatCode=${storage.get("code")}&segment=${latestResponse.segment}&question=${latestResponse.question}&answer=${latestResponse.answer}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        }
+      })
+        .then(r => r.json())
+        .then(r => {
+          if (r.error) {
+            console.log(r.error);
+            return;
+          }
+          const latex = latestResponse.type === "latex";
+          const array = latestResponse.type === "array";
+          const frq = latestResponse.type === "frq";
+          questionInput.value = latestResponse.question;
+          if (latex) {
+            answerMode("math");
+            ui.setButtonSelectValue(document.getElementById("answer-mode-selector"), "math");
+            mf.value = latestResponse.answer;
+          } else if (array) {
+            answerMode("set");
+            ui.setButtonSelectValue(document.getElementById("answer-mode-selector"), "set");
+            resetSetInput();
+            restoredSetType = "brackets";
+            switch (latestResponse.answer.slice(0, 1)) {
+              case "<":
+                restoredSetType = "vector";
+                break;
+              case "[":
+                restoredSetType = "array";
+                break;
+              case "(":
+                restoredSetType = "coordinate";
+                break;
+              case "⟨":
+                restoredSetType = "product";
+                break;
+              default:
+                break;
+            };
+            ui.setButtonSelectValue(document.getElementById("set-type-selector"), restoredSetType);
+            var i = 0;
+            latestResponse.answer.slice(1, -1).split(', ').forEach(a => {
+              setInputs = document.querySelectorAll("[data-set-input]");
+              setInputs[i].value = a;
+              i++;
+              if (i < latestResponse.answer.slice(1, -1).split(', ').length) addSet();
+            });
+          } else if (frq) {
+            answerMode("frq");
+            ui.setButtonSelectValue(document.getElementById("answer-mode-selector"), "frq");
+            questionInput.value = '1';
+            if (latestResponse.question === '1') {
+              frqInput.value = latestResponse.answer;
+              document.querySelector('[data-answer-mode="frq"] h1').innerText = latestResponse.answer;
+              frqInput.focus();
+            } else {
+              if (document.querySelector(`[data-frq-part="${latestResponse.question}"]`)) {
+                document.querySelector(`[data-frq-part="${latestResponse.question}"]`).value = latestResponse.answer;
+                document.querySelector(`[data-frq-part="${latestResponse.question}"]`).focus();
+              } else {
+                while (!document.querySelector(`[data-frq-part="${latestResponse.question}"]`)) {
+                  addPart();
+                };
+                document.querySelector(`[data-frq-part="${latestResponse.question}"]`).value = latestResponse.answer;
+                document.querySelector(`[data-frq-part="${latestResponse.question}"]`).focus();
+              };
+            };
+          } else {
+            answerMode("input");
+            const choice = latestResponse.answer.match(/^CHOICE ([A-E])$/);
+            if (!choice) {
+              answerInput.value = latestResponse.answer;
+            } else {
+              document.querySelector(`[data-multiple-choice="${choice[1].toLowerCase()}"]`).click();
+            }
+            questionInput.focus();
+            autocomplete.update();
+          }
+        })
+        .catch(e => {
+          return { error: e, latestResponse };
+        })
+    }
+
     reloadUnsavedInputs();
   }
 
