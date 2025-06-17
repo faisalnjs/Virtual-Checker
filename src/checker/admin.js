@@ -326,7 +326,7 @@ try {
     const course = courses.find(c => document.getElementById("course-period-input") ? (String(c.id) === document.getElementById("course-period-input").value) : null);
     if (document.getElementById("course-input") && course) document.getElementById("course-input").value = course.name;
     var c = segments.filter(s => String(s.course) === String(course.id));
-    if (!course) document.querySelector('[data-syllabus-upload]').setAttribute('hidden', '');
+    if (!course) document.querySelector('[data-syllabus-upload]').setAttribute('hiddenanswer-input', '');
     if (course && course.syllabus) {
       if (document.querySelector('[data-syllabus-upload]')) document.querySelector('[data-syllabus-upload]').setAttribute('hidden', '');
       if (document.querySelector('[data-syllabus-remove]')) document.querySelector('[data-syllabus-remove]').parentElement.removeAttribute('hidden');

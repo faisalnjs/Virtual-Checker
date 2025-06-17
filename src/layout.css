@@ -277,27 +277,40 @@ div.spacer {
 }
 
 #history-feed {
-  overflow-y: auto;
   height: 400px;
 }
 
-#history-feed > button {
+#question-history-feed {
+  max-height: 300px;
+}
+
+.history-feed {
+  overflow-y: auto;
+}
+
+.history-feed > button {
   height: fit-content;
-  padding: 0.375em 0.75em;
+  padding: 0.75em 0.75em 0.375em 0.75em;
   text-align: left;
   line-height: unset;
 }
 
-#history-feed > button > p {
+.history-feed > button > p {
   overflow: hidden;
   text-overflow: ellipsis;
+  margin-bottom: 10px;
 }
 
-#history-feed > button.flagged {
+
+.history-feed > button > p:empty {
+  display: none;
+}
+
+.history-feed > button.flagged {
   position: relative;
 }
 
-#history-feed > button.flagged::after {
+.history-feed > button.flagged::after {
   display: inline-block;
   font-family: bootstrap-icons !important;
   font-style: normal;
@@ -315,7 +328,7 @@ div.spacer {
   right: 15px;
 }
 
-#history-feed > .flagged-response-alert {
+.history-feed > .flagged-response-alert {
   height: fit-content;
   padding: 0.375em 0.75em;
   border-left: 3px solid darkorange;

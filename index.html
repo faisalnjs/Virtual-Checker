@@ -85,6 +85,10 @@
     <button data-syllabus-download hidden>Syllabus</button>
     <h6 data-segment-due hidden></h6>
     <h6 data-question-title hidden></h6>
+    <div class="input-group hiddenOnLoad">
+      <label for="question-history-feed">Previous Responses:</label>
+      <div class="col history-feed" id="question-history-feed"></div>
+    </div>
     <div class="images"></div>
     <div id="answer-mode-selector" data-button-select>
       <button aria-selected="true" data-value="input">Text</button>
@@ -242,7 +246,7 @@
   <!-- History -->
   <dialog data-modal-page="history" data-page-title="History">
     <h2 id="history-date"></h2>
-    <div class="col" id="history-feed"></div>
+    <div class="col history-feed" id="history-feed"></div>
     <div id="history-navigation" class="row center">
       <button class="icon" id="history-first">
         <i class="bi bi-chevron-double-left"></i>

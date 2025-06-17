@@ -4,7 +4,7 @@ import * as ui from "/src/modules/ui.js";
 import storage from "/src/modules/storage.js";
 
 import { autocomplete } from "/src/symbols/symbols.js";
-import { unixToTimeString } from "/src/modules/time.js";
+import { unixToString, unixToTimeString } from "/src/modules/time.js";
 import { getExtendedPeriodRange } from "/src/periods/periods";
 import { convertLatexToAsciiMath, convertLatexToMarkup, renderMathInElement } from "mathlive";
 import mediumZoom from "medium-zoom";
@@ -543,7 +543,7 @@ try {
     nextQuestionButtons.forEach(btn => btn.disabled = true);
     prevQuestionButtons.forEach(btn => btn.disabled = true);
     document.getElementById("submit-button").disabled = true;
-    document.querySelector('.hiddenOnLoad').classList.remove('show');
+    document.querySelector('.hiddenOnLoad:has(#answer-container)').classList.remove('show');
     document.querySelector('[data-question-title]').setAttribute('hidden', '');
     if (!question) return questionImages.innerHTML = '<p style="padding-top: 10px;">There are no questions in this segment.</p>';
     if ((question.question.length > 0) && (question.question != ' ')) {
@@ -570,7 +570,7 @@ try {
       const selectedQuestionOptionIndex = Array.from(questionOptions).indexOf(selectedQuestionOption);
       nextQuestionButtons.forEach(btn => btn.disabled = selectedQuestionOptionIndex === questionOptions.length - 1);
       prevQuestionButtons.forEach(btn => btn.disabled = selectedQuestionOptionIndex === 0);
-      document.querySelector('.hiddenOnLoad').classList.add('show');
+      document.querySelector('.hiddenOnLoad:has(#answer-container)').classList.add('show');
       document.getElementById("submit-button").disabled = false;
     }
 
@@ -581,92 +581,223 @@ try {
       if (i) i.innerHTML = `${JSON.parse(selectedSegment.question_ids).find(q2 => q2.id == q.question).name} - ${q.status}`;
     });
 
-    var latestResponse = (storage.get("history") || []).filter(r => (String(r.segment) === String(segments.value)) && (String(r.question) === String(question.id))).sort((a, b) => b.timestamp - a.timestamp)[0];
-    if (latestResponse) {
-      fetch(`${domain}/response?seatCode=${storage.get("code")}&segment=${latestResponse.segment}&question=${latestResponse.question}&answer=${latestResponse.answer}`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        }
-      })
-        .then(r => r.json())
-        .then(r => {
+    const feedContainer = document.querySelector('.input-group:has(> #question-history-feed)');
+    const feed = document.getElementById('question-history-feed');
+    feed.innerHTML = "";
+    var latestResponses = (storage.get("history") || []).filter(r => (String(r.segment) === String(segments.value)) && (String(r.question) === String(question.id))).sort((a, b) => b.timestamp - a.timestamp);
+    if (latestResponses.length > 0) {
+      feedContainer.classList.add('show');
+      const fetchPromises = latestResponses.map(item =>
+        fetch(`${domain}/response?seatCode=${storage.get("code")}&segment=${item.segment}&question=${item.question}&answer=${item.answer}`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          }
+        })
+          .then(r => r.json())
+          .then(r => ({ ...r, item }))
+          .catch(e => {
+            return { error: e, item };
+          })
+      );
+
+      Promise.all(fetchPromises).then(results => {
+        results.forEach(({ item, ...r }) => {
           if (r.error) {
             console.log(r.error);
             return;
           }
-          const latex = latestResponse.type === "latex";
-          const array = latestResponse.type === "array";
-          const frq = latestResponse.type === "frq";
-          questionInput.value = latestResponse.question;
-          if (latex) {
-            answerMode("math");
-            ui.setButtonSelectValue(document.getElementById("answer-mode-selector"), "math");
-            mf.value = latestResponse.answer;
-          } else if (array) {
-            answerMode("set");
-            ui.setButtonSelectValue(document.getElementById("answer-mode-selector"), "set");
-            resetSetInput();
-            restoredSetType = "brackets";
-            switch (latestResponse.answer.slice(0, 1)) {
-              case "<":
-                restoredSetType = "vector";
-                break;
-              case "[":
-                restoredSetType = "array";
-                break;
-              case "(":
-                restoredSetType = "coordinate";
-                break;
-              case "⟨":
-                restoredSetType = "product";
-                break;
-              default:
-                break;
-            };
-            ui.setButtonSelectValue(document.getElementById("set-type-selector"), restoredSetType);
-            var i = 0;
-            latestResponse.answer.slice(1, -1).split(', ').forEach(a => {
-              setInputs = document.querySelectorAll("[data-set-input]");
-              setInputs[i].value = a;
-              i++;
-              if (i < latestResponse.answer.slice(1, -1).split(', ').length) addSet();
-            });
-          } else if (frq) {
-            answerMode("frq");
-            ui.setButtonSelectValue(document.getElementById("answer-mode-selector"), "frq");
-            questionInput.value = '1';
-            if (latestResponse.question === '1') {
-              frqInput.value = latestResponse.answer;
-              document.querySelector('[data-answer-mode="frq"] h1').innerText = latestResponse.answer;
-              frqInput.focus();
-            } else {
-              if (document.querySelector(`[data-frq-part="${latestResponse.question}"]`)) {
-                document.querySelector(`[data-frq-part="${latestResponse.question}"]`).value = latestResponse.answer;
-                document.querySelector(`[data-frq-part="${latestResponse.question}"]`).focus();
+          const button = document.createElement("button");
+          const latex = item.type === "latex";
+          const array = item.type === "array";
+          const frq = item.type === "frq";
+          button.id = r.id;
+          button.classList = (r.status === "Incorrect") ? 'incorrect' : (r.status === "Correct") ? 'correct' : '';
+          if (r.flagged == '1') button.classList.add('flagged');
+          var response = `<b>Status:</b> ${r.status.includes('Unknown') ? r.status.split('Unknown, ')[1] : r.status} at ${unixToString(item.timestamp)}${(r.reason) ? `</p>\n<p><b>Response:</b> ${r.reason}<br>` : ''}</p><button data-flag-response><i class="bi bi-flag-fill"></i> ${(r.flagged == '1') ? 'Unflag Response' : 'Flag for Review'}</button>`;
+          item.number = questionsArray.find(question => question.id === Number(item.question)).number;
+          if (!latex) {
+            if (!array) {
+              if (!frq) {
+                button.innerHTML = `<p>${item.answer}</p>\n<p>${response}`;
               } else {
-                while (!document.querySelector(`[data-frq-part="${latestResponse.question}"]`)) {
-                  addPart();
-                };
-                document.querySelector(`[data-frq-part="${latestResponse.question}"]`).value = latestResponse.answer;
-                document.querySelector(`[data-frq-part="${latestResponse.question}"]`).focus();
-              };
-            };
-          } else {
-            answerMode("input");
-            const choice = latestResponse.answer.match(/^CHOICE ([A-E])$/);
-            if (!choice) {
-              answerInput.value = latestResponse.answer;
+                button.innerHTML = `<p${item.answer}${(item.number === '1') ? '/9' : ''}</p>\n<p>${response}`;
+              }
             } else {
-              document.querySelector(`[data-multiple-choice="${choice[1].toLowerCase()}"]`).click();
+              button.innerHTML = `<p>${item.answer.slice(1, -1)}</p>\n<p>${response}`;
             }
-            questionInput.focus();
-            autocomplete.update();
+          } else {
+            button.innerHTML = `${convertLatexToMarkup(item.answer)}\n<p class="hint">(Equation may not display properly)</p>\n<p>${response}`;
+          }
+          feed.prepend(button);
+          renderMathInElement(button);
+          // Resubmit check
+          button.addEventListener("click", (event) => {
+            if (event.target.hasAttribute('data-flag-response')) return (r.flagged == '1') ? unflagResponse(event, true) : flagResponse(event, true);
+            questionInput.value = item.question;
+            if (latex) {
+              answerMode("math");
+              ui.setButtonSelectValue(document.getElementById("answer-mode-selector"), "math");
+              mf.value = item.answer;
+            } else if (array) {
+              answerMode("set");
+              ui.setButtonSelectValue(document.getElementById("answer-mode-selector"), "set");
+              resetSetInput();
+              restoredSetType = "brackets";
+              switch (item.answer.slice(0, 1)) {
+                case "<":
+                  restoredSetType = "vector";
+                  break;
+                case "[":
+                  restoredSetType = "array";
+                  break;
+                case "(":
+                  restoredSetType = "coordinate";
+                  break;
+                case "⟨":
+                  restoredSetType = "product";
+                  break;
+                default:
+                  break;
+              };
+              ui.setButtonSelectValue(document.getElementById("set-type-selector"), restoredSetType);
+              var i = 0;
+              item.answer.slice(1, -1).split(', ').forEach(a => {
+                setInputs = document.querySelectorAll("[data-set-input]");
+                setInputs[i].value = a;
+                i++;
+                if (i < item.answer.slice(1, -1).split(', ').length) addSet();
+              });
+            } else if (frq) {
+              answerMode("frq");
+              ui.setButtonSelectValue(document.getElementById("answer-mode-selector"), "frq");
+              questionInput.value = '1';
+              if (item.question === '1') {
+                frqInput.value = item.answer;
+                document.querySelector('[data-answer-mode="frq"] h1').innerText = item.answer;
+                frqInput.focus();
+              } else {
+                if (document.querySelector(`[data-frq-part="${item.question}"]`)) {
+                  document.querySelector(`[data-frq-part="${item.question}"]`).value = item.answer;
+                  document.querySelector(`[data-frq-part="${item.question}"]`).focus();
+                } else {
+                  while (!document.querySelector(`[data-frq-part="${item.question}"]`)) {
+                    addPart();
+                  };
+                  document.querySelector(`[data-frq-part="${item.question}"]`).value = item.answer;
+                  document.querySelector(`[data-frq-part="${item.question}"]`).focus();
+                };
+              };
+            } else {
+              answerMode("input");
+              const choice = item.answer.match(/^CHOICE ([A-E])$/);
+              if (!choice) {
+                answerInput.value = item.answer;
+              } else {
+                document.querySelector(`[data-multiple-choice="${choice[1].toLowerCase()}"]`).click();
+              }
+              questionInput.focus();
+              autocomplete.update();
+            }
+            window.scrollTo(0, document.body.scrollHeight);
+          });
+        });
+      }).then(() => {
+        if (latestResponses.length > 2) {
+          feed.style.maxHeight = `calc(${Array.from(feed.children).slice(-2).reduce((acc, el) => acc + el.offsetHeight, 0)}px + 0.25rem)`;
+          feed.scrollTop = feed.scrollHeight;
+        }
+      })
+
+      var latestResponse = latestResponses[0];
+      if (latestResponse) {
+        fetch(`${domain}/response?seatCode=${storage.get("code")}&segment=${latestResponse.segment}&question=${latestResponse.question}&answer=${latestResponse.answer}`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
           }
         })
-        .catch(e => {
-          return { error: e, latestResponse };
-        })
+          .then(r => r.json())
+          .then(r => {
+            if (r.error) {
+              console.log(r.error);
+              return;
+            }
+            const latex = latestResponse.type === "latex";
+            const array = latestResponse.type === "array";
+            const frq = latestResponse.type === "frq";
+            questionInput.value = latestResponse.question;
+            if (latex) {
+              answerMode("math");
+              ui.setButtonSelectValue(document.getElementById("answer-mode-selector"), "math");
+              mf.value = latestResponse.answer;
+            } else if (array) {
+              answerMode("set");
+              ui.setButtonSelectValue(document.getElementById("answer-mode-selector"), "set");
+              resetSetInput();
+              restoredSetType = "brackets";
+              switch (latestResponse.answer.slice(0, 1)) {
+                case "<":
+                  restoredSetType = "vector";
+                  break;
+                case "[":
+                  restoredSetType = "array";
+                  break;
+                case "(":
+                  restoredSetType = "coordinate";
+                  break;
+                case "⟨":
+                  restoredSetType = "product";
+                  break;
+                default:
+                  break;
+              };
+              ui.setButtonSelectValue(document.getElementById("set-type-selector"), restoredSetType);
+              var i = 0;
+              latestResponse.answer.slice(1, -1).split(', ').forEach(a => {
+                setInputs = document.querySelectorAll("[data-set-input]");
+                setInputs[i].value = a;
+                i++;
+                if (i < latestResponse.answer.slice(1, -1).split(', ').length) addSet();
+              });
+            } else if (frq) {
+              answerMode("frq");
+              ui.setButtonSelectValue(document.getElementById("answer-mode-selector"), "frq");
+              questionInput.value = '1';
+              if (latestResponse.question === '1') {
+                frqInput.value = latestResponse.answer;
+                document.querySelector('[data-answer-mode="frq"] h1').innerText = latestResponse.answer;
+                frqInput.focus();
+              } else {
+                if (document.querySelector(`[data-frq-part="${latestResponse.question}"]`)) {
+                  document.querySelector(`[data-frq-part="${latestResponse.question}"]`).value = latestResponse.answer;
+                  document.querySelector(`[data-frq-part="${latestResponse.question}"]`).focus();
+                } else {
+                  while (!document.querySelector(`[data-frq-part="${latestResponse.question}"]`)) {
+                    addPart();
+                  };
+                  document.querySelector(`[data-frq-part="${latestResponse.question}"]`).value = latestResponse.answer;
+                  document.querySelector(`[data-frq-part="${latestResponse.question}"]`).focus();
+                };
+              };
+            } else {
+              answerMode("input");
+              const choice = latestResponse.answer.match(/^CHOICE ([A-E])$/);
+              if (!choice) {
+                answerInput.value = latestResponse.answer;
+              } else {
+                document.querySelector(`[data-multiple-choice="${choice[1].toLowerCase()}"]`).click();
+              }
+              questionInput.focus();
+              autocomplete.update();
+            }
+          })
+          .catch(e => {
+            return { error: e, latestResponse };
+          })
+      }
+    } else {
+      feedContainer.classList.remove('show');
     }
 
     reloadUnsavedInputs();
@@ -882,96 +1013,94 @@ try {
           const frq = item.type === "frq";
           button.id = r.id;
           button.classList = (r.status === "Incorrect") ? 'incorrect' : (r.status === "Correct") ? 'correct' : '';
-          if (r.flagged == '1') button.classList += 'flagged';
-          var response = `${((r.status != "Correct") && (r.status != "Incorrect")) ? `${latex ? '' : '<br>'}<b>Status:</b> ${r.status.includes('Unknown') ? r.status.split('Unknown, ')[1] : r.status}` : ''}${(r.reason) ? `<br><b>Response:</b> ${r.reason}` : ''}<br><button data-flag-response><i class="bi bi-flag-fill"></i> ${(r.flagged == '1') ? 'Unflag Response' : 'Flag for Review'}</button>`;
+          if (r.flagged == '1') button.classList.add('flagged');
+          var response = `<b>Status:</b> ${r.status.includes('Unknown') ? r.status.split('Unknown, ')[1] : r.status}${(r.reason) ? `</p>\n<p><b>Response:</b> ${r.reason}<br>` : ''}</p><button data-flag-response><i class="bi bi-flag-fill"></i> ${(r.flagged == '1') ? 'Unflag Response' : 'Flag for Review'}</button>`;
           item.number = questionsArray.find(question => question.id === Number(item.question)).number;
           if (!latex) {
             if (!array) {
               if (!frq) {
-                button.innerHTML = `<p><b>Segment ${item.segment} Question #${item.number}.</b> ${unixToTimeString(item.timestamp)} (${item.code})</p>\n<p>${item.answer}${response}</p>`;
+                button.innerHTML = `<p><b>Segment ${item.segment} Question #${item.number}.</b> ${unixToTimeString(item.timestamp)} (${item.code})</p>\n<p>${item.answer}</p>\n<p>${response}`;
               } else {
-                button.innerHTML = `<p><b>Segment ${item.segment} Question #${item.number}.</b> ${unixToTimeString(item.timestamp)} (${item.code})</p>\n<p>${item.answer}${(item.number === '1') ? '/9' : ''}${response}</p>`;
+                button.innerHTML = `<p><b>Segment ${item.segment} Question #${item.number}.</b> ${unixToTimeString(item.timestamp)} (${item.code})</p>\n<p>${item.answer}${(item.number === '1') ? '/9' : ''}</p>\n<p>${response}`;
               }
             } else {
-              button.innerHTML = `<p><b>Segment ${item.segment} Question #${item.number}.</b> ${unixToTimeString(item.timestamp)} (${item.code})</p>\n<p>${item.answer.slice(1, -1)}${response}</p>`;
+              button.innerHTML = `<p><b>Segment ${item.segment} Question #${item.number}.</b> ${unixToTimeString(item.timestamp)} (${item.code})</p>\n<p>${item.answer.slice(1, -1)}</p>\n<p>${response}`;
             }
           } else {
-            button.innerHTML = `<p><b>Segment ${item.segment} Question #${item.number}.</b> ${unixToTimeString(item.timestamp)} (${item.code})</p>\n${convertLatexToMarkup(item.answer)}\n<p class="hint">(Equation may not display properly)</p>${response}</p>`;
+            button.innerHTML = `<p><b>Segment ${item.segment} Question #${item.number}.</b> ${unixToTimeString(item.timestamp)} (${item.code})</p>\n${convertLatexToMarkup(item.answer)}\n<p class="hint">(Equation may not display properly)</p>\n<p>${response}`;
           }
           feed.prepend(button);
           renderMathInElement(button);
           // Resubmit check
-          if (r.status != "Correct") {
-            button.addEventListener("click", (event) => {
-              if (event.target.hasAttribute('data-flag-response')) return (r.flagged == '1') ? unflagResponse(event) : flagResponse(event);
-              questionInput.value = item.question;
-              ui.view("");
-              if (latex) {
-                answerMode("math");
-                ui.setButtonSelectValue(document.getElementById("answer-mode-selector"), "math");
-                mf.value = item.answer;
-              } else if (array) {
-                answerMode("set");
-                ui.setButtonSelectValue(document.getElementById("answer-mode-selector"), "set");
-                resetSetInput();
-                restoredSetType = "brackets";
-                switch (item.answer.slice(0, 1)) {
-                  case "<":
-                    restoredSetType = "vector";
-                    break;
-                  case "[":
-                    restoredSetType = "array";
-                    break;
-                  case "(":
-                    restoredSetType = "coordinate";
-                    break;
-                  case "⟨":
-                    restoredSetType = "product";
-                    break;
-                  default:
-                    break;
-                };
-                ui.setButtonSelectValue(document.getElementById("set-type-selector"), restoredSetType);
-                var i = 0;
-                item.answer.slice(1, -1).split(', ').forEach(a => {
-                  setInputs = document.querySelectorAll("[data-set-input]");
-                  setInputs[i].value = a;
-                  i++;
-                  if (i < item.answer.slice(1, -1).split(', ').length) addSet();
-                });
-              } else if (frq) {
-                answerMode("frq");
-                ui.setButtonSelectValue(document.getElementById("answer-mode-selector"), "frq");
-                questionInput.value = '1';
-                if (item.question === '1') {
-                  frqInput.value = item.answer;
-                  document.querySelector('[data-answer-mode="frq"] h1').innerText = item.answer;
-                  frqInput.focus();
-                } else {
-                  if (document.querySelector(`[data-frq-part="${item.question}"]`)) {
-                    document.querySelector(`[data-frq-part="${item.question}"]`).value = item.answer;
-                    document.querySelector(`[data-frq-part="${item.question}"]`).focus();
-                  } else {
-                    while (!document.querySelector(`[data-frq-part="${item.question}"]`)) {
-                      addPart();
-                    };
-                    document.querySelector(`[data-frq-part="${item.question}"]`).value = item.answer;
-                    document.querySelector(`[data-frq-part="${item.question}"]`).focus();
-                  };
-                };
+          button.addEventListener("click", (event) => {
+            if (event.target.hasAttribute('data-flag-response')) return (r.flagged == '1') ? unflagResponse(event) : flagResponse(event);
+            questionInput.value = item.question;
+            ui.view("");
+            if (latex) {
+              answerMode("math");
+              ui.setButtonSelectValue(document.getElementById("answer-mode-selector"), "math");
+              mf.value = item.answer;
+            } else if (array) {
+              answerMode("set");
+              ui.setButtonSelectValue(document.getElementById("answer-mode-selector"), "set");
+              resetSetInput();
+              restoredSetType = "brackets";
+              switch (item.answer.slice(0, 1)) {
+                case "<":
+                  restoredSetType = "vector";
+                  break;
+                case "[":
+                  restoredSetType = "array";
+                  break;
+                case "(":
+                  restoredSetType = "coordinate";
+                  break;
+                case "⟨":
+                  restoredSetType = "product";
+                  break;
+                default:
+                  break;
+              };
+              ui.setButtonSelectValue(document.getElementById("set-type-selector"), restoredSetType);
+              var i = 0;
+              item.answer.slice(1, -1).split(', ').forEach(a => {
+                setInputs = document.querySelectorAll("[data-set-input]");
+                setInputs[i].value = a;
+                i++;
+                if (i < item.answer.slice(1, -1).split(', ').length) addSet();
+              });
+            } else if (frq) {
+              answerMode("frq");
+              ui.setButtonSelectValue(document.getElementById("answer-mode-selector"), "frq");
+              questionInput.value = '1';
+              if (item.question === '1') {
+                frqInput.value = item.answer;
+                document.querySelector('[data-answer-mode="frq"] h1').innerText = item.answer;
+                frqInput.focus();
               } else {
-                answerMode("input");
-                const choice = item.answer.match(/^CHOICE ([A-E])$/);
-                if (!choice) {
-                  answerInput.value = item.answer;
+                if (document.querySelector(`[data-frq-part="${item.question}"]`)) {
+                  document.querySelector(`[data-frq-part="${item.question}"]`).value = item.answer;
+                  document.querySelector(`[data-frq-part="${item.question}"]`).focus();
                 } else {
-                  document.querySelector(`[data-multiple-choice="${choice[1].toLowerCase()}"]`).click();
-                }
-                questionInput.focus();
-                autocomplete.update();
+                  while (!document.querySelector(`[data-frq-part="${item.question}"]`)) {
+                    addPart();
+                  };
+                  document.querySelector(`[data-frq-part="${item.question}"]`).value = item.answer;
+                  document.querySelector(`[data-frq-part="${item.question}"]`).focus();
+                };
+              };
+            } else {
+              answerMode("input");
+              const choice = item.answer.match(/^CHOICE ([A-E])$/);
+              if (!choice) {
+                answerInput.value = item.answer;
+              } else {
+                document.querySelector(`[data-multiple-choice="${choice[1].toLowerCase()}"]`).click();
               }
-            });
-          }
+              questionInput.focus();
+              autocomplete.update();
+            }
+          });
           if (qA.find(q => (q.segment === item.segment) && (q.question === item.question))) qA.find(q => (q.segment === item.segment) && (q.question === item.question)).status = (r.status === "Correct") ? "Correct" : "In Progress";
         });
         if (results.find(({ item, ...r }) => r.flagged == '1')) {
@@ -989,7 +1118,7 @@ try {
     reloadUnsavedInputs();
   }
 
-  function flagResponse(event) {
+  function flagResponse(event, isInQuestion = false) {
     event.srcElement.disabled = true;
     unsavedChanges = true;
     fetch(domain + '/flag', {
@@ -998,7 +1127,7 @@ try {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        question_id: event.srcElement.parentElement.parentElement.id,
+        question_id: event.srcElement.parentElement.id,
         seatCode: storage.get("code"),
       }),
     })
@@ -1006,7 +1135,7 @@ try {
       .then(() => {
         unsavedChanges = false;
         ui.toast("Flagged response for review.", 3000, "success", "bi bi-flag-fill");
-        updateHistory();
+        isInQuestion ? updateQuestion() : updateHistory();
       })
       .catch((e) => {
         console.error(e);
@@ -1014,7 +1143,7 @@ try {
       });
   }
 
-  function unflagResponse(event) {
+  function unflagResponse(event, isInQuestion = false) {
     event.srcElement.disabled = true;
     unsavedChanges = true;
     fetch(domain + '/unflag', {
@@ -1023,7 +1152,7 @@ try {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        question_id: event.srcElement.parentElement.parentElement.id,
+        question_id: event.srcElement.parentElement.id,
         seatCode: storage.get("code"),
       }),
     })
@@ -1031,7 +1160,7 @@ try {
       .then(() => {
         unsavedChanges = false;
         ui.toast("Unflagged response.", 3000, "success", "bi bi-flag-fill");
-        updateHistory();
+        isInQuestion ? updateQuestion() : updateHistory();
       })
       .catch((e) => {
         console.error(e);

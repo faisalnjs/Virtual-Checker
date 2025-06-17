@@ -783,33 +783,33 @@ hidden,
   width: 0;
 }
 
-#history-feed .correct {
+.history-feed .correct {
   border-left: 3px solid mediumseagreen;
   border-right: 3px solid mediumseagreen;
 }
 
-#history-feed .incorrect {
+.history-feed .incorrect {
   border-left: 3px solid indianred;
   border-right: 3px solid indianred;
 }
 
-#history-feed button button {
+.history-feed button button {
   width: -webkit-fill-available;
   background-color: var(--background-color);
   color: var(--text-color);
   margin: 5px 0;
 }
 
-#history-feed > button:hover {
+.history-feed > button:hover {
   background-color: var(--surface-color);
   color: var(--text-color);
 }
 
-#history-feed button button:hover {
+.history-feed button button:hover {
   opacity: 0.75;
 }
 
-#history-feed button button i {
+.history-feed button button i {
   font-size: 12px;
 }
 
