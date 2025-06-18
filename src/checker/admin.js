@@ -1422,7 +1422,6 @@ try {
     document.getElementById("speed-mode-starting-question-id").value = (questions.sort((a, b) => a.id - b.id)[questions.length - 1]?.id || -1) + 1;
     document.getElementById("speed-mode-starting-question-id").min = (questions.sort((a, b) => a.id - b.id)[questions.length - 1]?.id || -1) + 1;
     document.getElementById("speed-mode-starting-question").value = (questions.sort((a, b) => a.id - b.id)[questions.length - 1]?.id || 0) + 1;
-    document.getElementById("speed-mode-starting-question").min = (questions.sort((a, b) => a.id - b.id)[questions.length - 1]?.id || 0) + 1;
   }
 
   function enableSpeedMode() {
@@ -1471,7 +1470,13 @@ try {
         clearInterval(checkWindowClosed);
         if (uploadSuccessful) {
           ui.modeless(`<i class="bi bi-cloud-upload"></i>`, "Uploaded");
-          (startingQuestionId && startingQuestion) ? renderSpeedPond(segment, (Number(startingQuestionId) + 1), (Number(startingQuestion) + 1)) : renderSpeedPond(segment);
+          if (startingQuestionId && startingQuestion) {
+            renderSpeedPond(segment, Number(startingQuestionId) + 1, startingQuestion.replace(/(\d+)([a-z]*)$/, (match, num, suffix) => {
+              return !suffix ? (parseInt(num, 10) + 1).toString() : ((suffix === 'z') ? ((parseInt(num, 10) + 1) + 'a') : (num + String.fromCharCode(suffix.charCodeAt(0) + 1)));
+            }));
+          } else {
+            renderSpeedPond(segment);
+          }
           await init();
           if ((segment === 0) && startingQuestionId) addExistingQuestion(startingQuestionId);
         } else {
@@ -1982,11 +1987,6 @@ try {
         ui.view("api-fail");
       });
   }
-
-  document.getElementById("speed-mode-starting-question")?.addEventListener('focusout', () => {
-    document.getElementById("speed-mode-starting-question").value = Math.round(document.getElementById("speed-mode-starting-question").value);
-    reloadUnsavedInputs();
-  });
 
   function loadSegmentEditor() {
     if (loadedSegmentEditor) return;
