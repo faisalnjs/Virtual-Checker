@@ -248,6 +248,7 @@ try {
   if (document.querySelector('[data-syllabus-upload]')) document.querySelector('[data-syllabus-upload]').addEventListener("click", renderSyllabusPond);
   if (document.getElementById('new-course-button')) document.getElementById('new-course-button').addEventListener("click", newCourseModal);
   if (document.getElementById('remove-segments-due-dates-button')) document.getElementById('remove-segments-due-dates-button').addEventListener("click", removeAllSegmentsDueDates);
+  if (document.querySelector('[data-clear-responses]')) document.querySelector('[data-clear-responses]').addEventListener("click", clearResponsesConfirm1);
 
   function toggleSelecting() {
     if (!active) return;
@@ -326,7 +327,7 @@ try {
     const course = courses.find(c => document.getElementById("course-period-input") ? (String(c.id) === document.getElementById("course-period-input").value) : null);
     if (document.getElementById("course-input") && course) document.getElementById("course-input").value = course.name;
     var c = segments.filter(s => String(s.course) === String(course.id));
-    if (!course) document.querySelector('[data-syllabus-upload]').setAttribute('hiddenanswer-input', '');
+    if (!course) document.querySelector('[data-syllabus-upload]').setAttribute('hidden', '');
     if (course && course.syllabus) {
       if (document.querySelector('[data-syllabus-upload]')) document.querySelector('[data-syllabus-upload]').setAttribute('hidden', '');
       if (document.querySelector('[data-syllabus-remove]')) document.querySelector('[data-syllabus-remove]').parentElement.removeAttribute('hidden');
@@ -742,7 +743,7 @@ try {
     if (!active) return;
     ui.modal({
       title: 'Delete Segment',
-      body: '<p>Are you sure you want to delete this segment? This action is permanent on save.</p>',
+      body: '<p>Are you sure you want to delete this segment? On save this action is not reversible.</p>',
       buttons: [
         {
           text: 'Cancel',
@@ -2013,7 +2014,7 @@ try {
   function deleteSegmentConfirm() {
     ui.modal({
       title: 'Delete Segment',
-      body: '<p>Are you sure you want to delete this segment? This action is permanent.</p>',
+      body: '<p>Are you sure you want to delete this segment? This action is not reversible.</p>',
       buttons: [
         {
           text: 'Cancel',
@@ -2157,6 +2158,104 @@ try {
         unsavedChanges = false;
         ui.toast("Segments due dates removed successfully.", 3000, "success", "bi bi-calendar-minus");
         return window.location.href = '/admin/';
+      })
+      .catch((e) => {
+        console.error(e);
+        ui.view("api-fail");
+      });
+  }
+
+  function clearResponsesConfirm1() {
+    if (!active) return;
+    ui.modal({
+      title: 'Clear Responses?',
+      body: '<p>This will clear all responses (excluding marked answers) from this course. This action is not reversible.</p>',
+      buttons: [
+        {
+          text: 'Cancel',
+          class: 'cancel-button',
+          close: true,
+        },
+        {
+          text: 'Continue',
+          class: 'submit-button',
+          onclick: () => {
+            clearResponsesConfirm2();
+          },
+          close: true,
+        },
+      ],
+    });
+  }
+
+  function clearResponsesConfirm2() {
+    if (!active) return;
+    ui.modal({
+      title: 'Clear Responses?',
+      body: '<p>Are you sure? This will clear all responses (excluding marked answers) from this course. This action is not reversible.</p>',
+      buttons: [
+        {
+          text: 'Cancel',
+          class: 'cancel-button',
+          close: true,
+        },
+        {
+          text: 'Continue',
+          class: 'submit-button',
+          onclick: () => {
+            clearResponsesConfirm3();
+          },
+          close: true,
+        },
+      ],
+    });
+  }
+
+  function clearResponsesConfirm3() {
+    if (!active) return;
+    ui.modal({
+      title: 'Clear Responses?',
+      body: '<p>Are you completely sure? This will clear all responses (excluding marked answers) from this course. This action is not reversible.</p>',
+      buttons: [
+        {
+          text: 'Cancel',
+          class: 'cancel-button',
+          close: true,
+        },
+        {
+          text: 'Continue',
+          class: 'submit-button',
+          onclick: () => {
+            clearResponses();
+          },
+          close: true,
+        },
+      ],
+    });
+  }
+
+  function clearResponses() {
+    if (!active) return;
+    const course = courses.find(c => document.getElementById("course-period-input") ? (String(c.id) === document.getElementById("course-period-input").value) : null);
+    if (!course) return;
+    unsavedChanges = true;
+    fetch(domain + '/responses', {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        course_id: course.id
+      })
+    })
+      .then(r => {
+        if (!r.ok) throw new Error(r.error || r.message || "API error");
+        return r.json();
+      })
+      .then(() => {
+        unsavedChanges = false;
+        ui.toast("Course responses cleared successfully.", 3000, "success", "bi bi-check-circle-fill");
+        return window.location.href = '/admin/responses';
       })
       .catch((e) => {
         console.error(e);
