@@ -486,7 +486,7 @@ try {
         segmentsArray.sort((a, b) => a.order - b.order).forEach(segment => {
           const option = document.createElement('option');
           option.value = segment.number;
-          option.innerHTML = `${segment.name}${segment.due ? ` (Due ${new Date(`${segment.due}T00:00:00`).toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })})` : ''}`;
+          option.innerHTML = `${segment.number} - ${segment.name}${segment.due ? ` (Due ${new Date(`${segment.due}T00:00:00`).toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })})` : ''}`;
           option.setAttribute('due', segment.due || '');
           segments.append(option);
         });
