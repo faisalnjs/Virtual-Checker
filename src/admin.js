@@ -87,11 +87,12 @@ try {
         var timestamp = new Date().getTime();
         storage.set("cacheBust", true);
         document.querySelectorAll('link[rel="stylesheet"]').forEach(link => {
-          link.setAttribute("href", `${link.getAttribute("href")}?${timestamp}`);
+          link.setAttribute("href", `${link.getAttribute("href")}?_=${timestamp}`);
         });
         document.querySelectorAll("script[src]").forEach(script => {
           script.setAttribute("src", `${script.getAttribute("src")}?_=${timestamp}`);
         });
+        window.location.reload();
       } else {
         resets[e.target.getAttribute("data-reset")]();
       };
@@ -101,7 +102,7 @@ try {
   if (storage.get("cacheBust")) {
     var timestamp = new Date().getTime();
     document.querySelectorAll('link[rel="stylesheet"]').forEach(link => {
-      link.setAttribute("href", `${link.getAttribute("href")}?${timestamp}`);
+      link.setAttribute("href", `${link.getAttribute("href")}?_=${timestamp}`);
     });
     document.querySelectorAll("script[src]").forEach(script => {
       script.setAttribute("src", `${script.getAttribute("src")}?_=${timestamp}`);
