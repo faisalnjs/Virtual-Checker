@@ -1804,8 +1804,8 @@ try {
     var inner = document.createElement('div');
     div.classList = "button-grid inputs question";
     inner.classList = "button-grid";
+    if (typeof question === 'string') var addingQuestion = questions.find(q => String(q.id) === String(question));
     if (loadedSegment && (typeof question === 'string')) {
-      var addingQuestion = questions.find(q => String(q.id) === String(question));
       if (!addingQuestion) return;
       document.getElementById("add-question-input").value = addingQuestion.id;
       div.setAttribute("data-swapy-slot", `questionList-${addingQuestion.id}`);
@@ -1822,27 +1822,23 @@ try {
         </div>
       </div>
       <button class="space" id="remove-existing-question-button" square><i class="bi bi-trash"></i></button>`;
-    } else if (loadedSegmentCreator && (typeof question === 'number')) {
-      setTimeout(() => {
-        var addingQuestion = questions.find(q => String(q.id) === String(question));
-        // console.log(questions, question, addingQuestion)
-        if (!addingQuestion) return;
-        document.getElementById("add-question-input").value = addingQuestion.id;
-        div.setAttribute("data-swapy-slot", `questionList-${addingQuestion.id}`);
-        inner.setAttribute("data-swapy-item", `questionList-${addingQuestion.id}`);
-        inner.innerHTML = `<div class="drag" data-swapy-handle><i class="bi bi-grip-vertical"></i></div>
-        <div class="input-group">
-          <div class="space" id="question-container">
-            <input type="text" id="${addingQuestion.id}" value="ID ${addingQuestion.id} #${addingQuestion.number} - ${addingQuestion.question}" disabled>
-          </div>
+    } else if (loadedSegmentCreator && (typeof question === 'string')) {
+      if (!addingQuestion) return;
+      document.getElementById("add-question-input").value = addingQuestion.id;
+      div.setAttribute("data-swapy-slot", `questionList-${addingQuestion.id}`);
+      inner.setAttribute("data-swapy-item", `questionList-${addingQuestion.id}`);
+      inner.innerHTML = `<div class="drag" data-swapy-handle><i class="bi bi-grip-vertical"></i></div>
+      <div class="input-group">
+        <div class="space" id="question-container">
+          <input type="text" id="${addingQuestion.id}" value="ID ${addingQuestion.id} #${addingQuestion.number} - ${addingQuestion.question}" disabled>
         </div>
-        <div class="input-group small">
-          <div class="space" id="question-container">
-            <input type="text" value="${addingQuestion.number}">
-          </div>
+      </div>
+      <div class="input-group small">
+        <div class="space" id="question-container">
+          <input type="text" value="${addingQuestion.number}">
         </div>
-        <button class="space" id="remove-existing-question-button" square><i class="bi bi-trash"></i></button>`;
-      }, 3000);
+      </div>
+      <button class="space" id="remove-existing-question-button" square><i class="bi bi-trash"></i></button>`;
     } else if (this) {
       if (!document.getElementById("add-question-input").selectedOptions[0]) return;
       div.setAttribute("data-swapy-slot", `questionList-${document.getElementById("add-question-input").value}`);
