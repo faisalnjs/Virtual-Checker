@@ -1386,7 +1386,11 @@ try {
 
   function toggleSpeedMode() {
     if (!active) return;
-    if (!speed) return ui.view("speed");
+    if (!speed) {
+      ui.view("speed");
+      document.getElementById("speed-mode-starting-question")?.focus();
+      return;
+    }
     speed = false;
     document.querySelector('[data-speed] .bi-lightning-charge').style.display = "block";
     document.querySelector('[data-speed] .bi-lightning-charge-fill').style.display = "none";
