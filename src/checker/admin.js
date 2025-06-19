@@ -1812,7 +1812,7 @@ try {
     div.classList = "button-grid inputs question";
     inner.classList = "button-grid";
     if (typeof question === 'string') var addingQuestion = questions.find(q => String(q.id) === String(question));
-    if (loadedSegment && (typeof question === 'string')) {
+    if (loadedSegment && (typeof question === 'string') && JSON.parse(loadedSegment.question_ids).find(q => String(q.id) === String(question))) {
       if (!addingQuestion) return;
       document.getElementById("add-question-input").value = addingQuestion.id;
       div.setAttribute("data-swapy-slot", `questionList-${addingQuestion.id}`);
