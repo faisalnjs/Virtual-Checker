@@ -1978,6 +1978,7 @@ try {
     loadedSegment = segments.find(s => String(s.number) === String(segment));
     if (!loadedSegment) {
       loadedSegmentCreator = true;
+      ui.toast(`Segment ${String(segment)} not found.`, 3000, "error", "bi bi-exclamation-triangle-fill");
       return document.querySelector('[data-delete-segment]')?.remove();
     }
     loadedSegmentEditor = true;
