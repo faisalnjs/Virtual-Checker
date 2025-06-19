@@ -450,9 +450,9 @@ try {
   //   this.parentElement.parentElement.classList.toggle('expanded');
   // }
 
-  function editSegment() {
+  function editSegment(event, segment) {
     if (!active) return;
-    return window.location.href = `/admin/editor?segment=${this.parentElement.parentElement.id.split('segment-')[1]}`;
+    return window.location.href = `/admin/editor?segment=${segment || this.parentElement.parentElement.id.split('segment-')[1]}`;
   }
 
   // function calculateButtonHeights(container) {
@@ -1926,7 +1926,7 @@ try {
       name.classList.add("attention");
       return name.focus();
     }
-    if (segments.find(s => String(s.number) === String(number.value))) {
+    if (loadedSegmentCreator && segments.find(s => String(s.number) === String(number.value))) {
       number.classList.add("attention");
       return ui.toast("Segment number already exists.", 3000, "error", "bi bi-exclamation-triangle-fill");
     }
@@ -1960,7 +1960,7 @@ try {
       .then(() => {
         unsavedChanges = false;
         ui.toast(loadedSegmentEditor ? "Segment updated successfully." : "Segment created successfully.", 3000, "success", "bi bi-check-circle-fill");
-        return window.location.href = '/admin/';
+        editSegment(null, number.value);
       })
       .catch((e) => {
         console.error(e);
