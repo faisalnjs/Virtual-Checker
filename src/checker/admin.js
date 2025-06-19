@@ -49,7 +49,7 @@ try {
       })
       .then(async c => {
         courses = c;
-        if (document.getElementById("course-period-input")) {
+        if (document.getElementById("course-period-input") && !loadedSegmentEditor && !loadedSegmentCreator) {
           document.getElementById("course-period-input").innerHTML = "";
           c.sort((a, b) => a.id - b.id).forEach(course => {
             var coursePeriods = JSON.parse(course.periods);
@@ -100,7 +100,7 @@ try {
           })
           .then(async c => {
             segments = c;
-            if (document.getElementById("course-period-input")) updateSegments();
+            if (document.getElementById("course-period-input") && !loadedSegmentEditor && !loadedSegmentCreator) updateSegments();
             if (document.getElementById("speed-mode-segments")) updateSpeedModeSegments();
             await fetch(domain + '/questions', {
               method: "GET",
@@ -151,7 +151,7 @@ try {
                       })
                       .then(async r => {
                         responses = r;
-                        if (document.getElementById("course-period-input")) {
+                        if (document.getElementById("course-period-input") && !loadedSegmentEditor && !loadedSegmentCreator) {
                           document.getElementById("course-period-input").value = courses.find(c => JSON.parse(c.periods).includes(Number(String(responses.sort((a, b) => String(a.seatCode)[0] - String(b.seatCode)[0])[0]?.seatCode)[0]))) ? courses.find(c => JSON.parse(c.periods).includes(Number(String(responses.sort((a, b) => String(a.seatCode)[0] - String(b.seatCode)[0])[0]?.seatCode)[0]))).id : 0;
                           await updateResponses();
                         }
@@ -196,7 +196,7 @@ try {
         ui.view("api-fail");
         pollingOff();
       });
-    if (document.getElementById("course-period-input")) {
+    if (document.getElementById("course-period-input") && !loadedSegmentEditor && !loadedSegmentCreator) {
       if (document.querySelector('.course-reorder')) document.querySelector('.course-reorder').style.display = 'none';
       document.querySelectorAll('[data-remove-segment-input]').forEach(a => a.removeEventListener('click', removeSegment));
       document.querySelectorAll('[data-remove-segment-input]').forEach(a => a.addEventListener('click', removeSegment));
@@ -1405,7 +1405,9 @@ try {
   function updateSpeedModeStartingQuestion() {
     document.getElementById("speed-mode-starting-question-id").value = (questions.sort((a, b) => a.id - b.id)[questions.length - 1]?.id || -1) + 1;
     document.getElementById("speed-mode-starting-question-id").min = (questions.sort((a, b) => a.id - b.id)[questions.length - 1]?.id || -1) + 1;
-    document.getElementById("speed-mode-starting-question").value = (questions.sort((a, b) => a.id - b.id)[questions.length - 1]?.id || 0) + 1;
+    document.getElementById("speed-mode-starting-question").value = String(questions.sort((a, b) => a.id - b.id)[questions.length - 1]?.number || questions.sort((a, b) => a.id - b.id)[questions.length - 1]?.id || 0).replace(/(\d+)([a-z]*)$/, (match, num, suffix) => {
+      return !suffix ? (parseInt(num, 10) + 1).toString() : ((suffix === 'z') ? ((parseInt(num, 10) + 1) + 'a') : (num + String.fromCharCode(suffix.charCodeAt(0) + 1)));
+    });
   }
 
   function enableSpeedMode() {
