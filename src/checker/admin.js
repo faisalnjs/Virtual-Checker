@@ -1407,8 +1407,9 @@ try {
   }
 
   function updateSpeedModeStartingQuestion() {
-    document.getElementById("speed-mode-starting-question-id").value = (questions.sort((a, b) => a.id - b.id)[questions.length - 1]?.id || -1) + 1;
-    document.getElementById("speed-mode-starting-question-id").min = (questions.sort((a, b) => a.id - b.id)[questions.length - 1]?.id || -1) + 1;
+    const lastQuestionId = (questions.length > 0) ? questions.sort((a, b) => a.id - b.id)[questions.length - 1]?.id : -1;
+    document.getElementById("speed-mode-starting-question-id").value = ((lastQuestionId !== undefined && lastQuestionId !== null) ? lastQuestionId : -1) + 1;
+    document.getElementById("speed-mode-starting-question-id").min = ((lastQuestionId !== undefined && lastQuestionId !== null) ? lastQuestionId : -1) + 1;
     document.getElementById("speed-mode-starting-question").value = String(questions.sort((a, b) => a.id - b.id)[questions.length - 1]?.number || questions.sort((a, b) => a.id - b.id)[questions.length - 1]?.id || 0).replace(/(\d+)([a-z]*)$/, (match, num, suffix) => {
       return !suffix ? (parseInt(num, 10) + 1).toString() : ((suffix === 'z') ? ((parseInt(num, 10) + 1) + 'a') : (num + String.fromCharCode(suffix.charCodeAt(0) + 1)));
     });
