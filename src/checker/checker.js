@@ -574,11 +574,11 @@ try {
       document.getElementById("submit-button").disabled = false;
     }
 
-    const qA = storage.get("questionsAnswered") || [];
+    var qA = await updateHistory();
     qA.forEach(q => {
       var i = questions.querySelector(`option[value="${q.question}"]`);
-      const selectedSegment = segmentsArray.find(s => s.number == segments.value);
-      if (i) i.innerHTML = `${JSON.parse(selectedSegment.question_ids).find(q2 => q2.id == q.question).name} - ${q.status}`;
+      const selectedSegment = segmentsArray.find(s => String(s.number) === String(segments.value));
+      if (i) i.innerHTML = `${JSON.parse(selectedSegment.question_ids).find(q2 => String(q2.id) === String(q.question)).name} - ${q.status}`;
     });
 
     const feedContainer = document.querySelector('.input-group:has(> #question-history-feed)');
@@ -1001,7 +1001,7 @@ try {
           })
       );
 
-      Promise.all(fetchPromises).then(results => {
+      await Promise.all(fetchPromises).then(results => {
         results.forEach(({ item, ...r }) => {
           if (r.error) {
             console.log(r.error);
@@ -1109,13 +1109,16 @@ try {
           p.innerText = "You have flagged responses to review.";
           feed.prepend(p);
         }
+      }).then(() => {
+        storage.set("questionsAnswered", qA);
       });
-
-      storage.set("questionsAnswered", qA);
+      reloadUnsavedInputs();
+      return qA;
     } else {
       feed.innerHTML = "<p>Submitted clicks will show up here!</p>";
+      reloadUnsavedInputs();
+      return [];
     }
-    reloadUnsavedInputs();
   }
 
   function flagResponse(event, isInQuestion = false) {
