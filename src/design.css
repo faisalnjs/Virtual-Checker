@@ -1020,6 +1020,10 @@ hidden,
   padding-left: 5px;
 }
 
+*:has(> .hideonhover):hover .hideonhover {
+  display: none;
+}
+
 .redonhover:hover {
   color: var(--error-color);
   cursor: pointer;
