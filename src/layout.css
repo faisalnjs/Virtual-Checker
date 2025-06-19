@@ -362,5 +362,8 @@ label {
   align-self: stretch;
   gap: 12.5px;
   width: -webkit-fill-available;
+}
+
+.section:not(:has(.drag)) {
   overflow: hidden;
 }

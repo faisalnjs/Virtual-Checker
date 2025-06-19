@@ -599,8 +599,7 @@ div.ML__keyboard {
   transition: 0.5s var(--easing);
 }
 
-.questions .section [data-remove-question-input],
-.segments:not(:has(.section:first-child.expanded)) [hidden-spacer] {
+.questions .section [data-remove-question-input] {
   display: none;
 }
 

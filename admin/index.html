@@ -94,6 +94,15 @@
     <div class="section">
       <h1>Segments</h1>
       <div class="section segments selector">
+        <div class="button-grid">
+          <button class="space fit" id="sort-segments-due"><i class="bi bi-sort-down"></i> Sort by Due Date
+            (Default)</button>
+          <button class="space fit" id="sort-segments-increasing"><i class="bi bi-sort-numeric-up"></i> Sort Increasing
+            (1A-9Z)</button>
+          <button class="space fit" id="sort-segments-decreasing"><i class="bi bi-sort-numeric-down-alt"></i> Sort
+            Decreasing (9Z-1A)</button>
+        </div>
+        <div></div>
         <div class="button-grid inputs">
           <label style="width: -webkit-fill-available" class="small">Number</label>
           <label style="width: -webkit-fill-available">Name</label>
@@ -123,18 +132,6 @@
           </div>
         </div>
       </div>
-      <div class="section segment-reorder">
-        <div class="button-grid">
-          <button class="space fit" id="sort-segments-due"><i class="bi bi-sort-down"></i> Sort by Due Date
-            (Default)</button>
-          <button class="space fit" id="sort-segments-increasing"><i class="bi bi-sort-numeric-up"></i> Sort Increasing
-            (1A-9Z)</button>
-          <button class="space fit" id="sort-segments-decreasing"><i class="bi bi-sort-numeric-down-alt"></i> Sort
-            Decreasing (9Z-1A)</button>
-        </div>
-        <div class="button-grid reorder"></div>
-        <button class="space" id="save-segment-order-button">Save Order</button>
-      </div>
     </div>
     <button class="space" id="save-button">Save</button>
   </div>
@@ -153,10 +150,6 @@
     <button class="icon" data-speed data-modal-view="speed-mode">
       <i class="bi bi-lightning-charge"></i>
       <i class="bi bi-lightning-charge-fill" style="display: none;"></i>
-    </button>
-    <button class="icon" data-reorder>
-      <i class="bi bi-arrows-move"></i>
-      <i class="bi bi-x"></i>
     </button>
     <button class="icon" data-modal-view="sort-segments">
       <i class="bi bi-sort-down"></i>

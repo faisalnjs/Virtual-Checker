@@ -12,13 +12,11 @@ var segments = [];
 var questions = [];
 var answers = [];
 var responses = [];
-let draggedItem = null;
 var formData = new FormData();
 var polling = false;
 var active = false;
 var timestamps = false;
 var speed = false;
-var reorder = false;
 var expandedReports = [];
 var loadedSegment = null;
 var loadedSegmentEditor = false;
@@ -45,9 +43,9 @@ try {
         "Content-Type": "application/json",
       }
     })
-      .then(r => {
+      .then(async (r) => {
         if (!r.ok) throw new Error(r.error || r.message || "API error");
-        return r.json();
+        return await r.json();
       })
       .then(async c => {
         courses = c;
@@ -96,9 +94,9 @@ try {
             "Content-Type": "application/json",
           }
         })
-          .then(r => {
+          .then(async (r) => {
             if (!r.ok) throw new Error(r.error || r.message || "API error");
-            return r.json();
+            return await r.json();
           })
           .then(async c => {
             segments = c;
@@ -110,9 +108,9 @@ try {
                 "Content-Type": "application/json",
               }
             })
-              .then(r => {
+              .then(async (r) => {
                 if (!r.ok) throw new Error(r.error || r.message || "API error");
-                return r.json();
+                return await r.json();
               })
               .then(async q => {
                 questions = q;
@@ -134,9 +132,9 @@ try {
                     "Content-Type": "application/json",
                   }
                 })
-                  .then(r => {
+                  .then(async (r) => {
                     if (!r.ok) throw new Error(r.error || r.message || "API error");
-                    return r.json();
+                    return await r.json();
                   })
                   .then(async a => {
                     answers = a;
@@ -147,9 +145,9 @@ try {
                         "Content-Type": "application/json",
                       }
                     })
-                      .then(r => {
+                      .then(async (r) => {
                         if (!r.ok) throw new Error(r.error || r.message || "API error");
-                        return r.json();
+                        return await r.json();
                       })
                       .then(async r => {
                         responses = r;
@@ -200,12 +198,12 @@ try {
       });
     if (document.getElementById("course-period-input")) {
       if (document.querySelector('.course-reorder')) document.querySelector('.course-reorder').style.display = 'none';
-      if (document.querySelector('.segment-reorder')) document.querySelector('.segment-reorder').style.display = 'none';
       document.querySelectorAll('[data-remove-segment-input]').forEach(a => a.removeEventListener('click', removeSegment));
       document.querySelectorAll('[data-remove-segment-input]').forEach(a => a.addEventListener('click', removeSegment));
       if (document.getElementById("course-input")) document.getElementById("course-input").value = courses.find(c => String(c.id) === String(segments.sort((a, b) => a.course - b.course)[0].course)).name;
       updateSegments();
     }
+    if (document.getElementById("sort-segments-types")) document.getElementById("sort-segments-types").value = await settings('sort-segments');
     reloadUnsavedInputs();
   }
 
@@ -234,7 +232,6 @@ try {
   if (document.querySelector('[data-timestamps]')) document.querySelector('[data-timestamps]').addEventListener("click", toggleTimestamps);
   if (document.querySelector('[data-speed]')) document.querySelector('[data-speed]').addEventListener("click", toggleSpeedMode);
   if (document.getElementById('enable-speed-mode-button')) document.getElementById('enable-speed-mode-button').addEventListener("click", enableSpeedMode);
-  if (document.querySelector('[data-reorder]')) document.querySelector('[data-reorder]').addEventListener("click", toggleReorder);
   if (document.getElementById('sort-segments-due')) document.getElementById('sort-segments-due').addEventListener("click", sortSegmentsDue);
   if (document.getElementById('sort-segments-increasing')) document.getElementById('sort-segments-increasing').addEventListener("click", sortSegmentsIncreasing);
   if (document.getElementById('sort-segments-decreasing')) document.getElementById('sort-segments-decreasing').addEventListener("click", sortSegmentsDecreasing);
@@ -345,9 +342,9 @@ try {
             course_id: course.id
           }),
         })
-          .then(r => {
+          .then(async (r) => {
             if (!r.ok) throw new Error(r.error || r.message || "API error");
-            return r.json();
+            return await r.json();
           })
           .then(() => {
             unsavedChanges = false;
@@ -365,40 +362,28 @@ try {
     }
     if (document.querySelector('.segment-reports')) document.querySelector('.segment-reports').innerHTML = '';
     if (c.length > 0) {
-      if (document.querySelector('.segments .section')) document.querySelector('.segments .section').innerHTML = '';
-      if (document.querySelector(".segment-reorder .reorder")) document.querySelector(".segment-reorder .reorder").innerHTML = '';
-      if (document.querySelector('.segments .section') || document.querySelector(".segment-reorder .reorder")) {
+      if (document.querySelector('.segments .section')) {
+        document.querySelector('.segments .section').innerHTML = '';
         c.sort((a, b) => a.order - b.order).forEach(s => {
           if (document.querySelector('.segments .section')) {
             var segment = document.createElement('div');
             segment.className = "section";
             segment.id = `segment-${s.number}`;
+            segment.setAttribute("data-swapy-slot", `segmentReorder-${s.number}`);
             var buttonGrid = document.createElement('div');
             buttonGrid.className = "button-grid inputs";
-            buttonGrid.innerHTML = `<button square data-select><i class="bi bi-circle"></i><i class="bi bi-circle-fill"></i></button><div class="input-group small"><div class="space" id="question-container"><input type="text" autocomplete="off" id="segment-number-input" value="${s.number}" placeholder="${s.number}" /></div></div><div class="input-group"><div class="space" id="question-container"><input type="text" autocomplete="off" id="segment-name-input" value="${s.name}" placeholder="${s.name}" /></div></div><div class="input-group mediuml"><div class="space" id="question-container"><input type="date" id="segment-due-date" value="${s.due || ''}"></div></div><button square data-remove-segment-input><i class="bi bi-trash"></i></button><button square data-edit-segment><i class="bi bi-pencil"></i></button>`;
+            buttonGrid.setAttribute("data-swapy-item", `segmentReorder-${s.number}`);
+            buttonGrid.innerHTML = `<button square data-select><i class="bi bi-circle"></i><i class="bi bi-circle-fill"></i></button><div class="input-group small"><div class="space" id="question-container"><input type="text" autocomplete="off" id="segment-number-input" value="${s.number}" placeholder="${s.number}" /></div></div><div class="input-group"><div class="space" id="question-container"><input type="text" autocomplete="off" id="segment-name-input" value="${s.name}" placeholder="${s.name}" /></div></div><div class="input-group mediuml"><div class="space" id="question-container"><input type="date" id="segment-due-date" value="${s.due || ''}"></div></div><button square data-remove-segment-input><i class="bi bi-trash"></i></button><button square data-edit-segment><i class="bi bi-pencil"></i></button><div class="drag" data-swapy-handle><i class="bi bi-grip-vertical"></i></div>`;
             segment.appendChild(buttonGrid);
             document.querySelector('.segments .section').appendChild(segment);
           }
-          if (document.querySelector(".segment-reorder .reorder")) {
-            const elem = document.createElement("div");
-            var inner = document.createElement("div");
-            elem.classList = "button-grid inputs";
-            elem.style = "flex-wrap: nowrap !important;";
-            inner.classList = "button-grid inputs";
-            inner.style = "flex-wrap: nowrap !important;";
-            elem.setAttribute("data-swapy-slot", `segmentReorder-${s.number}`);
-            inner.setAttribute("data-swapy-item", `segmentReorder-${s.number}`);
-            inner.innerHTML = `<input type="text" autocomplete="off" id="segment-${s.number}" value="${s.name || ''}" /><div class="drag" data-swapy-handle><i class="bi bi-grip-vertical"></i></div>`;
-            elem.appendChild(inner);
-            document.querySelector(".segment-reorder .reorder").appendChild(elem);
-            if (draggableSegmentReorder) draggableSegmentReorder.destroy();
-            draggableSegmentReorder = createSwapy(document.querySelector(".segment-reorder .reorder"), {
-              animation: 'none'
-            });
-          }
+        });
+        document.querySelector('.segments .section').innerHTML += '<button data-add-segment-input>Add Segment</button>';
+        if (draggableSegmentReorder) draggableSegmentReorder.destroy();
+        draggableSegmentReorder = createSwapy(document.querySelector(".segments .section"), {
+          animation: 'none'
         });
       }
-      if (document.querySelector('.segments .section')) document.querySelector('.segments .section').innerHTML += '<button data-add-segment-input>Add Segment</button>';
       if (document.querySelector('.segment-reports')) {
         c.filter(s => String(s.number).startsWith(document.getElementById("sort-segment-input")?.value)).sort((a, b) => a.order - b.order).forEach(segment => {
           var detailedReport = '';
@@ -460,28 +445,28 @@ try {
     reloadUnsavedInputs();
   }
 
-  function toggleSegment() {
-    if (!active) return;
-    this.parentElement.parentElement.classList.toggle('expanded');
-  }
+  // function toggleSegment() {
+  //   if (!active) return;
+  //   this.parentElement.parentElement.classList.toggle('expanded');
+  // }
 
   function editSegment() {
     if (!active) return;
     return window.location.href = `/admin/editor?segment=${this.parentElement.parentElement.id.split('segment-')[1]}`;
   }
 
-  function calculateButtonHeights(container) {
-    if (!active) return;
-    let totalHeight = 0;
-    const buttons = container.querySelectorAll('button');
-    buttons.forEach(button => {
-      const style = window.getComputedStyle(button);
-      if (style.display !== 'none') {
-        totalHeight += button.getBoundingClientRect().height;
-      }
-    });
-    return totalHeight;
-  }
+  // function calculateButtonHeights(container) {
+  //   if (!active) return;
+  //   let totalHeight = 0;
+  //   const buttons = container.querySelectorAll('button');
+  //   buttons.forEach(button => {
+  //     const style = window.getComputedStyle(button);
+  //     if (style.display !== 'none') {
+  //       totalHeight += button.getBoundingClientRect().height;
+  //     }
+  //   });
+  //   return totalHeight;
+  // }
 
   // Save Course Order
   document.getElementById("save-course-order-button")?.addEventListener("click", () => {
@@ -503,9 +488,9 @@ try {
       },
       body: JSON.stringify(updatedCourses.sort((a, b) => a.id - b.id))
     })
-      .then(r => {
+      .then(async (r) => {
         if (!r.ok) throw new Error(r.error || r.message || "API error");
-        return r.json();
+        return await r.json();
       })
       .then(c => {
         unsavedChanges = false;
@@ -537,45 +522,45 @@ try {
   });
 
   // Save Segment Order
-  document.getElementById("save-segment-order-button")?.addEventListener("click", () => {
-    if (!active) return;
-    var updatedSegments = [...document.querySelector(".segment-reorder .reorder").children].map((segment, i) => {
-      const segmentNumber = segment.querySelector('input').id.split('-')[1];
-      return {
-        order: i,
-        number: segmentNumber,
-        name: segment.querySelector('input').value,
-        question_ids: segments.find(s => String(s.number) === String(segmentNumber)).question_ids,
-        course: Number(document.getElementById("course-period-input").value),
-        due: segments.find(s => String(s.number) === String(segmentNumber)).due
-      };
-    }).sort((a, b) => a.order - b.order);
-    unsavedChanges = true;
-    fetch(domain + '/segments', {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(updatedSegments)
-    })
-      .then(r => {
-        if (!r.ok) throw new Error(r.error || r.message || "API error");
-        return r.json();
-      })
-      .then(c => {
-        unsavedChanges = false;
-        segments = c;
-        updateSegments();
-      })
-      .catch((e) => {
-        console.error(e);
-        ui.view("api-fail");
-        pollingOff();
-      });
-    // Show submit confirmation
-    ui.modeless(`<i class="bi bi-check-lg"></i>`, "Saved");
-    reloadUnsavedInputs();
-  });
+  // document.getElementById("save-segment-order-button")?.addEventListener("click", () => {
+  //   if (!active) return;
+  //   var updatedSegments = [...document.querySelector(".segment-reorder .reorder").children].map((segment, i) => {
+  //     const segmentNumber = segment.querySelector('input').id.split('-')[1];
+  //     return {
+  //       order: i,
+  //       number: segmentNumber,
+  //       name: segment.querySelector('input').value,
+  //       question_ids: segments.find(s => String(s.number) === String(segmentNumber)).question_ids,
+  //       course: Number(document.getElementById("course-period-input").value),
+  //       due: segments.find(s => String(s.number) === String(segmentNumber)).due
+  //     };
+  //   }).sort((a, b) => a.order - b.order);
+  //   unsavedChanges = true;
+  //   fetch(domain + '/segments', {
+  //     method: "POST",
+  //     headers: {
+  //       "Content-Type": "application/json",
+  //     },
+  //     body: JSON.stringify(updatedSegments)
+  //   })
+  //     .then(async (r) => {
+  //       if (!r.ok) throw new Error(r.error || r.message || "API error");
+  //       return await r.json();
+  //     })
+  //     .then(c => {
+  //       unsavedChanges = false;
+  //       segments = c;
+  //       updateSegments();
+  //     })
+  //     .catch((e) => {
+  //       console.error(e);
+  //       ui.view("api-fail");
+  //       pollingOff();
+  //     });
+  //   // Show submit confirmation
+  //   ui.modeless(`<i class="bi bi-check-lg"></i>`, "Saved");
+  //   reloadUnsavedInputs();
+  // });
 
   // Save
   document.querySelectorAll("#save-button").forEach(w => w.addEventListener("click", save));
@@ -594,12 +579,11 @@ try {
         },
         segments: []
       };
-      var segmentOrder = 0;
       Array.from(document.querySelectorAll('.segments .section .section'))
         .filter(w => w.id)
         .forEach(segment => {
           updatedInfo.segments.push({
-            order: segmentOrder,
+            order: segments.find(s => String(s.number) === String(segment.id.split('-')[1])).order,
             id: segment.id.split('-')[1],
             number: segment.querySelector('#segment-number-input').value,
             name: segment.querySelector('#segment-name-input').value,
@@ -612,7 +596,6 @@ try {
             question_ids: segments.find(s => String(s.number) === String(segment.id.split('-')[1])).question_ids,
             due: segment.querySelector('#segment-due-date').value || null,
           });
-          segmentOrder++;
         });
     } else if (document.querySelector('.questions.section')) {
       updatedInfo = {
@@ -666,55 +649,55 @@ try {
     document.querySelectorAll("#save-button").forEach(w => w.disabled = true);
     window.scroll(0, 0);
     if ((typeof hideResult != 'boolean')) ui.modeless(`<i class="bi bi-check-lg"></i>`, "Saved");
-    init();
+    await init();
     setTimeout(() => {
       document.querySelectorAll("#save-button").forEach(w => w.disabled = false);
     }, 2500);
   }
 
-  function handleDragStart(e) {
-    if (!active) return;
-    draggedItem = this.parentNode;
-    e.dataTransfer.effectAllowed = 'move';
-  }
+  // function handleDragStart(e) {
+  //   if (!active) return;
+  //   draggedItem = this.parentNode;
+  //   e.dataTransfer.effectAllowed = 'move';
+  // }
 
-  function handleDragOver(e) {
-    if (!active) return;
-    e.preventDefault();
-    e.dataTransfer.dropEffect = 'move';
-  }
+  // function handleDragOver(e) {
+  //   if (!active) return;
+  //   e.preventDefault();
+  //   e.dataTransfer.dropEffect = 'move';
+  // }
 
-  function handleDropCourse(e) {
-    if (!active) return;
-    e.stopPropagation();
-    const targetItem = this.parentNode;
-    if (draggedItem !== targetItem) {
-      let parent = draggedItem.parentNode;
-      parent.insertBefore(draggedItem, targetItem);
-    }
-    const newOrder = [...document.querySelectorAll('.dragCourse')].sort((a, b) => {
-      return a.getBoundingClientRect().top - b.getBoundingClientRect().top;
-    });
-    const parent = document.querySelector('.course-reorder .reorder');
-    newOrder.forEach(item => parent.appendChild(item));
-    return false;
-  }
+  // function handleDropCourse(e) {
+  //   if (!active) return;
+  //   e.stopPropagation();
+  //   const targetItem = this.parentNode;
+  //   if (draggedItem !== targetItem) {
+  //     let parent = draggedItem.parentNode;
+  //     parent.insertBefore(draggedItem, targetItem);
+  //   }
+  //   const newOrder = [...document.querySelectorAll('.dragCourse')].sort((a, b) => {
+  //     return a.getBoundingClientRect().top - b.getBoundingClientRect().top;
+  //   });
+  //   const parent = document.querySelector('.course-reorder .reorder');
+  //   newOrder.forEach(item => parent.appendChild(item));
+  //   return false;
+  // }
 
-  function handleDropSegment(e) {
-    if (!active) return;
-    e.stopPropagation();
-    const targetItem = this.parentNode;
-    if (draggedItem !== targetItem) {
-      let parent = draggedItem.parentNode;
-      parent.insertBefore(draggedItem, targetItem);
-    }
-    const newOrder = [...document.querySelectorAll('.dragSegment')].sort((a, b) => {
-      return a.getBoundingClientRect().top - b.getBoundingClientRect().top;
-    });
-    const parent = document.querySelector('.segment-reorder .reorder');
-    newOrder.forEach(item => parent.appendChild(item));
-    return false;
-  }
+  // function handleDropSegment(e) {
+  //   if (!active) return;
+  //   e.stopPropagation();
+  //   const targetItem = this.parentNode;
+  //   if (draggedItem !== targetItem) {
+  //     let parent = draggedItem.parentNode;
+  //     parent.insertBefore(draggedItem, targetItem);
+  //   }
+  //   const newOrder = [...document.querySelectorAll('.dragSegment')].sort((a, b) => {
+  //     return a.getBoundingClientRect().top - b.getBoundingClientRect().top;
+  //   });
+  //   const parent = document.querySelector('.segment-reorder .reorder');
+  //   newOrder.forEach(item => parent.appendChild(item));
+  //   return false;
+  // }
 
   function addSegment() {
     if (!active) return;
@@ -905,9 +888,9 @@ try {
         question_id
       })
     })
-      .then(r => {
+      .then(async (r) => {
         if (!r.ok) throw new Error(r.error || r.message || "API error");
-        return r.json();
+        return await r.json();
       })
       .then(() => {
         unsavedChanges = false;
@@ -1020,9 +1003,9 @@ try {
           file_url: event.target.querySelector('img').src
         }),
       })
-        .then(r => {
+        .then(async (r) => {
           if (!r.ok) throw new Error(r.error || r.message || "API error");
-          return r.json();
+          return await r.json();
         })
         .then(() => {
           unsavedChanges = false;
@@ -1243,9 +1226,9 @@ try {
         seatCode: this.parentElement.querySelector('#response-seat-code-input').value,
       }),
     })
-      .then(r => {
+      .then(async (r) => {
         if (!r.ok) throw new Error(r.error || r.message || "API error");
-        return r.json();
+        return await r.json();
       })
       .then(() => {
         unsavedChanges = false;
@@ -1271,9 +1254,9 @@ try {
         seatCode: this.parentElement.querySelector('#response-seat-code-input').value,
       }),
     })
-      .then(r => {
+      .then(async (r) => {
         if (!r.ok) throw new Error(r.error || r.message || "API error");
-        return r.json();
+        return await r.json();
       })
       .then(() => {
         unsavedChanges = false;
@@ -1299,9 +1282,9 @@ try {
         answer: responses.find(q => q.id == this.parentElement.querySelector('#response-id-input').value).response
       }),
     })
-      .then(r => {
+      .then(async (r) => {
         if (!r.ok) throw new Error(r.error || r.message || "API error");
-        return r.json();
+        return await r.json();
       })
       .then(() => {
         unsavedChanges = false;
@@ -1357,9 +1340,9 @@ try {
         reason: reason
       }),
     })
-      .then(r => {
+      .then(async (r) => {
         if (!r.ok) throw new Error(r.error || r.message || "API error");
-        return r.json();
+        return await r.json();
       })
       .then(() => {
         unsavedChanges = false;
@@ -1515,64 +1498,64 @@ try {
     }, 1000);
   }
 
-  function toggleReorder() {
-    if (!active) return;
-    if (reorder) {
-      reorder = false;
-      document.querySelector('[data-reorder] .bi-arrows-move').style.display = "block";
-      document.querySelector('[data-reorder] .bi-x').style.display = "none";
-      const reorderSections = document.querySelectorAll(':has(> .reorder)');
-      reorderSections.forEach(reorderSection => {
-        const fromHeight = reorderSection?.getBoundingClientRect().height;
-        reorderSection.parentElement.querySelector('.selector').style.display = 'flex';
-        document.querySelectorAll('#save-button').forEach(w => w.style.display = '');
-        reorderSection.style.display = 'none';
-        const container = reorderSection.parentElement;
-        const target = reorderSection.parentElement.querySelector('.selector');
-        const toHeight = target.getBoundingClientRect().height + calculateButtonHeights(target);
-        ui.animate(
-          container,
-          fromHeight
-            ? {
-              height: fromHeight + "px",
-            }
-            : undefined,
-          {
-            height: toHeight + "px",
-          },
-          500,
-          false,
-        );
-      });
-    } else {
-      reorder = true;
-      document.querySelector('[data-reorder] .bi-arrows-move').style.display = "none";
-      document.querySelector('[data-reorder] .bi-x').style.display = "block";
-      const reorderSections = document.querySelectorAll(':has(> .reorder)');
-      reorderSections.forEach(reorderSection => {
-        const fromHeight = reorderSection.parentElement.querySelector('.selector')?.getBoundingClientRect().height;
-        reorderSection.style.display = 'flex';
-        reorderSection.parentElement.querySelector('.selector').style.display = 'none';
-        document.querySelectorAll('#save-button').forEach(w => w.style.display = 'none');
-        const container = reorderSection.parentElement;
-        const target = reorderSection;
-        const toHeight = target.getBoundingClientRect().height + calculateButtonHeights(target);
-        ui.animate(
-          container,
-          fromHeight
-            ? {
-              height: fromHeight + "px",
-            }
-            : undefined,
-          {
-            height: toHeight + "px",
-          },
-          500,
-          false,
-        );
-      });
-    }
-  }
+  // function toggleReorder() {
+  //   if (!active) return;
+  //   if (reorder) {
+  //     reorder = false;
+  //     document.querySelector('[data-reorder] .bi-arrows-move').style.display = "block";
+  //     document.querySelector('[data-reorder] .bi-x').style.display = "none";
+  //     const reorderSections = document.querySelectorAll(':has(> .reorder)');
+  //     reorderSections.forEach(reorderSection => {
+  //       const fromHeight = reorderSection?.getBoundingClientRect().height;
+  //       reorderSection.parentElement.querySelector('.selector').style.display = 'flex';
+  //       document.querySelectorAll('#save-button').forEach(w => w.style.display = '');
+  //       reorderSection.style.display = 'none';
+  //       const container = reorderSection.parentElement;
+  //       const target = reorderSection.parentElement.querySelector('.selector');
+  //       const toHeight = target.getBoundingClientRect().height + calculateButtonHeights(target);
+  //       ui.animate(
+  //         container,
+  //         fromHeight
+  //           ? {
+  //             height: fromHeight + "px",
+  //           }
+  //           : undefined,
+  //         {
+  //           height: toHeight + "px",
+  //         },
+  //         500,
+  //         false,
+  //       );
+  //     });
+  //   } else {
+  //     reorder = true;
+  //     document.querySelector('[data-reorder] .bi-arrows-move').style.display = "none";
+  //     document.querySelector('[data-reorder] .bi-x').style.display = "block";
+  //     const reorderSections = document.querySelectorAll(':has(> .reorder)');
+  //     reorderSections.forEach(reorderSection => {
+  //       const fromHeight = reorderSection.parentElement.querySelector('.selector')?.getBoundingClientRect().height;
+  //       reorderSection.style.display = 'flex';
+  //       reorderSection.parentElement.querySelector('.selector').style.display = 'none';
+  //       document.querySelectorAll('#save-button').forEach(w => w.style.display = 'none');
+  //       const container = reorderSection.parentElement;
+  //       const target = reorderSection;
+  //       const toHeight = target.getBoundingClientRect().height + calculateButtonHeights(target);
+  //       ui.animate(
+  //         container,
+  //         fromHeight
+  //           ? {
+  //             height: fromHeight + "px",
+  //           }
+  //           : undefined,
+  //         {
+  //           height: toHeight + "px",
+  //         },
+  //         500,
+  //         false,
+  //       );
+  //     });
+  //   }
+  // }
 
   function sortSegmentsDue() {
     if (!active) return;
@@ -1592,24 +1575,16 @@ try {
     return ui.view("sort-segments");
   }
 
-  function sortSegments() {
+  async function sortSegments(event, sortAs) {
     if (!active) return;
-    var updatedSegments = [...document.querySelector(".segment-reorder .reorder").children].map((segment, i) => {
-      const segmentNumber = segment.querySelector('input').id.split('-')[1];
-      return {
-        order: i,
-        number: segmentNumber,
-        name: segment.querySelector('input').value,
-        question_ids: segments.find(s => String(s.number) === String(segmentNumber)).question_ids,
-        course: Number(document.getElementById("course-period-input").value),
-        due: segments.find(s => String(s.number) === String(segmentNumber)).due
-      };
-    });
-    switch (document.getElementById('sort-segments-types').value) {
+    await settingsPush('sort-segments', sortAs || document.getElementById('sort-segments-types').value);
+    await save(true);
+    var updatedSegments = [...segments];
+    switch (sortAs || document.getElementById('sort-segments-types').value) {
       case 'az':
         updatedSegments.sort((a, b) => {
-          const nameA = a.number;
-          const nameB = b.number;
+          const nameA = String(a.number);
+          const nameB = String(b.number);
           const numA = parseInt(nameA.match(/\d+/) ? nameA.match(/\d+/)[0] : '0');
           const numB = parseInt(nameB.match(/\d+/) ? nameB.match(/\d+/)[0] : '0');
           const alphaA = (nameA.match(/[a-zA-Z]+/) || [''])[0];
@@ -1622,8 +1597,8 @@ try {
         break;
       case 'za':
         updatedSegments.sort((a, b) => {
-          const nameA = a.number;
-          const nameB = b.number;
+          const nameA = String(a.number);
+          const nameB = String(b.number);
           const numA = parseInt(nameA.match(/\d+/) ? nameA.match(/\d+/)[0] : '0');
           const numB = parseInt(nameB.match(/\d+/) ? nameB.match(/\d+/)[0] : '0');
           const alphaA = (nameA.match(/[a-zA-Z]+/) || [''])[0];
@@ -1652,6 +1627,7 @@ try {
       updatedSegments[i].order = i;
     }
     unsavedChanges = true;
+    if (sortAs) return updatedSegments;
     fetch(domain + '/segments', {
       method: "POST",
       headers: {
@@ -1659,9 +1635,9 @@ try {
       },
       body: JSON.stringify(updatedSegments)
     })
-      .then(r => {
+      .then(async (r) => {
         if (!r.ok) throw new Error(r.error || r.message || "API error");
-        return r.json();
+        return await r.json();
       })
       .then(c => {
         unsavedChanges = false;
@@ -1974,9 +1950,9 @@ try {
         editing_segment: loadedSegmentEditor ? new URLSearchParams(window.location.search).get('segment') : null,
       })
     })
-      .then(r => {
+      .then(async (r) => {
         if (!r.ok) throw new Error(r.error || r.message || "API error");
-        return r.json();
+        return await r.json();
       })
       .then(() => {
         unsavedChanges = false;
@@ -2045,9 +2021,9 @@ try {
         segment: loadedSegment.number,
       })
     })
-      .then(r => {
+      .then(async (r) => {
         if (!r.ok) throw new Error(r.error || r.message || "API error");
-        return r.json();
+        return await r.json();
       })
       .then(() => {
         unsavedChanges = false;
@@ -2122,9 +2098,9 @@ try {
         period: inputValues[1],
       })
     })
-      .then(r => {
+      .then(async (r) => {
         if (!r.ok) throw new Error(r.error || r.message || "API error");
-        return r.json();
+        return await r.json();
       })
       .then(() => {
         unsavedChanges = false;
@@ -2151,9 +2127,9 @@ try {
         course_id: course.id
       })
     })
-      .then(r => {
+      .then(async (r) => {
         if (!r.ok) throw new Error(r.error || r.message || "API error");
-        return r.json();
+        return await r.json();
       })
       .then(() => {
         unsavedChanges = false;
@@ -2249,14 +2225,57 @@ try {
         course_id: course.id
       })
     })
-      .then(r => {
+      .then(async (r) => {
         if (!r.ok) throw new Error(r.error || r.message || "API error");
-        return r.json();
+        return await r.json();
       })
       .then(() => {
         unsavedChanges = false;
         ui.toast("Course responses cleared successfully.", 3000, "success", "bi bi-check-circle-fill");
         return window.location.href = '/admin/responses';
+      })
+      .catch((e) => {
+        console.error(e);
+        ui.view("api-fail");
+      });
+  }
+
+  async function settings(key) {
+    if (!active) return;
+    try {
+      const r = await fetch(`${domain}/settings`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      if (!r.ok) throw new Error(r.error || r.message || "API error");
+      const data = await r.json();
+      return key ? data[key] : data;
+    } catch (e) {
+      console.error(e);
+      ui.view("api-fail");
+    }
+  }
+
+  async function settingsPush(key, value) {
+    if (!active) return;
+    await fetch(domain + '/settings', {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        key: key,
+        value: value
+      })
+    })
+      .then(async (r) => {
+        if (!r.ok) throw new Error(r.error || r.message || "API error");
+        return await r.json();
+      })
+      .then(r => {
+        return key ? (r[key] || null) : r;
       })
       .catch((e) => {
         console.error(e);
