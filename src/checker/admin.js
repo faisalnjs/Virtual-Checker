@@ -88,6 +88,7 @@ try {
         if (document.getElementById("sort-segment-input")) document.getElementById("sort-segment-input").addEventListener("input", updateQuestionReports);
         if (document.getElementById("sort-question-input")) document.getElementById("sort-question-input").addEventListener("input", updateQuestionReports);
         if (document.getElementById("sort-seat-input")) document.getElementById("sort-seat-input").addEventListener("input", updateQuestionReports);
+        if (document.getElementById("filter-segment-input")) document.getElementById("filter-segment-input").addEventListener("input", updateQuestions);
         await fetch(domain + '/segments', {
           method: "GET",
           headers: {
@@ -101,6 +102,12 @@ try {
           .then(async c => {
             segments = c;
             if (document.getElementById("course-period-input") && !loadedSegmentEditor && !loadedSegmentCreator) updateSegments();
+            if (document.getElementById("filter-segment-input")) {
+              document.getElementById("filter-segment-input").innerHTML = '<option value="" selected>#</option>';
+              segments.forEach(segment => {
+                document.getElementById("filter-segment-input").innerHTML += `<option value="${segment.number}">${segment.number}</option>`;
+              });
+            }
             if (document.getElementById("speed-mode-segments")) updateSpeedModeSegments();
             await fetch(domain + '/questions', {
               method: "GET",
@@ -772,15 +779,21 @@ try {
   function updateQuestions() {
     if (questions.length > 0) {
       document.querySelector('.questions .section').innerHTML = '';
-      questions.forEach(q => {
+      var filteredQuestions = questions;
+      if (document.getElementById("filter-segment-input")) {
+        var selectedSegment = segments.find(segment => String(segment.number) === document.getElementById("filter-segment-input").value);
+        if (selectedSegment) filteredQuestions = filteredQuestions.filter(q => JSON.parse(selectedSegment.question_ids).find(qId => String(qId.id) === String(q.id)));
+      }
+      console.log(questions, filteredQuestions)
+      filteredQuestions.forEach(q => {
         var question = document.createElement('div');
         question.className = "section";
         question.id = `question-${q.id}`;
         var buttonGrid = document.createElement('div');
         buttonGrid.className = "button-grid inputs";
+        var allSegmentsQuestionIsIn = segments.filter(e => JSON.parse(e.question_ids).find(qId => String(qId.id) === String(q.id)));
         var segmentsString = "";
         segments.forEach(s => {
-          var allSegmentsQuestionIsIn = segments.filter(e => JSON.parse(e.question_ids).find(qId => qId.id == q.id));
           segmentsString += `<option value="${s.number}"${(allSegmentsQuestionIsIn[0] && (allSegmentsQuestionIsIn[0].number === s.number)) ? ' selected' : ''}>${s.number}</option>`;
         });
         buttonGrid.innerHTML = `<button square data-select><i class="bi bi-circle"></i><i class="bi bi-circle-fill"></i></button><div class="input-group small"><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-id-input" value="${q.id}" disabled /></div></div><div class="input-group small"><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-number-input" value="${q.number}" placeholder="${q.number}" /></div></div><div class="input-group small"><div class="space" id="question-container"><select id="question-segment-input">${segmentsString}</select></div></div><div class="input-group"><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-text-input" value="${q.question}" placeholder="${q.question}" /></div></div><button square data-toggle-latex><i class="bi bi-${q.latex ? 'calculator-fill' : 'cursor-text'}"></i></button><button square data-remove-question-input><i class="bi bi-trash"></i></button><button square data-toggle-question><i class="bi bi-caret-down-fill"></i><i class="bi bi-caret-up-fill"></i></button>`;
