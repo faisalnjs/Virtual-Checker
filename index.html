@@ -52,10 +52,9 @@
     </svg>
     <div class="info">
       <h1>Virtual Checker</h1>
-      <div class="menu">
-        <h6>&nbsp;</h6>
-        <a href="/admin/">- Admin -</a>
-      </div>
+      <button class="icon menu" data-modal-view="menu">
+        <i class="bi bi-list"></i>
+      </button>
     </div>
   </div>
   <div id="checker">
@@ -407,6 +406,22 @@
         Add <code><span class="hostname"></span></code>
       </li>
     </ol>
+  </dialog>
+  <dialog data-modal-page="api-fail" data-page-title="API Offline">
+    <p>
+      The Virtual Checker API is currently offline. Please try again later, check for <a
+        href="https://status.dangoweb.com/">server maintenance</a>, or contact support below.
+    </p>
+    <div class="row center">
+      <a href="https://github.com/faisalnjs/virtual-checker/issues" class="icon"><i class="bi bi-github"></i></a>
+      <a href="https://faisaln.com/discord" class="icon"><i class="bi bi-discord"></i></a>
+      <a href="mailto:contact@faisaln.com" class="icon"><i class="bi bi-envelope-fill"></i></a>
+    </div>
+  </dialog>
+  <dialog data-modal-page="menu" data-page-title="Virtual Checker">
+    <div class="menu-icons">
+      <a href="/admin/" tooltip="Admin"><i class="bi bi-gear-wide-connected"></i></a>
+    </div>
   </dialog>
   <dialog data-modal-page="no-course" data-page-title="Course Not Found">
     <p>The entered seat code does not match any course in the system. Please check your code and try again.</p>

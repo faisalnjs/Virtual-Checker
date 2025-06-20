@@ -52,13 +52,9 @@
     </svg>
     <div class="info">
       <h1>Virtual Checker</h1>
-      <div class="menu">
-        <h6>- Reports -</h6>
-        <a href="/admin/">- Segments -</a>
-        <a href="/admin/questions">- Questions -</a>
-        <a href="/admin/responses">- Responses -</a>
-        <a href="/">- Exit -</a>
-      </div>
+      <button class="icon menu" data-modal-view="menu">
+        <i class="bi bi-list"></i>
+      </button>
     </div>
   </div>
   <div id="checker">
@@ -327,6 +323,16 @@
       <a href="https://github.com/faisalnjs/virtual-checker/issues" class="icon"><i class="bi bi-github"></i></a>
       <a href="https://faisaln.com/discord" class="icon"><i class="bi bi-discord"></i></a>
       <a href="mailto:contact@faisaln.com" class="icon"><i class="bi bi-envelope-fill"></i></a>
+    </div>
+  </dialog>
+  <dialog data-modal-page="menu" data-page-title="Virtual Checker">
+    <div class="menu-icons">
+      <a href="/admin/" tooltip="Segments"><i class="bi bi-list-check"></i></a>
+      <a href="/admin/questions" tooltip="Questions"><i class="bi bi-patch-question"></i></a>
+      <a href="/admin/responses" tooltip="Responses"><i class="bi bi-chat-left-text"></i></a>
+      <a href="/admin/reports" class="active" tooltip="Reports"><i class="bi bi-bar-chart"></i></a>
+      <a href="/admin/editor" tooltip="Segment Editor"><i class="bi bi-pencil"></i></a>
+      <a href="/" tooltip="Exit"><i class="bi bi-door-open"></i></a>
     </div>
   </dialog>
   <dialog data-modal-page="speed" data-page-title="Speed Mode">

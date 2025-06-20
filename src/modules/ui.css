@@ -51,6 +51,41 @@ dialog #version-string code {
   font-size: 15px;
 }
 
+dialog .menu-icons {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-content: center;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 7.5px;
+  padding-top: 5px;
+}
+
+dialog .menu-icons > * {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: 2px solid var(--surface-color);
+  border-radius: 5px;
+  min-width: calc((100% - 15px) / 3);
+  font-size: 25px;
+  padding: 10px;
+  opacity: 0.75;
+  transition: 0.25s;
+}
+
+dialog .menu-icons > *:hover,
+dialog .menu-icons > *.active {
+  background: var(--surface-color);
+  opacity: 1;
+  transition: 0.25s;
+}
+
+dialog .menu-icons > *.active {
+  pointer-events: none;
+}
+
 div[data-modal-page] {
   display: flex;
   flex-direction: column;

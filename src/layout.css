@@ -77,21 +77,8 @@ div.spacer {
 }
 
 #header .menu {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  max-height: 30px;
-  overflow: hidden;
-  transition: 0.25s var(--easing);
-  cursor: pointer;
+  margin-top: 5px;
   border-radius: 10px;
-}
-
-#header .menu:hover {
-  max-height: 200px;
-  transition: 0.25s var(--easing);
-  background-color: var(--surface-color);
-  padding: 10px 15px 12.5px 15px;
 }
 
 #checker {
