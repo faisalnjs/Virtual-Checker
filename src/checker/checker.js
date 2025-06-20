@@ -332,7 +332,7 @@ try {
         }
         storage.set("questionsAnswered", qA);
         resetInputs();
-        if ((typeof r.correct === 'undefined') || !r.correct) nextQuestion();
+        if ((typeof r.correct === 'undefined') || r.correct || (typeof r.error !== 'undefined')) nextQuestion();
         updateQuestion();
         var storageClickMode = "text";
         if (mode === "math" && !multipleChoice) {
