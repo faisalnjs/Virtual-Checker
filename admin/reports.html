@@ -125,8 +125,11 @@
     <button class="icon" data-modal-view="settings">
       <i class="bi bi-gear"></i>
     </button>
+    <button class="icon" data-modal-view="export-report">
+      <i class="bi bi-download"></i>
+    </button>
     <button class="icon" data-polling>
-      <i class="bi bi-skip-forward-circle-fill"></i>
+      <i class="bi bi-skip-forward-circle"></i>
       <i class="bi bi-stop-circle-fill" style="display: none;"></i>
     </button>
     <button class="icon" data-expand-reports>
@@ -357,6 +360,33 @@
     </select>
     <div data-modal-actions>
       <button id="sort-segments-button">Sort</button>
+    </div>
+  </dialog>
+  <dialog data-modal-page="export-report" data-page-title="Export CSV">
+    <p>
+      Export reports to a spreadsheet file. The export will include segment summaries from the selected options.
+    </p>
+    <label for="export-report-course">Course</label>
+    <select id="export-report-course"></select>
+    <label for="export-report-period">Period</label>
+    <select id="export-report-period">
+      <option value="">All Periods</option>
+      <option value="1">1</option>
+      <option value="2">2</option>
+      <option value="3">3</option>
+      <option value="4">4</option>
+      <option value="5">5</option>
+      <option value="6">6</option>
+      <option value="7">7</option>
+      <option value="8">8</option>
+      <option value="9">9</option>
+    </select>
+    <label for="export-report-start-date">Start Date (Inclusive)</label>
+    <input type="date" id="export-report-start-date" value="" />
+    <label for="export-report-end-date">End Date (Inclusive)</label>
+    <input type="date" id="export-report-end-date" value="" />
+    <div data-modal-actions>
+      <button id="export-report">Export</button>
     </div>
   </dialog>
   <div id="loader" class="active">

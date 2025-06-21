@@ -76,6 +76,7 @@ try {
           const course = courses.find(c => String(c.id) === document.getElementById("course-period-input").value);
           if (document.getElementById("course-input") && course) document.getElementById("course-input").value = course.name;
         }
+        if (document.getElementById("export-report-course")) updateExportReportCourses();
         if (document.getElementById("course-period-input")) document.getElementById("course-period-input").addEventListener("change", updateResponses);
         if (document.getElementById("sort-segment-input")) document.getElementById("sort-segment-input").addEventListener("input", updateResponses);
         if (document.getElementById("sort-question-input")) document.getElementById("sort-question-input").addEventListener("input", updateResponses);
@@ -253,6 +254,7 @@ try {
   if (document.getElementById('new-course-button')) document.getElementById('new-course-button').addEventListener("click", newCourseModal);
   if (document.getElementById('remove-segments-due-dates-button')) document.getElementById('remove-segments-due-dates-button').addEventListener("click", removeAllSegmentsDueDates);
   if (document.querySelector('[data-clear-responses]')) document.querySelector('[data-clear-responses]').addEventListener("click", clearResponsesConfirm1);
+  if (document.getElementById('export-report')) document.getElementById('export-report').addEventListener("click", exportReport);
 
   function toggleSelecting() {
     if (!active) return;
@@ -286,11 +288,11 @@ try {
     if (!active) return;
     if (polling) {
       polling = false;
-      document.querySelector('[data-polling] .bi-skip-forward-circle-fill').style.display = "block";
+      document.querySelector('[data-polling] .bi-skip-forward-circle').style.display = "block";
       document.querySelector('[data-polling] .bi-stop-circle-fill').style.display = "none";
     } else {
       polling = true;
-      document.querySelector('[data-polling] .bi-skip-forward-circle-fill').style.display = "none";
+      document.querySelector('[data-polling] .bi-skip-forward-circle').style.display = "none";
       document.querySelector('[data-polling] .bi-stop-circle-fill').style.display = "block";
       let pollingInterval = setInterval(() => {
         if (!polling) {
@@ -306,7 +308,7 @@ try {
     if (!active) return;
     if (!document.querySelector('[data-polling]')) return;
     polling = false;
-    document.querySelector('[data-polling] .bi-skip-forward-circle-fill').style.display = "block";
+    document.querySelector('[data-polling] .bi-skip-forward-circle').style.display = "block";
     document.querySelector('[data-polling] .bi-stop-circle-fill').style.display = "none";
   }
 
@@ -2293,6 +2295,74 @@ try {
       })
       .then(r => {
         return key ? (r[key] || null) : r;
+      })
+      .catch((e) => {
+        console.error(e);
+        ui.view("api-fail");
+      });
+  }
+
+  function updateExportReportCourses() {
+    document.getElementById("export-report-course").innerHTML = '<option value="">All Courses</option>';
+    courses.forEach(course => {
+      var option = document.createElement('option');
+      option.value = course.id;
+      option.innerHTML = course.name;
+      document.getElementById("export-report-course").appendChild(option);
+    });
+  }
+
+  async function exportReport() {
+    if (!active) return;
+    this.disabled = true;
+    document.getElementById("export-report-course").disabled = true;
+    document.getElementById("export-report-period").disabled = true;
+    document.getElementById("export-report-start-date").disabled = true;
+    document.getElementById("export-report-end-date").disabled = true;
+    ui.toast("Generating report...", 3000, "info", "bi bi-download");
+    var exportReportOptions = {};
+    if (document.getElementById("export-report-course").value) exportReportOptions['course_id'] = document.getElementById("export-report-course").value;
+    if (document.getElementById("export-report-period").value) exportReportOptions['period'] = document.getElementById("export-report-period").value;
+    if (document.getElementById("export-report-start-date").value) exportReportOptions['start'] = document.getElementById("export-report-start-date").value;
+    if (document.getElementById("export-report-end-date").value) exportReportOptions['end'] = document.getElementById("export-report-end-date").value;
+    unsavedChanges = true;
+    await fetch(domain + '/report', {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(exportReportOptions)
+    })
+      .then(async (r) => {
+        if (!r.ok) throw new Error(r.error || r.message || "API error");
+        return await r.json();
+      })
+      .then(r => {
+        if (!r || !r.filename) {
+          ui.toast("Error generating report.", 3000, "error", "bi bi-exclamation-triangle-fill");
+          this.disabled = false;
+          document.getElementById("export-report-course").disabled = false;
+          document.getElementById("export-report-period").disabled = false;
+          document.getElementById("export-report-start-date").disabled = false;
+          document.getElementById("export-report-end-date").disabled = false;
+          unsavedChanges = true;
+          return;
+        }
+        unsavedChanges = false;
+        ui.toast("Report generated successfully.", 3000, "success", "bi bi-check-circle-fill");
+        ui.toast(`Downloading ${r.filename.split('/')[r.filename.split('/').length - 1]}...`, 3000, "info", "bi bi-download");
+        const link = document.createElement('a');
+        link.href = r.filename;
+        link.download = r.filename.split('/')[r.filename.split('/').length - 1];
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        this.disabled = false;
+        document.getElementById("export-report-course").disabled = false;
+        document.getElementById("export-report-period").disabled = false;
+        document.getElementById("export-report-start-date").disabled = false;
+        document.getElementById("export-report-end-date").disabled = false;
+        ui.toast("Report downloaded successfully.", 3000, "success", "bi bi-check-circle-fill");
       })
       .catch((e) => {
         console.error(e);
