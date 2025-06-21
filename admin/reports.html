@@ -87,7 +87,9 @@
           </div>
         </div>
       </div>
-      <label class="checkboxGroup"><input type="checkbox" id="hideIncorrectAttempts" hidden><div class="checkbox"></div> Hide Incorrect Attempts</label>
+      <label class="checkboxGroup"><input type="checkbox" id="hideIncorrectAttempts" hidden>
+        <div class="checkbox"></div> Hide Incorrect Attempts
+      </label>
     </div>
     <div class="section">
       <h1>Seat Codes</h1>
@@ -362,9 +364,9 @@
       <button id="sort-segments-button">Sort</button>
     </div>
   </dialog>
-  <dialog data-modal-page="export-report" data-page-title="Export CSV">
+  <dialog data-modal-page="export-report" data-page-title="Export Report">
     <p>
-      Export reports to a spreadsheet file. The export will include segment summaries from the selected options.
+      Generate a CSV spreadsheet file export containing segment summaries from the selected optional options.
     </p>
     <label for="export-report-course">Course</label>
     <select id="export-report-course"></select>
@@ -381,12 +383,12 @@
       <option value="8">8</option>
       <option value="9">9</option>
     </select>
-    <label for="export-report-start-date">Start Date (Inclusive)</label>
+    <label for="export-report-start-date">Start Due Date (Inclusive)</label>
     <input type="date" id="export-report-start-date" value="" />
-    <label for="export-report-end-date">End Date (Inclusive)</label>
+    <label for="export-report-end-date">End Due Date (Inclusive)</label>
     <input type="date" id="export-report-end-date" value="" />
     <div data-modal-actions>
-      <button id="export-report">Export</button>
+      <button id="export-report">Generate</button>
     </div>
   </dialog>
   <div id="loader" class="active">
