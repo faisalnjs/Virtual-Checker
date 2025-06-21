@@ -17,6 +17,7 @@ var polling = false;
 var active = false;
 var timestamps = false;
 var speed = false;
+var reorder = false;
 var expandedReports = [];
 var loadedSegment = null;
 var loadedSegmentEditor = false;
@@ -242,6 +243,7 @@ try {
   if (document.querySelector('[data-timestamps]')) document.querySelector('[data-timestamps]').addEventListener("click", toggleTimestamps);
   if (document.querySelector('[data-speed]')) document.querySelector('[data-speed]').addEventListener("click", toggleSpeedMode);
   if (document.getElementById('enable-speed-mode-button')) document.getElementById('enable-speed-mode-button').addEventListener("click", enableSpeedMode);
+  if (document.querySelector('[data-reorder]')) document.querySelector('[data-reorder]').addEventListener("click", toggleReorder);
   if (document.getElementById('sort-segments-due')) document.getElementById('sort-segments-due').addEventListener("click", sortSegmentsDue);
   if (document.getElementById('sort-segments-increasing')) document.getElementById('sort-segments-increasing').addEventListener("click", sortSegmentsIncreasing);
   if (document.getElementById('sort-segments-decreasing')) document.getElementById('sort-segments-decreasing').addEventListener("click", sortSegmentsDecreasing);
@@ -384,7 +386,7 @@ try {
             var buttonGrid = document.createElement('div');
             buttonGrid.className = "button-grid inputs";
             buttonGrid.setAttribute("data-swapy-item", `segmentReorder-${s.number}`);
-            buttonGrid.innerHTML = `<button square data-select><i class="bi bi-circle"></i><i class="bi bi-circle-fill"></i></button><div class="input-group small"><div class="space" id="question-container"><input type="text" autocomplete="off" id="segment-number-input" value="${s.number}" placeholder="${s.number}" /></div></div><div class="input-group"><div class="space" id="question-container"><input type="text" autocomplete="off" id="segment-name-input" value="${s.name}" placeholder="${s.name}" /></div></div><div class="input-group mediuml"><div class="space" id="question-container"><input type="date" id="segment-due-date" value="${s.due || ''}"></div></div><button square data-remove-segment-input><i class="bi bi-trash"></i></button><button square data-edit-segment><i class="bi bi-pencil"></i></button><div class="drag" data-swapy-handle><i class="bi bi-grip-vertical"></i></div>`;
+            buttonGrid.innerHTML = `<button square data-select tooltip="Select Segment"><i class="bi bi-circle"></i><i class="bi bi-circle-fill"></i></button><div class="input-group small"><div class="space" id="question-container"><input type="text" autocomplete="off" id="segment-number-input" value="${s.number}" placeholder="${s.number}" /></div></div><div class="input-group"><div class="space" id="question-container"><input type="text" autocomplete="off" id="segment-name-input" value="${s.name}" placeholder="${s.name}" /></div></div><div class="input-group mediuml"><div class="space" id="question-container"><input type="date" id="segment-due-date" value="${s.due || ''}"></div></div><button square data-remove-segment-input tooltip="Remove Segment"><i class="bi bi-trash"></i></button><button square data-edit-segment tooltip="Edit Segment"><i class="bi bi-pencil"></i></button><div class="drag" data-swapy-handle><i class="bi bi-grip-vertical"></i></div>`;
             segment.appendChild(buttonGrid);
             document.querySelector('.segments .section').appendChild(segment);
           }
@@ -466,18 +468,18 @@ try {
     return window.location.href = `/admin/editor?segment=${segment || this.parentElement.parentElement.id.split('segment-')[1]}`;
   }
 
-  // function calculateButtonHeights(container) {
-  //   if (!active) return;
-  //   let totalHeight = 0;
-  //   const buttons = container.querySelectorAll('button');
-  //   buttons.forEach(button => {
-  //     const style = window.getComputedStyle(button);
-  //     if (style.display !== 'none') {
-  //       totalHeight += button.getBoundingClientRect().height;
-  //     }
-  //   });
-  //   return totalHeight;
-  // }
+  function calculateButtonHeights(container) {
+    if (!active) return;
+    let totalHeight = 0;
+    const buttons = container.querySelectorAll('button');
+    buttons.forEach(button => {
+      const style = window.getComputedStyle(button);
+      if (style.display !== 'none') {
+        totalHeight += button.getBoundingClientRect().height;
+      }
+    });
+    return totalHeight;
+  }
 
   // Save Course Order
   document.getElementById("save-course-order-button")?.addEventListener("click", () => {
@@ -788,7 +790,6 @@ try {
         var selectedSegment = segments.find(segment => String(segment.number) === document.getElementById("filter-segment-input").value);
         if (selectedSegment) filteredQuestions = filteredQuestions.filter(q => JSON.parse(selectedSegment.question_ids).find(qId => String(qId.id) === String(q.id)));
       }
-      console.log(questions, filteredQuestions)
       filteredQuestions.forEach(q => {
         var question = document.createElement('div');
         question.className = "section";
@@ -800,7 +801,7 @@ try {
         segments.forEach(s => {
           segmentsString += `<option value="${s.number}"${(allSegmentsQuestionIsIn[0] && (allSegmentsQuestionIsIn[0].number === s.number)) ? ' selected' : ''}>${s.number}</option>`;
         });
-        buttonGrid.innerHTML = `<button square data-select><i class="bi bi-circle"></i><i class="bi bi-circle-fill"></i></button><div class="input-group small"><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-id-input" value="${q.id}" disabled /></div></div><div class="input-group small"><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-number-input" value="${q.number}" placeholder="${q.number}" /></div></div><div class="input-group small"><div class="space" id="question-container"><select id="question-segment-input">${segmentsString}</select></div></div><div class="input-group"><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-text-input" value="${q.question}" placeholder="${q.question}" /></div></div><button square data-toggle-latex><i class="bi bi-${q.latex ? 'calculator-fill' : 'cursor-text'}"></i></button><button square data-remove-question-input><i class="bi bi-trash"></i></button><button square data-toggle-question><i class="bi bi-caret-down-fill"></i><i class="bi bi-caret-up-fill"></i></button>`;
+        buttonGrid.innerHTML = `<button square data-select tooltip="Select Question"><i class="bi bi-circle"></i><i class="bi bi-circle-fill"></i></button><div class="input-group small"><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-id-input" value="${q.id}" disabled /></div></div><div class="input-group small"><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-number-input" value="${q.number}" placeholder="${q.number}" /></div></div><div class="input-group small"><div class="space" id="question-container"><select id="question-segment-input">${segmentsString}</select></div></div><div class="input-group"><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-text-input" value="${q.question}" placeholder="${q.question}" /></div></div><button square data-toggle-latex tooltip="Toggle LaTeX Title"><i class="bi bi-${q.latex ? 'calculator-fill' : 'cursor-text'}"></i></button><button square data-remove-question-input tooltip="Remove Question"><i class="bi bi-trash"></i></button><button square data-toggle-question tooltip="Expand Question"><i class="bi bi-caret-down-fill"></i><i class="bi bi-caret-up-fill"></i></button>`;
         question.appendChild(buttonGrid);
         var images = document.createElement('div');
         images.classList = "attachments";
@@ -957,7 +958,7 @@ try {
     buttonGrid.className = "button-grid inputs";
     var segmentsString = "";
     segments.forEach(s => segmentsString += `<option value="${s.number}">${s.number}</option>`);
-    buttonGrid.innerHTML = `<button square data-select><i class="bi bi-circle"></i><i class="bi bi-circle-fill"></i></button><div class="input-group small"><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-id-input" value="" disabled /></div></div><div class="input-group small"><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-number-input" value="" /></div></div><div class="input-group small"><div class="space" id="question-container"><select id="question-segment-input">${segmentsString}</select></div></div><div class="input-group"><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-text-input" value="" /></div></div><button square data-toggle-latex disabled><i class="bi bi-cursor-text"></i></button><button square data-remove-question-input><i class="bi bi-trash"></i></button><button square data-toggle-question><i class="bi bi-caret-down-fill"></i><i class="bi bi-caret-up-fill"></i></button>`;
+    buttonGrid.innerHTML = `<button square data-select tooltip="Select Question"><i class="bi bi-circle"></i><i class="bi bi-circle-fill"></i></button><div class="input-group small"><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-id-input" value="" disabled /></div></div><div class="input-group small"><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-number-input" value="" /></div></div><div class="input-group small"><div class="space" id="question-container"><select id="question-segment-input">${segmentsString}</select></div></div><div class="input-group"><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-text-input" value="" /></div></div><button square data-toggle-latex disabled tooltip="Toggle LaTeX Title"><i class="bi bi-cursor-text"></i></button><button square data-remove-question-input tooltip="Remove Question"><i class="bi bi-trash"></i></button><button square data-toggle-question tooltip="Expand Question"><i class="bi bi-caret-down-fill"></i><i class="bi bi-caret-up-fill"></i></button>`;
     group.appendChild(buttonGrid);
     this.parentElement.insertBefore(group, this.parentElement.children[this.parentElement.children.length - 1]);
     document.querySelectorAll('[data-add-question-input]').forEach(a => a.addEventListener('click', addQuestion));
@@ -1105,7 +1106,7 @@ try {
         var buttonGrid = document.createElement('div');
         buttonGrid.className = "button-grid inputs";
         buttonGrid.id = `response-${r.id}`;
-        buttonGrid.innerHTML = `<input type="text" autocomplete="off" class="small" id="response-id-input" value="${r.id}" disabled hidden />${(r.flagged == '1') ? `<button square data-unflag-response><i class="bi bi-flag-fill"></i></button>` : `<button square data-flag-response><i class="bi bi-flag"></i></button>`}<input type="text" autocomplete="off" class="small" id="response-segment-input" value="${r.segment}" disabled data-segment /><input type="text" autocomplete="off" class="small" id="response-question-input" value="${questions.find(q => q.id == r.question_id).number}" disabled data-question /><input type="text" autocomplete="off" class="small${(((r.status === 'Invalid Format') || (r.status === 'Unknown, Recorded')) && document.querySelector('.awaitingResponses .section') && (answers.find(a => a.id === questions.find(q => q.id == r.question_id).id).correct_answers.length > 0)) ? ' hideonhover' : ''}" id="response-seat-code-input" value="${r.seatCode}" disabled data-seat-code /><input type="text" autocomplete="off" class="small" id="response-time-taken-input" value="${timeTaken}" disabled data-time-taken${(typeof timeDifference != 'undefined') ? ` time="${timeDifference}"` : ''} /><input type="text" autocomplete="off" class="small" id="response-time-taken-input" value="${timeTakenToRevise}" disabled data-time-taken${(typeof timeDifference != 'undefined') ? ` time="${timeDifference}"` : ''} /><!--<input type="text" autocomplete="off" class="small" id="response-time-taken-input" value="${result}" disabled data-time-taken />--><input type="text" autocomplete="off" id="response-response-input" value="${responseString}" disabled />${(r.status === 'Incorrect') ? `<button square data-edit-reason><i class="bi bi-reply${(r.reason) ? '-fill' : ''}"></i></button>` : ''}<input type="text" autocomplete="off" class="smedium${(((r.status === 'Invalid Format') || (r.status === 'Unknown, Recorded')) && document.querySelector('.awaitingResponses .section') && (answers.find(a => a.id === questions.find(q => q.id == r.question_id).id).correct_answers.length > 0)) ? ' hideonhover' : ''}" id="response-timestamp-input" value="${date.getMonth() + 1}/${date.getDate()} ${hours % 12 || 12}:${minutes < 10 ? '0' + minutes : minutes} ${hours >= 12 ? 'PM' : 'AM'}" disabled />${(((r.status === 'Invalid Format') || (r.status === 'Unknown, Recorded')) && document.querySelector('.awaitingResponses .section') && (answers.find(a => a.id === questions.find(q => q.id == r.question_id).id).correct_answers.length > 0)) ? `<input type="text" autocomplete="off" class="showonhover" id="response-correct-responses-input" value="${correctResponsesString}" disabled />` : ''}<button square id="mark-correct-button"${(r.status === 'Correct') ? ' disabled' : ''}><i class="bi bi-check-circle${(r.status === 'Correct') ? '-fill' : ''}"></i></button><button square id="mark-incorrect-button"${(r.status === 'Incorrect') ? ' disabled' : ''}><i class="bi bi-x-circle${(r.status === 'Incorrect') ? '-fill' : ''}"></i></button>`;
+        buttonGrid.innerHTML = `<input type="text" autocomplete="off" class="small" id="response-id-input" value="${r.id}" disabled hidden />${(r.flagged == '1') ? `<button square data-unflag-response tooltip="Unflag Response"><i class="bi bi-flag-fill"></i></button>` : `<button square data-flag-response tooltip="Flag Response"><i class="bi bi-flag"></i></button>`}<input type="text" autocomplete="off" class="small" id="response-segment-input" value="${r.segment}" disabled data-segment /><input type="text" autocomplete="off" class="small" id="response-question-input" value="${questions.find(q => q.id == r.question_id).number}" disabled data-question /><input type="text" autocomplete="off" class="small${(((r.status === 'Invalid Format') || (r.status === 'Unknown, Recorded')) && document.querySelector('.awaitingResponses .section') && (answers.find(a => a.id === questions.find(q => q.id == r.question_id).id).correct_answers.length > 0)) ? ' hideonhover' : ''}" id="response-seat-code-input" value="${r.seatCode}" disabled data-seat-code /><input type="text" autocomplete="off" class="small" id="response-time-taken-input" value="${timeTaken}" disabled data-time-taken${(typeof timeDifference != 'undefined') ? ` time="${timeDifference}"` : ''} /><input type="text" autocomplete="off" class="small" id="response-time-taken-input" value="${timeTakenToRevise}" disabled data-time-taken${(typeof timeDifference != 'undefined') ? ` time="${timeDifference}"` : ''} /><!--<input type="text" autocomplete="off" class="small" id="response-time-taken-input" value="${result}" disabled data-time-taken />--><input type="text" autocomplete="off" id="response-response-input" value="${responseString}" disabled />${(r.status === 'Incorrect') ? `<button square data-edit-reason tooltip="Edit Reason"><i class="bi bi-reply${(r.reason) ? '-fill' : ''}"></i></button>` : ''}<input type="text" autocomplete="off" class="smedium${(((r.status === 'Invalid Format') || (r.status === 'Unknown, Recorded')) && document.querySelector('.awaitingResponses .section') && (answers.find(a => a.id === questions.find(q => q.id == r.question_id).id).correct_answers.length > 0)) ? ' hideonhover' : ''}" id="response-timestamp-input" value="${date.getMonth() + 1}/${date.getDate()} ${hours % 12 || 12}:${minutes < 10 ? '0' + minutes : minutes} ${hours >= 12 ? 'PM' : 'AM'}" disabled />${(((r.status === 'Invalid Format') || (r.status === 'Unknown, Recorded')) && document.querySelector('.awaitingResponses .section') && (answers.find(a => a.id === questions.find(q => q.id == r.question_id).id).correct_answers.length > 0)) ? `<input type="text" autocomplete="off" class="showonhover" id="response-correct-responses-input" value="${correctResponsesString}" disabled />` : ''}<button square id="mark-correct-button"${(r.status === 'Correct') ? ' disabled' : ''} tooltip="Mark Correct"><i class="bi bi-check-circle${(r.status === 'Correct') ? '-fill' : ''}"></i></button><button square id="mark-incorrect-button"${(r.status === 'Incorrect') ? ' disabled' : ''} tooltip="Mark Incorrect"><i class="bi bi-x-circle${(r.status === 'Incorrect') ? '-fill' : ''}"></i></button>`;
         if (document.querySelector('.responses .section')) document.querySelector('.responses .section').appendChild(buttonGrid);
         if (((r.status === 'Invalid Format') || (r.status === 'Unknown, Recorded')) && document.querySelector('.awaitingResponses .section')) document.querySelector('.awaitingResponses .section').appendChild(buttonGrid);
       }
@@ -1187,7 +1188,7 @@ try {
     trendingResponses.filter(t => t.count > 1).forEach(r => {
       var buttonGrid = document.createElement('div');
       buttonGrid.className = "button-grid inputs";
-      buttonGrid.innerHTML = `<input type="text" autocomplete="off" class="small" id="response-id-input" value="${r.id}" disabled hidden /><input type="text" autocomplete="off" class="small" id="response-segment-input" value="${r.segment}" disabled data-segment /><input type="text" autocomplete="off" class="small" id="response-question-input" value="${questions.find(q => q.id == r.question_id).number}" disabled data-question /><input type="text" autocomplete="off" id="response-response-input" value="${r.response}" disabled /><input type="text" autocomplete="off" class="small" id="response-count-input" value="${r.count}" disabled /><button square id="mark-correct-button"${(r.status === 'Correct') ? ' disabled' : ''}><i class="bi bi-check-circle${(r.status === 'Correct') ? '-fill' : ''}"></i></button><button square id="mark-incorrect-button"${(r.status === 'Incorrect') ? ' disabled' : ''}><i class="bi bi-x-circle${(r.status === 'Incorrect') ? '-fill' : ''}"></i></button>`;
+      buttonGrid.innerHTML = `<input type="text" autocomplete="off" class="small" id="response-id-input" value="${r.id}" disabled hidden /><input type="text" autocomplete="off" class="small" id="response-segment-input" value="${r.segment}" disabled data-segment /><input type="text" autocomplete="off" class="small" id="response-question-input" value="${questions.find(q => q.id == r.question_id).number}" disabled data-question /><input type="text" autocomplete="off" id="response-response-input" value="${r.response}" disabled /><input type="text" autocomplete="off" class="small" id="response-count-input" value="${r.count}" disabled /><button square id="mark-correct-button"${(r.status === 'Correct') ? ' disabled' : ''} tooltip="Mark Correct"><i class="bi bi-check-circle${(r.status === 'Correct') ? '-fill' : ''}"></i></button><button square id="mark-incorrect-button"${(r.status === 'Incorrect') ? ' disabled' : ''} tooltip="Mark Incorrect"><i class="bi bi-x-circle${(r.status === 'Incorrect') ? '-fill' : ''}"></i></button>`;
       document.querySelector('.trendingResponses .section').appendChild(buttonGrid);
     });
     expandedReports.forEach(er => {
@@ -1524,64 +1525,66 @@ try {
     }, 1000);
   }
 
-  // function toggleReorder() {
-  //   if (!active) return;
-  //   if (reorder) {
-  //     reorder = false;
-  //     document.querySelector('[data-reorder] .bi-arrows-move').style.display = "block";
-  //     document.querySelector('[data-reorder] .bi-x').style.display = "none";
-  //     const reorderSections = document.querySelectorAll(':has(> .reorder)');
-  //     reorderSections.forEach(reorderSection => {
-  //       const fromHeight = reorderSection?.getBoundingClientRect().height;
-  //       reorderSection.parentElement.querySelector('.selector').style.display = 'flex';
-  //       document.querySelectorAll('#save-button').forEach(w => w.style.display = '');
-  //       reorderSection.style.display = 'none';
-  //       const container = reorderSection.parentElement;
-  //       const target = reorderSection.parentElement.querySelector('.selector');
-  //       const toHeight = target.getBoundingClientRect().height + calculateButtonHeights(target);
-  //       ui.animate(
-  //         container,
-  //         fromHeight
-  //           ? {
-  //             height: fromHeight + "px",
-  //           }
-  //           : undefined,
-  //         {
-  //           height: toHeight + "px",
-  //         },
-  //         500,
-  //         false,
-  //       );
-  //     });
-  //   } else {
-  //     reorder = true;
-  //     document.querySelector('[data-reorder] .bi-arrows-move').style.display = "none";
-  //     document.querySelector('[data-reorder] .bi-x').style.display = "block";
-  //     const reorderSections = document.querySelectorAll(':has(> .reorder)');
-  //     reorderSections.forEach(reorderSection => {
-  //       const fromHeight = reorderSection.parentElement.querySelector('.selector')?.getBoundingClientRect().height;
-  //       reorderSection.style.display = 'flex';
-  //       reorderSection.parentElement.querySelector('.selector').style.display = 'none';
-  //       document.querySelectorAll('#save-button').forEach(w => w.style.display = 'none');
-  //       const container = reorderSection.parentElement;
-  //       const target = reorderSection;
-  //       const toHeight = target.getBoundingClientRect().height + calculateButtonHeights(target);
-  //       ui.animate(
-  //         container,
-  //         fromHeight
-  //           ? {
-  //             height: fromHeight + "px",
-  //           }
-  //           : undefined,
-  //         {
-  //           height: toHeight + "px",
-  //         },
-  //         500,
-  //         false,
-  //       );
-  //     });
-  //   }
-  // }
+  function toggleReorder() {
+    if (!active) return;
+    if (reorder) {
+      reorder = false;
+      document.querySelector('[data-reorder] .bi-arrows-move').style.display = "block";
+      document.querySelector('[data-reorder] .bi-x').style.display = "none";
+      document.querySelector('.section:has(> .segments)').style.display = "flex";
+      const reorderSections = document.querySelectorAll(':has(> .reorder)');
+      reorderSections.forEach(reorderSection => {
+        const fromHeight = reorderSection?.getBoundingClientRect().height;
+        reorderSection.parentElement.querySelector('.selector').style.display = 'flex';
+        document.querySelectorAll('#save-button').forEach(w => w.style.display = '');
+        reorderSection.style.display = 'none';
+        const container = reorderSection.parentElement;
+        const target = reorderSection.parentElement.querySelector('.selector');
+        const toHeight = target.getBoundingClientRect().height + calculateButtonHeights(target);
+        ui.animate(
+          container,
+          fromHeight
+            ? {
+              height: fromHeight + "px",
+            }
+            : undefined,
+          {
+            height: toHeight + "px",
+          },
+          500,
+          false,
+        );
+      });
+    } else {
+      reorder = true;
+      document.querySelector('[data-reorder] .bi-arrows-move').style.display = "none";
+      document.querySelector('[data-reorder] .bi-x').style.display = "block";
+      document.querySelector('.section:has(> .segments)').style.display = "none";
+      const reorderSections = document.querySelectorAll(':has(> .reorder)');
+      reorderSections.forEach(reorderSection => {
+        const fromHeight = reorderSection.parentElement.querySelector('.selector')?.getBoundingClientRect().height;
+        reorderSection.style.display = 'flex';
+        reorderSection.parentElement.querySelector('.selector').style.display = 'none';
+        document.querySelectorAll('#save-button').forEach(w => w.style.display = 'none');
+        const container = reorderSection.parentElement;
+        const target = reorderSection;
+        const toHeight = target.getBoundingClientRect().height + calculateButtonHeights(target);
+        ui.animate(
+          container,
+          fromHeight
+            ? {
+              height: fromHeight + "px",
+            }
+            : undefined,
+          {
+            height: toHeight + "px",
+          },
+          500,
+          false,
+        );
+      });
+    }
+  }
 
   function sortSegmentsDue() {
     if (!active) return;
