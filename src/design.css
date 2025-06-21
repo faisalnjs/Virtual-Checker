@@ -987,7 +987,11 @@ hidden,
   left: 15%;
   height: 70%;
   width: 70%;
-  transition: 0.25s top ease, 0.25s left ease, 0.25s height ease, 0.25s width ease;
+  transition:
+    0.25s top ease,
+    0.25s left ease,
+    0.25s height ease,
+    0.25s width ease;
 }
 
 .checkbox {
@@ -1007,7 +1011,11 @@ hidden,
   width: 0%;
   background: var(--accent-color);
   border-radius: 0.15rem;
-  transition: 0.25s top ease, 0.25s left ease, 0.25s height ease, 0.25s width ease;
+  transition:
+    0.25s top ease,
+    0.25s left ease,
+    0.25s height ease,
+    0.25s width ease;
 }
 
 .showonhover {
@@ -1042,4 +1050,16 @@ hidden,
 
 #segment-completed ul i {
   font-size: 15px;
+}
+
+#segment-completed:not(.mastery) > *:not(ul).mastery {
+  display: none;
+}
+
+#segment-completed.mastery > *:not(ul):not(.mastery) {
+  display: none;
+}
+
+body > canvas {
+  background: transparent;
 }

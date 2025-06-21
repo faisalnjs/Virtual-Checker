@@ -22,6 +22,7 @@ var loadedSegment = null;
 var loadedSegmentEditor = false;
 var loadedSegmentCreator = false;
 var unsavedChanges = false;
+var noReloadCourse = false;
 
 var draggableQuestionList = null;
 var draggableSegmentReorder = null;
@@ -49,7 +50,7 @@ try {
       })
       .then(async c => {
         courses = c;
-        if (document.getElementById("course-period-input") && !loadedSegmentEditor && !loadedSegmentCreator) {
+        if (document.getElementById("course-period-input") && !loadedSegmentEditor && !loadedSegmentCreator && !noReloadCourse) {
           document.getElementById("course-period-input").innerHTML = "";
           c.sort((a, b) => a.id - b.id).forEach(course => {
             var coursePeriods = JSON.parse(course.periods);
@@ -102,7 +103,7 @@ try {
           })
           .then(async c => {
             segments = c;
-            if (document.getElementById("course-period-input") && !loadedSegmentEditor && !loadedSegmentCreator) updateSegments();
+            if (document.getElementById("course-period-input") && !loadedSegmentEditor && !loadedSegmentCreator && !noReloadCourse) updateSegments();
             if (document.getElementById("filter-segment-input")) {
               document.getElementById("filter-segment-input").innerHTML = '<option value="" selected>#</option>';
               segments.forEach(segment => {
@@ -159,10 +160,11 @@ try {
                       })
                       .then(async r => {
                         responses = r;
-                        if (document.getElementById("course-period-input") && !loadedSegmentEditor && !loadedSegmentCreator) {
+                        if (document.getElementById("course-period-input") && !loadedSegmentEditor && !loadedSegmentCreator && !noReloadCourse) {
                           document.getElementById("course-period-input").value = courses.find(c => JSON.parse(c.periods).includes(Number(String(responses.sort((a, b) => String(a.seatCode)[0] - String(b.seatCode)[0])[0]?.seatCode)[0]))) ? courses.find(c => JSON.parse(c.periods).includes(Number(String(responses.sort((a, b) => String(a.seatCode)[0] - String(b.seatCode)[0])[0]?.seatCode)[0]))).id : 0;
                           await updateResponses();
                         }
+                        if (noReloadCourse) await updateResponses();
                         if (document.querySelector('.segment-reports')) updateSegments();
                         if (document.querySelector('.question-reports')) updateQuestionReports();
                         if (window.location.pathname.split('/admin/')[1] === 'editor') loadSegmentEditor();
@@ -204,7 +206,7 @@ try {
         ui.view("api-fail");
         pollingOff();
       });
-    if (document.getElementById("course-period-input") && !loadedSegmentEditor && !loadedSegmentCreator) {
+    if (document.getElementById("course-period-input") && !loadedSegmentEditor && !loadedSegmentCreator && !noReloadCourse) {
       if (document.querySelector('.course-reorder')) document.querySelector('.course-reorder').style.display = 'none';
       document.querySelectorAll('[data-remove-segment-input]').forEach(a => a.removeEventListener('click', removeSegment));
       document.querySelectorAll('[data-remove-segment-input]').forEach(a => a.addEventListener('click', removeSegment));
@@ -1304,6 +1306,7 @@ try {
       .then(() => {
         unsavedChanges = false;
         ui.toast("Successfully updated status.", 3000, "success", "bi bi-check-lg");
+        noReloadCourse = true;
         init();
       })
       .catch((e) => {
@@ -1362,6 +1365,7 @@ try {
       .then(() => {
         unsavedChanges = false;
         ui.toast("Successfully updated status.", 3000, "success", "bi bi-check-lg");
+        noReloadCourse = true;
         init();
       })
       .catch((e) => {

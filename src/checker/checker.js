@@ -3,11 +3,12 @@
 import * as ui from "/src/modules/ui.js";
 import storage from "/src/modules/storage.js";
 
-import { autocomplete } from "/src/symbols/symbols.js";
+import { autocomplete, uniqueSymbols } from "/src/symbols/symbols.js";
 import { unixToString, unixToTimeString } from "/src/modules/time.js";
 import { getExtendedPeriodRange } from "/src/periods/periods";
 import { convertLatexToAsciiMath, convertLatexToMarkup, renderMathInElement } from "mathlive";
 import mediumZoom from "medium-zoom";
+import confetti from "canvas-confetti";
 ``;
 
 try {
@@ -463,7 +464,7 @@ try {
           ui.view();
         } else {
           ui.startLoader();
-          ui.view("no-course");
+          return ui.view("no-course");
         }
         if (document.getElementById("course-input")) document.getElementById("course-input").value = course.name || "Unknown Course";
         if (document.querySelector('[data-syllabus-download]')) {
@@ -486,7 +487,11 @@ try {
         segmentsArray.sort((a, b) => a.order - b.order).forEach(segment => {
           const option = document.createElement('option');
           option.value = segment.number;
-          option.innerHTML = `${segment.number} - ${segment.name}${segment.due ? ` (Due ${new Date(`${segment.due}T00:00:00`).toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })})` : ''}`;
+          const allQuestionsCorrect = (JSON.parse(segment.question_ids).length > 0) && JSON.parse(segment.question_ids).every(questionId => {
+            const questionStatus = storage.get("questionsAnswered")?.find(q => q.segment == segment.number && q.question == questionId.id)?.status;
+            return questionStatus === 'Correct';
+          });
+          option.innerHTML = `${segment.number} - ${segment.name}${segment.due ? ` (Due ${new Date(`${segment.due}T00:00:00`).toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })})` : ''}${allQuestionsCorrect ? ' [MASTERY]' : ''}`;
           option.setAttribute('due', segment.due || '');
           segments.append(option);
         });
@@ -536,6 +541,7 @@ try {
     await updateQuestion();
     document.getElementById("segment-completed").setAttribute('hidden', '');
     document.getElementById("segment-completed").querySelector('ul').innerHTML = '';
+    document.getElementById("segment-completed").classList.remove('mastery');
     if ((questions.querySelectorAll('option').length > 0) && Array.from(questions.querySelectorAll('option')).every(option => {
       const questionId = option.value;
       const questionStatus = storage.get("questionsAnswered")?.find(q => q.segment == segments.value && q.question == questionId)?.status;
@@ -554,6 +560,83 @@ try {
         }
         document.getElementById("segment-completed").querySelector('ul').append(li);
       });
+    }
+    if ((questions.querySelectorAll('option').length > 0) && Array.from(questions.querySelectorAll('option')).every(option => {
+      const questionId = option.value;
+      const questionStatus = storage.get("questionsAnswered")?.find(q => q.segment == segments.value && q.question == questionId)?.status;
+      return questionStatus === 'Correct';
+    })) {
+      document.getElementById("segment-completed").classList.add('mastery');
+      const count = 200;
+      const textColor = getComputedStyle(document.body).getPropertyValue('--text-color').trim();
+      var defaults = {
+        origin: {
+          y: 1
+        },
+        shapes: [
+          confetti.shapeFromText({ text: '➕' }),
+          confetti.shapeFromText({ text: '➖' }),
+          confetti.shapeFromText({ text: '✖️' }),
+          confetti.shapeFromText({ text: '➗' }),
+          confetti.shapeFromText({ text: '0️⃣' }),
+          confetti.shapeFromText({ text: '1️⃣' }),
+          confetti.shapeFromText({ text: '2️⃣' }),
+          confetti.shapeFromText({ text: '3️⃣' }),
+          confetti.shapeFromText({ text: '4️⃣' }),
+          confetti.shapeFromText({ text: '5️⃣' }),
+          confetti.shapeFromText({ text: '6️⃣' }),
+          confetti.shapeFromText({ text: '7️⃣' }),
+          confetti.shapeFromText({ text: '8️⃣' }),
+          confetti.shapeFromText({ text: '9️⃣' }),
+          confetti.shapeFromText({ text: '🔢' }),
+          confetti.shapeFromText({ text: '📐' }),
+          confetti.shapeFromText({ text: '📏' }),
+          confetti.shapeFromText({ text: '📊' }),
+          confetti.shapeFromText({ text: '📈' }),
+          confetti.shapeFromText({ text: '📉' }),
+          confetti.shapeFromText({ text: '🔣' }),
+          confetti.shapeFromText({ text: '✅' }),
+          confetti.shapeFromText({ text: '☑️' }),
+          confetti.shapeFromText({ text: '✔️' }),
+        ],
+      };
+      uniqueSymbols.forEach(symbol => {
+        defaults.shapes.push(confetti.shapeFromText({ text: symbol, color: textColor }));
+      });
+      function fire(particleRatio, opts) {
+        confetti(
+          Object.assign({}, defaults, opts, {
+            particleCount: Math.floor(count * particleRatio),
+          })
+        );
+      };
+      setTimeout(() => {
+        fire(0.25, {
+          spread: 26,
+          startVelocity: 55,
+          scalar: 0.5,
+        });
+        fire(0.2, {
+          spread: 60,
+          scalar: 0.5,
+        });
+        fire(0.35, {
+          spread: 100,
+          decay: 0.91,
+          scalar: 1.3,
+        });
+        fire(0.1, {
+          spread: 120,
+          startVelocity: 25,
+          decay: 0.92,
+          scalar: 1.7,
+        });
+        fire(0.1, {
+          spread: 120,
+          startVelocity: 45,
+          scalar: 1.5,
+        });
+      }, 100);
     }
     reloadUnsavedInputs();
   }
