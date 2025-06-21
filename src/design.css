@@ -1027,3 +1027,19 @@ hidden,
   color: var(--error-color);
   cursor: pointer;
 }
+
+#segment-completed {
+  background: var(--surface-color);
+  padding: 15px 20px 20px 20px;
+  border-radius: 10px;
+  border-left: 3px solid mediumseagreen;
+  border-right: 3px solid mediumseagreen;
+}
+
+#segment-completed i {
+  font-size: 25px;
+}
+
+#segment-completed ul i {
+  font-size: 15px;
+}

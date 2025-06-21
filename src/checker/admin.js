@@ -2363,6 +2363,7 @@ try {
         document.getElementById("export-report-start-date").disabled = false;
         document.getElementById("export-report-end-date").disabled = false;
         ui.toast("Report downloaded successfully.", 3000, "success", "bi bi-check-circle-fill");
+        ui.view();
       })
       .catch((e) => {
         console.error(e);

@@ -534,6 +534,27 @@ try {
     questions.removeEventListener("change", updateQuestion);
     questions.addEventListener("change", updateQuestion);
     await updateQuestion();
+    document.getElementById("segment-completed").setAttribute('hidden', '');
+    document.getElementById("segment-completed").querySelector('ul').innerHTML = '';
+    if ((questions.querySelectorAll('option').length > 0) && Array.from(questions.querySelectorAll('option')).every(option => {
+      const questionId = option.value;
+      const questionStatus = storage.get("questionsAnswered")?.find(q => q.segment == segments.value && q.question == questionId)?.status;
+      return questionStatus === 'Correct' || questionStatus === 'In Progress' || questionStatus === 'Pending';
+    })) {
+      document.getElementById("segment-completed").removeAttribute('hidden');
+      questions.querySelectorAll('option').forEach(option => {
+        const questionStatus = storage.get("questionsAnswered")?.find(q => q.segment == segments.value && q.question == option.value)?.status;
+        const li = document.createElement('li');
+        if (questionStatus === 'Correct') {
+          li.innerHTML = `<i class="bi bi-check-lg"></i> ${option.innerHTML}`;
+        } else if (questionStatus === 'In Progress') {
+          li.innerHTML = `<i class="bi bi-hourglass-split"></i> ${option.innerHTML}`;
+        } else {
+          li.innerHTML = `<i class="bi bi-hourglass"></i> ${option.innerHTML}`;
+        }
+        document.getElementById("segment-completed").querySelector('ul').append(li);
+      });
+    }
     reloadUnsavedInputs();
   }
 
@@ -545,6 +566,8 @@ try {
     document.getElementById("submit-button").disabled = true;
     document.querySelector('.hiddenOnLoad:has(#answer-container)').classList.remove('show');
     document.querySelector('[data-question-title]').setAttribute('hidden', '');
+    const feedContainer = document.querySelector('.input-group:has(> #question-history-feed)');
+    feedContainer.classList.remove('show');
     if (!question) return questionImages.innerHTML = '<p style="padding-top: 10px;">There are no questions in this segment.</p>';
     if ((question.question.length > 0) && (question.question != ' ')) {
       if (question.latex) {
@@ -581,7 +604,6 @@ try {
       if (i) i.innerHTML = `${JSON.parse(selectedSegment.question_ids).find(q2 => String(q2.id) === String(q.question)).name} - ${q.status}`;
     });
 
-    const feedContainer = document.querySelector('.input-group:has(> #question-history-feed)');
     const feed = document.getElementById('question-history-feed');
     feed.innerHTML = "";
     var latestResponses = (storage.get("history") || []).filter(r => (String(r.segment) === String(segments.value)) && (String(r.question) === String(question.id))).sort((a, b) => b.timestamp - a.timestamp);
@@ -820,6 +842,12 @@ try {
     if (selectedQuestionOptionIndex < questionOptions.length - 1) {
       questionOptions[selectedQuestionOptionIndex + 1].selected = true;
       updateQuestion();
+    } else if ((questionOptions.length > 0) && Array.from(questionOptions).every(option => {
+      const questionId = option.value;
+      const questionStatus = storage.get("questionsAnswered")?.find(q => q.segment == segments.value && q.question == questionId)?.status;
+      return questionStatus === 'Correct' || questionStatus === 'In Progress' || questionStatus === 'Pending';
+    })) {
+      updateSegment();
     }
   }
 
