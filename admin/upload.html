@@ -36,8 +36,12 @@
             background-color: #efefef;
             width: -webkit-fill-available;
             cursor: pointer;
-            margin-bottom: 1em;
+            margin-bottom: 0.5em;
             font: 14px "Figtree", sans-serif;
+        }
+
+        input[type="text"]:last-of-type {
+            margin-bottom: 1em;
         }
     </style>
 </head>
@@ -47,6 +51,8 @@
     <link href="https://unpkg.com/filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css"
         rel="stylesheet" />
     <input type="text" placeholder="Question Text" />
+    <input type="text" placeholder="Correct Answer 1" />
+    <input type="text" placeholder="Correct Answer 2" />
     <input type="file" />
     <button id="paste" onclick="paste()">Paste</button>
     <script
@@ -81,7 +87,9 @@
         });
         pond.on('processfilestart', (file) => {
             if (startingQuestionId && startingQuestion && !file.getMetadata('title')) {
-                file.setMetadata('title', document.querySelector('input[type="text"]').value || startingQuestion);
+                file.setMetadata('title', document.querySelectorAll('input[type="text"]')[0].value || startingQuestion);
+                file.setMetadata('correctAnswer1', document.querySelectorAll('input[type="text"]')[1].value || null);
+                file.setMetadata('correctAnswer2', document.querySelectorAll('input[type="text"]')[2].value || null);
                 pond.processFile(file);
             };
         });
@@ -101,7 +109,7 @@
             if (!item) return;
             pond.addFile(await item.getType(item.types.filter(type => type.startsWith('image/'))[0]));
         };
-        if (!startingQuestionId || !startingQuestion) document.querySelector('input[type="text"]').remove();
+        if (!startingQuestionId || !startingQuestion) document.querySelectorAll('input[type="text"]').forEach(e => e.remove());
     </script>
 </body>
 

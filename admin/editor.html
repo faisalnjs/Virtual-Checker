@@ -52,22 +52,18 @@
     </svg>
     <div class="info">
       <h1>Virtual Checker</h1>
-      <div class="menu">
-        <h6>- Segment Editor -</h6>
-        <a href="/admin/">- Segments -</a>
-        <a href="/admin/questions">- Questions -</a>
-        <a href="/admin/responses">- Responses -</a>
-        <a href="/admin/reports">- Reports -</a>
-      </div>
+      <button class="icon menu" data-modal-view="menu" tooltip="Menu" reverse>
+        <i class="bi bi-list"></i>
+      </button>
     </div>
   </div>
   <div id="checker">
     <div class="section">
       <h1>Information</h1>
       <div class="input-group">
-        <label for="sort-course-input">Course</label>
+        <label for="course-period-input">Course</label>
         <div class="space" id="question-container">
-          <select id="sort-course-input"></select>
+          <select id="course-period-input"></select>
         </div>
       </div>
       <div class="button-grid inputs">
@@ -123,23 +119,23 @@
   </div>
   <!-- Controls -->
   <div id="controls-container" class="pill">
-    <button class="icon" data-modal-view="settings">
+    <button class="icon" data-modal-view="settings" tooltip="Settings">
       <i class="bi bi-gear"></i>
     </button>
-    <button class="icon" data-speed data-modal-view="speed-mode">
+    <button class="icon" data-speed data-modal-view="speed-mode" tooltip="Speed Mode">
       <i class="bi bi-lightning-charge"></i>
       <i class="bi bi-lightning-charge-fill" style="display: none;"></i>
     </button>
-    <button class="icon" data-delete-segment>
+    <button class="icon" data-delete-segment tooltip="Delete Segment">
       <i class="bi bi-trash"></i>
     </button>
-    <!-- <button class="pill" data-modal-view="settings/code">
+    <!-- <button class="pill" data-modal-view="settings/code" tooltip="Change Seat Code">
         <span class="code">000</span>
       </button>
-      <button class="icon" data-modal-view="history">
+      <button class="icon" data-modal-view="history" tooltip="Click History">
         <i class="bi bi-clock-history"></i>
       </button> -->
-    <!-- <button class="icon" data-modal-view="clear-data-fix">
+    <!-- <button class="icon" data-modal-view="clear-data-fix" tooltip="Clear Data Fix">
           <i class="bi bi-exclamation-triangle"></i>
         </button> -->
   </div>
@@ -150,7 +146,7 @@
   <!-- History -->
   <dialog data-modal-page="history" data-page-title="History">
     <h2 id="history-date"></h2>
-    <div class="col" id="history-feed"></div>
+    <div class="col history-feed" id="history-feed"></div>
     <div id="history-navigation" class="row center">
       <button class="icon" id="history-first">
         <i class="bi bi-chevron-double-left"></i>
@@ -175,9 +171,9 @@
     <button data-modal-view="settings/keybinds">Keyboard Shortcuts</button>
     <button data-modal-view="settings/reset">Reset</button>
     <button data-modal-view="settings/credits">Credits</button>
-    <!-- <div class="row center">
-      <a href="https://github.com/faisalnjs/virtual-checker" class="icon"><i class="bi bi-github"></i></a>
-      <a href="https://dangoweb.com/?from=virtual-checker" class="icon"><i class="bi bi-cloud-fill"></i></a>
+    <!-- <div class="row center" style="gap: 7.5px; margin-top: 5px;">
+      <a href="https://github.com/faisalnjs/virtual-checker" class="icon" tooltip="GitHub Repository"><i class="bi bi-github"></i></a>
+      <a href="https://dangoweb.com/?from=virtual-checker" class="icon" tooltip="Cloud Hosting"><i class="bi bi-cloud-fill"></i></a>
     </div> -->
     <div data-modal-page="code" data-page-title="Seat Code">
       <input type="text" inputmode="numeric" placeholder="000" maxlength="3" id="code-input" />
@@ -282,6 +278,7 @@
       <p><kbd>Ctrl</kbd> + <kbd>,</kbd> Open Settings</p>
       <p><kbd>Ctrl</kbd> + <kbd>.</kbd> Open History</p>
       <p><kbd>Shift</kbd> + <kbd>R</kbd> Reset theme</p>
+      <p><kbd>Ctrl</kbd> + <kbd>S</kbd> Launch Speed Mode</p>
     </div>
     <div data-modal-page="reset" data-page-title="Reset">
       <button data-reset="history">Clear History</button>
@@ -318,10 +315,20 @@
       The Virtual Checker API is currently offline. Please try again later, check for <a
         href="https://status.dangoweb.com/">server maintenance</a>, or contact support below.
     </p>
-    <div class="row center">
-      <a href="https://github.com/faisalnjs/virtual-checker/issues" class="icon"><i class="bi bi-github"></i></a>
-      <a href="https://faisaln.com/discord" class="icon"><i class="bi bi-discord"></i></a>
-      <a href="mailto:contact@faisaln.com" class="icon"><i class="bi bi-envelope-fill"></i></a>
+    <div class="row center" style="gap: 7.5px; margin-top: 5px;">
+      <a href="https://github.com/faisalnjs/virtual-checker/issues" class="icon" tooltip="GitHub Issues"><i class="bi bi-github"></i></a>
+      <a href="https://faisaln.com/discord" class="icon" tooltip="Discord Server"><i class="bi bi-discord"></i></a>
+      <a href="mailto:contact@faisaln.com" class="icon" tooltip="Email"><i class="bi bi-envelope-fill"></i></a>
+    </div>
+  </dialog>
+  <dialog data-modal-page="menu" data-page-title="Virtual Checker">
+    <div class="menu-icons">
+      <a href="/admin/" tooltip="Segments"><i class="bi bi-list-check"></i></a>
+      <a href="/admin/questions" tooltip="Questions"><i class="bi bi-patch-question"></i></a>
+      <a href="/admin/responses" tooltip="Responses"><i class="bi bi-chat-left-text"></i></a>
+      <a href="/admin/reports" tooltip="Reports"><i class="bi bi-bar-chart"></i></a>
+      <a href="/admin/editor" class="active" tooltip="Segment Editor"><i class="bi bi-pencil"></i></a>
+      <a href="/" tooltip="Exit"><i class="bi bi-door-open"></i></a>
     </div>
   </dialog>
   <dialog data-modal-page="speed" data-page-title="Speed Mode">
@@ -330,8 +337,10 @@
       integer numbered question. To quit, close the popup. Enter the first question name (e.g. 39):
     </p>
     <input type="number" id="speed-mode-starting-question-id" step="1" min="1" disabled hidden>
-    <input type="number" id="speed-mode-starting-question" step="1" min="1">
-    <button id="enable-speed-mode-button">Start</button>
+    <input type="text" id="speed-mode-starting-question">
+    <div data-modal-actions>
+      <button id="enable-speed-mode-button">Start</button>
+    </div>
   </dialog>
   <div id="loader" class="active">
     <svg xmlns="http://www.w3.org/2000/svg" height="2.5em" viewBox="0 0 1041 732" fill="none"

@@ -96,7 +96,7 @@ button.fit {
 }
 
 button:disabled {
-  opacity: 0.5;
+  opacity: 0.75;
   pointer-events: none;
 }
 
@@ -130,7 +130,7 @@ select {
 
 input:disabled,
 select:disabled {
-  opacity: 0.5;
+  opacity: 0.75;
   cursor: not-allowed;
   overflow: auto;
   pointer-events: auto;
@@ -138,7 +138,7 @@ select:disabled {
 
 input.disabled:disabled,
 select.disabled:disabled {
-  opacity: 0.25;
+  opacity: 0.5;
 }
 
 .drag {
@@ -599,8 +599,7 @@ div.ML__keyboard {
   transition: 0.5s var(--easing);
 }
 
-.questions .section [data-remove-question-input],
-.segments:not(:has(.section:first-child.expanded)) [hidden-spacer] {
+.questions .section [data-remove-question-input] {
   display: none;
 }
 
@@ -783,33 +782,33 @@ hidden,
   width: 0;
 }
 
-#history-feed .correct {
+.history-feed .correct {
   border-left: 3px solid mediumseagreen;
   border-right: 3px solid mediumseagreen;
 }
 
-#history-feed .incorrect {
+.history-feed .incorrect {
   border-left: 3px solid indianred;
   border-right: 3px solid indianred;
 }
 
-#history-feed button button {
+.history-feed button button {
   width: -webkit-fill-available;
   background-color: var(--background-color);
   color: var(--text-color);
   margin: 5px 0;
 }
 
-#history-feed > button:hover {
+.history-feed > button:hover {
   background-color: var(--surface-color);
   color: var(--text-color);
 }
 
-#history-feed button button:hover {
+.history-feed button button:hover {
   opacity: 0.75;
 }
 
-#history-feed button button i {
+.history-feed button button i {
   font-size: 12px;
 }
 
@@ -988,7 +987,11 @@ hidden,
   left: 15%;
   height: 70%;
   width: 70%;
-  transition: 0.25s top ease, 0.25s left ease, 0.25s height ease, 0.25s width ease;
+  transition:
+    0.25s top ease,
+    0.25s left ease,
+    0.25s height ease,
+    0.25s width ease;
 }
 
 .checkbox {
@@ -1008,7 +1011,11 @@ hidden,
   width: 0%;
   background: var(--accent-color);
   border-radius: 0.15rem;
-  transition: 0.25s top ease, 0.25s left ease, 0.25s height ease, 0.25s width ease;
+  transition:
+    0.25s top ease,
+    0.25s left ease,
+    0.25s height ease,
+    0.25s width ease;
 }
 
 .showonhover {
@@ -1020,7 +1027,39 @@ hidden,
   padding-left: 5px;
 }
 
+*:has(> .hideonhover):hover .hideonhover {
+  display: none;
+}
+
 .redonhover:hover {
   color: var(--error-color);
   cursor: pointer;
+}
+
+#segment-completed {
+  background: var(--surface-color);
+  padding: 15px 20px 20px 20px;
+  border-radius: 10px;
+  border-left: 3px solid mediumseagreen;
+  border-right: 3px solid mediumseagreen;
+}
+
+#segment-completed i {
+  font-size: 25px;
+}
+
+#segment-completed ul i {
+  font-size: 15px;
+}
+
+#segment-completed:not(.mastery) > *:not(ul).mastery {
+  display: none;
+}
+
+#segment-completed.mastery > *:not(ul):not(.mastery) {
+  display: none;
+}
+
+body > canvas {
+  background: transparent;
 }

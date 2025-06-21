@@ -52,15 +52,23 @@
     </svg>
     <div class="info">
       <h1>Virtual Checker</h1>
-      <div class="menu">
-        <h6>- Questions -</h6>
-        <a href="/admin/">- Segments -</a>
-        <a href="/admin/responses">- Responses -</a>
-        <a href="/admin/reports">- Reports -</a>
-      </div>
+      <button class="icon menu" data-modal-view="menu" tooltip="Menu" reverse>
+        <i class="bi bi-list"></i>
+      </button>
     </div>
   </div>
   <div id="checker">
+    <div class="section sort">
+      <h1>Sort & Filter</h1>
+      <div class="button-grid inputs">
+        <div class="input-group small">
+          <label for="sort-segment-input">Segment</label>
+          <div class="space" id="question-container">
+            <select id="filter-segment-input" value=""></select>
+          </div>
+        </div>
+      </div>
+    </div>
     <div class="section questions">
       <h1>Questions</h1>
       <div class="button-grid inputs">
@@ -71,7 +79,7 @@
       </div>
       <div class="section">
         <div class="button-grid inputs">
-          <button square data-select><i class="bi bi-circle"></i><i class="bi bi-circle-fill"></i></button>
+          <button square data-select tooltip="Select Question"><i class="bi bi-circle"></i><i class="bi bi-circle-fill"></i></button>
           <div class="input-group small">
             <div class="space" id="question-container">
               <input type="text" autocomplete="off" id="question-id-input" value="" disabled />
@@ -92,8 +100,8 @@
               <input type="text" autocomplete="off" id="question-text-input" value="" />
             </div>
           </div>
-          <button square data-add-question-input><i class="bi bi-plus"></i></button>
-          <button square data-remove-question-input><i class="bi bi-dash"></i></button>
+          <button square data-add-question-input tooltip="Add Question"><i class="bi bi-plus"></i></button>
+          <button square data-remove-question-input tooltip="Remove Question"><i class="bi bi-dash"></i></button>
         </div>
         <div class="attachments"></div>
         <div class="answers">
@@ -101,8 +109,8 @@
           <div class="section correctAnswers">
             <div class="button-grid inputs">
               <input type="text" autocomplete="off" id="question-correct-answer-input" value="" />
-              <button square data-add-answer-input><i class="bi bi-plus"></i></button>
-              <button square data-remove-answer-input><i class="bi bi-dash"></i></button>
+              <button square data-add-answer-input tooltip="Add Answer"><i class="bi bi-plus"></i></button>
+              <button square data-remove-answer-input tooltip="Remove Answer"><i class="bi bi-dash"></i></button>
             </div>
           </div>
         </div>
@@ -112,27 +120,27 @@
   </div>
   <!-- Controls -->
   <div id="controls-container" class="pill">
-    <button class="icon" data-modal-view="settings">
+    <button class="icon" data-modal-view="settings" tooltip="Settings">
       <i class="bi bi-gear"></i>
     </button>
-    <button class="icon" data-delete-multiple>
+    <button class="icon" data-delete-multiple tooltip="Remove Selected">
       <i class="bi bi-trash"></i>
     </button>
-    <button class="icon" data-select-multiple>
+    <button class="icon" data-select-multiple tooltip="Select Multiple">
       <i class="bi bi-circle"></i>
       <i class="bi bi-x"></i>
     </button>
-    <button class="icon" data-speed data-modal-view="speedMode">
+    <button class="icon" data-speed data-modal-view="speedMode" tooltip="Speed Mode">
       <i class="bi bi-lightning-charge"></i>
       <i class="bi bi-lightning-charge-fill" style="display: none;"></i>
     </button>
-    <!-- <button class="pill" data-modal-view="settings/code">
+    <!-- <button class="pill" data-modal-view="settings/code" tooltip="Change Seat Code">
         <span class="code">000</span>
       </button>
-      <button class="icon" data-modal-view="history">
+      <button class="icon" data-modal-view="history" tooltip="Click History">
         <i class="bi bi-clock-history"></i>
       </button> -->
-    <!-- <button class="icon" data-modal-view="clear-data-fix">
+    <!-- <button class="icon" data-modal-view="clear-data-fix" tooltip="Clear Data Fix">
           <i class="bi bi-exclamation-triangle"></i>
         </button> -->
   </div>
@@ -143,7 +151,7 @@
   <!-- History -->
   <dialog data-modal-page="history" data-page-title="History">
     <h2 id="history-date"></h2>
-    <div class="col" id="history-feed"></div>
+    <div class="col history-feed" id="history-feed"></div>
     <div id="history-navigation" class="row center">
       <button class="icon" id="history-first">
         <i class="bi bi-chevron-double-left"></i>
@@ -168,9 +176,9 @@
     <button data-modal-view="settings/keybinds">Keyboard Shortcuts</button>
     <button data-modal-view="settings/reset">Reset</button>
     <button data-modal-view="settings/credits">Credits</button>
-    <!-- <div class="row center">
-      <a href="https://github.com/faisalnjs/virtual-checker" class="icon"><i class="bi bi-github"></i></a>
-      <a href="https://dangoweb.com/?from=virtual-checker" class="icon"><i class="bi bi-cloud-fill"></i></a>
+    <!-- <div class="row center" style="gap: 7.5px; margin-top: 5px;">
+      <a href="https://github.com/faisalnjs/virtual-checker" class="icon" tooltip="GitHub Repository"><i class="bi bi-github"></i></a>
+      <a href="https://dangoweb.com/?from=virtual-checker" class="icon" tooltip="Cloud Hosting"><i class="bi bi-cloud-fill"></i></a>
     </div> -->
     <div data-modal-page="code" data-page-title="Seat Code">
       <input type="text" inputmode="numeric" placeholder="000" maxlength="3" id="code-input" />
@@ -275,6 +283,7 @@
       <p><kbd>Ctrl</kbd> + <kbd>,</kbd> Open Settings</p>
       <p><kbd>Ctrl</kbd> + <kbd>.</kbd> Open History</p>
       <p><kbd>Shift</kbd> + <kbd>R</kbd> Reset theme</p>
+      <p><kbd>Ctrl</kbd> + <kbd>S</kbd> Launch Speed Mode</p>
     </div>
     <div data-modal-page="reset" data-page-title="Reset">
       <button data-reset="history">Clear History</button>
@@ -310,10 +319,20 @@
       The Virtual Checker API is currently offline. Please try again later, check for <a
         href="https://status.dangoweb.com/">server maintenance</a>, or contact support below.
     </p>
-    <div class="row center">
-      <a href="https://github.com/faisalnjs/virtual-checker/issues" class="icon"><i class="bi bi-github"></i></a>
-      <a href="https://faisaln.com/discord" class="icon"><i class="bi bi-discord"></i></a>
-      <a href="mailto:contact@faisaln.com" class="icon"><i class="bi bi-envelope-fill"></i></a>
+    <div class="row center" style="gap: 7.5px; margin-top: 5px;">
+      <a href="https://github.com/faisalnjs/virtual-checker/issues" class="icon" tooltip="GitHub Issues"><i class="bi bi-github"></i></a>
+      <a href="https://faisaln.com/discord" class="icon" tooltip="Discord Server"><i class="bi bi-discord"></i></a>
+      <a href="mailto:contact@faisaln.com" class="icon" tooltip="Email"><i class="bi bi-envelope-fill"></i></a>
+    </div>
+  </dialog>
+  <dialog data-modal-page="menu" data-page-title="Virtual Checker">
+    <div class="menu-icons">
+      <a href="/admin/" tooltip="Segments"><i class="bi bi-list-check"></i></a>
+      <a href="/admin/questions" class="active" tooltip="Questions"><i class="bi bi-patch-question"></i></a>
+      <a href="/admin/responses" tooltip="Responses"><i class="bi bi-chat-left-text"></i></a>
+      <a href="/admin/reports" tooltip="Reports"><i class="bi bi-bar-chart"></i></a>
+      <a href="/admin/editor" tooltip="Segment Editor"><i class="bi bi-pencil"></i></a>
+      <a href="/" tooltip="Exit"><i class="bi bi-door-open"></i></a>
     </div>
   </dialog>
   <dialog data-modal-page="speed" data-page-title="Speed Mode">
@@ -321,7 +340,9 @@
       Rapidly add questions to a segment by pasting or uploading images - one for each. Images will be saved to a new integer numbered question. To quit, close the popup.
     </p>
     <select id="speed-mode-segments"></select>
-    <button id="enable-speed-mode-button">Start</button>
+    <div data-modal-actions>
+      <button id="enable-speed-mode-button">Start</button>
+    </div>
   </dialog>
   <div id="loader" class="active">
     <svg xmlns="http://www.w3.org/2000/svg" height="2.5em" viewBox="0 0 1041 732" fill="none"

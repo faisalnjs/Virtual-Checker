@@ -71,7 +71,7 @@ class Autocomplete {
   }
 }
 
-const uniqueSymbols = [...new Set(Object.values(symbols))];
+export const uniqueSymbols = [...new Set(Object.values(symbols))];
 const answerInput = document.getElementById("answer-input");
 
 export const autocomplete = (answerInput && document.getElementById("answer-suggestion")) ? new Autocomplete(

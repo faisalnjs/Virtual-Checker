@@ -43,25 +43,48 @@ export function modal(options) {
     input.placeholder = options.input.placeholder || "";
     input.value = options.input.defaultValue || "";
     input.className = "dialog-input";
+    input.min = options.input.min || "";
+    input.max = options.input.max || "";
     dialog.appendChild(input);
+  }
+
+  if (options.inputs) {
+    options.inputs.forEach(input => {
+      const inputElement = document.createElement("input");
+      inputElement.type = input.type || "text";
+      inputElement.placeholder = input.placeholder || "";
+      inputElement.value = input.defaultValue || "";
+      inputElement.className = "dialog-input";
+      inputElement.min = input.min || "";
+      inputElement.max = input.max || "";
+      dialog.appendChild(inputElement);
+    });
   }
 
   document.body.append(dialog);
 
-  options.buttons.forEach(button => {
-    const btnElement = new Element("button", button.text, {
-      click: () => {
-        if (button.onclick) {
-          const inputValue = dialog.querySelector(".dialog-input") ? dialog.querySelector(".dialog-input").value : null;
-          button.onclick(inputValue);
-        }
-        if (button.close) {
-          closeModal();
-        }
-      },
-    }, button.class).element;
-    dialog.appendChild(btnElement);
-  });
+  if (options.buttons.length > 0) {
+    var buttonsContainerElement = document.createElement("div");
+    buttonsContainerElement.className = "button-grid";
+    options.buttons.forEach(button => {
+      var btnElement = new Element("button", button.text, {
+        click: () => {
+          if (button.onclick) {
+            const inputValue = (dialog.querySelectorAll(".dialog-input").length > 1) ? [...dialog.querySelectorAll(".dialog-input")].map(dialogInput => {
+              return dialogInput.value;
+            }) : (dialog.querySelector(".dialog-input") ? dialog.querySelector(".dialog-input").value : null);
+            button.onclick(inputValue);
+          }
+          if (button.close) {
+            closeModal();
+          }
+        },
+      }, button.class).element;
+      btnElement.style.width = "-webkit-fill-available";
+      buttonsContainerElement.appendChild(btnElement);
+    });
+    dialog.appendChild(buttonsContainerElement);
+  }
 
   animate(
     dialog,
@@ -252,7 +275,7 @@ export function show(dialog, title, buttons, actions, blur, effects = true) {
   blur && menu.querySelectorAll("[data-modal-buttons]>button").forEach((button) => button.blur());
 }
 
-export function view(path) {
+export function view(path = "") {
   if (!path) {
     const event = new Event("triggerclose");
     document.querySelector("dialog[open]")?.dispatchEvent(event);

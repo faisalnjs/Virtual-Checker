@@ -12,7 +12,7 @@ try {
     const isTyping = document.activeElement.matches("input, textarea");
     if (e.ctrlKey) {
       if (e.key == "Enter" && !anyDialogOpen) {
-        document.getElementById("submit-button").click();
+        document.getElementById("submit-button")?.click();
       }
       if (e.key == "," && !anyDialogOpen) {
         ui.view("settings");
@@ -23,6 +23,10 @@ try {
       if (e.key == "/" && !anyDialogOpen) {
         ui.view("settings/keybinds");
       }
+      if (e.key == "s" && !anyDialogOpen && document.querySelector('[data-speed]')) {
+        e.preventDefault();
+        document.querySelector('[data-speed]').click();
+      }
     } else if (e.altKey) {
       if (/[1-9]/.test(e.key)) {
         e.preventDefault();
@@ -32,6 +36,8 @@ try {
       if (e.key == "R" && !anyDialogOpen && !isTyping) {
         themes.resetTheme();
       }
+    } else if (e.key == "Enter" && anyDialogOpen) {
+      document.querySelector('dialog[open] .submit-button')?.click();
     }
   });
 } catch (error) {

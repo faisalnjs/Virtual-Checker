@@ -77,21 +77,8 @@ div.spacer {
 }
 
 #header .menu {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  max-height: 30px;
-  overflow: hidden;
-  transition: 0.25s var(--easing);
-  cursor: pointer;
+  margin-top: 5px;
   border-radius: 10px;
-}
-
-#header .menu:hover {
-  max-height: 200px;
-  transition: 0.25s var(--easing);
-  background-color: var(--surface-color);
-  padding: 10px 15px 12.5px 15px;
 }
 
 #checker {
@@ -277,27 +264,40 @@ div.spacer {
 }
 
 #history-feed {
-  overflow-y: auto;
   height: 400px;
 }
 
-#history-feed > button {
+#question-history-feed {
+  max-height: 300px;
+}
+
+.history-feed {
+  overflow-y: auto;
+}
+
+.history-feed > button {
   height: fit-content;
-  padding: 0.375em 0.75em;
+  padding: 0.75em 0.75em 0.375em 0.75em;
   text-align: left;
   line-height: unset;
 }
 
-#history-feed > button > p {
+.history-feed > button > p {
   overflow: hidden;
   text-overflow: ellipsis;
+  margin-bottom: 10px;
 }
 
-#history-feed > button:has([data-flag-response][disabled]) {
+
+.history-feed > button > p:empty {
+  display: none;
+}
+
+.history-feed > button.flagged {
   position: relative;
 }
 
-#history-feed > button:has([data-flag-response][disabled])::after {
+.history-feed > button.flagged::after {
   display: inline-block;
   font-family: bootstrap-icons !important;
   font-style: normal;
@@ -313,6 +313,17 @@ div.spacer {
   position: absolute;
   top: 15px;
   right: 15px;
+}
+
+.history-feed > .flagged-response-alert {
+  height: fit-content;
+  padding: 0.375em 0.75em;
+  border-left: 3px solid darkorange;
+  border-right: 3px solid darkorange;
+  border-radius: 0.5rem;
+  background-color: var(--surface-color);
+  transition: 100ms var(--easing);
+  min-width: fit-content;
 }
 
 label {
@@ -338,5 +349,4 @@ label {
   align-self: stretch;
   gap: 12.5px;
   width: -webkit-fill-available;
-  overflow: hidden;
 }

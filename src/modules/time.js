@@ -16,7 +16,7 @@ export function unixToString(timestamp) {
     if (hours == 0) {
       hours = 12;
     }
-    return `${month}/${day}${(year != new Date().getFullYear()) ? `/${year}` : ''} ${hours}:${minutes} ${period}`;
+    return `${hours}:${minutes} ${period} ${month}/${day}${(year != new Date().getFullYear()) ? `/${year}` : ''}`;
   }
 }
 

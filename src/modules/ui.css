@@ -51,6 +51,45 @@ dialog #version-string code {
   font-size: 15px;
 }
 
+dialog .menu-icons {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-content: center;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 7.5px;
+  padding-top: 5px;
+}
+
+dialog .menu-icons > * {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: 2px solid var(--surface-color);
+  border-radius: 5px;
+  min-width: calc((100% - 15px) / 3);
+  font-size: 25px;
+  padding: 10px;
+  opacity: 0.75;
+  transition: 0.25s;
+}
+
+dialog .menu-icons > *:hover,
+dialog .menu-icons > *.active {
+  background: var(--surface-color);
+  opacity: 1;
+  transition: 0.25s;
+}
+
+dialog .menu-icons > *.active {
+  pointer-events: none;
+}
+
+dialog:has(label) label {
+  margin-top: 5px;
+}
+
 div[data-modal-page] {
   display: flex;
   flex-direction: column;
@@ -175,4 +214,49 @@ div[data-color-input] > div[data-color-preview]:hover {
   display: flex;
   opacity: 1;
   transition: 0.5s opacity;
+}
+
+[tooltip] {
+  position: relative;
+  cursor: pointer;
+}
+
+[tooltip]::after {
+  content: attr(tooltip);
+  position: absolute;
+  top: -1.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: var(--accent-color);
+  color: var(--accent-text-color);
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  white-space: nowrap;
+  font-size: 0.875rem;
+  opacity: 0;
+  pointer-events: none;
+  transition: 0.2s ease-in-out;
+  z-index: 1000;
+  line-height: normal;
+}
+
+[tooltip][reverse]::after {
+  top: unset;
+  bottom: -1.5rem;
+}
+
+[tooltip]:hover::after {
+  opacity: 1;
+  top: -2rem;
+  transition: 0.2s ease-in-out;
+}
+
+[tooltip][reverse]:hover::after {
+  top: unset;
+  bottom: -2rem;
+}
+
+*:has(> [tooltip]) {
+  position: relative;
+  overflow: visible !important;
 }
