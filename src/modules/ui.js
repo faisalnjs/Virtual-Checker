@@ -100,6 +100,16 @@ export function modal(options) {
       var btnElement = new Element("button", button.text, {
         click: () => {
           if (button.onclick) {
+            var hasEmptyRequiredInput = false;
+            dialog.querySelectorAll(".dialog-input").forEach(dialogInput => {
+              if (dialogInput.required && !dialogInput.value) {
+                hasEmptyRequiredInput = true;
+                dialogInput.classList.add("attention");
+              } else {
+                dialogInput.classList.remove("attention");
+              }
+            });
+            if (hasEmptyRequiredInput) return;
             const inputValue = (dialog.querySelectorAll(".dialog-input").length > 1) ? [...dialog.querySelectorAll(".dialog-input")].map(dialogInput => {
               return dialogInput.value;
             }) : (dialog.querySelector(".dialog-input") ? dialog.querySelector(".dialog-input").value : null);
