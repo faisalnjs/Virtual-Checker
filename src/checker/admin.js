@@ -78,15 +78,17 @@ try {
               </div>`;
             }
           }
-          document.querySelectorAll('[data-edit-user]').forEach(button => button.addEventListener('click', editUser));
+          document.querySelectorAll('[data-edit-user]').forEach(button => button.addEventListener('click', editUserModal));
           document.querySelectorAll('[data-delete-user]').forEach(button => button.addEventListener('click', deleteUser));
           ui.stopLoader();
+          active = true;
         })
         .catch((e) => {
           console.error(e);
           ui.view("api-fail");
           pollingOff();
         });
+      reloadUnsavedInputs();
       return;
     }
 
@@ -2534,8 +2536,62 @@ try {
       });
   }
 
-  function editUser() {
+  function editUserModal() {
+    if (!active) return;
+    const user = this.parentElement.parentElement.id;
+    const role = this.parentElement.parentElement.querySelector('.role').innerText;
+    ui.modal({
+      title: 'Edit User',
+      body: `<p>Edit <code>${role}</code> user <code>${user}</code>.</p>`,
+      inputs: [
+        {
+          label: 'Role',
+          type: 'select',
+          options: [
+            {
+              value: 'admin',
+              text: 'Admin'
+            },
+            {
+              value: 'ta',
+              text: 'TA'
+            }
+          ],
+          defaultValue: role,
+        },
+        {
+          label: 'New Password',
+          type: 'password',
+        },
+        {
+          label: 'Your Username',
+          type: 'text',
+        },
+        {
+          label: 'Your Password',
+          type: 'password',
+        }
+      ],
+      buttons: [
+        {
+          text: 'Cancel',
+          class: 'cancel-button',
+          close: true,
+        },
+        {
+          text: 'Continue',
+          class: 'submit-button',
+          onclick: (inputValues) => {
+            editUser(inputValues, this);
+          },
+          close: true,
+        },
+      ],
+    });
+  }
 
+  function editUser() {
+    
   }
 
   function deleteUser() {
