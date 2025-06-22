@@ -2832,11 +2832,82 @@ try {
   }
 
   function deleteUserModal() {
-
+    if (!active) return;
+    const user = this.parentElement.parentElement.id;
+    const role = this.parentElement.parentElement.querySelector('.role').innerText;
+    ui.modal({
+      title: 'Delete User',
+      body: `<p>Are you sure you would like to delete the <code>${role}</code> user <code>${user}</code>? Deleting your own user will result in system logoff. This action is not reversible.${(role === 'admin') ? '<br><br>Warning: You are deleting an admin user. Proceed with caution.' : ''}</p>`,
+      inputs: [
+        {
+          label: 'Admin Username',
+          type: 'text',
+          required: true,
+        },
+        {
+          label: 'Admin Password',
+          type: 'password',
+          required: true,
+        }
+      ],
+      buttons: [
+        {
+          text: 'Cancel',
+          class: 'cancel-button',
+          close: true,
+        },
+        {
+          text: 'Continue',
+          class: 'submit-button',
+          onclick: (inputValues) => {
+            deleteUser(inputValues, user);
+          },
+          close: true,
+        },
+      ],
+    });
   }
 
-  function deleteUser(inputValues) {
-
+  function deleteUser(inputValues, user) {
+    if (!active) return;
+    unsavedChanges = true;
+    fetch(domain + '/users', {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        username: user,
+        admin_username: inputValues[0],
+        admin_password: inputValues[1],
+      }),
+    })
+      .then(async (r) => {
+        if (!r.ok) {
+          try {
+            var re = await r.json();
+            if (re.error || re.message) {
+              ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+              throw new Error(re.error || re.message);
+            } else {
+              throw new Error("API error");
+            }
+          } catch (e) {
+            throw new Error(e.message || "API error");
+          }
+        }
+        return await r.json();
+      })
+      .then(() => {
+        unsavedChanges = false;
+        ui.toast("Successfully deleted user.", 3000, "success", "bi bi-check-lg");
+        init();
+      })
+      .catch((e) => {
+        console.error(e);
+        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        pollingOff();
+      });
   }
 } catch (error) {
   if (storage.get("developer")) {
