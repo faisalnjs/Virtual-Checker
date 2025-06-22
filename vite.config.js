@@ -13,6 +13,10 @@ export default {
           src: 'public/admin/.htaccess',
           dest: 'admin',
         },
+        {
+          src: 'public/ta/.htaccess',
+          dest: 'ta',
+        },
       ],
     }),
   ],
