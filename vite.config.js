@@ -1,9 +1,21 @@
 import webfontDownload from "vite-plugin-webfont-dl";
 import version from "vite-plugin-package-version";
+import { viteStaticCopy } from "vite-plugin-static-copy";
 
 export default {
   appType: 'mpa',
-  plugins: [webfontDownload(), version()],
+  plugins: [
+    webfontDownload(),
+    version(),
+    viteStaticCopy({
+      targets: [
+        {
+          src: 'public/admin/.htaccess',
+          dest: 'admin',
+        },
+      ],
+    }),
+  ],
   build: {
     rollupOptions: {
       input: {
