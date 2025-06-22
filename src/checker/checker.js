@@ -510,7 +510,6 @@ try {
         });
         questionsArray = await questionsResponse.json();
         updateSegment();
-        if (document.querySelector('#checker .images').innerHTML === '') await updateQuestion();
         ui.stopLoader();
       } catch (error) {
         ui.view("api-fail");
@@ -1212,7 +1211,7 @@ try {
               autocomplete.update();
             }
           });
-          if (qA.find(q => (q.segment === item.segment) && (q.question === item.question))) qA.find(q => (q.segment === item.segment) && (q.question === item.question)).status = (r.status === "Correct") ? "Correct" : "In Progress";
+          if (qA.find(q => (q.segment === item.segment) && (q.question === item.question))) qA.find(q => (q.segment === item.segment) && (q.question === item.question)).status = (r.status.includes("Recorded")) ? "Pending" : r.status;
         });
         if (results.find(({ item, ...r }) => r.flagged == '1')) {
           var p = document.createElement("p");
