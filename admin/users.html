@@ -8,7 +8,7 @@
   <link rel="shortcut icon" href="../favicon.ico" type="image/x-icon" media="(prefers-color-scheme: dark)" />
   <link rel="shortcut icon" href="../favicon-dark.ico" type="image/x-icon" media="(prefers-color-scheme: light)" />
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-  <title>Questions - Virtual Checker</title>
+  <title>Users - Virtual Checker</title>
   <meta name="title" content="Virtual Checker" />
   <meta name="description" content="Next generation AI-powered homework checking, cloud hosted ☁️🚀✅" />
   <meta property="og:type" content="website" />
@@ -58,64 +58,18 @@
     </div>
   </div>
   <div id="checker">
-    <div class="section sort">
-      <h1>Sort & Filter</h1>
-      <div class="button-grid inputs">
-        <div class="input-group small">
-          <label for="sort-segment-input">Segment</label>
-          <div class="space" id="question-container">
-            <select id="filter-segment-input" value=""></select>
-          </div>
+    <div class="section">
+      <h1>Users</h1>
+      <div id="no-users" class="row center">
+        <p>No users found.</p>
+      </div>
+      <div class="section users enhanced-list" hidden>
+        <div class="row header">
+          <span>Username</span>
+          <span>Role</span>
+          <span>Actions</span>
         </div>
       </div>
-    </div>
-    <div class="section questions">
-      <h1>Questions</h1>
-      <div class="button-grid inputs">
-        <label style="width: -webkit-fill-available" class="small">ID</label>
-        <label style="width: -webkit-fill-available" class="small">Number</label>
-        <label style="width: -webkit-fill-available" class="small">Segment</label>
-        <label style="width: -webkit-fill-available">Question</label>
-      </div>
-      <div class="section">
-        <div class="button-grid inputs">
-          <button square data-select tooltip="Select Question"><i class="bi bi-circle"></i><i class="bi bi-circle-fill"></i></button>
-          <div class="input-group small">
-            <div class="space" id="question-container">
-              <input type="text" autocomplete="off" id="question-id-input" value="" disabled />
-            </div>
-          </div>
-          <div class="input-group small">
-            <div class="space" id="question-container">
-              <input type="text" autocomplete="off" id="question-number-input" value="" />
-            </div>
-          </div>
-          <div class="input-group small">
-            <div class="space" id="question-container">
-              <input type="text" autocomplete="off" id="question-segment-input" value="" />
-            </div>
-          </div>
-          <div class="input-group">
-            <div class="space" id="question-container">
-              <input type="text" autocomplete="off" id="question-text-input" value="" />
-            </div>
-          </div>
-          <button square data-add-question-input tooltip="Add Question"><i class="bi bi-plus"></i></button>
-          <button square data-remove-question-input tooltip="Remove Question"><i class="bi bi-dash"></i></button>
-        </div>
-        <div class="attachments"></div>
-        <div class="answers">
-          <b>Correct Answers</b>
-          <div class="section correctAnswers">
-            <div class="button-grid inputs">
-              <input type="text" autocomplete="off" id="question-correct-answer-input" value="" />
-              <button square data-add-answer-input tooltip="Add Answer"><i class="bi bi-plus"></i></button>
-              <button square data-remove-answer-input tooltip="Remove Answer"><i class="bi bi-dash"></i></button>
-            </div>
-          </div>
-        </div>
-      </div>
-      <button class="space" id="save-button">Save</button>
     </div>
   </div>
   <!-- Controls -->
@@ -129,10 +83,6 @@
     <button class="icon" data-select-multiple tooltip="Select Multiple">
       <i class="bi bi-circle"></i>
       <i class="bi bi-x"></i>
-    </button>
-    <button class="icon" data-speed data-modal-view="speedMode" tooltip="Speed Mode">
-      <i class="bi bi-lightning-charge"></i>
-      <i class="bi bi-lightning-charge-fill" style="display: none;"></i>
     </button>
     <!-- <button class="pill" data-modal-view="settings/code" tooltip="Change Seat Code">
         <span class="code">000</span>
@@ -323,7 +273,8 @@
         href="https://status.dangoweb.com/">server maintenance</a>, or contact support below.
     </p>
     <div class="row center" style="gap: 7.5px; margin-top: 5px;">
-      <a href="https://github.com/faisalnjs/virtual-checker/issues" class="icon" tooltip="GitHub Issues"><i class="bi bi-github"></i></a>
+      <a href="https://github.com/faisalnjs/virtual-checker/issues" class="icon" tooltip="GitHub Issues"><i
+          class="bi bi-github"></i></a>
       <a href="https://faisaln.com/discord" class="icon" tooltip="Discord Server"><i class="bi bi-discord"></i></a>
       <a href="mailto:contact@faisaln.com" class="icon" tooltip="Email"><i class="bi bi-envelope-fill"></i></a>
     </div>
@@ -331,23 +282,14 @@
   <dialog data-modal-page="menu" data-page-title="Virtual Checker">
     <div class="menu-icons">
       <a href="/admin/" tooltip="Segments"><i class="bi bi-list-check"></i></a>
-      <a href="/admin/questions" class="active" tooltip="Questions"><i class="bi bi-patch-question"></i></a>
+      <a href="/admin/questions" tooltip="Questions"><i class="bi bi-patch-question"></i></a>
       <a href="/admin/responses" tooltip="Responses"><i class="bi bi-chat-left-text"></i></a>
       <a href="/admin/reports" tooltip="Reports"><i class="bi bi-bar-chart"></i></a>
       <a href="/admin/editor" tooltip="Segment Editor"><i class="bi bi-pencil"></i></a>
       <a href="/admin/archive" tooltip="Archive"><i class="bi bi-archive"></i></a>
       <a href="/admin/backups" tooltip="Backups"><i class="bi bi-file-zip"></i></a>
-      <a href="/admin/users" tooltip="Users"><i class="bi bi-person-fill-lock"></i></a>
+      <a href="/admin/users" class="active" tooltip="Users"><i class="bi bi-person-fill-lock"></i></a>
       <a href="/" tooltip="Exit"><i class="bi bi-door-open"></i></a>
-    </div>
-  </dialog>
-  <dialog data-modal-page="speed" data-page-title="Speed Mode">
-    <p>
-      Rapidly add questions to a segment by pasting or uploading images - one for each. Images will be saved to a new integer numbered question. To quit, close the popup.
-    </p>
-    <select id="speed-mode-segments"></select>
-    <div data-modal-actions>
-      <button id="enable-speed-mode-button">Start</button>
     </div>
   </dialog>
   <div id="loader" class="active">

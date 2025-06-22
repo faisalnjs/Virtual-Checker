@@ -16,6 +16,7 @@ export default {
         responses: new URL('admin/responses.html', import.meta.url).pathname,
         reports: new URL('admin/reports.html', import.meta.url).pathname,
         editor: new URL('admin/editor.html', import.meta.url).pathname,
+        users: new URL('admin/users.html', import.meta.url).pathname,
       },
     },
   },

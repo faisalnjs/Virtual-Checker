@@ -39,6 +39,57 @@ try {
     //   storage.set("created", Date.now());
     // }
 
+    if (document.querySelector('.users')) {
+      await fetch(domain + '/users', {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        }
+      })
+        .then(async (r) => {
+          if (!r.ok) {
+            try {
+              var re = await r.json();
+              throw new Error(re.error || re.message || "API error");
+            } catch (e) {
+              throw new Error(e.message || "API error");
+            }
+          }
+          return await r.json();
+        })
+        .then(users => {
+          if (Object.keys(users).length > 0) {
+            document.getElementById('no-users').setAttribute('hidden', '');
+            document.querySelector('.users').removeAttribute('hidden');
+          }
+          for (const key in users) {
+            if (Object.prototype.hasOwnProperty.call(users, key)) {
+              document.querySelector('.users').innerHTML += `<div class="enhanced-item" id="${key}">
+                <span class="username">${key}</span>
+                <span class="role">${users[key]}</span>
+                <span class="actions">
+                  <button class="icon" data-edit-user tooltip="Edit User">
+                    <i class="bi bi-pencil"></i>
+                  </button>
+                  <button class="icon" data-delete-user tooltip="Delete User">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </span>
+              </div>`;
+            }
+          }
+          document.querySelectorAll('[data-edit-user]').forEach(button => button.addEventListener('click', editUser));
+          document.querySelectorAll('[data-delete-user]').forEach(button => button.addEventListener('click', deleteUser));
+          ui.stopLoader();
+        })
+        .catch((e) => {
+          console.error(e);
+          ui.view("api-fail");
+          pollingOff();
+        });
+      return;
+    }
+
     await fetch(domain + '/courses', {
       method: "GET",
       headers: {
@@ -46,7 +97,14 @@ try {
       }
     })
       .then(async (r) => {
-        if (!r.ok) throw new Error(r.error || r.message || "API error");
+        if (!r.ok) {
+          try {
+            var re = await r.json();
+            throw new Error(re.error || re.message || "API error");
+          } catch (e) {
+            throw new Error(e.message || "API error");
+          }
+        }
         return await r.json();
       })
       .then(async c => {
@@ -502,7 +560,14 @@ try {
       body: JSON.stringify(updatedCourses.sort((a, b) => a.id - b.id))
     })
       .then(async (r) => {
-        if (!r.ok) throw new Error(r.error || r.message || "API error");
+        if (!r.ok) {
+          try {
+            var re = await r.json();
+            throw new Error(re.error || re.message || "API error");
+          } catch (e) {
+            throw new Error(e.message || "API error");
+          }
+        }
         return await r.json();
       })
       .then(c => {
@@ -907,7 +972,14 @@ try {
       })
     })
       .then(async (r) => {
-        if (!r.ok) throw new Error(r.error || r.message || "API error");
+        if (!r.ok) {
+          try {
+            var re = await r.json();
+            throw new Error(re.error || re.message || "API error");
+          } catch (e) {
+            throw new Error(e.message || "API error");
+          }
+        }
         return await r.json();
       })
       .then(() => {
@@ -1245,7 +1317,14 @@ try {
       }),
     })
       .then(async (r) => {
-        if (!r.ok) throw new Error(r.error || r.message || "API error");
+        if (!r.ok) {
+          try {
+            var re = await r.json();
+            throw new Error(re.error || re.message || "API error");
+          } catch (e) {
+            throw new Error(e.message || "API error");
+          }
+        }
         return await r.json();
       })
       .then(() => {
@@ -1273,7 +1352,14 @@ try {
       }),
     })
       .then(async (r) => {
-        if (!r.ok) throw new Error(r.error || r.message || "API error");
+        if (!r.ok) {
+          try {
+            var re = await r.json();
+            throw new Error(re.error || re.message || "API error");
+          } catch (e) {
+            throw new Error(e.message || "API error");
+          }
+        }
         return await r.json();
       })
       .then(() => {
@@ -1301,7 +1387,14 @@ try {
       }),
     })
       .then(async (r) => {
-        if (!r.ok) throw new Error(r.error || r.message || "API error");
+        if (!r.ok) {
+          try {
+            var re = await r.json();
+            throw new Error(re.error || re.message || "API error");
+          } catch (e) {
+            throw new Error(e.message || "API error");
+          }
+        }
         return await r.json();
       })
       .then(() => {
@@ -1360,7 +1453,14 @@ try {
       }),
     })
       .then(async (r) => {
-        if (!r.ok) throw new Error(r.error || r.message || "API error");
+        if (!r.ok) {
+          try {
+            var re = await r.json();
+            throw new Error(re.error || re.message || "API error");
+          } catch (e) {
+            throw new Error(e.message || "API error");
+          }
+        }
         return await r.json();
       })
       .then(() => {
@@ -1665,7 +1765,14 @@ try {
       body: JSON.stringify(updatedSegments)
     })
       .then(async (r) => {
-        if (!r.ok) throw new Error(r.error || r.message || "API error");
+        if (!r.ok) {
+          try {
+            var re = await r.json();
+            throw new Error(re.error || re.message || "API error");
+          } catch (e) {
+            throw new Error(e.message || "API error");
+          }
+        }
         return await r.json();
       })
       .then(c => {
@@ -1976,7 +2083,14 @@ try {
       })
     })
       .then(async (r) => {
-        if (!r.ok) throw new Error(r.error || r.message || "API error");
+        if (!r.ok) {
+          try {
+            var re = await r.json();
+            throw new Error(re.error || re.message || "API error");
+          } catch (e) {
+            throw new Error(e.message || "API error");
+          }
+        }
         return await r.json();
       })
       .then(() => {
@@ -2048,7 +2162,14 @@ try {
       })
     })
       .then(async (r) => {
-        if (!r.ok) throw new Error(r.error || r.message || "API error");
+        if (!r.ok) {
+          try {
+            var re = await r.json();
+            throw new Error(re.error || re.message || "API error");
+          } catch (e) {
+            throw new Error(e.message || "API error");
+          }
+        }
         return await r.json();
       })
       .then(() => {
@@ -2125,7 +2246,14 @@ try {
       })
     })
       .then(async (r) => {
-        if (!r.ok) throw new Error(r.error || r.message || "API error");
+        if (!r.ok) {
+          try {
+            var re = await r.json();
+            throw new Error(re.error || re.message || "API error");
+          } catch (e) {
+            throw new Error(e.message || "API error");
+          }
+        }
         return await r.json();
       })
       .then(() => {
@@ -2154,7 +2282,14 @@ try {
       })
     })
       .then(async (r) => {
-        if (!r.ok) throw new Error(r.error || r.message || "API error");
+        if (!r.ok) {
+          try {
+            var re = await r.json();
+            throw new Error(re.error || re.message || "API error");
+          } catch (e) {
+            throw new Error(e.message || "API error");
+          }
+        }
         return await r.json();
       })
       .then(() => {
@@ -2252,7 +2387,14 @@ try {
       })
     })
       .then(async (r) => {
-        if (!r.ok) throw new Error(r.error || r.message || "API error");
+        if (!r.ok) {
+          try {
+            var re = await r.json();
+            throw new Error(re.error || re.message || "API error");
+          } catch (e) {
+            throw new Error(e.message || "API error");
+          }
+        }
         return await r.json();
       })
       .then(() => {
@@ -2297,7 +2439,14 @@ try {
       })
     })
       .then(async (r) => {
-        if (!r.ok) throw new Error(r.error || r.message || "API error");
+        if (!r.ok) {
+          try {
+            var re = await r.json();
+            throw new Error(re.error || re.message || "API error");
+          } catch (e) {
+            throw new Error(e.message || "API error");
+          }
+        }
         return await r.json();
       })
       .then(r => {
@@ -2341,7 +2490,14 @@ try {
       body: JSON.stringify(exportReportOptions)
     })
       .then(async (r) => {
-        if (!r.ok) throw new Error(r.error || r.message || "API error");
+        if (!r.ok) {
+          try {
+            var re = await r.json();
+            throw new Error(re.error || re.message || "API error");
+          } catch (e) {
+            throw new Error(e.message || "API error");
+          }
+        }
         return await r.json();
       })
       .then(r => {
@@ -2376,6 +2532,14 @@ try {
         console.error(e);
         ui.view("api-fail");
       });
+  }
+
+  function editUser() {
+
+  }
+
+  function deleteUser() {
+    
   }
 } catch (error) {
   if (storage.get("developer")) {
