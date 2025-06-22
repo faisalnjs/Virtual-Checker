@@ -40,6 +40,7 @@ try {
     // }
 
     if (document.querySelector('.users')) {
+      if (document.getElementById('add-user-button')) document.getElementById('add-user-button').addEventListener('click', addUserModal);
       await fetch(domain + '/users', {
         method: "GET",
         headers: {
@@ -68,6 +69,13 @@ try {
             document.getElementById('no-users').setAttribute('hidden', '');
             document.querySelector('.users').removeAttribute('hidden');
           }
+          users = Object.fromEntries(Object.entries(users).sort((a, b) => {
+            const roleA = a[1].toLowerCase();
+            const roleB = b[1].toLowerCase();
+            if (roleA < roleB) return -1;
+            if (roleA > roleB) return 1;
+            return a[0].localeCompare(b[0]);
+          }));
           for (const key in users) {
             if (Object.prototype.hasOwnProperty.call(users, key)) {
               document.querySelector('.users').innerHTML += `<div class="enhanced-item" id="${key}">
@@ -85,7 +93,7 @@ try {
             }
           }
           document.querySelectorAll('[data-edit-user]').forEach(button => button.addEventListener('click', editUserModal));
-          document.querySelectorAll('[data-delete-user]').forEach(button => button.addEventListener('click', deleteUser));
+          document.querySelectorAll('[data-delete-user]').forEach(button => button.addEventListener('click', deleteUserModal));
           ui.stopLoader();
           active = true;
         })
@@ -2718,7 +2726,116 @@ try {
       });
   }
 
-  function deleteUser() {
+  function addUserModal() {
+    if (!active) return;
+    ui.modal({
+      title: 'Add User',
+      body: `<p>Grant a new user access to the administration-side.</p>`,
+      inputs: [
+        {
+          label: 'Role',
+          type: 'select',
+          options: [
+            {
+              value: 'admin',
+              text: 'Admin'
+            },
+            {
+              value: 'ta',
+              text: 'TA'
+            }
+          ],
+          defaultValue: 'ta',
+          required: true,
+        },
+        {
+          label: 'Username',
+          type: 'text',
+          required: true,
+        },
+        {
+          label: 'Password',
+          type: 'password',
+          required: true,
+        },
+        {
+          label: 'Admin Username',
+          type: 'text',
+          required: true,
+        },
+        {
+          label: 'Admin Password',
+          type: 'password',
+          required: true,
+        }
+      ],
+      buttons: [
+        {
+          text: 'Cancel',
+          class: 'cancel-button',
+          close: true,
+        },
+        {
+          text: 'Continue',
+          class: 'submit-button',
+          onclick: (inputValues) => {
+            addUser(inputValues);
+          },
+          close: true,
+        },
+      ],
+    });
+  }
+
+  function addUser(inputValues) {
+    if (!active) return;
+    unsavedChanges = true;
+    fetch(domain + '/users', {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        username: inputValues[1],
+        password: inputValues[2],
+        role: inputValues[0],
+        admin_username: inputValues[3],
+        admin_password: inputValues[4],
+      }),
+    })
+      .then(async (r) => {
+        if (!r.ok) {
+          try {
+            var re = await r.json();
+            if (re.error || re.message) {
+              ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+              throw new Error(re.error || re.message);
+            } else {
+              throw new Error("API error");
+            }
+          } catch (e) {
+            throw new Error(e.message || "API error");
+          }
+        }
+        return await r.json();
+      })
+      .then(() => {
+        unsavedChanges = false;
+        ui.toast("Successfully added user.", 3000, "success", "bi bi-check-lg");
+        init();
+      })
+      .catch((e) => {
+        console.error(e);
+        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        pollingOff();
+      });
+  }
+
+  function deleteUserModal() {
+
+  }
+
+  function deleteUser(inputValues) {
 
   }
 } catch (error) {
