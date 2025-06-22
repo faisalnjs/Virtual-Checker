@@ -33,6 +33,7 @@ export default {
         reports: new URL('admin/reports.html', import.meta.url).pathname,
         editor: new URL('admin/editor.html', import.meta.url).pathname,
         users: new URL('admin/users.html', import.meta.url).pathname,
+        ta: new URL('ta/index.html', import.meta.url).pathname,
       },
     },
   },
