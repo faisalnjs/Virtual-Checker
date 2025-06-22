@@ -58,6 +58,7 @@ export function modal(options) {
     input.className = "dialog-input";
     input.min = options.input.min || "";
     input.max = options.input.max || "";
+    if (options.input.required) input.required = options.input.required;
     if (options.input.innerHTML) input.innerHTML = options.input.innerHTML;
     dialog.appendChild(input);
   }
@@ -84,6 +85,7 @@ export function modal(options) {
       inputElement.className = "dialog-input";
       inputElement.min = input.min || "";
       inputElement.max = input.max || "";
+      if (input.required) inputElement.required = input.required;
       if (input.innerHTML) inputElement.innerHTML = input.innerHTML;
       dialog.appendChild(inputElement);
     });
