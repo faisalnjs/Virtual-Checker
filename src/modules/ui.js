@@ -38,25 +38,53 @@ export function modal(options) {
   }
 
   if (options.input) {
-    const input = document.createElement("input");
-    input.type = options.input.type || "text";
+    if (options.input.label) {
+      const label = document.createElement("label");
+      label.innerHTML = options.input.label;
+      dialog.appendChild(label);
+    }
+    const input = document.createElement((options.input.type === "select") ? "select" : "input");
+    if (options.input.type !== "select") input.type = options.input.type || "text";
+    if (options.input.options) {
+      options.input.options.forEach(option => {
+        const optionElement = document.createElement("option");
+        optionElement.value = option.value || option;
+        optionElement.textContent = option.text || option;
+        input.appendChild(optionElement);
+      });
+    }
     input.placeholder = options.input.placeholder || "";
     input.value = options.input.defaultValue || "";
     input.className = "dialog-input";
     input.min = options.input.min || "";
     input.max = options.input.max || "";
+    if (options.input.innerHTML) input.innerHTML = options.input.innerHTML;
     dialog.appendChild(input);
   }
 
   if (options.inputs) {
     options.inputs.forEach(input => {
-      const inputElement = document.createElement("input");
-      inputElement.type = input.type || "text";
+      if (input.label) {
+        const label = document.createElement("label");
+        label.innerHTML = input.label;
+        dialog.appendChild(label);
+      }
+      const inputElement = document.createElement((input.type === "select") ? "select" : "input");
+      if (input.type !== "select") inputElement.type = input.type || "text";
+      if (input.options) {
+        input.options.forEach(option => {
+          const optionElement = document.createElement("option");
+          optionElement.value = option.value || option;
+          optionElement.textContent = option.text || option;
+          inputElement.appendChild(optionElement);
+        });
+      }
       inputElement.placeholder = input.placeholder || "";
       inputElement.value = input.defaultValue || "";
       inputElement.className = "dialog-input";
       inputElement.min = input.min || "";
       inputElement.max = input.max || "";
+      if (input.innerHTML) inputElement.innerHTML = input.innerHTML;
       dialog.appendChild(inputElement);
     });
   }
