@@ -50,7 +50,12 @@ try {
           if (!r.ok) {
             try {
               var re = await r.json();
-              throw new Error(re.error || re.message || "API error");
+              if (re.error || re.message) {
+                ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+                throw new Error(re.error || re.message);
+              } else {
+                throw new Error("API error");
+              }
             } catch (e) {
               throw new Error(e.message || "API error");
             }
@@ -58,6 +63,7 @@ try {
           return await r.json();
         })
         .then(users => {
+          document.querySelector('.users').innerHTML = '<div class="row header"><span>Username</span><span>Role</span><span>Actions</span></div>';
           if (Object.keys(users).length > 0) {
             document.getElementById('no-users').setAttribute('hidden', '');
             document.querySelector('.users').removeAttribute('hidden');
@@ -102,7 +108,12 @@ try {
         if (!r.ok) {
           try {
             var re = await r.json();
-            throw new Error(re.error || re.message || "API error");
+            if (re.error || re.message) {
+              ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+              throw new Error(re.error || re.message);
+            } else {
+              throw new Error("API error");
+            }
           } catch (e) {
             throw new Error(e.message || "API error");
           }
@@ -264,7 +275,7 @@ try {
       })
       .catch((e) => {
         console.error(e);
-        ui.view("api-fail");
+        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
         pollingOff();
       });
     if (document.getElementById("course-period-input") && !loadedSegmentEditor && !loadedSegmentCreator && !noReloadCourse) {
@@ -565,7 +576,12 @@ try {
         if (!r.ok) {
           try {
             var re = await r.json();
-            throw new Error(re.error || re.message || "API error");
+            if (re.error || re.message) {
+              ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+              throw new Error(re.error || re.message);
+            } else {
+              throw new Error("API error");
+            }
           } catch (e) {
             throw new Error(e.message || "API error");
           }
@@ -593,7 +609,7 @@ try {
       })
       .catch((e) => {
         console.error(e);
-        ui.view("api-fail");
+        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
         pollingOff();
       });
     // Show submit confirmation
@@ -723,7 +739,7 @@ try {
       })
       .catch((e) => {
         console.error(e);
-        ui.view("api-fail");
+        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
         pollingOff();
       });
     document.querySelectorAll("#save-button").forEach(w => w.disabled = true);
@@ -977,7 +993,12 @@ try {
         if (!r.ok) {
           try {
             var re = await r.json();
-            throw new Error(re.error || re.message || "API error");
+            if (re.error || re.message) {
+              ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+              throw new Error(re.error || re.message);
+            } else {
+              throw new Error("API error");
+            }
           } catch (e) {
             throw new Error(e.message || "API error");
           }
@@ -999,7 +1020,7 @@ try {
       })
       .catch((e) => {
         console.error(e);
-        ui.view("api-fail");
+        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
         pollingOff();
       });
   }
@@ -1322,7 +1343,12 @@ try {
         if (!r.ok) {
           try {
             var re = await r.json();
-            throw new Error(re.error || re.message || "API error");
+            if (re.error || re.message) {
+              ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+              throw new Error(re.error || re.message);
+            } else {
+              throw new Error("API error");
+            }
           } catch (e) {
             throw new Error(e.message || "API error");
           }
@@ -1336,7 +1362,7 @@ try {
       })
       .catch((e) => {
         console.error(e);
-        ui.view("api-fail");
+        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
       });
   }
 
@@ -1357,7 +1383,12 @@ try {
         if (!r.ok) {
           try {
             var re = await r.json();
-            throw new Error(re.error || re.message || "API error");
+            if (re.error || re.message) {
+              ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+              throw new Error(re.error || re.message);
+            } else {
+              throw new Error("API error");
+            }
           } catch (e) {
             throw new Error(e.message || "API error");
           }
@@ -1371,7 +1402,7 @@ try {
       })
       .catch((e) => {
         console.error(e);
-        ui.view("api-fail");
+        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
       });
   }
 
@@ -1392,7 +1423,12 @@ try {
         if (!r.ok) {
           try {
             var re = await r.json();
-            throw new Error(re.error || re.message || "API error");
+            if (re.error || re.message) {
+              ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+              throw new Error(re.error || re.message);
+            } else {
+              throw new Error("API error");
+            }
           } catch (e) {
             throw new Error(e.message || "API error");
           }
@@ -1407,7 +1443,7 @@ try {
       })
       .catch((e) => {
         console.error(e);
-        ui.view("api-fail");
+        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
         pollingOff();
       });
   }
@@ -1458,7 +1494,12 @@ try {
         if (!r.ok) {
           try {
             var re = await r.json();
-            throw new Error(re.error || re.message || "API error");
+            if (re.error || re.message) {
+              ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+              throw new Error(re.error || re.message);
+            } else {
+              throw new Error("API error");
+            }
           } catch (e) {
             throw new Error(e.message || "API error");
           }
@@ -1473,7 +1514,7 @@ try {
       })
       .catch((e) => {
         console.error(e);
-        ui.view("api-fail");
+        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
         pollingOff();
       });
   }
@@ -1770,7 +1811,12 @@ try {
         if (!r.ok) {
           try {
             var re = await r.json();
-            throw new Error(re.error || re.message || "API error");
+            if (re.error || re.message) {
+              ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+              throw new Error(re.error || re.message);
+            } else {
+              throw new Error("API error");
+            }
           } catch (e) {
             throw new Error(e.message || "API error");
           }
@@ -1786,7 +1832,7 @@ try {
       })
       .catch((e) => {
         console.error(e);
-        ui.view("api-fail");
+        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
         pollingOff();
       });
   }
@@ -2088,7 +2134,12 @@ try {
         if (!r.ok) {
           try {
             var re = await r.json();
-            throw new Error(re.error || re.message || "API error");
+            if (re.error || re.message) {
+              ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+              throw new Error(re.error || re.message);
+            } else {
+              throw new Error("API error");
+            }
           } catch (e) {
             throw new Error(e.message || "API error");
           }
@@ -2102,7 +2153,7 @@ try {
       })
       .catch((e) => {
         console.error(e);
-        ui.view("api-fail");
+        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
       });
   }
 
@@ -2167,7 +2218,12 @@ try {
         if (!r.ok) {
           try {
             var re = await r.json();
-            throw new Error(re.error || re.message || "API error");
+            if (re.error || re.message) {
+              ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+              throw new Error(re.error || re.message);
+            } else {
+              throw new Error("API error");
+            }
           } catch (e) {
             throw new Error(e.message || "API error");
           }
@@ -2181,7 +2237,7 @@ try {
       })
       .catch((e) => {
         console.error(e);
-        ui.view("api-fail");
+        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
       });
   }
 
@@ -2251,7 +2307,12 @@ try {
         if (!r.ok) {
           try {
             var re = await r.json();
-            throw new Error(re.error || re.message || "API error");
+            if (re.error || re.message) {
+              ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+              throw new Error(re.error || re.message);
+            } else {
+              throw new Error("API error");
+            }
           } catch (e) {
             throw new Error(e.message || "API error");
           }
@@ -2265,7 +2326,7 @@ try {
       })
       .catch((e) => {
         console.error(e);
-        ui.view("api-fail");
+        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
       });
   }
 
@@ -2287,7 +2348,12 @@ try {
         if (!r.ok) {
           try {
             var re = await r.json();
-            throw new Error(re.error || re.message || "API error");
+            if (re.error || re.message) {
+              ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+              throw new Error(re.error || re.message);
+            } else {
+              throw new Error("API error");
+            }
           } catch (e) {
             throw new Error(e.message || "API error");
           }
@@ -2301,7 +2367,7 @@ try {
       })
       .catch((e) => {
         console.error(e);
-        ui.view("api-fail");
+        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
       });
   }
 
@@ -2392,7 +2458,12 @@ try {
         if (!r.ok) {
           try {
             var re = await r.json();
-            throw new Error(re.error || re.message || "API error");
+            if (re.error || re.message) {
+              ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+              throw new Error(re.error || re.message);
+            } else {
+              throw new Error("API error");
+            }
           } catch (e) {
             throw new Error(e.message || "API error");
           }
@@ -2406,7 +2477,7 @@ try {
       })
       .catch((e) => {
         console.error(e);
-        ui.view("api-fail");
+        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
       });
   }
 
@@ -2444,7 +2515,12 @@ try {
         if (!r.ok) {
           try {
             var re = await r.json();
-            throw new Error(re.error || re.message || "API error");
+            if (re.error || re.message) {
+              ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+              throw new Error(re.error || re.message);
+            } else {
+              throw new Error("API error");
+            }
           } catch (e) {
             throw new Error(e.message || "API error");
           }
@@ -2456,7 +2532,7 @@ try {
       })
       .catch((e) => {
         console.error(e);
-        ui.view("api-fail");
+        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
       });
   }
 
@@ -2495,7 +2571,12 @@ try {
         if (!r.ok) {
           try {
             var re = await r.json();
-            throw new Error(re.error || re.message || "API error");
+            if (re.error || re.message) {
+              ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+              throw new Error(re.error || re.message);
+            } else {
+              throw new Error("API error");
+            }
           } catch (e) {
             throw new Error(e.message || "API error");
           }
@@ -2532,7 +2613,7 @@ try {
       })
       .catch((e) => {
         console.error(e);
-        ui.view("api-fail");
+        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
       });
   }
 
@@ -2558,18 +2639,21 @@ try {
             }
           ],
           defaultValue: role,
+          required: true,
         },
         {
           label: 'New Password',
           type: 'password',
         },
         {
-          label: 'Your Username',
+          label: 'Admin Username',
           type: 'text',
+          required: true,
         },
         {
-          label: 'Your Password',
+          label: 'Admin Password',
           type: 'password',
+          required: true,
         }
       ],
       buttons: [
@@ -2582,7 +2666,7 @@ try {
           text: 'Continue',
           class: 'submit-button',
           onclick: (inputValues) => {
-            editUser(inputValues, this);
+            editUser(inputValues, user);
           },
           close: true,
         },
@@ -2590,12 +2674,52 @@ try {
     });
   }
 
-  function editUser() {
-    
+  function editUser(inputValues, user) {
+    if (!active) return;
+    unsavedChanges = true;
+    fetch(domain + '/user', {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        username: user,
+        password: inputValues[1],
+        role: inputValues[0],
+        admin_username: inputValues[2],
+        admin_password: inputValues[3],
+      }),
+    })
+      .then(async (r) => {
+        if (!r.ok) {
+          try {
+            var re = await r.json();
+            if (re.error || re.message) {
+              ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+              throw new Error(re.error || re.message);
+            } else {
+              throw new Error("API error");
+            }
+          } catch (e) {
+            throw new Error(e.message || "API error");
+          }
+        }
+        return await r.json();
+      })
+      .then(() => {
+        unsavedChanges = false;
+        ui.toast("Successfully edited user.", 3000, "success", "bi bi-check-lg");
+        init();
+      })
+      .catch((e) => {
+        console.error(e);
+        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        pollingOff();
+      });
   }
 
   function deleteUser() {
-    
+
   }
 } catch (error) {
   if (storage.get("developer")) {
