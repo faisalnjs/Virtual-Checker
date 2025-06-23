@@ -64,7 +64,7 @@ try {
           return await r.json();
         })
         .then(users => {
-          document.querySelector('.users').innerHTML = '<div class="row header"><span>Username</span><span>Role</span><span>Actions</span></div>';
+          document.querySelector('.users').innerHTML = '<div class="row header"><span>Username / Seat Code</span><span>Role</span><span>Actions</span></div>';
           if (Object.keys(users).length > 0) {
             document.getElementById('no-users').setAttribute('hidden', '');
             document.querySelector('.users').removeAttribute('hidden');
@@ -2749,7 +2749,7 @@ try {
           required: true,
         },
         {
-          label: 'Username',
+          label: 'Username / Seat Code',
           type: 'text',
           required: true,
         },
