@@ -16,8 +16,25 @@ var noReloadCourse = false;
 
 try {
   async function init() {
-
     if (!storage.get("code")) return window.location.href = '/';
+    if (!storage.get("pwd")) return ui.modal({
+      title: 'Enter Password',
+      body: `<p>Enter the assigned password for TA seat code <code>${storage.get("code")}</code>.</p>`,
+      input: {
+        type: 'password'
+      },
+      buttons: [
+        {
+          text: 'Verify',
+          class: 'submit-button',
+          onclick: (inputValue) => {
+            storage.set("pwd", inputValue);
+            init();
+          },
+          close: true,
+        },
+      ],
+    });
 
     // Show clear data fix guide
     // if (storage.get("created")) {
@@ -26,7 +43,7 @@ try {
     //   storage.set("created", Date.now());
     // }
 
-    await fetch(domain + '/courses?ta=' + storage.get("code"), {
+    await fetch(domain + '/courses?ta=' + storage.get("code") + '&pwd=' + storage.get("pwd"), {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -50,6 +67,24 @@ try {
       })
       .then(async c => {
         courses = c;
+        if (courses.length === 0) return ui.modal({
+          title: 'Enter Password',
+          body: `<p>Enter the assigned password for TA seat code <code>${storage.get("code")}</code>.</p>`,
+          input: {
+            type: 'password'
+          },
+          buttons: [
+            {
+              text: 'Verify',
+              class: 'submit-button',
+              onclick: (inputValue) => {
+                storage.set("pwd", inputValue);
+                init();
+              },
+              close: true,
+            },
+          ],
+        });
         if (!noReloadCourse) {
           document.getElementById("course-period-input").innerHTML = "";
           c.sort((a, b) => a.id - b.id).forEach(course => {
@@ -64,7 +99,7 @@ try {
         document.getElementById("sort-segment-input").addEventListener("input", updateResponses);
         document.getElementById("sort-question-input").addEventListener("input", updateResponses);
         document.getElementById("sort-seat-input").addEventListener("input", updateResponses);
-        await fetch(domain + '/questions?ta=' + storage.get("code"), {
+        await fetch(domain + '/questions?ta=' + storage.get("code") + '&pwd=' + storage.get("pwd"), {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -76,7 +111,7 @@ try {
           })
           .then(async q => {
             questions = q;
-            await fetch(domain + '/answers?ta=' + storage.get("code"), {
+            await fetch(domain + '/answers?ta=' + storage.get("code") + '&pwd=' + storage.get("pwd"), {
               method: "GET",
               headers: {
                 "Content-Type": "application/json",
@@ -88,7 +123,7 @@ try {
               })
               .then(async a => {
                 answers = a;
-                await fetch(domain + '/responses?ta=' + storage.get("code"), {
+                await fetch(domain + '/responses?ta=' + storage.get("code") + '&pwd=' + storage.get("pwd"), {
                   method: "GET",
                   headers: {
                     "Content-Type": "application/json",
@@ -170,7 +205,7 @@ try {
     var trendingResponses = [];
     var timedResponses = [];
     var responses1 = responses
-      .filter(r => JSON.parse(courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value).periods).includes(Number(String(r.seatCode)[0])))
+      .filter(r => courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value) ? JSON.parse(courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value)?.periods).includes(Number(String(r.seatCode)[0])) : false)
       .filter(r => String(r.segment).startsWith(document.getElementById("sort-segment-input")?.value))
       .filter(r => questions.find(q => q.id == r.question_id).number.startsWith(document.getElementById("sort-question-input")?.value))
       .filter(r => String(r.seatCode).startsWith(document.getElementById("sort-seat-input")?.value))
@@ -298,6 +333,7 @@ try {
       body: JSON.stringify({
         question_id: this.parentElement.querySelector('#response-id-input').value,
         seatCode: this.parentElement.querySelector('#response-seat-code-input').value,
+        pwd: storage.get("pwd"),
       }),
     })
       .then(async (r) => {
@@ -338,6 +374,7 @@ try {
       body: JSON.stringify({
         question_id: this.parentElement.querySelector('#response-id-input').value,
         seatCode: this.parentElement.querySelector('#response-seat-code-input').value,
+        pwd: storage.get("pwd"),
       }),
     })
       .then(async (r) => {
@@ -377,7 +414,8 @@ try {
       },
       body: JSON.stringify({
         question_id: questions.find(q => q.number == this.parentElement.querySelector('#response-question-input').value).id,
-        answer: responses.find(q => q.id == this.parentElement.querySelector('#response-id-input').value).response
+        answer: responses.find(q => q.id == this.parentElement.querySelector('#response-id-input').value).response,
+        pwd: storage.get("pwd"),
       }),
     })
       .then(async (r) => {
@@ -447,7 +485,8 @@ try {
       body: JSON.stringify({
         question_id: questions.find(q => q.number == e.parentElement.querySelector('#response-question-input').value).id,
         answer: responses.find(q => q.id == e.parentElement.querySelector('#response-id-input').value).response,
-        reason: reason
+        reason: reason,
+        pwd: storage.get("pwd"),
       }),
     })
       .then(async (r) => {

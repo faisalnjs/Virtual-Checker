@@ -333,8 +333,11 @@ try {
         }
         storage.set("questionsAnswered", qA);
         resetInputs();
-        if ((typeof r.correct === 'undefined') || r.correct || (typeof r.error !== 'undefined')) nextQuestion();
-        updateQuestion();
+        if ((typeof r.correct === 'undefined') || r.correct || (typeof r.error !== 'undefined')) {
+          nextQuestion();
+        } else {
+          updateQuestion();
+        }
         var storageClickMode = "text";
         if (mode === "math" && !multipleChoice) {
           storageClickMode = "latex";

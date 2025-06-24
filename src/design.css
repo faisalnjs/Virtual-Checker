@@ -141,6 +141,22 @@ select.disabled:disabled {
   opacity: 0.5;
 }
 
+select[multiple] {
+  padding: 0.5em;
+  height: fit-content;
+  max-height: 5em;
+}
+
+select[multiple] option:not(:last-child) {
+  margin-bottom: 2px;
+}
+
+select[multiple] option:checked {
+  background: var(--accent-color);
+  color: var(--accent-text-color);
+  border-radius: 0.2rem;
+}
+
 .drag {
   height: 2.25em;
   width: 2.25em;

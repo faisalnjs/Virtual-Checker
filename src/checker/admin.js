@@ -64,34 +64,34 @@ try {
           return await r.json();
         })
         .then(users => {
-          document.querySelector('.users').innerHTML = '<div class="row header"><span>Username / Seat Code</span><span>Role</span><span>Actions</span></div>';
-          if (Object.keys(users).length > 0) {
+          document.querySelector('.users').innerHTML = '<div class="row header"><span>Username / Seat Code</span><span>Role</span><span>Partial Access Course</span><span>Full Access Courses</span><span>Actions</span></div>';
+          if (users.length > 0) {
             document.getElementById('no-users').setAttribute('hidden', '');
             document.querySelector('.users').removeAttribute('hidden');
           }
-          users = Object.fromEntries(Object.entries(users).sort((a, b) => {
-            const roleA = a[1].toLowerCase();
-            const roleB = b[1].toLowerCase();
+          users = users.sort((a, b) => {
+            const roleA = a.role.toLowerCase();
+            const roleB = b.role.toLowerCase();
             if (roleA < roleB) return -1;
             if (roleA > roleB) return 1;
-            return a[0].localeCompare(b[0]);
-          }));
-          for (const key in users) {
-            if (Object.prototype.hasOwnProperty.call(users, key)) {
-              document.querySelector('.users').innerHTML += `<div class="enhanced-item" id="${key}">
-                <span class="username">${key}</span>
-                <span class="role">${users[key]}</span>
-                <span class="actions">
-                  <button class="icon" data-edit-user tooltip="Edit User">
-                    <i class="bi bi-pencil"></i>
-                  </button>
-                  <button class="icon" data-delete-user tooltip="Delete User">
-                    <i class="bi bi-trash"></i>
-                  </button>
-                </span>
-              </div>`;
-            }
-          }
+            return a.username.localeCompare(b.username);
+          });
+          users.forEach(user => {
+            document.querySelector('.users').innerHTML += `<div class="enhanced-item" id="${user.username}">
+              <span class="username">${user.username}</span>
+              <span class="role">${user.role}</span>
+              <span class="partialAccessCourse">${user.main_course || ''}</span>
+              <span class="fullAccessCourses">${JSON.stringify(user.access_courses)}</span>
+              <span class="actions">
+                <button class="icon" data-edit-user tooltip="Edit User">
+                  <i class="bi bi-pencil"></i>
+                </button>
+                <button class="icon" data-delete-user tooltip="Delete User">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </span>
+            </div>`;
+          });
           document.querySelectorAll('[data-edit-user]').forEach(button => button.addEventListener('click', editUserModal));
           document.querySelectorAll('[data-delete-user]').forEach(button => button.addEventListener('click', deleteUserModal));
           ui.stopLoader();
@@ -102,8 +102,6 @@ try {
           ui.view("api-fail");
           pollingOff();
         });
-      reloadUnsavedInputs();
-      return;
     }
 
     await fetch(domain + '/courses', {
@@ -130,6 +128,10 @@ try {
       })
       .then(async c => {
         courses = c;
+        if (document.querySelector('.users')) { 
+          reloadUnsavedInputs();
+          return;
+        }
         if (document.getElementById("course-period-input") && !loadedSegmentEditor && !loadedSegmentCreator && !noReloadCourse) {
           document.getElementById("course-period-input").innerHTML = "";
           c.sort((a, b) => a.id - b.id).forEach(course => {
@@ -1153,7 +1155,7 @@ try {
     var trendingResponses = [];
     var timedResponses = [];
     var responses1 = responses
-      .filter(r => JSON.parse(courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value).periods).includes(Number(String(r.seatCode)[0])))
+      .filter(r => courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value) ? JSON.parse(courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value)?.periods).includes(Number(String(r.seatCode)[0])) : false)
       .filter(r => String(r.segment).startsWith(document.getElementById("sort-segment-input")?.value))
       .filter(r => questions.find(q => q.id == r.question_id).number.startsWith(document.getElementById("sort-question-input")?.value))
       .filter(r => String(r.seatCode).startsWith(document.getElementById("sort-seat-input")?.value))
@@ -2629,6 +2631,8 @@ try {
     if (!active) return;
     const user = this.parentElement.parentElement.id;
     const role = this.parentElement.parentElement.querySelector('.role').innerText;
+    const partialAccessCourse = this.parentElement.parentElement.querySelector('.partialAccessCourse').innerText;
+    const fullAccessCourses = JSON.parse(this.parentElement.parentElement.querySelector('.fullAccessCourses').innerText);
     ui.modal({
       title: 'Edit User',
       body: `<p>Edit <code>${role}</code> user <code>${user}</code>.</p>`,
@@ -2652,6 +2656,31 @@ try {
         {
           label: 'New Password',
           type: 'password',
+        },
+        {
+          label: 'Partial Access Course',
+          type: 'select',
+          options: [
+            {
+              value: '',
+              text: 'None'
+            },
+            ...courses.map(course => ({
+              value: String(course.id),
+              text: course.name,
+            }))
+          ],
+          defaultValue: partialAccessCourse || '',
+        },
+        {
+          label: 'Full Access Courses',
+          type: 'select',
+          options: courses.map(course => ({
+            value: String(course.id),
+            text: course.name,
+            selected: fullAccessCourses ? fullAccessCourses.includes(course.id) : false,
+          })),
+          multiple: true,
         },
         {
           label: 'Admin Username',
@@ -2694,8 +2723,10 @@ try {
         username: user,
         password: inputValues[1],
         role: inputValues[0],
-        admin_username: inputValues[2],
-        admin_password: inputValues[3],
+        partialAccessCourse: inputValues[2] || null,
+        fullAccessCourses: inputValues[3] || [],
+        admin_username: inputValues[4],
+        admin_password: inputValues[5],
       }),
     })
       .then(async (r) => {
@@ -2728,6 +2759,7 @@ try {
 
   function addUserModal() {
     if (!active) return;
+    console.log(courses)
     ui.modal({
       title: 'Add User',
       body: `<p>Grant a new user access to the administration-side.</p>`,
@@ -2757,6 +2789,23 @@ try {
           label: 'Password',
           type: 'password',
           required: true,
+        },
+        {
+          label: 'Partial Access Course',
+          type: 'select',
+          options: courses.map(course => ({
+            value: String(course.id),
+            text: course.name
+          })),
+        },
+        {
+          label: 'Full Access Courses',
+          type: 'select',
+          options: courses.map(course => ({
+            value: String(course.id),
+            text: course.name
+          })),
+          multiple: true,
         },
         {
           label: 'Admin Username',
@@ -2799,8 +2848,10 @@ try {
         username: inputValues[1],
         password: inputValues[2],
         role: inputValues[0],
-        admin_username: inputValues[3],
-        admin_password: inputValues[4],
+        partialAccessCourse: inputValues[3] || null,
+        fullAccessCourses: inputValues[4] || [],
+        admin_username: inputValues[5],
+        admin_password: inputValues[6],
       }),
     })
       .then(async (r) => {
