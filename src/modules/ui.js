@@ -45,16 +45,18 @@ export function modal(options) {
     }
     const input = document.createElement((options.input.type === "select") ? "select" : "input");
     if (options.input.type !== "select") input.type = options.input.type || "text";
-    if (options.input.options) {
+    if ((options.input.type === "select") && options.input.multiple) input.multiple = options.input.multiple;
+    if ((options.input.type === "select") && options.input.options) {
       options.input.options.forEach(option => {
         const optionElement = document.createElement("option");
-        optionElement.value = option.value || option;
-        optionElement.textContent = option.text || option;
+        optionElement.value = option.value;
+        optionElement.textContent = option.text;
+        if (option.selected) optionElement.selected = true;
         input.appendChild(optionElement);
       });
     }
     input.placeholder = options.input.placeholder || "";
-    input.value = options.input.defaultValue || "";
+    if (options.input.defaultValue) input.value = options.input.defaultValue || "";
     input.className = "dialog-input";
     input.min = options.input.min || "";
     input.max = options.input.max || "";
@@ -72,16 +74,18 @@ export function modal(options) {
       }
       const inputElement = document.createElement((input.type === "select") ? "select" : "input");
       if (input.type !== "select") inputElement.type = input.type || "text";
-      if (input.options) {
+      if ((input.type === "select") && input.multiple) inputElement.multiple = input.multiple;
+      if ((input.type === "select") && input.options) {
         input.options.forEach(option => {
           const optionElement = document.createElement("option");
-          optionElement.value = option.value || option;
-          optionElement.textContent = option.text || option;
+          optionElement.value = option.value;
+          optionElement.textContent = option.text;
+          if (option.selected) optionElement.selected = true;
           inputElement.appendChild(optionElement);
         });
       }
       inputElement.placeholder = input.placeholder || "";
-      inputElement.value = input.defaultValue || "";
+      if (input.defaultValue) inputElement.value = input.defaultValue || "";
       inputElement.className = "dialog-input";
       inputElement.min = input.min || "";
       inputElement.max = input.max || "";
@@ -112,7 +116,7 @@ export function modal(options) {
             });
             if (hasEmptyRequiredInput) return;
             const inputValue = (dialog.querySelectorAll(".dialog-input").length > 1) ? [...dialog.querySelectorAll(".dialog-input")].map(dialogInput => {
-              return dialogInput.value;
+              return dialogInput.multiple ? [...dialogInput.selectedOptions].map(e => Number(e.value)) : dialogInput.value;
             }) : (dialog.querySelector(".dialog-input") ? dialog.querySelector(".dialog-input").value : null);
             button.onclick(inputValue);
           }
