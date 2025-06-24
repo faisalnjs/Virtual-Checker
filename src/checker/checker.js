@@ -689,6 +689,8 @@ try {
       if (i) i.innerHTML = `${JSON.parse(selectedSegment.question_ids).find(q2 => String(q2.id) === String(q.question)).name} - ${q.status}`;
     });
 
+    resetInputs();
+
     const feed = document.getElementById('question-history-feed');
     feed.innerHTML = "";
     var latestResponses = (storage.get("history") || []).filter(r => (String(r.segment) === String(segments.value)) && (String(r.question) === String(question.id))).sort((a, b) => b.timestamp - a.timestamp);
