@@ -64,7 +64,7 @@ try {
           return await r.json();
         })
         .then(users => {
-          document.querySelector('.users').innerHTML = '<div class="row header"><span>Username / Seat Code</span><span>Role</span><span>Partial Access Course</span><span>Full Access Courses</span><span>Actions</span></div>';
+          document.querySelector('.users').innerHTML = '<div class="row header"><span>Username / Seat Code</span><span>Role</span><span>Partial Access Courses</span><span>Full Access Courses</span><span>Actions</span></div>';
           if (users.length > 0) {
             document.getElementById('no-users').setAttribute('hidden', '');
             document.querySelector('.users').removeAttribute('hidden');
@@ -80,7 +80,7 @@ try {
             document.querySelector('.users').innerHTML += `<div class="enhanced-item" id="${user.username}">
               <span class="username">${user.username}</span>
               <span class="role">${user.role}</span>
-              <span class="partialAccessCourse">${user.main_course || ''}</span>
+              <span class="partialAccessCourses">${JSON.stringify(user.main_courses)}</span>
               <span class="fullAccessCourses">${JSON.stringify(user.access_courses)}</span>
               <span class="actions">
                 <button class="icon" data-edit-user tooltip="Edit User">
@@ -2631,7 +2631,7 @@ try {
     if (!active) return;
     const user = this.parentElement.parentElement.id;
     const role = this.parentElement.parentElement.querySelector('.role').innerText;
-    const partialAccessCourse = this.parentElement.parentElement.querySelector('.partialAccessCourse').innerText;
+    const partialAccessCourses = JSON.parse(this.parentElement.parentElement.querySelector('.partialAccessCourses').innerText);
     const fullAccessCourses = JSON.parse(this.parentElement.parentElement.querySelector('.fullAccessCourses').innerText);
     ui.modal({
       title: 'Edit User',
@@ -2658,19 +2658,14 @@ try {
           type: 'password',
         },
         {
-          label: 'Partial Access Course',
+          label: 'Partial Access Courses',
           type: 'select',
-          options: [
-            {
-              value: '',
-              text: 'None'
-            },
-            ...courses.map(course => ({
-              value: String(course.id),
-              text: course.name,
-            }))
-          ],
-          defaultValue: partialAccessCourse || '',
+          options: courses.map(course => ({
+            value: String(course.id),
+            text: course.name,
+            selected: partialAccessCourses ? partialAccessCourses.includes(course.id) : false,
+          })),
+          multiple: true,
         },
         {
           label: 'Full Access Courses',
@@ -2723,7 +2718,7 @@ try {
         username: user,
         password: inputValues[1],
         role: inputValues[0],
-        partialAccessCourse: inputValues[2] || null,
+        partialAccessCourses: inputValues[2] || [],
         fullAccessCourses: inputValues[3] || [],
         admin_username: inputValues[4],
         admin_password: inputValues[5],
@@ -2759,7 +2754,6 @@ try {
 
   function addUserModal() {
     if (!active) return;
-    console.log(courses)
     ui.modal({
       title: 'Add User',
       body: `<p>Grant a new user access to the administration-side.</p>`,
@@ -2791,12 +2785,13 @@ try {
           required: true,
         },
         {
-          label: 'Partial Access Course',
+          label: 'Partial Access Courses',
           type: 'select',
           options: courses.map(course => ({
             value: String(course.id),
             text: course.name
           })),
+          multiple: true,
         },
         {
           label: 'Full Access Courses',
@@ -2848,7 +2843,7 @@ try {
         username: inputValues[1],
         password: inputValues[2],
         role: inputValues[0],
-        partialAccessCourse: inputValues[3] || null,
+        partialAccessCourses: inputValues[3] || [],
         fullAccessCourses: inputValues[4] || [],
         admin_username: inputValues[5],
         admin_password: inputValues[6],
