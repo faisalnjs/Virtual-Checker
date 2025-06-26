@@ -151,7 +151,7 @@ try {
             </div>`;
           });
           // document.querySelectorAll('[data-undo-action]').forEach(button => button.addEventListener('click', undoActionModal));
-          // document.querySelectorAll('[data-clear-log]').forEach(button => button.addEventListener('click', clearLogModal));
+          document.querySelectorAll('[data-clear-log]').forEach(button => button.addEventListener('click', clearLogModal));
           ui.stopLoader();
           active = true;
         })
@@ -3066,6 +3066,72 @@ try {
       .then(() => {
         unsavedChanges = false;
         ui.toast("Successfully cleared logs.", 3000, "success", "bi bi-check-lg");
+        init();
+      })
+      .catch((e) => {
+        console.error(e);
+        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        pollingOff();
+      });
+  }
+
+  function clearLogModal() {
+    if (!active) return;
+    const id = this.parentElement.parentElement.id;
+    const details = this.parentElement.parentElement.querySelector('.details').innerText;
+    const timestamp = this.parentElement.parentElement.querySelector('.timestamp').innerText;
+    ui.modal({
+      title: 'Clear Log',
+      body: `<p>Are you sure you would like to clear this log from the database? This action is not reversible.<br><br>Details: ${details}<br>Timestamp: ${timestamp}</p>`,
+      buttons: [
+        {
+          text: 'Cancel',
+          class: 'cancel-button',
+          close: true,
+        },
+        {
+          text: 'Clear',
+          class: 'submit-button',
+          onclick: () => {
+            clearLog(id);
+          },
+          close: true,
+        },
+      ],
+    });
+  }
+
+  function clearLog(id) {
+    if (!active) return;
+    unsavedChanges = true;
+    fetch(domain + '/logs', {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        id,
+      }),
+    })
+      .then(async (r) => {
+        if (!r.ok) {
+          try {
+            var re = await r.json();
+            if (re.error || re.message) {
+              ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+              throw new Error(re.error || re.message);
+            } else {
+              throw new Error("API error");
+            }
+          } catch (e) {
+            throw new Error(e.message || "API error");
+          }
+        }
+        return await r.json();
+      })
+      .then(() => {
+        unsavedChanges = false;
+        ui.toast("Successfully cleared log.", 3000, "success", "bi bi-check-lg");
         init();
       })
       .catch((e) => {
