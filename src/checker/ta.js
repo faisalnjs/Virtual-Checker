@@ -414,7 +414,7 @@ try {
       },
       body: JSON.stringify({
         question_id: questions.find(q => q.number == this.parentElement.querySelector('#response-question-input').value).id,
-        answer: responses.find(q => q.id == this.parentElement.querySelector('#response-id-input').value).response,
+        answer: this.parentElement.querySelector('#response-response-input').value,
         pwd: storage.get("pwd"),
       }),
     })
@@ -484,7 +484,7 @@ try {
       },
       body: JSON.stringify({
         question_id: questions.find(q => q.number == e.parentElement.querySelector('#response-question-input').value).id,
-        answer: responses.find(q => q.id == e.parentElement.querySelector('#response-id-input').value).response,
+        answer: e.parentElement.querySelector('#response-response-input').value,
         reason: reason,
         pwd: storage.get("pwd"),
       }),

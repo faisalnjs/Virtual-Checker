@@ -392,3 +392,11 @@ label {
   display: flex;
   justify-content: flex-end;
 }
+
+.enhanced-list .enhanced-item.disabled {
+  text-decoration: line-through;
+}
+
+.enhanced-list .enhanced-item.disabled [data-undo-action] {
+  display: none;
+}

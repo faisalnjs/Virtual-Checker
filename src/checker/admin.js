@@ -1466,7 +1466,7 @@ try {
       },
       body: JSON.stringify({
         question_id: questions.find(q => q.number == this.parentElement.querySelector('#response-question-input').value).id,
-        answer: responses.find(q => q.id == this.parentElement.querySelector('#response-id-input').value).response
+        answer: this.parentElement.querySelector('#response-response-input').value,
       }),
     })
       .then(async (r) => {
@@ -1536,7 +1536,7 @@ try {
       },
       body: JSON.stringify({
         question_id: questions.find(q => q.number == e.parentElement.querySelector('#response-question-input').value).id,
-        answer: responses.find(q => q.id == e.parentElement.querySelector('#response-id-input').value).response,
+        answer: e.parentElement.querySelector('#response-response-input').value,
         reason: reason
       }),
     })
@@ -3007,7 +3007,8 @@ try {
       document.querySelector('.logs').setAttribute('hidden', '');
     }
     filteredLogs.forEach(log => {
-      document.querySelector('.logs').innerHTML += `<div class="enhanced-item" id="${log.id}">
+      document.querySelector('.logs').innerHTML += `<div class="enhanced-item${log.undid ? ' disabled' : ''}" id="${log.id}">
+        <span class="action" hidden>${log.action}</span>
         <span class="details">${log.details}</span>
         <span class="timestamp fit">${time.unixToString(log.timestamp)}</span>
         <span class="actions fit showonhover">
@@ -3159,7 +3160,7 @@ try {
     const action = this.parentElement.parentElement.querySelector('.action').innerText;
     ui.modal({
       title: 'Undo Action',
-      body: `<p>Are you sure you would like to undo this action? This action is not reversible.<br><br>Action: ${action}><br>Details: ${details}<br>Timestamp: ${timestamp}</p>`,
+      body: `<p>Are you sure you would like to undo this action? This action is not reversible.<br><br>Action: ${action}<br>Details: ${details}<br>Timestamp: ${timestamp}</p>`,
       buttons: [
         {
           text: 'Cancel',
