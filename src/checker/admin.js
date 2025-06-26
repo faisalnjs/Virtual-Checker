@@ -24,6 +24,7 @@ var loadedSegmentEditor = false;
 var loadedSegmentCreator = false;
 var unsavedChanges = false;
 var noReloadCourse = false;
+var logs = [];
 
 var draggableQuestionList = null;
 var draggableSegmentReorder = null;
@@ -106,6 +107,8 @@ try {
 
     if (document.querySelector('.logs')) {
       if (document.getElementById('clear-logs')) document.getElementById('clear-logs').addEventListener('click', clearLogsModal);
+      if (document.getElementById("filter-logs-by-username-input")) document.getElementById("filter-logs-by-username-input").addEventListener("input", updateLogs);
+      if (document.getElementById("filter-logs-by-action-input")) document.getElementById("filter-logs-by-action-input").addEventListener("input", updateLogs);
       await fetch(domain + '/logs', {
         method: "GET",
         headers: {
@@ -128,30 +131,9 @@ try {
           }
           return await r.json();
         })
-        .then(logs => {
-          document.querySelector('.logs').innerHTML = '<div class="row header"><span hidden>Action</span><span>Details</span><span class="smedium">Timestamp</span></div>';
-          if (logs.length > 0) {
-            document.getElementById('no-logs').setAttribute('hidden', '');
-            document.querySelector('.logs').removeAttribute('hidden');
-          }
-          logs.forEach(log => {
-            document.querySelector('.logs').innerHTML += `<div class="enhanced-item" id="${log.id}">
-              <span class="username" hidden>${log.user}</span>
-              <span class="action" hidden>${log.action}</span>
-              <span class="details">${log.details}</span>
-              <span class="timestamp fit">${time.unixToString(log.timestamp)}</span>
-              <span class="actions fit showonhover">
-                <button class="icon" data-undo-action tooltip="Undo Action">
-                  <i class="bi bi-arrow-counterclockwise"></i>
-                </button>
-                <button class="icon" data-clear-log tooltip="Clear Entry">
-                  <i class="bi bi-trash"></i>
-                </button>
-              </span>
-            </div>`;
-          });
-          // document.querySelectorAll('[data-undo-action]').forEach(button => button.addEventListener('click', undoActionModal));
-          document.querySelectorAll('[data-clear-log]').forEach(button => button.addEventListener('click', clearLogModal));
+        .then(l => {
+          logs = l;
+          updateLogs();
           ui.stopLoader();
           active = true;
         })
@@ -3012,6 +2994,34 @@ try {
         if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
         pollingOff();
       });
+  }
+
+  function updateLogs() {
+    document.querySelector('.logs').innerHTML = '<div class="row header"><span hidden>Action</span><span>Details</span><span class="smedium">Timestamp</span></div>';
+    var filteredLogs = logs.filter(l => l.user.startsWith(document.getElementById("filter-logs-by-username-input").value)).filter(l => document.getElementById("filter-logs-by-action-input").value ? (l.action === document.getElementById("filter-logs-by-action-input").value) : true);
+    if (filteredLogs.length > 0) {
+      document.getElementById('no-logs').setAttribute('hidden', '');
+      document.querySelector('.logs').removeAttribute('hidden');
+    } else {
+      document.getElementById('no-logs').removeAttribute('hidden');
+      document.querySelector('.logs').setAttribute('hidden', '');
+    }
+    filteredLogs.forEach(log => {
+      document.querySelector('.logs').innerHTML += `<div class="enhanced-item" id="${log.id}">
+        <span class="details">${log.details}</span>
+        <span class="timestamp fit">${time.unixToString(log.timestamp)}</span>
+        <span class="actions fit showonhover">
+          <button class="icon" data-undo-action tooltip="Undo Action">
+            <i class="bi bi-arrow-counterclockwise"></i>
+          </button>
+          <button class="icon" data-clear-log tooltip="Clear Entry">
+            <i class="bi bi-trash"></i>
+          </button>
+        </span>
+      </div>`;
+    });
+    // document.querySelectorAll('[data-undo-action]').forEach(button => button.addEventListener('click', undoActionModal));
+    document.querySelectorAll('[data-clear-log]').forEach(button => button.addEventListener('click', clearLogModal));
   }
 
   function clearLogsModal() {

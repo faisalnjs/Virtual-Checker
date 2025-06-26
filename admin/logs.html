@@ -58,6 +58,29 @@
     </div>
   </div>
   <div id="checker">
+    <div class="section sort">
+      <h1>Sort & Filter</h1>
+      <div class="button-grid inputs">
+        <div class="input-group">
+          <label for="filter-logs-by-username-input">Username</label>
+          <div class="space" id="question-container">
+            <input type="text" id="filter-logs-by-username-input" value=""></in>
+          </div>
+        </div>
+        <div class="input-group">
+          <label for="filter-logs-by-action-input">Action</label>
+          <div class="space" id="question-container">
+            <select id="filter-logs-by-action-input" value="">
+              <option value="">All</option>
+              <option value="ta-flag">Flag</option>
+              <option value="ta-unflag">Unflag</option>
+              <option value="ta-mark-correct">Mark Correct</option>
+              <option value="ta-mark-incorrect">Mark Incorrect</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
     <div class="section">
       <h1>TA Manager</h1>
       <div id="no-logs" class="row center">
