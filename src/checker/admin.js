@@ -104,6 +104,64 @@ try {
         });
     }
 
+    if (document.querySelector('.logs')) {
+      if (document.getElementById('clear-logs')) document.getElementById('clear-logs').addEventListener('click', clearLogsModal);
+      await fetch(domain + '/logs', {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        }
+      })
+        .then(async (r) => {
+          if (!r.ok) {
+            try {
+              var re = await r.json();
+              if (re.error || re.message) {
+                ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+                throw new Error(re.error || re.message);
+              } else {
+                throw new Error("API error");
+              }
+            } catch (e) {
+              throw new Error(e.message || "API error");
+            }
+          }
+          return await r.json();
+        })
+        .then(logs => {
+          document.querySelector('.logs').innerHTML = '<div class="row header"><span hidden>Action</span><span>Details</span><span class="smedium">Timestamp</span></div>';
+          if (logs.length > 0) {
+            document.getElementById('no-logs').setAttribute('hidden', '');
+            document.querySelector('.logs').removeAttribute('hidden');
+          }
+          logs.forEach(log => {
+            document.querySelector('.logs').innerHTML += `<div class="enhanced-item" id="${log.id}">
+              <span class="username" hidden>${log.user}</span>
+              <span class="action" hidden>${log.action}</span>
+              <span class="details">${log.details}</span>
+              <span class="timestamp fit">${time.unixToString(log.timestamp)}</span>
+              <span class="actions fit showonhover">
+                <button class="icon" data-undo-action tooltip="Undo Action">
+                  <i class="bi bi-arrow-counterclockwise"></i>
+                </button>
+                <button class="icon" data-clear-log tooltip="Clear Entry">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </span>
+            </div>`;
+          });
+          // document.querySelectorAll('[data-undo-action]').forEach(button => button.addEventListener('click', undoActionModal));
+          // document.querySelectorAll('[data-clear-log]').forEach(button => button.addEventListener('click', clearLogModal));
+          ui.stopLoader();
+          active = true;
+        })
+        .catch((e) => {
+          console.error(e);
+          ui.view("api-fail");
+          pollingOff();
+        });
+    }
+
     await fetch(domain + '/courses', {
       method: "GET",
       headers: {
@@ -2947,6 +3005,67 @@ try {
       .then(() => {
         unsavedChanges = false;
         ui.toast("Successfully deleted user.", 3000, "success", "bi bi-check-lg");
+        init();
+      })
+      .catch((e) => {
+        console.error(e);
+        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        pollingOff();
+      });
+  }
+
+  function clearLogsModal() {
+    if (!active) return;
+    ui.modal({
+      title: 'Clear Logs',
+      body: '<p>Are you sure you would like to clear all logs from the database? This action is not reversible.</p>',
+      buttons: [
+        {
+          text: 'Cancel',
+          class: 'cancel-button',
+          close: true,
+        },
+        {
+          text: 'Clear',
+          class: 'submit-button',
+          onclick: () => {
+            clearLogs();
+          },
+          close: true,
+        },
+      ],
+    });
+  }
+
+  function clearLogs() {
+    if (!active) return;
+    unsavedChanges = true;
+    fetch(domain + '/logs', {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({}),
+    })
+      .then(async (r) => {
+        if (!r.ok) {
+          try {
+            var re = await r.json();
+            if (re.error || re.message) {
+              ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+              throw new Error(re.error || re.message);
+            } else {
+              throw new Error("API error");
+            }
+          } catch (e) {
+            throw new Error(e.message || "API error");
+          }
+        }
+        return await r.json();
+      })
+      .then(() => {
+        unsavedChanges = false;
+        ui.toast("Successfully cleared logs.", 3000, "success", "bi bi-check-lg");
         init();
       })
       .catch((e) => {

@@ -379,10 +379,11 @@ label {
   border-radius: 10px;
   line-height: 25px;
   width: 99%;
+  gap: 10px;
 }
 
-.enhanced-list .header > *,
-.enhanced-list .enhanced-item > * {
+.enhanced-list .header > *:not(.fit),
+.enhanced-list .enhanced-item > *:not(.fit) {
   flex: 1;
 }
 

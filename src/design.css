@@ -543,7 +543,7 @@ div.ML__keyboard {
 }
 
 .fit {
-  width: fit-content;
+  width: fit-content !important;
 }
 
 #checker:not(:has(input)) {
@@ -1035,16 +1035,16 @@ hidden,
 }
 
 .showonhover {
-  display: none;
+  display: none !important;
 }
 
 *:has(> .showonhover):hover .showonhover {
-  display: inline-block;
+  display: inherit !important;
   padding-left: 5px;
 }
 
 *:has(> .hideonhover):hover .hideonhover {
-  display: none;
+  display: none !important;
 }
 
 .redonhover:hover {
