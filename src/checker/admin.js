@@ -2,6 +2,7 @@
 import * as ui from "/src/modules/ui.js";
 import storage from "/src/modules/storage.js";
 import * as time from "/src/modules/time.js";
+import * as auth from "/src/modules/auth.js";
 import { createSwapy } from "swapy";
 
 const domain = ((window.location.hostname.search('check') != -1) || (window.location.hostname.search('127') != -1)) ? 'https://api.check.vssfalcons.com' : `http://${document.domain}:5000`;
@@ -31,6 +32,9 @@ var draggableSegmentReorder = null;
 
 try {
   async function init() {
+    if (!storage.get("usr") || !storage.get("pwd")) return auth.admin(init);
+    if (document.querySelector('[data-logout]')) document.querySelector('[data-logout]').addEventListener('click', () => auth.logout(init));
+
     formData = new FormData();
 
     // Show clear data fix guide
@@ -43,10 +47,14 @@ try {
     if (document.querySelector('.users')) {
       if (document.getElementById('add-user-button')) document.getElementById('add-user-button').addEventListener('click', addUserModal);
       await fetch(domain + '/users', {
-        method: "GET",
+        method: "POST",
         headers: {
           "Content-Type": "application/json",
-        }
+        },
+        body: JSON.stringify({
+          usr: storage.get("usr"),
+          pwd: storage.get("pwd"),
+        }),
       })
         .then(async (r) => {
           if (!r.ok) {
@@ -101,6 +109,7 @@ try {
         .catch((e) => {
           console.error(e);
           ui.view("api-fail");
+          if (e.message === "Access denied.") return auth.admin(init);
           pollingOff();
         });
     }
@@ -110,10 +119,14 @@ try {
       if (document.getElementById("filter-logs-by-username-input")) document.getElementById("filter-logs-by-username-input").addEventListener("input", updateLogs);
       if (document.getElementById("filter-logs-by-action-input")) document.getElementById("filter-logs-by-action-input").addEventListener("input", updateLogs);
       await fetch(domain + '/logs', {
-        method: "GET",
+        method: "POST",
         headers: {
           "Content-Type": "application/json",
-        }
+        },
+        body: JSON.stringify({
+          usr: storage.get("usr"),
+          pwd: storage.get("pwd"),
+        }),
       })
         .then(async (r) => {
           if (!r.ok) {
@@ -140,6 +153,7 @@ try {
         .catch((e) => {
           console.error(e);
           ui.view("api-fail");
+          if (e.message === "Access denied.") return auth.admin(init);
           pollingOff();
         });
     }
@@ -168,7 +182,7 @@ try {
       })
       .then(async c => {
         courses = c;
-        if (document.querySelector('.users')) { 
+        if (document.querySelector('.users')) {
           reloadUnsavedInputs();
           return;
         }
@@ -220,7 +234,19 @@ try {
           }
         })
           .then(async (r) => {
-            if (!r.ok) throw new Error(r.error || r.message || "API error");
+            if (!r.ok) {
+              try {
+                var re = await r.json();
+                if (re.error || re.message) {
+                  ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+                  throw new Error(re.error || re.message);
+                } else {
+                  throw new Error("API error");
+                }
+              } catch (e) {
+                throw new Error(e.message || "API error");
+              }
+            }
             return await r.json();
           })
           .then(async c => {
@@ -240,7 +266,19 @@ try {
               }
             })
               .then(async (r) => {
-                if (!r.ok) throw new Error(r.error || r.message || "API error");
+                if (!r.ok) {
+                  try {
+                    var re = await r.json();
+                    if (re.error || re.message) {
+                      ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+                      throw new Error(re.error || re.message);
+                    } else {
+                      throw new Error("API error");
+                    }
+                  } catch (e) {
+                    throw new Error(e.message || "API error");
+                  }
+                }
                 return await r.json();
               })
               .then(async q => {
@@ -258,26 +296,58 @@ try {
                 }
                 if (document.getElementById("speed-mode-starting-question")) updateSpeedModeStartingQuestion();
                 await fetch(domain + '/answers', {
-                  method: "GET",
+                  method: "POST",
                   headers: {
                     "Content-Type": "application/json",
-                  }
+                  },
+                  body: JSON.stringify({
+                    usr: storage.get("usr"),
+                    pwd: storage.get("pwd"),
+                  }),
                 })
                   .then(async (r) => {
-                    if (!r.ok) throw new Error(r.error || r.message || "API error");
+                    if (!r.ok) {
+                      try {
+                        var re = await r.json();
+                        if (re.error || re.message) {
+                          ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+                          throw new Error(re.error || re.message);
+                        } else {
+                          throw new Error("API error");
+                        }
+                      } catch (e) {
+                        throw new Error(e.message || "API error");
+                      }
+                    }
                     return await r.json();
                   })
                   .then(async a => {
                     answers = a;
                     if (document.querySelector('.questions.section')) updateQuestions();
                     await fetch(domain + '/responses', {
-                      method: "GET",
+                      method: "POST",
                       headers: {
                         "Content-Type": "application/json",
-                      }
+                      },
+                      body: JSON.stringify({
+                        usr: storage.get("usr"),
+                        pwd: storage.get("pwd"),
+                      }),
                     })
                       .then(async (r) => {
-                        if (!r.ok) throw new Error(r.error || r.message || "API error");
+                        if (!r.ok) {
+                          try {
+                            var re = await r.json();
+                            if (re.error || re.message) {
+                              ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+                              throw new Error(re.error || re.message);
+                            } else {
+                              throw new Error("API error");
+                            }
+                          } catch (e) {
+                            throw new Error(e.message || "API error");
+                          }
+                        }
                         return await r.json();
                       })
                       .then(async r => {
@@ -302,30 +372,35 @@ try {
                       .catch((e) => {
                         console.error(e);
                         ui.view("api-fail");
+                        if (e.message === "Access denied.") return auth.admin(init);
                         pollingOff();
                       });
                   })
                   .catch((e) => {
                     console.error(e);
                     ui.view("api-fail");
+                    if (e.message === "Access denied.") return auth.admin(init);
                     pollingOff();
                   });
               })
               .catch((e) => {
                 console.error(e);
                 ui.view("api-fail");
+                if (e.message === "Access denied.") return auth.admin(init);
                 pollingOff();
               });
           })
           .catch((e) => {
             console.error(e);
             ui.view("api-fail");
+            if (e.message === "Access denied.") return auth.admin(init);
             pollingOff();
           });
       })
       .catch((e) => {
         console.error(e);
         if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if (e.message === "Access denied.") return auth.admin(init);
         pollingOff();
       });
     if (document.getElementById("course-period-input") && !loadedSegmentEditor && !loadedSegmentCreator && !noReloadCourse) {
@@ -477,7 +552,19 @@ try {
           }),
         })
           .then(async (r) => {
-            if (!r.ok) throw new Error(r.error || r.message || "API error");
+            if (!r.ok) {
+              try {
+                var re = await r.json();
+                if (re.error || re.message) {
+                  ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+                  throw new Error(re.error || re.message);
+                } else {
+                  throw new Error("API error");
+                }
+              } catch (e) {
+                throw new Error(e.message || "API error");
+              }
+            }
             return await r.json();
           })
           .then(() => {
@@ -487,6 +574,7 @@ try {
           .catch((e) => {
             console.error(e);
             ui.view("api-fail");
+            if (e.message === "Access denied.") return auth.admin(init);
             pollingOff();
           });
       });
@@ -620,7 +708,11 @@ try {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(updatedCourses.sort((a, b) => a.id - b.id))
+      body: JSON.stringify({
+        usr: storage.get("usr"),
+        pwd: storage.get("pwd"),
+        courses: updatedCourses.sort((a, b) => a.id - b.id),
+      })
     })
       .then(async (r) => {
         if (!r.ok) {
@@ -660,6 +752,7 @@ try {
       .catch((e) => {
         console.error(e);
         if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if (e.message === "Access denied.") return auth.admin(init);
         pollingOff();
       });
     // Show submit confirmation
@@ -690,7 +783,19 @@ try {
   //     body: JSON.stringify(updatedSegments)
   //   })
   //     .then(async (r) => {
-  //       if (!r.ok) throw new Error(r.error || r.message || "API error");
+  //       if (!r.ok) {
+  //         try {
+  //           var re = await r.json();
+  //           if (re.error || re.message) {
+  //             ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+  //             throw new Error(re.error || re.message);
+  //           } else {
+  //             throw new Error("API error");
+  //           }
+  //         } catch (e) {
+  //           throw new Error(e.message || "API error");
+  //         }
+  //       }
   //       return await r.json();
   //     })
   //     .then(c => {
@@ -701,6 +806,7 @@ try {
   //     .catch((e) => {
   //       console.error(e);
   //       ui.view("api-fail");
+  //       if (e.message === "Access denied.") return auth.admin(init);
   //       pollingOff();
   //     });
   //   // Show submit confirmation
@@ -776,13 +882,27 @@ try {
         formData.append(key, JSON.stringify(updatedInfo[key]));
       }
     }
+    formData.append('usr', storage.get("usr"));
+    formData.append('pwd', storage.get("pwd"));
     unsavedChanges = true;
     fetch(domain + '/save', {
       method: "POST",
       body: formData,
     })
-      .then(r => {
-        if (!r.ok) throw new Error(r.error || r.message || "API error");
+      .then(async r => {
+        if (!r.ok) {
+          try {
+            var re = await r.json();
+            if (re.error || re.message) {
+              ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+              throw new Error(re.error || re.message);
+            } else {
+              throw new Error("API error");
+            }
+          } catch (e) {
+            throw new Error(e.message || "API error");
+          }
+        }
       })
       .then(() => {
         unsavedChanges = false;
@@ -790,6 +910,7 @@ try {
       .catch((e) => {
         console.error(e);
         if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if (e.message === "Access denied.") return auth.admin(init);
         pollingOff();
       });
     document.querySelectorAll("#save-button").forEach(w => w.disabled = true);
@@ -1036,6 +1157,8 @@ try {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
+        usr: storage.get("usr"),
+        pwd: storage.get("pwd"),
         question_id
       })
     })
@@ -1071,6 +1194,7 @@ try {
       .catch((e) => {
         console.error(e);
         if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if (e.message === "Access denied.") return auth.admin(init);
         pollingOff();
       });
   }
@@ -1162,12 +1286,26 @@ try {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
+          usr: storage.get("usr"),
+          pwd: storage.get("pwd"),
           question_id: event.target.parentElement.parentElement.querySelector('#question-id-input').value,
           file_url: event.target.querySelector('img').src
         }),
       })
         .then(async (r) => {
-          if (!r.ok) throw new Error(r.error || r.message || "API error");
+          if (!r.ok) {
+            try {
+              var re = await r.json();
+              if (re.error || re.message) {
+                ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+                throw new Error(re.error || re.message);
+              } else {
+                throw new Error("API error");
+              }
+            } catch (e) {
+              throw new Error(e.message || "API error");
+            }
+          }
           return await r.json();
         })
         .then(() => {
@@ -1178,6 +1316,7 @@ try {
         .catch((e) => {
           console.error(e);
           ui.view("api-fail");
+          if (e.message === "Access denied.") return auth.admin(init);
           pollingOff();
         });
     } else {
@@ -1385,6 +1524,8 @@ try {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
+        usr: storage.get("usr"),
+        pwd: storage.get("pwd"),
         question_id: this.parentElement.querySelector('#response-id-input').value,
         seatCode: this.parentElement.querySelector('#response-seat-code-input').value,
       }),
@@ -1413,6 +1554,7 @@ try {
       .catch((e) => {
         console.error(e);
         if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if (e.message === "Access denied.") return auth.admin(init);
       });
   }
 
@@ -1425,6 +1567,8 @@ try {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
+        usr: storage.get("usr"),
+        pwd: storage.get("pwd"),
         question_id: this.parentElement.querySelector('#response-id-input').value,
         seatCode: this.parentElement.querySelector('#response-seat-code-input').value,
       }),
@@ -1453,6 +1597,7 @@ try {
       .catch((e) => {
         console.error(e);
         if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if (e.message === "Access denied.") return auth.admin(init);
       });
   }
 
@@ -1465,6 +1610,8 @@ try {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
+        usr: storage.get("usr"),
+        pwd: storage.get("pwd"),
         question_id: questions.find(q => q.number == this.parentElement.querySelector('#response-question-input').value).id,
         answer: this.parentElement.querySelector('#response-response-input').value,
       }),
@@ -1494,6 +1641,7 @@ try {
       .catch((e) => {
         console.error(e);
         if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if (e.message === "Access denied.") return auth.admin(init);
         pollingOff();
       });
   }
@@ -1565,6 +1713,7 @@ try {
       .catch((e) => {
         console.error(e);
         if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if (e.message === "Access denied.") return auth.admin(init);
         pollingOff();
       });
   }
@@ -1855,7 +2004,11 @@ try {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(updatedSegments)
+      body: JSON.stringify({
+        usr: storage.get("usr"),
+        pwd: storage.get("pwd"),
+        segments: updatedSegments,
+      })
     })
       .then(async (r) => {
         if (!r.ok) {
@@ -1883,6 +2036,7 @@ try {
       .catch((e) => {
         console.error(e);
         if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if (e.message === "Access denied.") return auth.admin(init);
         pollingOff();
       });
   }
@@ -2172,12 +2326,16 @@ try {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        course: course.value,
-        number: number.value,
-        name: name.value,
-        due,
-        question_ids,
-        editing_segment: loadedSegmentEditor ? new URLSearchParams(window.location.search).get('segment') : null,
+        usr: storage.get("usr"),
+        pwd: storage.get("pwd"),
+        segment: {
+          course: course.value,
+          number: number.value,
+          name: name.value,
+          due,
+          question_ids,
+          editing_segment: loadedSegmentEditor ? new URLSearchParams(window.location.search).get('segment') : null,
+        },
       })
     })
       .then(async (r) => {
@@ -2204,6 +2362,7 @@ try {
       .catch((e) => {
         console.error(e);
         if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if (e.message === "Access denied.") return auth.admin(init);
       });
   }
 
@@ -2261,6 +2420,8 @@ try {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
+        usr: storage.get("usr"),
+        pwd: storage.get("pwd"),
         segment: loadedSegment.number,
       })
     })
@@ -2288,6 +2449,7 @@ try {
       .catch((e) => {
         console.error(e);
         if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if (e.message === "Access denied.") return auth.admin(init);
       });
   }
 
@@ -2349,8 +2511,12 @@ try {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        name: inputValues[0],
-        period: inputValues[1],
+        usr: storage.get("usr"),
+        pwd: storage.get("pwd"),
+        course: {
+          name: inputValues[0],
+          period: inputValues[1],
+        },
       })
     })
       .then(async (r) => {
@@ -2377,6 +2543,7 @@ try {
       .catch((e) => {
         console.error(e);
         if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if (e.message === "Access denied.") return auth.admin(init);
       });
   }
 
@@ -2391,6 +2558,8 @@ try {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
+        usr: storage.get("usr"),
+        pwd: storage.get("pwd"),
         course_id: course.id
       })
     })
@@ -2418,6 +2587,7 @@ try {
       .catch((e) => {
         console.error(e);
         if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if (e.message === "Access denied.") return auth.admin(init);
       });
   }
 
@@ -2501,6 +2671,8 @@ try {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
+        usr: storage.get("usr"),
+        pwd: storage.get("pwd"),
         course_id: course.id
       })
     })
@@ -2528,6 +2700,7 @@ try {
       .catch((e) => {
         console.error(e);
         if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if (e.message === "Access denied.") return auth.admin(init);
       });
   }
 
@@ -2540,12 +2713,25 @@ try {
           "Content-Type": "application/json",
         },
       });
-      if (!r.ok) throw new Error(r.error || r.message || "API error");
+      if (!r.ok) {
+        try {
+          var re = await r.json();
+          if (re.error || re.message) {
+            ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+            throw new Error(re.error || re.message);
+          } else {
+            throw new Error("API error");
+          }
+        } catch (e) {
+          throw new Error(e.message || "API error");
+        }
+      }
       const data = await r.json();
       return key ? data[key] : data;
     } catch (e) {
       console.error(e);
       ui.view("api-fail");
+      if (e.message === "Access denied.") return auth.admin(init);
     }
   }
 
@@ -2557,6 +2743,8 @@ try {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
+        usr: storage.get("usr"),
+        pwd: storage.get("pwd"),
         key: key,
         value: value
       })
@@ -2583,6 +2771,7 @@ try {
       .catch((e) => {
         console.error(e);
         if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if (e.message === "Access denied.") return auth.admin(init);
       });
   }
 
@@ -2664,6 +2853,7 @@ try {
       .catch((e) => {
         console.error(e);
         if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if (e.message === "Access denied.") return auth.admin(init);
       });
   }
 
@@ -2718,11 +2908,6 @@ try {
           multiple: true,
         },
         {
-          label: 'Admin Username',
-          type: 'text',
-          required: true,
-        },
-        {
           label: 'Admin Password',
           type: 'password',
           required: true,
@@ -2755,13 +2940,14 @@ try {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
+        usr: storage.get("usr"),
+        pwd: storage.get("pwd"),
         username: user,
         password: inputValues[1],
         role: inputValues[0],
         partialAccessCourses: inputValues[2] || [],
         fullAccessCourses: inputValues[3] || [],
-        admin_username: inputValues[4],
-        admin_password: inputValues[5],
+        admin_password: inputValues[4],
       }),
     })
       .then(async (r) => {
@@ -2788,6 +2974,7 @@ try {
       .catch((e) => {
         console.error(e);
         if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if (e.message === "Access denied.") return auth.admin(init);
         pollingOff();
       });
   }
@@ -2843,11 +3030,6 @@ try {
           multiple: true,
         },
         {
-          label: 'Admin Username',
-          type: 'text',
-          required: true,
-        },
-        {
           label: 'Admin Password',
           type: 'password',
           required: true,
@@ -2880,13 +3062,14 @@ try {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
+        usr: storage.get("usr"),
+        pwd: storage.get("pwd"),
         username: inputValues[1],
         password: inputValues[2],
         role: inputValues[0],
         partialAccessCourses: inputValues[3] || [],
         fullAccessCourses: inputValues[4] || [],
-        admin_username: inputValues[5],
-        admin_password: inputValues[6],
+        admin_password: inputValues[5],
       }),
     })
       .then(async (r) => {
@@ -2913,6 +3096,7 @@ try {
       .catch((e) => {
         console.error(e);
         if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if (e.message === "Access denied.") return auth.admin(init);
         pollingOff();
       });
   }
@@ -2925,11 +3109,6 @@ try {
       title: 'Delete User',
       body: `<p>Are you sure you would like to delete the <code>${role}</code> user <code>${user}</code>? Deleting your own user will result in system logoff. This action is not reversible.${(role === 'admin') ? '<br><br>Warning: You are deleting an admin user. Proceed with caution.' : ''}</p>`,
       inputs: [
-        {
-          label: 'Admin Username',
-          type: 'text',
-          required: true,
-        },
         {
           label: 'Admin Password',
           type: 'password',
@@ -2963,9 +3142,10 @@ try {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
+        usr: storage.get("usr"),
+        pwd: storage.get("pwd"),
         username: user,
-        admin_username: inputValues[0],
-        admin_password: inputValues[1],
+        admin_password: inputValues[0],
       }),
     })
       .then(async (r) => {
@@ -2992,6 +3172,7 @@ try {
       .catch((e) => {
         console.error(e);
         if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if (e.message === "Access denied.") return auth.admin(init);
         pollingOff();
       });
   }
@@ -3056,7 +3237,10 @@ try {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({}),
+      body: JSON.stringify({
+        usr: storage.get("usr"),
+        pwd: storage.get("pwd"),
+      }),
     })
       .then(async (r) => {
         if (!r.ok) {
@@ -3082,6 +3266,7 @@ try {
       .catch((e) => {
         console.error(e);
         if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if (e.message === "Access denied.") return auth.admin(init);
         pollingOff();
       });
   }
@@ -3121,6 +3306,8 @@ try {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
+        usr: storage.get("usr"),
+        pwd: storage.get("pwd"),
         id,
       }),
     })
@@ -3148,6 +3335,7 @@ try {
       .catch((e) => {
         console.error(e);
         if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if (e.message === "Access denied.") return auth.admin(init);
         pollingOff();
       });
   }
@@ -3182,12 +3370,14 @@ try {
   function undoAction(id) {
     if (!active) return;
     unsavedChanges = true;
-    fetch(domain + '/logs', {
+    fetch(domain + '/log', {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
+        usr: storage.get("usr"),
+        pwd: storage.get("pwd"),
         id,
       }),
     })
@@ -3215,6 +3405,7 @@ try {
       .catch((e) => {
         console.error(e);
         if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if (e.message === "Access denied.") return auth.admin(init);
         pollingOff();
       });
   }

@@ -1,6 +1,7 @@
 /* eslint-disable no-inner-declarations */
 import * as ui from "/src/modules/ui.js";
 import storage from "/src/modules/storage.js";
+import * as auth from "/src/modules/auth.js";
 
 const domain = ((window.location.hostname.search('check') != -1) || (window.location.hostname.search('127') != -1)) ? 'https://api.check.vssfalcons.com' : `http://${document.domain}:5000`;
 if (window.location.pathname.split('?')[0].endsWith('/admin')) window.location.pathname = '/admin/';
@@ -17,24 +18,8 @@ var noReloadCourse = false;
 try {
   async function init() {
     if (!storage.get("code")) return window.location.href = '/';
-    if (!storage.get("pwd")) return ui.modal({
-      title: 'Enter Password',
-      body: `<p>Enter the assigned password for TA seat code <code>${storage.get("code")}</code>.</p>`,
-      input: {
-        type: 'password'
-      },
-      buttons: [
-        {
-          text: 'Verify',
-          class: 'submit-button',
-          onclick: (inputValue) => {
-            storage.set("pwd", inputValue);
-            init();
-          },
-          close: true,
-        },
-      ],
-    });
+    if (!storage.get("pwd")) return auth.ta(init);
+    if (document.querySelector('[data-logout]')) document.querySelector('[data-logout]').addEventListener('click', () => auth.logout(init));
 
     // Show clear data fix guide
     // if (storage.get("created")) {
@@ -43,7 +28,7 @@ try {
     //   storage.set("created", Date.now());
     // }
 
-    await fetch(domain + '/courses?ta=' + storage.get("code") + '&pwd=' + storage.get("pwd"), {
+    await fetch(domain + '/courses?usr=' + storage.get("code"), {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -99,38 +84,82 @@ try {
         document.getElementById("sort-segment-input").addEventListener("input", updateResponses);
         document.getElementById("sort-question-input").addEventListener("input", updateResponses);
         document.getElementById("sort-seat-input").addEventListener("input", updateResponses);
-        await fetch(domain + '/questions?ta=' + storage.get("code") + '&pwd=' + storage.get("pwd"), {
+        await fetch(domain + '/questions?usr=' + storage.get("code"), {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
           }
         })
           .then(async (r) => {
-            if (!r.ok) throw new Error(r.error || r.message || "API error");
+            if (!r.ok) {
+              try {
+                var re = await r.json();
+                if (re.error || re.message) {
+                  ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+                  throw new Error(re.error || re.message);
+                } else {
+                  throw new Error("API error");
+                }
+              } catch (e) {
+                throw new Error(e.message || "API error");
+              }
+            }
             return await r.json();
           })
           .then(async q => {
             questions = q;
-            await fetch(domain + '/answers?ta=' + storage.get("code") + '&pwd=' + storage.get("pwd"), {
-              method: "GET",
+            await fetch(domain + '/answers', {
+              method: "POST",
               headers: {
                 "Content-Type": "application/json",
-              }
+              },
+              body: JSON.stringify({
+                usr: storage.get("code"),
+                pwd: storage.get("pwd"),
+              }),
             })
               .then(async (r) => {
-                if (!r.ok) throw new Error(r.error || r.message || "API error");
+                if (!r.ok) {
+                  try {
+                    var re = await r.json();
+                    if (re.error || re.message) {
+                      ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+                      throw new Error(re.error || re.message);
+                    } else {
+                      throw new Error("API error");
+                    }
+                  } catch (e) {
+                    throw new Error(e.message || "API error");
+                  }
+                }
                 return await r.json();
               })
               .then(async a => {
                 answers = a;
-                await fetch(domain + '/responses?ta=' + storage.get("code") + '&pwd=' + storage.get("pwd"), {
-                  method: "GET",
+                await fetch(domain + '/responses', {
+                  method: "POST",
                   headers: {
                     "Content-Type": "application/json",
-                  }
+                  },
+                  body: JSON.stringify({
+                    usr: storage.get("code"),
+                    pwd: storage.get("pwd"),
+                  }),
                 })
                   .then(async (r) => {
-                    if (!r.ok) throw new Error(r.error || r.message || "API error");
+                    if (!r.ok) {
+                      try {
+                        var re = await r.json();
+                        if (re.error || re.message) {
+                          ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+                          throw new Error(re.error || re.message);
+                        } else {
+                          throw new Error("API error");
+                        }
+                      } catch (e) {
+                        throw new Error(e.message || "API error");
+                      }
+                    }
                     return await r.json();
                   })
                   .then(async r => {
@@ -144,21 +173,25 @@ try {
                   .catch((e) => {
                     console.error(e);
                     ui.view("api-fail");
+                    if (e.message === "Access denied.") return auth.ta(init);
                   });
               })
               .catch((e) => {
                 console.error(e);
                 ui.view("api-fail");
+                if (e.message === "Access denied.") return auth.ta(init);
               });
           })
           .catch((e) => {
             console.error(e);
             ui.view("api-fail");
+            if (e.message === "Access denied.") return auth.ta(init);
           });
       })
       .catch((e) => {
         console.error(e);
         if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if (e.message === "Access denied.") return auth.ta(init);
       });
     reloadUnsavedInputs();
   }
@@ -325,15 +358,16 @@ try {
   function flagResponse() {
     if (!active) return;
     unsavedChanges = true;
-    fetch(domain + '/flag?ta=' + storage.get("code"), {
+    fetch(domain + '/flag', {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
+        usr: storage.get("code"),
+        pwd: storage.get("pwd"),
         question_id: this.parentElement.querySelector('#response-id-input').value,
         seatCode: this.parentElement.querySelector('#response-seat-code-input').value,
-        pwd: storage.get("pwd"),
       }),
     })
       .then(async (r) => {
@@ -360,21 +394,23 @@ try {
       .catch((e) => {
         console.error(e);
         if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if (e.message === "Access denied.") return auth.ta(init);
       });
   }
 
   function unflagResponse() {
     if (!active) return;
     unsavedChanges = true;
-    fetch(domain + '/unflag?ta=' + storage.get("code"), {
+    fetch(domain + '/unflag', {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
+        usr: storage.get("code"),
+        pwd: storage.get("pwd"),
         question_id: this.parentElement.querySelector('#response-id-input').value,
         seatCode: this.parentElement.querySelector('#response-seat-code-input').value,
-        pwd: storage.get("pwd"),
       }),
     })
       .then(async (r) => {
@@ -401,21 +437,23 @@ try {
       .catch((e) => {
         console.error(e);
         if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if (e.message === "Access denied.") return auth.ta(init);
       });
   }
 
   function markCorrect() {
     if (!active) return;
     unsavedChanges = true;
-    fetch(domain + '/mark_correct?ta=' + storage.get("code"), {
+    fetch(domain + '/mark_correct', {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
+        usr: storage.get("code"),
+        pwd: storage.get("pwd"),
         question_id: questions.find(q => q.number == this.parentElement.querySelector('#response-question-input').value).id,
         answer: this.parentElement.querySelector('#response-response-input').value,
-        pwd: storage.get("pwd"),
       }),
     })
       .then(async (r) => {
@@ -443,6 +481,7 @@ try {
       .catch((e) => {
         console.error(e);
         if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if (e.message === "Access denied.") return auth.ta(init);
       });
   }
 
@@ -477,7 +516,7 @@ try {
   function markIncorrectConfirm(reason, e) {
     if (!active) return;
     unsavedChanges = true;
-    fetch(domain + '/mark_incorrect?ta=' + storage.get("code"), {
+    fetch(domain + '/mark_incorrect?usr=' + storage.get("code"), {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -514,6 +553,7 @@ try {
       .catch((e) => {
         console.error(e);
         if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if (e.message === "Access denied.") return auth.ta(init);
       });
   }
 

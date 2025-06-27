@@ -1245,6 +1245,7 @@ try {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
+        usr: storage.get("code"),
         question_id: event.srcElement.parentElement.id,
         seatCode: storage.get("code"),
       }),
@@ -1270,6 +1271,7 @@ try {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
+        usr: storage.get("code"),
         question_id: event.srcElement.parentElement.id,
         seatCode: storage.get("code"),
       }),
