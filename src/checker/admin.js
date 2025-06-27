@@ -2865,7 +2865,7 @@ try {
     const fullAccessCourses = JSON.parse(this.parentElement.parentElement.querySelector('.fullAccessCourses').innerText);
     ui.modal({
       title: 'Edit User',
-      body: `<p>Edit <code>${role}</code> user <code>${user}</code>.</p>`,
+      body: `<p>Edit <code>${role}</code> user <code>${user}</code>. This action is not reversible.${(user === storage.get("usr")) ? '<br><br>Changing your own password will result in system logoff.' : ''}</p>`,
       inputs: [
         {
           label: 'Role',
@@ -3107,7 +3107,7 @@ try {
     const role = this.parentElement.parentElement.querySelector('.role').innerText;
     ui.modal({
       title: 'Delete User',
-      body: `<p>Are you sure you would like to delete the <code>${role}</code> user <code>${user}</code>? Deleting your own user will result in system logoff. This action is not reversible.${(role === 'admin') ? '<br><br>Warning: You are deleting an admin user. Proceed with caution.' : ''}</p>`,
+      body: `<p>Are you sure you would like to delete the <code>${role}</code> user <code>${user}</code>? This action is not reversible.${(user === storage.get("usr")) ? '<br><br>Deleting your own user will result in system logoff.' : ''}${(role === 'admin') ? '<br><br>Warning: You are deleting an admin user. Proceed with caution.' : ''}</p>`,
       inputs: [
         {
           label: 'Admin Password',
