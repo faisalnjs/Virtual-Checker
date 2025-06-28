@@ -158,6 +158,65 @@ try {
         });
     }
 
+    if (document.querySelector('.otps')) {
+      if (document.getElementById('remove-otps')) document.getElementById('remove-otps').addEventListener('click', removeOTPsModal);
+      await fetch(domain + '/otps', {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          usr: storage.get("usr"),
+          pwd: storage.get("pwd"),
+        }),
+      })
+        .then(async (r) => {
+          if (!r.ok) {
+            try {
+              var re = await r.json();
+              if (re.error || re.message) {
+                ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+                throw new Error(re.error || re.message);
+              } else {
+                throw new Error("API error");
+              }
+            } catch (e) {
+              throw new Error(e.message || "API error");
+            }
+          }
+          return await r.json();
+        })
+        .then(otps => {
+          document.querySelector('.otps').innerHTML = '<div class="row header"><span>Seat Code</span><span>Saved Settings</span><span>Saved History</span><span>Actions</span></div>';
+          if (otps.length > 0) {
+            document.getElementById('no-otps').setAttribute('hidden', '');
+            document.querySelector('.otps').removeAttribute('hidden');
+          }
+          otps = otps.sort((a, b) => a.seatCode - b.seatCode);
+          otps.forEach(otp => {
+            document.querySelector('.otps').innerHTML += `<div class="enhanced-item" id="${otp.seatCode}">
+              <span class="seatCode">${otp.seatCode}</span>
+              <span class="settings">${(Object.keys(JSON.parse(otp.settings.replace(/'/g, '"'))).length > 0) ? '<i class="bi bi-check-lg"></i>' : ''}</span>
+              <span class="history">${(JSON.parse(otp.history).length > 0) ? '<i class="bi bi-check-lg"></i>' : ''}</span>
+              <span class="actions">
+                <button class="icon" data-remove-otp tooltip="Remove OTP">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </span>
+            </div>`;
+          });
+          document.querySelectorAll('[data-remove-otp]').forEach(button => button.addEventListener('click', removeOTPModal));
+          ui.stopLoader();
+          active = true;
+        })
+        .catch((e) => {
+          console.error(e);
+          ui.view("api-fail");
+          if (e.message === "Access denied.") return auth.admin(init);
+          pollingOff();
+        });
+    }
+
     await fetch(domain + '/courses', {
       method: "GET",
       headers: {
@@ -3400,6 +3459,138 @@ try {
       .then(() => {
         unsavedChanges = false;
         ui.toast("Successfully undid action.", 3000, "success", "bi bi-check-lg");
+        init();
+      })
+      .catch((e) => {
+        console.error(e);
+        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if (e.message === "Access denied.") return auth.admin(init);
+        pollingOff();
+      });
+  }
+
+  function removeOTPsModal() {
+    if (!active) return;
+    ui.modal({
+      title: 'Remove OTPs',
+      body: '<p>Are you sure you would like to remove OTPs from all seat codes? All seat codes will lose their saved settings and history. This action is not reversible.</p>',
+      buttons: [
+        {
+          text: 'Cancel',
+          class: 'cancel-button',
+          close: true,
+        },
+        {
+          text: 'Remove',
+          class: 'submit-button',
+          onclick: () => {
+            removeOTPs();
+          },
+          close: true,
+        },
+      ],
+    });
+  }
+
+  function removeOTPs() {
+    if (!active) return;
+    unsavedChanges = true;
+    fetch(domain + '/otps', {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        usr: storage.get("usr"),
+        pwd: storage.get("pwd"),
+      }),
+    })
+      .then(async (r) => {
+        if (!r.ok) {
+          try {
+            var re = await r.json();
+            if (re.error || re.message) {
+              ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+              throw new Error(re.error || re.message);
+            } else {
+              throw new Error("API error");
+            }
+          } catch (e) {
+            throw new Error(e.message || "API error");
+          }
+        }
+        return await r.json();
+      })
+      .then(() => {
+        unsavedChanges = false;
+        ui.toast("Successfully removed OTPs.", 3000, "success", "bi bi-check-lg");
+        init();
+      })
+      .catch((e) => {
+        console.error(e);
+        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if (e.message === "Access denied.") return auth.admin(init);
+        pollingOff();
+      });
+  }
+
+  function removeOTPModal() {
+    if (!active) return;
+    const seatCode = this.parentElement.parentElement.id;
+    ui.modal({
+      title: 'Remove OTP',
+      body: `<p>Are you sure you would like to remove the OTP from seat code <code>${seatCode}</code>? This action is not reversible.</p>`,
+      buttons: [
+        {
+          text: 'Cancel',
+          class: 'cancel-button',
+          close: true,
+        },
+        {
+          text: 'Remove',
+          class: 'submit-button',
+          onclick: () => {
+            removeOTP(seatCode);
+          },
+          close: true,
+        },
+      ],
+    });
+  }
+
+  function removeOTP(seatCode) {
+    if (!active) return;
+    unsavedChanges = true;
+    fetch(domain + '/otps', {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        usr: storage.get("usr"),
+        pwd: storage.get("pwd"),
+        seatCode,
+      }),
+    })
+      .then(async (r) => {
+        if (!r.ok) {
+          try {
+            var re = await r.json();
+            if (re.error || re.message) {
+              ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+              throw new Error(re.error || re.message);
+            } else {
+              throw new Error("API error");
+            }
+          } catch (e) {
+            throw new Error(e.message || "API error");
+          }
+        }
+        return await r.json();
+      })
+      .then(() => {
+        unsavedChanges = false;
+        ui.toast("Successfully removed OTP.", 3000, "success", "bi bi-check-lg");
         init();
       })
       .catch((e) => {

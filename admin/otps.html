@@ -8,7 +8,7 @@
   <link rel="shortcut icon" href="../favicon.ico" type="image/x-icon" media="(prefers-color-scheme: dark)" />
   <link rel="shortcut icon" href="../favicon-dark.ico" type="image/x-icon" media="(prefers-color-scheme: light)" />
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-  <title>Responses - Virtual Checker</title>
+  <title>OTPs - Virtual Checker</title>
   <meta name="title" content="Virtual Checker" />
   <meta name="description" content="Next generation AI-powered homework checking, cloud hosted ☁️🚀✅" />
   <meta property="og:type" content="website" />
@@ -58,150 +58,19 @@
     </div>
   </div>
   <div id="checker">
-    <div class="section sort">
-      <h1>Sort & Filter</h1>
-      <div class="button-grid inputs">
-        <div class="input-group">
-          <label for="course-period-input">Course</label>
-          <div class="space" id="question-container">
-            <select id="course-period-input"></select>
-          </div>
-        </div>
-        <div class="input-group small">
-          <label for="sort-segment-input">Segment</label>
-          <div class="space" id="question-container">
-            <input type="text" autocomplete="off" id="sort-segment-input" value="" placeholder="1" />
-          </div>
-        </div>
-        <div class="input-group small">
-          <label for="sort-question-input">Question</label>
-          <div class="space" id="question-container">
-            <input type="text" autocomplete="off" id="sort-question-input" value="" placeholder="1a" />
-          </div>
-        </div>
-        <div class="input-group small">
-          <label for="sort-seat-input">Seat</label>
-          <div class="space" id="question-container">
-            <input type="number" autocomplete="off" id="sort-seat-input" value="" placeholder="311" max="999"
-              maxlength="3" />
-          </div>
-        </div>
+    <div class="section">
+      <h1>OTPs</h1>
+      <div id="no-otps" class="row center">
+        <p>No OTPs found.</p>
       </div>
-    </div>
-    <div class="section awaitingResponses">
-      <h1>Awaiting Scoring</h1>
-      <div class="button-grid inputs">
-        <!-- <label style="width: -webkit-fill-available" class="small">ID</label> -->
-        <label style="width: -webkit-fill-available" square></label>
-        <label style="width: -webkit-fill-available" class="small" data-segment>Segment</label>
-        <label style="width: -webkit-fill-available" class="small" data-question>Question</label>
-        <label style="width: -webkit-fill-available" class="small" data-seat-code>Seat</label>
-        <label style="width: -webkit-fill-available" class="small" data-time-taken>Spent</label>
-        <label style="width: -webkit-fill-available" class="small" data-time-taken>Revised</label>
-        <!-- <label style="width: -webkit-fill-available" class="small" data-time-taken>Total</label> -->
-        <label style="width: -webkit-fill-available">Response</label>
-        <label style="width: -webkit-fill-available" class="smedium">Time</label>
-        <label style="width: -webkit-fill-available" class="small">Status</label>
-      </div>
-      <div class="section">
-        <div class="button-grid inputs">
-          <!-- <input type="text" autocomplete="off" class="small" id="response-id-input" value="" disabled /> -->
-          <button square id="flag-response-button" tooltip="Flag Response"><i class="bi bi-flag"></i></button>
-          <input type="text" autocomplete="off" class="small" id="response-segment-input" value="" disabled
-            data-segment />
-          <input type="text" autocomplete="off" class="small" id="response-question-input" value="" disabled
-            data-question />
-          <input type="text" autocomplete="off" class="small" id="response-seat-code-input" value="" disabled
-            data-seat-code />
-          <input type="text" autocomplete="off" class="small" id="response-time-taken-input" value="" disabled
-            data-time-taken />
-          <input type="text" autocomplete="off" class="small" id="response-time-taken-input" value="" disabled
-            data-time-taken />
-          <input type="text" autocomplete="off" class="small" id="response-time-taken-input" value="" disabled
-            data-time-taken />
-          <input type="text" autocomplete="off" id="response-response-input" value="" disabled />
-          <input type="text" autocomplete="off" class="smedium" id="response-timestamp-input" value="" disabled />
-          <button square id="mark-correct-button" tooltip="Mark Correct"><i class="bi bi-check-circle"></i></button>
-          <button square id="mark-incorrect-button" tooltip="Mark Incorrect"><i class="bi bi-x-circle"></i></button>
-        </div>
-      </div>
-    </div>
-    <div class="section trendingResponses" data-trends>
-      <h1>Trends</h1>
-      <div class="button-grid inputs">
-        <label style="width: -webkit-fill-available" class="small" data-segment>Segment</label>
-        <label style="width: -webkit-fill-available" class="small" data-question>Question</label>
-        <label style="width: -webkit-fill-available">Response</label>
-        <label style="width: -webkit-fill-available" class="small">#</label>
-        <label style="width: -webkit-fill-available" class="small">Status</label>
-      </div>
-      <div class="section">
-        <div class="button-grid inputs">
-          <input type="text" autocomplete="off" class="small" id="response-segment-input" value="" disabled
-            data-segment />
-          <input type="text" autocomplete="off" class="small" id="response-question-input" value="" disabled
-            data-question />
-          <input type="text" autocomplete="off" id="response-response-input" value="" disabled />
-          <input type="text" autocomplete="off" class="small" id="response-count-input" value="" disabled />
-          <button square id="mark-correct-button" tooltip="Mark Correct"><i class="bi bi-check-circle"></i></button>
-          <button square id="mark-incorrect-button" tooltip="Mark Incorrect"><i class="bi bi-x-circle"></i></button>
-        </div>
-      </div>
-    </div>
-    <div class="section responses">
-      <h1>Marked Responses</h1>
-      <div class="button-grid inputs">
-        <!-- <label style="width: -webkit-fill-available" class="small">ID</label> -->
-        <label style="width: -webkit-fill-available" square></label>
-        <label style="width: -webkit-fill-available" class="small" data-segment>Segment</label>
-        <label style="width: -webkit-fill-available" class="small" data-question>Question</label>
-        <label style="width: -webkit-fill-available" class="small" data-seat-code>Seat</label>
-        <label style="width: -webkit-fill-available" class="small" data-time-taken>Spent</label>
-        <label style="width: -webkit-fill-available" class="small" data-time-taken>Revised</label>
-        <!-- <label style="width: -webkit-fill-available" class="small" data-time-taken>Total</label> -->
-        <label style="width: -webkit-fill-available">Response</label>
-        <label style="width: -webkit-fill-available" class="smedium">Time</label>
-        <label style="width: -webkit-fill-available" class="small">Status</label>
-      </div>
-      <div class="section">
-        <div class="button-grid inputs">
-          <!-- <input type="text" autocomplete="off" class="small" id="response-id-input" value="" disabled /> -->
-          <button square id="flag-response-button" tooltip="Flag Response"><i class="bi bi-flag"></i></button>
-          <input type="text" autocomplete="off" class="small" id="response-segment-input" value="" disabled
-            data-segment />
-          <input type="text" autocomplete="off" class="small" id="response-question-input" value="" disabled
-            data-question />
-          <input type="text" autocomplete="off" class="small" id="response-seat-code-input" value="" disabled
-            data-seat-code />
-          <input type="text" autocomplete="off" class="small" id="response-time-taken-input" value="" disabled
-            data-time-taken />
-          <input type="text" autocomplete="off" class="small" id="response-time-taken-input" value="" disabled
-            data-time-taken />
-          <input type="text" autocomplete="off" class="small" id="response-time-taken-input" value="" disabled
-            data-time-taken />
-          <input type="text" autocomplete="off" id="response-response-input" value="" disabled />
-          <input type="text" autocomplete="off" class="smedium" id="response-timestamp-input" value="" disabled />
-          <button square id="mark-correct-button" tooltip="Mark Correct"><i class="bi bi-check-circle"></i></button>
-          <button square id="mark-incorrect-button" tooltip="Mark Incorrect"><i class="bi bi-x-circle"></i></button>
-        </div>
-      </div>
+      <div class="section otps enhanced-list" hidden></div>
+      <button id="remove-otps">Remove All OTPs</button>
     </div>
   </div>
   <!-- Controls -->
   <div id="controls-container" class="pill">
     <button class="icon" data-modal-view="settings" tooltip="Settings">
       <i class="bi bi-gear"></i>
-    </button>
-    <button class="icon" data-polling tooltip="Toggle Polling">
-      <i class="bi bi-skip-forward-circle"></i>
-      <i class="bi bi-stop-circle-fill" style="display: none;"></i>
-    </button>
-    <button class="icon" data-timestamps tooltip="Toggle Timestamps">
-      <i class="bi bi-clock"></i>
-      <i class="bi bi-clock-fill" style="display: none;"></i>
-    </button>
-    <button class="icon" data-clear-responses tooltip="Clear Responses">
-      <i class="bi bi-trash"></i>
     </button>
     <!-- <button class="pill" data-modal-view="settings/code" tooltip="Change Seat Code">
         <span class="code">000</span>
@@ -403,14 +272,14 @@
     <div class="menu-icons">
       <a href="/admin/" tooltip="Segments"><i class="bi bi-list-check"></i></a>
       <a href="/admin/questions" tooltip="Questions"><i class="bi bi-patch-question"></i></a>
-      <a href="/admin/responses" class="active" tooltip="Responses"><i class="bi bi-chat-left-text"></i></a>
+      <a href="/admin/responses" tooltip="Responses"><i class="bi bi-chat-left-text"></i></a>
       <a href="/admin/reports" tooltip="Reports"><i class="bi bi-bar-chart"></i></a>
       <a href="/admin/editor" tooltip="Segment Editor"><i class="bi bi-pencil"></i></a>
       <a href="/admin/archive" tooltip="Archive"><i class="bi bi-archive"></i></a>
       <a href="/admin/backups" tooltip="Backups"><i class="bi bi-file-zip"></i></a>
       <a href="/admin/users" tooltip="Users"><i class="bi bi-person-fill-lock"></i></a>
       <a href="/admin/logs" tooltip="TA Manager"><i class="bi bi-person-exclamation"></i></a>
-      <a href="/admin/otps" tooltip="OTPs"><i class="bi bi-key"></i></a>
+      <a href="/admin/otps" class="active" tooltip="OTPs"><i class="bi bi-key"></i></a>
       <a href="/" tooltip="Exit"><i class="bi bi-door-open"></i></a>
     </div>
   </dialog>
