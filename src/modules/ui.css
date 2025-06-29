@@ -122,7 +122,8 @@ div[data-modal-actions] > button {
 }
 
 dialog > button[data-modal-view]:not(.icon),
-dialog > button[data-logout] {
+dialog > button[data-logout],
+dialog > button[data-sync] {
   text-align: unset;
 }
 

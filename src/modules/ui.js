@@ -102,14 +102,14 @@ export function modal(options) {
       var buttonGroupsContainerElement = document.createElement("div");
       if (buttonGroup.label) {
         var buttonGroupLabelElement = document.createElement("label");
-        if (buttonGroup.icon) buttonGroup.label = + `<i class="bi ${buttonGroup.icon}"></i> `;
+        if (buttonGroup.icon) buttonGroup.label = `<i class="bi ${buttonGroup.icon}"></i> ${buttonGroup.label}`;
         buttonGroupLabelElement.innerHTML = buttonGroup.label;
         buttonGroupsContainerElement.appendChild(buttonGroupLabelElement);
       }
       var buttonGroupContainerElement = document.createElement("div");
       buttonGroupContainerElement.className = "button-grid";
       buttonGroup.buttons.forEach(button => {
-        if (button.icon) button.text = + `<i class="bi ${button.icon}"></i> `;
+        if (button.icon) button.text = `<i class="bi ${button.icon}"></i> ${button.text}`;
         var btnElement = new Element("button", button.text, {
           click: () => {
             if (button.onclick) {

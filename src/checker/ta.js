@@ -173,25 +173,25 @@ try {
                   .catch((e) => {
                     console.error(e);
                     ui.view("api-fail");
-                    if (e.message === "Access denied.") return auth.ta(init);
+                    if (e.error === "Access denied.") return auth.ta(init);
                   });
               })
               .catch((e) => {
                 console.error(e);
                 ui.view("api-fail");
-                if (e.message === "Access denied.") return auth.ta(init);
+                if (e.error === "Access denied.") return auth.ta(init);
               });
           })
           .catch((e) => {
             console.error(e);
             ui.view("api-fail");
-            if (e.message === "Access denied.") return auth.ta(init);
+            if (e.error === "Access denied.") return auth.ta(init);
           });
       })
       .catch((e) => {
         console.error(e);
         if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
-        if (e.message === "Access denied.") return auth.ta(init);
+        if (e.error === "Access denied.") return auth.ta(init);
       });
     reloadUnsavedInputs();
   }
@@ -394,7 +394,7 @@ try {
       .catch((e) => {
         console.error(e);
         if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
-        if (e.message === "Access denied.") return auth.ta(init);
+        if (e.error === "Access denied.") return auth.ta(init);
       });
   }
 
@@ -437,7 +437,7 @@ try {
       .catch((e) => {
         console.error(e);
         if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
-        if (e.message === "Access denied.") return auth.ta(init);
+        if (e.error === "Access denied.") return auth.ta(init);
       });
   }
 
@@ -481,7 +481,7 @@ try {
       .catch((e) => {
         console.error(e);
         if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
-        if (e.message === "Access denied.") return auth.ta(init);
+        if (e.error === "Access denied.") return auth.ta(init);
       });
   }
 
@@ -553,7 +553,7 @@ try {
       .catch((e) => {
         console.error(e);
         if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
-        if (e.message === "Access denied.") return auth.ta(init);
+        if (e.error === "Access denied.") return auth.ta(init);
       });
   }
 
