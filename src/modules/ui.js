@@ -97,7 +97,7 @@ export function modal(options) {
 
   document.body.append(dialog);
 
-  if (options.buttonGroups.length > 0) {
+  if (options.buttonGroups && options.buttonGroups.length > 0) {
     options.buttonGroups.forEach(buttonGroup => {
       var buttonGroupsContainerElement = document.createElement("div");
       if (buttonGroup.label) {
@@ -142,7 +142,7 @@ export function modal(options) {
     });
   }
 
-  if (options.buttons.length > 0) {
+  if (options.buttons && options.buttons.length > 0) {
     var buttonsContainerElement = document.createElement("div");
     buttonsContainerElement.className = "button-grid";
     options.buttons.forEach(button => {
