@@ -1810,6 +1810,7 @@ try {
     if (!speed) {
       ui.view("speed");
       document.getElementById("speed-mode-starting-question")?.focus();
+      document.getElementById("speed-mode-starting-question")?.setSelectionRange(document.getElementById("speed-mode-starting-question")?.value.length - 1, document.getElementById("speed-mode-starting-question")?.value.length);
       return;
     }
     speed = false;
