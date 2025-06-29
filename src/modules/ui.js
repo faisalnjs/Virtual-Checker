@@ -104,7 +104,7 @@ export function modal(options) {
         var buttonGroupLabelElement = document.createElement("label");
         if (buttonGroup.icon) buttonGroup.label = `<i class="bi ${buttonGroup.icon}"></i> ${buttonGroup.label}`;
         buttonGroupLabelElement.innerHTML = buttonGroup.label;
-        buttonGroupsContainerElement.appendChild(buttonGroupLabelElement);
+        dialog.appendChild(buttonGroupLabelElement);
       }
       var buttonGroupContainerElement = document.createElement("div");
       buttonGroupContainerElement.className = "button-grid";

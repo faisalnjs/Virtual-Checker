@@ -332,6 +332,11 @@ label {
   background-color: transparent;
 }
 
+label:has(i) {
+  flex-direction: row;
+  gap: 5px;
+}
+
 #theme-editor {
   display: grid;
   grid-template-columns: 1fr 1fr;
