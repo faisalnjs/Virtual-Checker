@@ -162,6 +162,7 @@ export async function sync(domain) {
                 return await r.json();
             })
             .then(r => {
+                var tempOTP = storage.get("otp");
                 storage.delete("otp");
                 ui.toast("Welcome back!", 3000, "success", "bi bi-key");
                 ui.modal({
@@ -170,36 +171,139 @@ export async function sync(domain) {
                     buttonGroups: [
                         {
                             label: 'Backup',
-                            icon: 'bi-box-arrow-down',
+                            icon: 'bi-cloud-arrow-up',
                             buttons: [
                                 {
                                     icon: 'bi-gear',
                                     text: 'Settings',
-                                    onclick: () => {
+                                    onclick: async () => {
+                                        if (storage.all() && Object.keys(storage.all()).length > 0) {
+                                            await fetch(domain + '/otp', {
+                                                method: "POST",
+                                                headers: {
+                                                    "Content-Type": "application/json",
+                                                },
+                                                body: JSON.stringify({
+                                                    "seatCode": storage.get("code"),
+                                                    "OTP": tempOTP,
+                                                    "settings": Object.fromEntries(
+                                                        Object.entries(storage.all()).filter(([key]) =>
+                                                            key !== "otp" && key !== "code" && key !== "usr" && key !== "pwd" && key !== "questionsAnswered" && key !== "history"
+                                                        )
+                                                    ),
+                                                })
+                                            })
+                                                .then(async (r) => {
+                                                    if (!r.ok) {
+                                                        try {
+                                                            var re = await r.json();
+                                                            if (re.error || re.message) {
+                                                                ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+                                                                if (re.error === "Access denied.") sync(domain);
+                                                                throw new Error(re.error || re.message);
+                                                            } else {
+                                                                throw new Error("API error");
+                                                            }
+                                                        } catch (e) {
+                                                            throw new Error(e.message || "API error");
+                                                        }
+                                                    }
+                                                    return await r.json();
+                                                })
+                                                .then(() => {
+                                                    ui.toast("Settings backed up successfully!", 3000, "success", "bi bi-check-circle-fill");
+                                                })
+                                                .catch((e) => {
+                                                    console.error(e);
+                                                    if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+                                                });
+                                        } else {
+                                            ui.toast("No settings found to backup.", 3000, "warning", "bi bi-exclamation-triangle-fill");
+                                        }
                                     },
                                 },
                                 {
                                     icon: 'bi-clock-history',
                                     text: 'History',
-                                    onclick: () => {
+                                    onclick: async () => {
+                                        if (storage.get("history") && storage.get("history").length > 0) {
+                                            await fetch(domain + '/otp', {
+                                                method: "POST",
+                                                headers: {
+                                                    "Content-Type": "application/json",
+                                                },
+                                                body: JSON.stringify({
+                                                    "seatCode": storage.get("code"),
+                                                    "OTP": tempOTP,
+                                                    "history": {
+                                                        "questionsAnswered": storage.get("questionsAnswered"),
+                                                        "history": storage.get("history"),
+                                                    },
+                                                })
+                                            })
+                                                .then(async (r) => {
+                                                    if (!r.ok) {
+                                                        try {
+                                                            var re = await r.json();
+                                                            if (re.error || re.message) {
+                                                                ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+                                                                if (re.error === "Access denied.") sync(domain);
+                                                                throw new Error(re.error || re.message);
+                                                            } else {
+                                                                throw new Error("API error");
+                                                            }
+                                                        } catch (e) {
+                                                            throw new Error(e.message || "API error");
+                                                        }
+                                                    }
+                                                    return await r.json();
+                                                })
+                                                .then(() => {
+                                                    ui.toast("History backed up successfully!", 3000, "success", "bi bi-check-circle-fill");
+                                                })
+                                                .catch((e) => {
+                                                    console.error(e);
+                                                    if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+                                                });
+                                        } else {
+                                            ui.toast("No history found to backup.", 3000, "warning", "bi bi-exclamation-triangle-fill");
+                                        }
                                     },
                                 },
                             ],
                         },
                         {
                             label: 'Restore',
-                            icon: 'bi-box-arrow-in-down',
+                            icon: 'bi-cloud-arrow-down',
                             buttons: [
                                 {
                                     icon: 'bi-gear',
                                     text: 'Settings',
                                     onclick: () => {
+                                        if (r.settings && Object.keys(r.settings).length > 0) {
+                                            Object.entries(r.settings).forEach(([key, value]) => {
+                                                if (key !== "otp" && key !== "code" && key !== "usr" && key !== "pwd" && key !== "questionsAnswered" && key !== "history") storage.set(key, value);
+                                            });
+                                            ui.toast("Settings restored successfully!", 3000, "success", "bi bi-check-circle-fill");
+                                            window.location.reload();
+                                        } else {
+                                            ui.toast("No settings found to restore.", 3000, "warning", "bi bi-exclamation-triangle-fill");
+                                        }
                                     },
                                 },
                                 {
                                     icon: 'bi-clock-history',
                                     text: 'History',
                                     onclick: () => {
+                                        if (r.history && Object.keys(r.history).length > 0) {
+                                            Object.entries(r.history).forEach(([key, value]) => {
+                                                if (key === "questionsAnswered" || key === "history") storage.set(key, value);
+                                            });
+                                            ui.toast("History restored successfully!", 3000, "success", "bi bi-check-circle-fill");
+                                            window.location.reload();
+                                        } else {
+                                            ui.toast("No history found to restore.", 3000, "warning", "bi bi-exclamation-triangle-fill");
+                                        }
                                     },
                                 },
                             ],
