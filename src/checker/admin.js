@@ -197,7 +197,7 @@ try {
             document.querySelector('.otps').innerHTML += `<div class="enhanced-item" id="${otp.seatCode}">
               <span class="seatCode">${otp.seatCode}</span>
               <span class="settings">${(Object.keys(JSON.parse(otp.settings.replace(/'/g, '"'))).length > 0) ? '<i class="bi bi-check-lg"></i>' : ''}</span>
-              <span class="history">${(JSON.parse(otp.history).length > 0) ? '<i class="bi bi-check-lg"></i>' : ''}</span>
+              <span class="history">${(Object.keys(JSON.parse(otp.history.replace(/'/g, '"'))).length > 0) ? '<i class="bi bi-check-lg"></i>' : ''}</span>
               <span class="actions">
                 <button class="icon" data-remove-otp tooltip="Remove OTP">
                   <i class="bi bi-trash"></i>
@@ -3539,7 +3539,7 @@ try {
     const seatCode = this.parentElement.parentElement.id;
     ui.modal({
       title: 'Remove OTP',
-      body: `<p>Are you sure you would like to remove the OTP from seat code <code>${seatCode}</code>? This action is not reversible.</p>`,
+      body: `<p>Are you sure you would like to remove the OTP from seat code <code>${seatCode}</code>? This seat code will lose all their saved settings and history. This action is not reversible.</p>`,
       buttons: [
         {
           text: 'Cancel',
