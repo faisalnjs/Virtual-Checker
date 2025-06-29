@@ -97,10 +97,56 @@ export function modal(options) {
 
   document.body.append(dialog);
 
+  if (options.buttonGroups.length > 0) {
+    options.buttonGroups.forEach(buttonGroup => {
+      var buttonGroupsContainerElement = document.createElement("div");
+      if (buttonGroup.label) {
+        var buttonGroupLabelElement = document.createElement("label");
+        if (buttonGroup.icon) buttonGroup.label = + `<i class="bi ${buttonGroup.icon}"></i> `;
+        buttonGroupLabelElement.innerHTML = buttonGroup.label;
+        buttonGroupsContainerElement.appendChild(buttonGroupLabelElement);
+      }
+      var buttonGroupContainerElement = document.createElement("div");
+      buttonGroupContainerElement.className = "button-grid";
+      buttonGroup.buttons.forEach(button => {
+        if (button.icon) button.text = + `<i class="bi ${button.icon}"></i> `;
+        var btnElement = new Element("button", button.text, {
+          click: () => {
+            if (button.onclick) {
+              var hasEmptyRequiredInput = false;
+              dialog.querySelectorAll(".dialog-input").forEach(dialogInput => {
+                if (dialogInput.required && !dialogInput.value) {
+                  dialogInput.classList.add("attention");
+                  if (!hasEmptyRequiredInput) dialogInput.focus();
+                  hasEmptyRequiredInput = true;
+                } else {
+                  dialogInput.classList.remove("attention");
+                }
+              });
+              if (hasEmptyRequiredInput) return;
+              const inputValue = (dialog.querySelectorAll(".dialog-input").length > 1) ? [...dialog.querySelectorAll(".dialog-input")].map(dialogInput => {
+                return dialogInput.multiple ? [...dialogInput.selectedOptions].map(e => Number(e.value)) : dialogInput.value;
+              }) : (dialog.querySelector(".dialog-input") ? dialog.querySelector(".dialog-input").value : null);
+              button.onclick(inputValue);
+            }
+            if (button.close) {
+              closeModal();
+            }
+          },
+        }, button.class).element;
+        btnElement.style.width = "-webkit-fill-available";
+        buttonGroupContainerElement.appendChild(btnElement);
+      });
+      buttonGroupsContainerElement.appendChild(buttonGroupContainerElement);
+      dialog.appendChild(buttonGroupsContainerElement);
+    });
+  }
+
   if (options.buttons.length > 0) {
     var buttonsContainerElement = document.createElement("div");
     buttonsContainerElement.className = "button-grid";
     options.buttons.forEach(button => {
+      if (button.icon) button.text = + `<i class="bi ${button.icon}"></i> `;
       var btnElement = new Element("button", button.text, {
         click: () => {
           if (button.onclick) {
