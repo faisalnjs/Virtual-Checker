@@ -79,7 +79,7 @@ export function logout(returnFunction = null) {
     return;
 }
 
-export async function sync(domain) {
+export async function sync(domain, hideWelcome = false) {
     ui.view();
     if (!storage.get("code")) {
         ui.modal({
@@ -164,7 +164,7 @@ export async function sync(domain) {
             .then(r => {
                 var tempOTP = storage.get("otp");
                 storage.delete("otp");
-                ui.toast("Welcome back!", 3000, "success", "bi bi-key");
+                if (!hideWelcome) ui.toast("Welcome back!", 3000, "success", "bi bi-key");
                 ui.modal({
                     title: 'Sync Settings & History',
                     body: `<p>Backup and restore your current settings and history to seat code <code>${storage.get("code")}</code>. This action is not reversible. Contact an administrator to restore a backup of your settings or history.</p>`,
@@ -176,99 +176,105 @@ export async function sync(domain) {
                                 {
                                     icon: 'bi-gear',
                                     text: 'Settings',
-                                    onclick: async () => {
-                                        if (storage.all() && Object.keys(storage.all()).length > 0) {
-                                            await fetch(domain + '/otp', {
-                                                method: "POST",
-                                                headers: {
-                                                    "Content-Type": "application/json",
-                                                },
-                                                body: JSON.stringify({
-                                                    "seatCode": storage.get("code"),
-                                                    "OTP": tempOTP,
-                                                    "settings": Object.fromEntries(
-                                                        Object.entries(storage.all()).filter(([key]) =>
-                                                            key !== "otp" && key !== "code" && key !== "usr" && key !== "pwd" && key !== "questionsAnswered" && key !== "history"
-                                                        )
-                                                    ),
+                                    onclick: () => {
+                                        prompt(true, 'settings', async () => {
+                                            if (storage.all() && Object.keys(storage.all()).length > 0) {
+                                                await fetch(domain + '/otp', {
+                                                    method: "POST",
+                                                    headers: {
+                                                        "Content-Type": "application/json",
+                                                    },
+                                                    body: JSON.stringify({
+                                                        "seatCode": storage.get("code"),
+                                                        "OTP": tempOTP,
+                                                        "settings": Object.fromEntries(
+                                                            Object.entries(storage.all()).filter(([key]) =>
+                                                                key !== "otp" && key !== "code" && key !== "usr" && key !== "pwd" && key !== "questionsAnswered" && key !== "history"
+                                                            )
+                                                        ),
+                                                    })
                                                 })
-                                            })
-                                                .then(async (r) => {
-                                                    if (!r.ok) {
-                                                        try {
-                                                            var re = await r.json();
-                                                            if (re.error || re.message) {
-                                                                ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
-                                                                if (re.error === "Access denied.") sync(domain);
-                                                                throw new Error(re.error || re.message);
-                                                            } else {
-                                                                throw new Error("API error");
+                                                    .then(async (r) => {
+                                                        if (!r.ok) {
+                                                            try {
+                                                                var re = await r.json();
+                                                                if (re.error || re.message) {
+                                                                    ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+                                                                    if (re.error === "Access denied.") sync(domain);
+                                                                    throw new Error(re.error || re.message);
+                                                                } else {
+                                                                    throw new Error("API error");
+                                                                }
+                                                            } catch (e) {
+                                                                throw new Error(e.message || "API error");
                                                             }
-                                                        } catch (e) {
-                                                            throw new Error(e.message || "API error");
                                                         }
-                                                    }
-                                                    return await r.json();
-                                                })
-                                                .then(() => {
-                                                    ui.toast("Settings backed up successfully!", 3000, "success", "bi bi-check-circle-fill");
-                                                })
-                                                .catch((e) => {
-                                                    console.error(e);
-                                                    if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
-                                                });
-                                        } else {
-                                            ui.toast("No settings found to backup.", 3000, "warning", "bi bi-exclamation-triangle-fill");
-                                        }
+                                                        return await r.json();
+                                                    })
+                                                    .then(() => {
+                                                        ui.toast("Settings backed up successfully!", 3000, "success", "bi bi-check-circle-fill");
+                                                    })
+                                                    .catch((e) => {
+                                                        console.error(e);
+                                                        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+                                                    });
+                                            } else {
+                                                ui.toast("No settings found to backup.", 3000, "warning", "bi bi-exclamation-triangle-fill");
+                                            }
+                                        }, domain, tempOTP)
                                     },
+                                    close: true,
                                 },
                                 {
                                     icon: 'bi-clock-history',
                                     text: 'History',
-                                    onclick: async () => {
-                                        if (storage.get("history") && storage.get("history").length > 0) {
-                                            await fetch(domain + '/otp', {
-                                                method: "POST",
-                                                headers: {
-                                                    "Content-Type": "application/json",
-                                                },
-                                                body: JSON.stringify({
-                                                    "seatCode": storage.get("code"),
-                                                    "OTP": tempOTP,
-                                                    "history": {
-                                                        "questionsAnswered": storage.get("questionsAnswered"),
-                                                        "history": storage.get("history"),
+                                    onclick: () => {
+                                        prompt(true, 'history', async () => {
+                                            if (storage.get("history") && storage.get("history").length > 0) {
+                                                await fetch(domain + '/otp', {
+                                                    method: "POST",
+                                                    headers: {
+                                                        "Content-Type": "application/json",
                                                     },
+                                                    body: JSON.stringify({
+                                                        "seatCode": storage.get("code"),
+                                                        "OTP": tempOTP,
+                                                        "history": {
+                                                            "questionsAnswered": storage.get("questionsAnswered"),
+                                                            "history": storage.get("history"),
+                                                        },
+                                                    })
                                                 })
-                                            })
-                                                .then(async (r) => {
-                                                    if (!r.ok) {
-                                                        try {
-                                                            var re = await r.json();
-                                                            if (re.error || re.message) {
-                                                                ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
-                                                                if (re.error === "Access denied.") sync(domain);
-                                                                throw new Error(re.error || re.message);
-                                                            } else {
-                                                                throw new Error("API error");
+                                                    .then(async (r) => {
+                                                        if (!r.ok) {
+                                                            try {
+                                                                var re = await r.json();
+                                                                if (re.error || re.message) {
+                                                                    ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+                                                                    if (re.error === "Access denied.") sync(domain);
+                                                                    throw new Error(re.error || re.message);
+                                                                } else {
+                                                                    throw new Error("API error");
+                                                                }
+                                                            } catch (e) {
+                                                                throw new Error(e.message || "API error");
                                                             }
-                                                        } catch (e) {
-                                                            throw new Error(e.message || "API error");
                                                         }
-                                                    }
-                                                    return await r.json();
-                                                })
-                                                .then(() => {
-                                                    ui.toast("History backed up successfully!", 3000, "success", "bi bi-check-circle-fill");
-                                                })
-                                                .catch((e) => {
-                                                    console.error(e);
-                                                    if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
-                                                });
-                                        } else {
-                                            ui.toast("No history found to backup.", 3000, "warning", "bi bi-exclamation-triangle-fill");
-                                        }
+                                                        return await r.json();
+                                                    })
+                                                    .then(() => {
+                                                        ui.toast("History backed up successfully!", 3000, "success", "bi bi-check-circle-fill");
+                                                    })
+                                                    .catch((e) => {
+                                                        console.error(e);
+                                                        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+                                                    });
+                                            } else {
+                                                ui.toast("No history found to backup.", 3000, "warning", "bi bi-exclamation-triangle-fill");
+                                            }
+                                        }, domain, tempOTP)
                                     },
+                                    close: true,
                                 },
                             ],
                         },
@@ -280,31 +286,37 @@ export async function sync(domain) {
                                     icon: 'bi-gear',
                                     text: 'Settings',
                                     onclick: () => {
-                                        if (r.settings && Object.keys(r.settings).length > 0) {
-                                            Object.entries(r.settings).forEach(([key, value]) => {
-                                                if (key !== "otp" && key !== "code" && key !== "usr" && key !== "pwd" && key !== "questionsAnswered" && key !== "history") storage.set(key, value);
-                                            });
-                                            ui.toast("Settings restored successfully!", 3000, "success", "bi bi-check-circle-fill");
-                                            window.location.reload();
-                                        } else {
-                                            ui.toast("No settings found to restore.", 3000, "warning", "bi bi-exclamation-triangle-fill");
-                                        }
+                                        prompt(false, 'settings', () => {
+                                            if (r.settings && Object.keys(r.settings).length > 0) {
+                                                Object.entries(r.settings).forEach(([key, value]) => {
+                                                    if (key !== "otp" && key !== "code" && key !== "usr" && key !== "pwd" && key !== "questionsAnswered" && key !== "history") storage.set(key, value);
+                                                });
+                                                ui.toast("Settings restored successfully!", 3000, "success", "bi bi-check-circle-fill");
+                                                window.location.reload();
+                                            } else {
+                                                ui.toast("No settings found to restore.", 3000, "warning", "bi bi-exclamation-triangle-fill");
+                                            }
+                                        }, domain, tempOTP)
                                     },
+                                    close: true,
                                 },
                                 {
                                     icon: 'bi-clock-history',
                                     text: 'History',
                                     onclick: () => {
-                                        if (r.history && Object.keys(r.history).length > 0) {
-                                            Object.entries(r.history).forEach(([key, value]) => {
-                                                if (key === "questionsAnswered" || key === "history") storage.set(key, value);
-                                            });
-                                            ui.toast("History restored successfully!", 3000, "success", "bi bi-check-circle-fill");
-                                            window.location.reload();
-                                        } else {
-                                            ui.toast("No history found to restore.", 3000, "warning", "bi bi-exclamation-triangle-fill");
-                                        }
+                                        prompt(false, 'history', () => {
+                                            if (r.history && Object.keys(r.history).length > 0) {
+                                                Object.entries(r.history).forEach(([key, value]) => {
+                                                    if (key === "questionsAnswered" || key === "history") storage.set(key, value);
+                                                });
+                                                ui.toast("History restored successfully!", 3000, "success", "bi bi-check-circle-fill");
+                                                window.location.reload();
+                                            } else {
+                                                ui.toast("No history found to restore.", 3000, "warning", "bi bi-exclamation-triangle-fill");
+                                            }
+                                        }, domain, tempOTP)
                                     },
+                                    close: true,
                                 },
                             ],
                         },
@@ -370,4 +382,32 @@ export async function sync(domain) {
         });
     }
     return;
+}
+
+function prompt(backingUp = true, type = 'settings', func = () => { }, domain, otp) {
+    ui.modal({
+        title: 'Are you sure?',
+        body: `<p>${backingUp ? 'Backing up' : 'Restoring'} ${type} will forever remove your currently ${backingUp ? 'backed up' : 'set'} ${type}. This action is not reversible.</p>`,
+        buttons: [
+            {
+                text: 'Back',
+                class: 'cancel-button',
+                onclick: () => {
+                    if (otp) storage.set("otp", otp);
+                    sync(domain, true);
+                },
+                close: true,
+            },
+            {
+                text: 'Continue',
+                class: 'submit-button',
+                onclick: async () => {
+                    func();
+                    if (otp) storage.set("otp", otp);
+                    sync(domain, true);
+                },
+                close: true,
+            },
+        ],
+    });
 }
