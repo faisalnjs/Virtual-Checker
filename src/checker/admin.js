@@ -646,11 +646,30 @@ try {
             buttonGrid.className = "button-grid inputs";
             buttonGrid.setAttribute("data-swapy-item", `segmentReorder-${s.number}`);
             buttonGrid.innerHTML = `<button square data-select tooltip="Select Segment"><i class="bi bi-circle"></i><i class="bi bi-circle-fill"></i></button><div class="input-group small"><div class="space" id="question-container"><input type="text" autocomplete="off" id="segment-number-input" value="${s.number}" placeholder="${s.number}" /></div></div><div class="input-group"><div class="space" id="question-container"><input type="text" autocomplete="off" id="segment-name-input" value="${s.name}" placeholder="${s.name}" /></div></div><div class="input-group mediuml"><div class="space" id="question-container"><input type="date" id="segment-due-date" value="${s.due || ''}"></div></div><button square data-remove-segment-input tooltip="Remove Segment"><i class="bi bi-trash"></i></button><button square data-edit-segment tooltip="Edit Segment"><i class="bi bi-pencil"></i></button><div class="drag" data-swapy-handle><i class="bi bi-grip-vertical"></i></div>`;
+            buttonGrid.addEventListener('mouseenter', () => {
+              island({
+                id: `# ${s.number}`,
+                title: `${s.name}`,
+                subtitle: s.due ? `Due ${new Date(`${s.due}T00:00:00`).toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })}` : '',
+                lists: [
+                  {
+                    title: 'Questions',
+                    items: JSON.parse(s.question_ids)
+                  },
+                ],
+              });
+            });
+            buttonGrid.addEventListener('mouseleave', () => {
+              island();
+            });
             segment.appendChild(buttonGrid);
             document.querySelector('.segments .section').appendChild(segment);
           }
         });
-        document.querySelector('.segments .section').innerHTML += '<button data-add-segment-input>Add Segment</button>';
+        var addSegmentButton = document.createElement('button');
+        addSegmentButton.setAttribute('data-add-segment-input', '');
+        addSegmentButton.innerText = 'Add Segment';
+        document.querySelector('.segments .section').appendChild(addSegmentButton);
         if (draggableSegmentReorder) draggableSegmentReorder.destroy();
         draggableSegmentReorder = createSwapy(document.querySelector(".segments .section"), {
           animation: 'none'
