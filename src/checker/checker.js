@@ -397,7 +397,7 @@ try {
               onclick: () => {
                 ui.view("");
                 document.getElementById("code-input").focus();
-                ui.unsavedChanges = true
+                ui.setUnsavedChanges(true);
                 ui.view("settings/code");
               }
             },
