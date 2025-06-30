@@ -711,6 +711,7 @@ try {
           const button = document.createElement("button");
           const latex = item.type === "latex";
           const array = item.type === "array";
+          const matrix = item.type === "matrix";
           const frq = item.type === "frq";
           button.id = r.id;
           button.classList = (r.status === "Incorrect") ? 'incorrect' : (r.status === "Correct") ? 'correct' : '';
@@ -719,10 +720,14 @@ try {
           item.number = questionsArray.find(question => question.id === Number(item.question)).number;
           if (!latex) {
             if (!array) {
-              if (!frq) {
-                button.innerHTML = `<p>${item.answer}</p>\n<p>${response}`;
+              if (!matrix) {
+                if (!frq) {
+                  button.innerHTML = `<p>${item.answer}</p>\n<p>${response}`;
+                } else {
+                  button.innerHTML = `<p${item.answer}${(item.number === '1') ? '/9' : ''}</p>\n<p>${response}`;
+                }
               } else {
-                button.innerHTML = `<p${item.answer}${(item.number === '1') ? '/9' : ''}</p>\n<p>${response}`;
+                button.innerHTML = `<p>[${JSON.parse(item.answer).join('')}]</p>\n<p>${response}`;
               }
             } else {
               button.innerHTML = `<p>${JSON.parse(`[${item.answer.slice(1, -1).split(', ')}]`).join(', ')}</p>\n<p>${response}`;
@@ -769,6 +774,36 @@ try {
                 i++;
                 if (i < item.answer.slice(1, -1).split(', ').length) addSet();
               });
+            } else if (matrix) {
+              answerMode("matrix");
+              ui.setButtonSelectValue(document.getElementById("answer-mode-selector"), "matrix");
+              resetMatrix();
+              var rows = JSON.parse(item.answer);
+              if (rows.length != 2) {
+                if (rows.length === 1) {
+                  removeRow();
+                } else {
+                  for (let i = 0; i < rows.length - 3; i++) {
+                    addRow();
+                  }
+                }
+              }
+              var columns = rows[0].length;
+              if (columns != 2) {
+                if (columns === 1) {
+                  removeColumn();
+                } else {
+                  for (let i = 0; i < columns - 3; i++) {
+                    addColumn();
+                  }
+                }
+              }
+              var matrixRows = document.querySelector('#matrix [data-matrix-row]');
+              for (let i = 0; i < rows.length; i++) {
+                for (let j = 0; j < rows[i].length; j++) {
+                  matrixRows[i].querySelectorAll('input')[j].value = rows[i][j];
+                }
+              }
             } else if (frq) {
               answerMode("frq");
               ui.setButtonSelectValue(document.getElementById("answer-mode-selector"), "frq");
@@ -826,6 +861,7 @@ try {
             }
             const latex = latestResponse.type === "latex";
             const array = latestResponse.type === "array";
+            const matrix = latestResponse.type === "matrix";
             const frq = latestResponse.type === "frq";
             questionInput.value = latestResponse.question;
             if (latex) {
@@ -861,6 +897,36 @@ try {
                 i++;
                 if (i < latestResponse.answer.slice(1, -1).split(', ').length) addSet();
               });
+            } else if (matrix) {
+              answerMode("matrix");
+              ui.setButtonSelectValue(document.getElementById("answer-mode-selector"), "matrix");
+              resetMatrix();
+              var rows = JSON.parse(latestResponse.answer);
+              if (rows.length != 2) {
+                if (rows.length === 1) {
+                  removeRow();
+                } else {
+                  for (let i = 0; i < rows.length - 3; i++) {
+                    addRow();
+                  }
+                }
+              }
+              var columns = rows[0].length;
+              if (columns != 2) {
+                if (columns === 1) {
+                  removeColumn();
+                } else {
+                  for (let i = 0; i < columns - 3; i++) {
+                    addColumn();
+                  }
+                }
+              }
+              var matrixRows = document.querySelector('#matrix [data-matrix-row]');
+              for (let i = 0; i < rows.length; i++) {
+                for (let j = 0; j < rows[i].length; j++) {
+                  matrixRows[i].querySelectorAll('input')[j].value = rows[i][j];
+                }
+              }
             } else if (frq) {
               answerMode("frq");
               ui.setButtonSelectValue(document.getElementById("answer-mode-selector"), "frq");
@@ -1117,6 +1183,7 @@ try {
           const button = document.createElement("button");
           const latex = item.type === "latex";
           const array = item.type === "array";
+          const matrix = item.type === "matrix";
           const frq = item.type === "frq";
           button.id = r.id;
           button.classList = (r.status === "Incorrect") ? 'incorrect' : (r.status === "Correct") ? 'correct' : '';
@@ -1125,10 +1192,14 @@ try {
           item.number = questionsArray.find(question => question.id === Number(item.question)).number;
           if (!latex) {
             if (!array) {
-              if (!frq) {
-                button.innerHTML = `<p><b>Segment ${item.segment} Question #${item.number}.</b> ${unixToTimeString(item.timestamp)} (${item.code})</p>\n<p>${item.answer}</p>\n<p>${response}`;
+              if (!matrix) {
+                if (!frq) {
+                  button.innerHTML = `<p><b>Segment ${item.segment} Question #${item.number}.</b> ${unixToTimeString(item.timestamp)} (${item.code})</p>\n<p>${item.answer}</p>\n<p>${response}`;
+                } else {
+                  button.innerHTML = `<p><b>Segment ${item.segment} Question #${item.number}.</b> ${unixToTimeString(item.timestamp)} (${item.code})</p>\n<p>${item.answer}${(item.number === '1') ? '/9' : ''}</p>\n<p>${response}`;
+                }
               } else {
-                button.innerHTML = `<p><b>Segment ${item.segment} Question #${item.number}.</b> ${unixToTimeString(item.timestamp)} (${item.code})</p>\n<p>${item.answer}${(item.number === '1') ? '/9' : ''}</p>\n<p>${response}`;
+                button.innerHTML = `<p>[${JSON.parse(item.answer).join('')}]</p>\n<p>${response}`;
               }
             } else {
               button.innerHTML = `<p><b>Segment ${item.segment} Question #${item.number}.</b> ${unixToTimeString(item.timestamp)} (${item.code})</p>\n<p>${JSON.parse(`[${item.answer.slice(1, -1).split(', ')}]`).join(', ')}</p>\n<p>${response}`;
@@ -1176,6 +1247,36 @@ try {
                 i++;
                 if (i < item.answer.slice(1, -1).split(', ').length) addSet();
               });
+            } else if (matrix) {
+              answerMode("matrix");
+              ui.setButtonSelectValue(document.getElementById("answer-mode-selector"), "matrix");
+              resetMatrix();
+              var rows = JSON.parse(item.answer);
+              if (rows.length != 2) {
+                if (rows.length === 1) {
+                  removeRow();
+                } else {
+                  for (let i = 0; i < rows.length - 3; i++) {
+                    addRow();
+                  }
+                }
+              }
+              var columns = rows[0].length;
+              if (columns != 2) {
+                if (columns === 1) {
+                  removeColumn();
+                } else {
+                  for (let i = 0; i < columns - 3; i++) {
+                    addColumn();
+                  }
+                }
+              }
+              var matrixRows = document.querySelector('#matrix [data-matrix-row]');
+              for (let i = 0; i < rows.length; i++) {
+                for (let j = 0; j < rows[i].length; j++) {
+                  matrixRows[i].querySelectorAll('input')[j].value = rows[i][j];
+                }
+              }
             } else if (frq) {
               answerMode("frq");
               ui.setButtonSelectValue(document.getElementById("answer-mode-selector"), "frq");
@@ -1414,6 +1515,81 @@ try {
     frqParts = document.querySelectorAll('.frq-parts .part');
     if (frqParts.length > 4) frqParts[frqParts.length - 1].remove();
     if (frqParts.length === 5) document.querySelector("[data-remove-frq-part]").disabled = true;
+  }
+
+  // Add matrix column
+  if (document.querySelector("[data-add-matrix-column]")) document.querySelector("[data-add-matrix-column]").addEventListener("click", addColumn);
+
+  function addColumn() {
+    var rows = [...document.getElementById('matrix').children];
+    rows.forEach(row => {
+      var newColumn = document.createElement('input');
+      newColumn.setAttribute('type', 'text');
+      newColumn.setAttribute('autocomplete', 'off');
+      newColumn.setAttribute('data-matrix-column', row.children.length + 1);
+      row.appendChild(newColumn);
+    });
+    rows[0].lastElementChild.focus();
+    ui.setUnsavedChanges(true);
+    document.querySelector("[data-remove-matrix-column]").disabled = false;
+    ui.reloadUnsavedInputs();
+  }
+
+  // Remove matrix column
+  if (document.querySelector("[data-remove-matrix-column]")) document.querySelector("[data-remove-matrix-column]").addEventListener("click", removeColumn);
+
+  function removeColumn() {
+    var rows = [...document.getElementById('matrix').children];
+    rows.forEach(row => {
+      var lastColumn = row.lastElementChild;
+      if (lastColumn) lastColumn.remove();
+    });
+    if (rows[0].children.length === 1) document.querySelector("[data-remove-matrix-column]").disabled = true;
+  }
+
+  // Add matrix row
+  if (document.querySelector("[data-add-matrix-row]")) document.querySelector("[data-add-matrix-row]").addEventListener("click", addRow);
+
+  function addRow() {
+    var newRow = document.createElement('div');
+    newRow.classList.add('row');
+    newRow.setAttribute('data-matrix-row', document.querySelectorAll('[data-matrix-row]').length + 1);
+    var columns = document.querySelectorAll('[data-matrix-row]:first-child [data-matrix-column]');
+    columns.forEach(column => {
+      var newColumn = document.createElement('input');
+      newColumn.setAttribute('type', 'text');
+      newColumn.setAttribute('autocomplete', 'off');
+      newColumn.setAttribute('data-matrix-column', column.getAttribute('data-matrix-column'));
+      newRow.appendChild(newColumn);
+    });
+    document.getElementById('matrix').appendChild(newRow);
+    newRow.lastElementChild.focus();
+    ui.setUnsavedChanges(true);
+    document.querySelector("[data-remove-matrix-row]").disabled = false;
+    ui.reloadUnsavedInputs();
+  }
+
+  // Remove matrix row
+  if (document.querySelector("[data-remove-matrix-row]")) document.querySelector("[data-remove-matrix-row]").addEventListener("click", removeRow);
+
+  function removeRow() {
+    var rows = document.querySelectorAll('[data-matrix-row]');
+    if (rows.length > 1) {
+      var lastRow = rows[rows.length - 1];
+      lastRow.remove();
+      if (rows.length === 2) document.querySelector("[data-remove-matrix-row]").disabled = true;
+    }
+  }
+
+  function resetMatrix() {
+    var matrix = document.getElementById('matrix');
+    matrix.innerHTML = '<div class="row" data-matrix-row="1"><input type="text" autocomplete="off" id="matrix-column" data-matrix-column="1" /><input type="text" autocomplete="off" id="matrix-column" data-matrix-column="2" /></div><div class="row" data-matrix-row="2"><input type="text" autocomplete="off" id="matrix-column" data-matrix-column="1" /><input type="text" autocomplete="off" id="matrix-column" data-matrix-column="2" /></div>';
+    document.querySelectorAll('[data-answer-mode="matrix"] .button-grid')[1].innerHTML = '<button square data-add-matrix-column tooltip="Add Matrix Column"><i class="bi bi-arrow-90deg-left rotate-right"></i></button><button square data-remove-matrix-column tooltip="Remove Matrix Column"><i class="bi bi-x"></i></button>';
+    document.querySelectorAll('[data-answer-mode="matrix"] .button-grid')[2].innerHTML = '<button square data-add-matrix-row tooltip="Add Matrix Row"><i class="bi bi-arrow-return-left"></i></button><button square data-remove-matrix-row tooltip="Remove Matrix Row"><i class="bi bi-x"></i></button>';
+    if (document.querySelector("[data-add-matrix-column]")) document.querySelector("[data-add-matrix-column]").addEventListener("click", addSet);
+    if (document.querySelector("[data-remove-matrix-column]")) document.querySelector("[data-remove-matrix-column]").addEventListener("click", removeSet);
+    if (document.querySelector("[data-add-matrix-row]")) document.querySelector("[data-add-matrix-row]").addEventListener("click", addSet);
+    if (document.querySelector("[data-remove-matrix-row]")) document.querySelector("[data-remove-matrix-row]").addEventListener("click", removeSet);
   }
 } catch (error) {
   if (storage.get("developer")) {

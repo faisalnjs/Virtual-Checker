@@ -102,6 +102,7 @@
       <button aria-selected="true" data-value="input">Text</button>
       <button aria-selected="false" data-value="math">Math</button>
       <button aria-selected="false" data-value="set">Set</button>
+      <button aria-selected="false" data-value="matrix">Matrix</button>
       <!-- <button aria-selected="false" data-value="frq">FRQ</button> -->
     </div>
     <div class="input-group hiddenOnLoad">
@@ -132,7 +133,7 @@
               <button data-insert-symbol="8"></button>
               <button data-insert-symbol="9"></button>
             </div>
-            <button class="icon" data-modal-view="symbols">
+            <button class="icon" data-modal-view="symbols" tooltip="All Symbols">
               <i class="bi bi-three-dots"></i>
             </button>
           </div>
@@ -160,7 +161,7 @@
               <button data-insert-symbol="8" data-target-input="set-input"></button>
               <button data-insert-symbol="9" data-target-input="set-input"></button>
             </div>
-            <button class="icon" data-modal-view="symbols">
+            <button class="icon" data-modal-view="symbols" tooltip="All Symbols">
               <i class="bi bi-three-dots"></i>
             </button>
           </div>
@@ -177,6 +178,43 @@
             <button square data-remove-set-input disabled tooltip="Remove Set Item"><i class="bi bi-dash"></i></button>
           </div>
         </div>
+        <div data-answer-mode="matrix">
+          <div class="row">
+            <div class="button-grid" id="insert-row">
+              <button data-insert-symbol="0" data-target-input="set-input"></button>
+              <button data-insert-symbol="1" data-target-input="set-input"></button>
+              <button data-insert-symbol="2" data-target-input="set-input"></button>
+              <button data-insert-symbol="3" data-target-input="set-input"></button>
+              <button data-insert-symbol="4" data-target-input="set-input"></button>
+              <button data-insert-symbol="5" data-target-input="set-input"></button>
+              <button data-insert-symbol="6" data-target-input="set-input"></button>
+              <button data-insert-symbol="7" data-target-input="set-input"></button>
+              <button data-insert-symbol="8" data-target-input="set-input"></button>
+              <button data-insert-symbol="9" data-target-input="set-input"></button>
+            </div>
+            <button class="icon" data-modal-view="symbols" tooltip="All Symbols">
+              <i class="bi bi-three-dots"></i>
+            </button>
+          </div>
+          <div class="input-group" id="matrix">
+            <div class="row" data-matrix-row="1">
+              <input type="text" autocomplete="off" id="matrix-column" data-matrix-column="1" />
+              <input type="text" autocomplete="off" id="matrix-column" data-matrix-column="2" />
+            </div>
+            <div class="row" data-matrix-row="2">
+              <input type="text" autocomplete="off" id="matrix-column" data-matrix-column="1" />
+              <input type="text" autocomplete="off" id="matrix-column" data-matrix-column="2" />
+            </div>
+          </div>
+          <div class="button-grid">
+            <button square data-add-matrix-column tooltip="Add Matrix Column"><i class="bi bi-arrow-90deg-left rotate-right"></i></button>
+            <button square data-remove-matrix-column tooltip="Remove Matrix Column"><i class="bi bi-x"></i></button>
+          </div>
+          <div class="button-grid">
+            <button square data-add-matrix-row tooltip="Add Matrix Row"><i class="bi bi-arrow-return-left"></i></button>
+            <button square data-remove-matrix-row tooltip="Remove Matrix Row"><i class="bi bi-x"></i></button>
+          </div>
+        </div>
         <div data-answer-mode="frq">
           <div class="row">
             <div class="button-grid" id="insert-row">
@@ -191,7 +229,7 @@
               <button data-insert-symbol="8" data-target-input="default-frq-part-symbols"></button>
               <button data-insert-symbol="9" data-target-input="default-frq-part-symbols"></button>
             </div>
-            <button class="icon" data-modal-view="symbols">
+            <button class="icon" data-modal-view="symbols" tooltip="All Symbols">
               <i class="bi bi-three-dots"></i>
             </button>
           </div>

@@ -414,7 +414,7 @@ div.ML__keyboard {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 2.5px;
+  gap: 0.25rem;
   width: -webkit-fill-available;
 }
 
@@ -1078,4 +1078,8 @@ hidden,
 
 body > canvas {
   background: transparent;
+}
+
+.rotate-right {
+  transform: rotate(90deg);
 }
