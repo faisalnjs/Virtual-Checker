@@ -3,6 +3,7 @@ import * as ui from "/src/modules/ui.js";
 import storage from "/src/modules/storage.js";
 import * as time from "/src/modules/time.js";
 import * as auth from "/src/modules/auth.js";
+import { convertLatexToMarkup, renderMathInElement } from "mathlive";
 import { createSwapy } from "swapy";
 
 const domain = ((window.location.hostname.search('check') != -1) || (window.location.hostname.search('127') != -1)) ? 'https://api.check.vssfalcons.com' : `http://${document.domain}:5000`;
@@ -1450,6 +1451,28 @@ try {
         buttonGrid.className = "button-grid inputs";
         buttonGrid.id = `response-${r.id}`;
         buttonGrid.innerHTML = `<input type="text" autocomplete="off" class="small" id="response-id-input" value="${r.id}" disabled hidden />${(r.flagged == '1') ? `<button square data-unflag-response tooltip="Unflag Response"><i class="bi bi-flag-fill"></i></button>` : `<button square data-flag-response tooltip="Flag Response"><i class="bi bi-flag"></i></button>`}<input type="text" autocomplete="off" class="small" id="response-segment-input" value="${r.segment}" disabled data-segment /><input type="text" autocomplete="off" class="small" id="response-question-input" value="${questions.find(q => q.id == r.question_id).number}" disabled data-question /><input type="text" autocomplete="off" class="small${(((r.status === 'Invalid Format') || (r.status === 'Unknown, Recorded')) && document.querySelector('.awaitingResponses .section') && (answers.find(a => a.id === questions.find(q => q.id == r.question_id).id).correct_answers.length > 0)) ? ' hideonhover' : ''}" id="response-seat-code-input" value="${r.seatCode}" disabled data-seat-code /><input type="text" autocomplete="off" class="small" id="response-time-taken-input" value="${timeTaken}" disabled data-time-taken${(typeof timeDifference != 'undefined') ? ` time="${timeDifference}"` : ''} /><input type="text" autocomplete="off" class="small" id="response-time-taken-input" value="${timeTakenToRevise}" disabled data-time-taken${(typeof timeDifference != 'undefined') ? ` time="${timeDifference}"` : ''} /><!--<input type="text" autocomplete="off" class="small" id="response-time-taken-input" value="${result}" disabled data-time-taken />--><input type="text" autocomplete="off" id="response-response-input" value="${responseString}" disabled />${(r.status === 'Incorrect') ? `<button square data-edit-reason tooltip="Edit Reason"><i class="bi bi-reply${(r.reason) ? '-fill' : ''}"></i></button>` : ''}<input type="text" autocomplete="off" class="smedium${(((r.status === 'Invalid Format') || (r.status === 'Unknown, Recorded')) && document.querySelector('.awaitingResponses .section') && (answers.find(a => a.id === questions.find(q => q.id == r.question_id).id).correct_answers.length > 0)) ? ' hideonhover' : ''}" id="response-timestamp-input" value="${date.getMonth() + 1}/${date.getDate()} ${hours % 12 || 12}:${minutes < 10 ? '0' + minutes : minutes} ${hours >= 12 ? 'PM' : 'AM'}" disabled />${(((r.status === 'Invalid Format') || (r.status === 'Unknown, Recorded')) && document.querySelector('.awaitingResponses .section') && (answers.find(a => a.id === questions.find(q => q.id == r.question_id).id).correct_answers.length > 0)) ? `<input type="text" autocomplete="off" class="showonhover" id="response-correct-responses-input" value="${correctResponsesString}" disabled />` : ''}<button square id="mark-correct-button"${(r.status === 'Correct') ? ' disabled' : ''} tooltip="Mark Correct"><i class="bi bi-check-circle${(r.status === 'Correct') ? '-fill' : ''}"></i></button><button square id="mark-incorrect-button"${(r.status === 'Incorrect') ? ' disabled' : ''} tooltip="Mark Incorrect"><i class="bi bi-x-circle${(r.status === 'Incorrect') ? '-fill' : ''}"></i></button>`;
+        buttonGrid.addEventListener('mouseenter', () => {
+          var question = questions.find(q => q.id == r.question_id);
+          island({
+            id: `ID ${question.id}`,
+            title: `Question ${question.number}`,
+            subtitle: `${question.question}`,
+            subtitleLatex: question.latex,
+            lists: [
+              {
+                title: 'Correct Answers',
+                items: answers.find(a => a.id === questions.find(q => q.id == r.question_id).id).correct_answers
+              },
+              {
+                title: 'Incorrect Answers',
+                items: answers.find(a => a.id === questions.find(q => q.id == r.question_id).id).incorrect_answers
+              },
+            ],
+          });
+        });
+        buttonGrid.addEventListener('mouseleave', () => {
+          island();
+        });
         if (document.querySelector('.responses .section')) document.querySelector('.responses .section').appendChild(buttonGrid);
         if (((r.status === 'Invalid Format') || (r.status === 'Unknown, Recorded')) && document.querySelector('.awaitingResponses .section')) document.querySelector('.awaitingResponses .section').appendChild(buttonGrid);
       }
@@ -1532,6 +1555,28 @@ try {
       var buttonGrid = document.createElement('div');
       buttonGrid.className = "button-grid inputs";
       buttonGrid.innerHTML = `<input type="text" autocomplete="off" class="small" id="response-id-input" value="${r.id}" disabled hidden /><input type="text" autocomplete="off" class="small" id="response-segment-input" value="${r.segment}" disabled data-segment /><input type="text" autocomplete="off" class="small" id="response-question-input" value="${questions.find(q => q.id == r.question_id).number}" disabled data-question /><input type="text" autocomplete="off" id="response-response-input" value="${r.response}" disabled /><input type="text" autocomplete="off" class="small" id="response-count-input" value="${r.count}" disabled /><button square id="mark-correct-button"${(r.status === 'Correct') ? ' disabled' : ''} tooltip="Mark Correct"><i class="bi bi-check-circle${(r.status === 'Correct') ? '-fill' : ''}"></i></button><button square id="mark-incorrect-button"${(r.status === 'Incorrect') ? ' disabled' : ''} tooltip="Mark Incorrect"><i class="bi bi-x-circle${(r.status === 'Incorrect') ? '-fill' : ''}"></i></button>`;
+      buttonGrid.addEventListener('mouseenter', () => {
+        var question = questions.find(q => q.id == r.question_id);
+        island({
+          id: `ID ${question.id}`,
+          title: `Question ${question.number}`,
+          subtitle: `${question.question}`,
+          subtitleLatex: question.latex,
+          lists: [
+            {
+              title: 'Correct Answers',
+              items: answers.find(a => a.id === questions.find(q => q.id == r.question_id).id).correct_answers
+            },
+            {
+              title: 'Incorrect Answers',
+              items: answers.find(a => a.id === questions.find(q => q.id == r.question_id).id).incorrect_answers
+            },
+          ],
+        });
+      });
+      buttonGrid.addEventListener('mouseleave', () => {
+        island();
+      });
       document.querySelector('.trendingResponses .section').appendChild(buttonGrid);
     });
     expandedReports.forEach(er => {
@@ -3600,6 +3645,68 @@ try {
         if (e.error === "Access denied.") return auth.admin(init);
         pollingOff();
       });
+  }
+
+  var lastIslandId = null;
+
+  function island(data) {
+    var island = document.querySelector('.island');
+    if (!island) return;
+    if (!data) return island.classList.remove('visible');
+    if (data.id) {
+      if (lastIslandId && (data.id === lastIslandId)) return island.classList.add('visible');
+      lastIslandId = data.id;
+    }
+    island.innerHTML = '';
+    if (data.id) {
+      var id = document.createElement('code');
+      id.innerHTML = data.id;
+      island.appendChild(id);
+    }
+    if (data.title) {
+      var title = document.createElement('h4');
+      title.innerHTML = data.title;
+      island.appendChild(title);
+    }
+    if (data.subtitle) {
+      var subtitle = document.createElement('h6');
+      if (data.subtitleLatex) {
+        subtitle.innerHTML = convertLatexToMarkup(data.subtitle);
+        island.appendChild(subtitle);
+        renderMathInElement(subtitle);
+      } else {
+        subtitle.innerHTML = data.subtitle;
+        island.appendChild(subtitle);
+      }
+    }
+    if (data.lists) {
+      data.lists.forEach(list => {
+        var listContainer = document.createElement('div');
+        if (list.title) {
+          var title = document.createElement('h5');
+          title.innerHTML = list.title;
+          listContainer.appendChild(title);
+        }
+        if (list.items) {
+          var listUl = document.createElement('ul');
+          list.items.forEach(item => {
+            var itemElement = document.createElement('li');
+            if (typeof item === 'object') {
+              Object.keys(item).forEach(itemKey => {
+                itemElement.innerHTML += `${itemKey[0].toUpperCase()}${itemKey.slice(1)}: ${item[itemKey]}, `;
+              });
+              itemElement.innerHTML = itemElement.innerHTML.slice(0, itemElement.innerHTML.length - 2);
+            } else {
+              itemElement.innerHTML = item;
+            }
+            listUl.appendChild(itemElement);
+          });
+          listContainer.appendChild(listUl);
+        }
+        island.appendChild(listContainer);
+      });
+    }
+    island.classList.add('visible');
   }
 } catch (error) {
   if (storage.get("developer")) {

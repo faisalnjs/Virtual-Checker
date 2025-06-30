@@ -262,3 +262,49 @@ div[data-color-input] > div[data-color-preview]:hover {
   position: relative;
   overflow: visible !important;
 }
+
+.island {
+  opacity: 0;
+  transition: opacity 0.25s ease-in-out;
+  height: fit-content;
+  max-height: calc(100vh - 50px);
+  width: calc(((100vw - min(100%, 800px)) / 2) - 75px);
+  position: fixed;
+  top: 25px;
+  left: 25px;
+  border: 1px dashed var(--text-color);
+  border-radius: 10px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 2.5px;
+}
+
+.island.visible {
+  opacity: 0.5;
+  transition: opacity 0.25s ease-in-out;
+}
+
+.island h5 {
+  font-size: 1.25rem;
+}
+
+.island h6 {
+  font-size: 1rem;
+}
+
+.island p {
+  font-size: 1rem;
+  font-weight: normal;
+}
+
+.island div {
+  margin-top: 5px;
+}
+
+.island ul {
+  padding-left: 1.5rem;
+  margin-top: 5px;
+}
