@@ -392,7 +392,7 @@ try {
 
   function flagResponse() {
     if (!active) return;
-    ui.unsavedChanges = true;
+    ui.setUnsavedChanges(true);
     fetch(domain + '/flag', {
       method: "POST",
       headers: {
@@ -422,7 +422,7 @@ try {
         return await r.json();
       })
       .then(() => {
-        ui.unsavedChanges = false;
+        ui.setUnsavedChanges(false);
         ui.toast("Flagged response for review.", 3000, "success", "bi bi-flag-fill");
         init();
       })
@@ -435,7 +435,7 @@ try {
 
   function unflagResponse() {
     if (!active) return;
-    ui.unsavedChanges = true;
+    ui.setUnsavedChanges(true);
     fetch(domain + '/unflag', {
       method: "POST",
       headers: {
@@ -465,7 +465,7 @@ try {
         return await r.json();
       })
       .then(() => {
-        ui.unsavedChanges = false;
+        ui.setUnsavedChanges(false);
         ui.toast("Unflagged response.", 3000, "success", "bi bi-flag-fill");
         init();
       })
@@ -478,7 +478,7 @@ try {
 
   function markCorrect() {
     if (!active) return;
-    ui.unsavedChanges = true;
+    ui.setUnsavedChanges(true);
     fetch(domain + '/mark_correct', {
       method: "POST",
       headers: {
@@ -508,7 +508,7 @@ try {
         return await r.json();
       })
       .then(() => {
-        ui.unsavedChanges = false;
+        ui.setUnsavedChanges(false);
         ui.toast("Successfully updated status.", 3000, "success", "bi bi-check-lg");
         noReloadCourse = true;
         init();
@@ -550,7 +550,7 @@ try {
 
   function markIncorrectConfirm(reason, e) {
     if (!active) return;
-    ui.unsavedChanges = true;
+    ui.setUnsavedChanges(true);
     fetch(domain + '/mark_incorrect?usr=' + storage.get("code"), {
       method: "POST",
       headers: {
@@ -580,7 +580,7 @@ try {
         return await r.json();
       })
       .then(() => {
-        ui.unsavedChanges = false;
+        ui.setUnsavedChanges(false);
         ui.toast("Successfully updated status.", 3000, "success", "bi bi-check-lg");
         noReloadCourse = true;
         init();

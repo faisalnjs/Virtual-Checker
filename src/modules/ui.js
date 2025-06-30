@@ -696,3 +696,7 @@ export function reloadUnsavedInputs() {
     unsavedChanges = true;
   }));
 }
+
+export function setUnsavedChanges(value) {
+  unsavedChanges = value;
+}
