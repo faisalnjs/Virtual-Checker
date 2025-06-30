@@ -94,6 +94,13 @@ document.querySelectorAll("[data-insert-symbol]").forEach((button) => {
   const index = button.getAttribute("data-insert-symbol");
   const symbol = Object.values(symbols)[index];
   button.innerHTML = symbol;
+  const keys = [];
+  Object.entries(symbols).forEach(([key, value]) => {
+    if (value == symbol) {
+      keys.push(key);
+    }
+  });
+  button.setAttribute("tooltip", keys.join(", "));
   button.addEventListener("click", () => {
     var answerMode = document.querySelector('#answer-mode-selector [aria-selected="true"]').getAttribute("data-value");
     if (currentFocusedInput && document.querySelector(`[data-answer-mode="${answerMode}"]`).contains(currentFocusedInput)) {

@@ -106,7 +106,7 @@ div.spacer {
 }
 
 #answer-container {
-  overflow: hidden;
+  /* overflow: hidden; */
   border-radius: 0.5rem;
 }
 
