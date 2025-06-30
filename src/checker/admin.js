@@ -1440,7 +1440,9 @@ try {
     responses1.forEach(r => {
       if (document.querySelector('.responses .section') || document.querySelector('.awaitingResponses .section')) {
         var responseString = r.response;
-        if (responseString.includes('[')) {
+        if (responseString.includes('[[')) {
+          responseString = JSON.stringify(JSON.parse(r.response).map(innerArray => innerArray.map(numString => Number(numString))));
+        } else if (responseString.includes('[')) {
           var parsedResponse = JSON.parse(r.response);
           responseString = parsedResponse.join(', ');
         }
@@ -1515,6 +1517,7 @@ try {
         trend.count++;
       } else {
         trendingResponses.push({
+          single_response: r.id,
           segment: r.segment,
           question_id: r.question_id,
           response: r.response,
@@ -1588,7 +1591,7 @@ try {
     trendingResponses.filter(t => t.count > 1).forEach(r => {
       var buttonGrid = document.createElement('div');
       buttonGrid.className = "button-grid inputs";
-      buttonGrid.innerHTML = `<input type="text" autocomplete="off" class="small" id="response-id-input" value="${r.id}" disabled hidden /><input type="text" autocomplete="off" class="small" id="response-segment-input" value="${r.segment}" disabled data-segment /><input type="text" autocomplete="off" class="small" id="response-question-input" value="${questions.find(q => q.id == r.question_id).number}" disabled data-question /><input type="text" autocomplete="off" id="response-response-input" value="${r.response}" disabled /><input type="text" autocomplete="off" class="small" id="response-count-input" value="${r.count}" disabled /><button square id="mark-correct-button"${(r.status === 'Correct') ? ' disabled' : ''} tooltip="Mark Correct"><i class="bi bi-check-circle${(r.status === 'Correct') ? '-fill' : ''}"></i></button><button square id="mark-incorrect-button"${(r.status === 'Incorrect') ? ' disabled' : ''} tooltip="Mark Incorrect"><i class="bi bi-x-circle${(r.status === 'Incorrect') ? '-fill' : ''}"></i></button>`;
+      buttonGrid.innerHTML = `<input type="text" autocomplete="off" class="small" id="response-id-input" value="${r.single_response}" disabled hidden /><input type="text" autocomplete="off" class="small" id="response-segment-input" value="${r.segment}" disabled data-segment /><input type="text" autocomplete="off" class="small" id="response-question-input" value="${questions.find(q => q.id == r.question_id).number}" disabled data-question /><input type="text" autocomplete="off" id="response-response-input" value="${r.response}" disabled /><input type="text" autocomplete="off" class="small" id="response-count-input" value="${r.count}" disabled /><button square id="mark-correct-button"${(r.status === 'Correct') ? ' disabled' : ''} tooltip="Mark Correct"><i class="bi bi-check-circle${(r.status === 'Correct') ? '-fill' : ''}"></i></button><button square id="mark-incorrect-button"${(r.status === 'Incorrect') ? ' disabled' : ''} tooltip="Mark Incorrect"><i class="bi bi-x-circle${(r.status === 'Incorrect') ? '-fill' : ''}"></i></button>`;
       buttonGrid.addEventListener('mouseenter', () => {
         var question = questions.find(q => q.id == r.question_id);
         island(questions, 'question', {
@@ -1752,7 +1755,7 @@ try {
         usr: storage.get("usr"),
         pwd: storage.get("pwd"),
         question_id: questions.find(q => q.number == this.parentElement.querySelector('#response-question-input').value).id,
-        answer: this.parentElement.querySelector('#response-response-input').value,
+        single_response: this.parentElement.querySelector('#response-id-input').value,
       }),
     })
       .then(async (r) => {
@@ -1822,8 +1825,10 @@ try {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
+        usr: storage.get("usr"),
+        pwd: storage.get("pwd"),
         question_id: questions.find(q => q.number == e.parentElement.querySelector('#response-question-input').value).id,
-        answer: e.parentElement.querySelector('#response-response-input').value,
+        single_response: e.parentElement.querySelector('#response-id-input').value,
         reason: reason
       }),
     })
