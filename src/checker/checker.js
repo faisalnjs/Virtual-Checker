@@ -155,6 +155,23 @@ try {
               break;
           };
           return values;
+        } else if (mode === "matrix") {
+          var matrix = [];
+          var matrixRows = document.querySelectorAll('#matrix [data-matrix-row]');
+          matrixRows.forEach(row => {
+            var matrixRow = [];
+            row.querySelectorAll('[data-matrix-column]').forEach(input => {
+              var value = input.value?.trim();
+              if (value.length > 0) {
+                matrixRow.push(value);
+              } else {
+                matrixRow.push("");
+              }
+            });
+            matrix.push(matrixRow);
+          });
+          var matrixString = JSON.stringify(matrix);
+          return matrixString;
         } else if (mode === "frq") {
           if (part && document.querySelector(`[data-frq-part="${part}"]`)) {
             return document.querySelector(`[data-frq-part="${part}"]`).value?.trim();
@@ -183,6 +200,12 @@ try {
         } else if (mode === "set") {
           setInput.classList.add("attention");
           setInput.focus();
+          setTimeout(() => {
+            document.getElementById("submit-button").disabled = false;
+          }, 3000);
+        } else if (mode === "matrix") {
+          document.querySelector('#matrix [data-matrix-row]:first-child [data-matrix-column]').classList.add("attention");
+          document.querySelector('#matrix [data-matrix-row]:first-child [data-matrix-column]').focus();
           setTimeout(() => {
             document.getElementById("submit-button").disabled = false;
           }, 3000);
@@ -268,6 +291,7 @@ try {
       });
     }
     document.querySelectorAll('[data-answer-mode="set"] .button-grid')[1].style.flexWrap = 'nowrap';
+    resetMatrix();
     frqInput.value = 4;
     // Switch input mode (exit multiple choice)
     answerMode(mode);
@@ -335,6 +359,8 @@ try {
           storageClickMode = "latex";
         } else if (mode === "set" && !multipleChoice) {
           storageClickMode = "array";
+        } else if (mode === "matrix" && !multipleChoice) {
+          storageClickMode = "matrix";
         } else if (mode === "frq" && !multipleChoice) {
           storageClickMode = "frq";
         };
@@ -1394,6 +1420,8 @@ try {
         answerLabel.setAttribute("for", "math-input");
       } else if (mode === "set") {
         answerLabel.setAttribute("for", "set-input");
+      } else if (mode === "matrix") {
+        answerLabel.setAttribute("for", "matrix");
       } else if (mode === "frq") {
         answerLabel.setAttribute("for", "frq-input");
       }
