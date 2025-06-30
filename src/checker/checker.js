@@ -132,7 +132,7 @@ try {
           var values = "";
           var setInputs = document.querySelectorAll('[data-set-input]');
           setInputs.forEach(a => {
-            if ((a.value.length > 0) && (a.value != ' ')) values += a.value.replaceAll(',', '').trim() + ", ";
+            if ((a.value.length > 0) && (a.value != ' ')) values += `"${a.value.replaceAll(',', '').trim()}", `;
           });
           values = values.slice(0, -2);
           switch (currentSetType) {
@@ -725,7 +725,7 @@ try {
                 button.innerHTML = `<p${item.answer}${(item.number === '1') ? '/9' : ''}</p>\n<p>${response}`;
               }
             } else {
-              button.innerHTML = `<p>${item.answer.slice(1, -1)}</p>\n<p>${response}`;
+              button.innerHTML = `<p>${JSON.parse(`[${item.answer.slice(1, -1).split(', ')}]`).join(', ')}</p>\n<p>${response}`;
             }
           } else {
             button.innerHTML = `${convertLatexToMarkup(item.answer)}\n<p class="hint">(Equation may not display properly)</p>\n<p>${response}`;
@@ -763,7 +763,7 @@ try {
               };
               ui.setButtonSelectValue(document.getElementById("set-type-selector"), restoredSetType);
               var i = 0;
-              item.answer.slice(1, -1).split(', ').forEach(a => {
+              JSON.parse(`[${item.answer.slice(1, -1).split(', ')}]`).forEach(a => {
                 setInputs = document.querySelectorAll("[data-set-input]");
                 setInputs[i].value = a;
                 i++;
@@ -855,7 +855,7 @@ try {
               };
               ui.setButtonSelectValue(document.getElementById("set-type-selector"), restoredSetType);
               var i = 0;
-              latestResponse.answer.slice(1, -1).split(', ').forEach(a => {
+              JSON.parse(`[${latestResponse.answer.slice(1, -1).split(', ')}]`).forEach(a => {
                 setInputs = document.querySelectorAll("[data-set-input]");
                 setInputs[i].value = a;
                 i++;
@@ -1131,7 +1131,7 @@ try {
                 button.innerHTML = `<p><b>Segment ${item.segment} Question #${item.number}.</b> ${unixToTimeString(item.timestamp)} (${item.code})</p>\n<p>${item.answer}${(item.number === '1') ? '/9' : ''}</p>\n<p>${response}`;
               }
             } else {
-              button.innerHTML = `<p><b>Segment ${item.segment} Question #${item.number}.</b> ${unixToTimeString(item.timestamp)} (${item.code})</p>\n<p>${item.answer.slice(1, -1)}</p>\n<p>${response}`;
+              button.innerHTML = `<p><b>Segment ${item.segment} Question #${item.number}.</b> ${unixToTimeString(item.timestamp)} (${item.code})</p>\n<p>${JSON.parse(`[${item.answer.slice(1, -1).split(', ')}]`).join(', ')}</p>\n<p>${response}`;
             }
           } else {
             button.innerHTML = `<p><b>Segment ${item.segment} Question #${item.number}.</b> ${unixToTimeString(item.timestamp)} (${item.code})</p>\n${convertLatexToMarkup(item.answer)}\n<p class="hint">(Equation may not display properly)</p>\n<p>${response}`;
@@ -1170,7 +1170,7 @@ try {
               };
               ui.setButtonSelectValue(document.getElementById("set-type-selector"), restoredSetType);
               var i = 0;
-              item.answer.slice(1, -1).split(', ').forEach(a => {
+              JSON.parse(`[${item.answer.slice(1, -1).split(', ')}]`).forEach(a => {
                 setInputs = document.querySelectorAll("[data-set-input]");
                 setInputs[i].value = a;
                 i++;
