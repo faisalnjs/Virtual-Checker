@@ -753,7 +753,7 @@ try {
                   button.innerHTML = `<p${item.answer}${(item.number === '1') ? '/9' : ''}</p>\n<p>${response}`;
                 }
               } else {
-                button.innerHTML = `<p>[${JSON.parse(item.answer).join('')}]</p>\n<p>${response}`;
+                button.innerHTML = `<p>${JSON.stringify(JSON.parse(item.answer).map(innerArray => innerArray.map(numString => Number(numString))))}</p>\n<p>${response}`;
               }
             } else {
               button.innerHTML = `<p>${JSON.parse(`[${item.answer.slice(1, -1).split(', ')}]`).join(', ')}</p>\n<p>${response}`;
@@ -824,10 +824,10 @@ try {
                   }
                 }
               }
-              var matrixRows = document.querySelector('#matrix [data-matrix-row]');
+              var matrixRows = document.querySelectorAll('#matrix [data-matrix-row]');
               for (let i = 0; i < rows.length; i++) {
                 for (let j = 0; j < rows[i].length; j++) {
-                  matrixRows[i].querySelectorAll('input')[j].value = rows[i][j];
+                  matrixRows[i].querySelectorAll('[data-matrix-column]')[j].value = rows[i][j];
                 }
               }
             } else if (frq) {
@@ -947,10 +947,10 @@ try {
                   }
                 }
               }
-              var matrixRows = document.querySelector('#matrix [data-matrix-row]');
+              var matrixRows = document.querySelectorAll('#matrix [data-matrix-row]');
               for (let i = 0; i < rows.length; i++) {
                 for (let j = 0; j < rows[i].length; j++) {
-                  matrixRows[i].querySelectorAll('input')[j].value = rows[i][j];
+                  matrixRows[i].querySelectorAll('[data-matrix-column]')[j].value = rows[i][j];
                 }
               }
             } else if (frq) {
@@ -1225,7 +1225,7 @@ try {
                   button.innerHTML = `<p><b>Segment ${item.segment} Question #${item.number}.</b> ${unixToTimeString(item.timestamp)} (${item.code})</p>\n<p>${item.answer}${(item.number === '1') ? '/9' : ''}</p>\n<p>${response}`;
                 }
               } else {
-                button.innerHTML = `<p>[${JSON.parse(item.answer).join('')}]</p>\n<p>${response}`;
+                button.innerHTML = `<p>${JSON.stringify(JSON.parse(item.answer).map(innerArray => innerArray.map(numString => Number(numString))))}</p>\n<p>${response}`;
               }
             } else {
               button.innerHTML = `<p><b>Segment ${item.segment} Question #${item.number}.</b> ${unixToTimeString(item.timestamp)} (${item.code})</p>\n<p>${JSON.parse(`[${item.answer.slice(1, -1).split(', ')}]`).join(', ')}</p>\n<p>${response}`;
@@ -1297,10 +1297,10 @@ try {
                   }
                 }
               }
-              var matrixRows = document.querySelector('#matrix [data-matrix-row]');
+              var matrixRows = document.querySelectorAll('#matrix [data-matrix-row]');
               for (let i = 0; i < rows.length; i++) {
                 for (let j = 0; j < rows[i].length; j++) {
-                  matrixRows[i].querySelectorAll('input')[j].value = rows[i][j];
+                  matrixRows[i].querySelectorAll('[data-matrix-column]')[j].value = rows[i][j];
                 }
               }
             } else if (frq) {
@@ -1591,7 +1591,7 @@ try {
       newRow.appendChild(newColumn);
     });
     document.getElementById('matrix').appendChild(newRow);
-    newRow.lastElementChild.focus();
+    newRow.firstElementChild.focus();
     ui.setUnsavedChanges(true);
     document.querySelector("[data-remove-matrix-row]").disabled = false;
     ui.reloadUnsavedInputs();
