@@ -3,7 +3,7 @@ import * as ui from "/src/modules/ui.js";
 import storage from "/src/modules/storage.js";
 import * as time from "/src/modules/time.js";
 import * as auth from "/src/modules/auth.js";
-import { convertLatexToMarkup, renderMathInElement } from "mathlive";
+import island from "/src/modules/island.js";
 import { createSwapy } from "swapy";
 
 const domain = ((window.location.hostname.search('check') != -1) || (window.location.hostname.search('127') != -1)) ? 'https://api.check.vssfalcons.com' : `http://${document.domain}:5000`;
@@ -3645,68 +3645,6 @@ try {
         if (e.error === "Access denied.") return auth.admin(init);
         pollingOff();
       });
-  }
-
-  var lastIslandId = null;
-
-  function island(data) {
-    var island = document.querySelector('.island');
-    if (!island) return;
-    if (!data) return island.classList.remove('visible');
-    if (data.id) {
-      if (lastIslandId && (data.id === lastIslandId)) return island.classList.add('visible');
-      lastIslandId = data.id;
-    }
-    island.innerHTML = '';
-    if (data.id) {
-      var id = document.createElement('code');
-      id.innerHTML = data.id;
-      island.appendChild(id);
-    }
-    if (data.title) {
-      var title = document.createElement('h4');
-      title.innerHTML = data.title;
-      island.appendChild(title);
-    }
-    if (data.subtitle) {
-      var subtitle = document.createElement('h6');
-      if (data.subtitleLatex) {
-        subtitle.innerHTML = convertLatexToMarkup(data.subtitle);
-        island.appendChild(subtitle);
-        renderMathInElement(subtitle);
-      } else {
-        subtitle.innerHTML = data.subtitle;
-        island.appendChild(subtitle);
-      }
-    }
-    if (data.lists) {
-      data.lists.forEach(list => {
-        var listContainer = document.createElement('div');
-        if (list.title) {
-          var title = document.createElement('h5');
-          title.innerHTML = list.title;
-          listContainer.appendChild(title);
-        }
-        if (list.items) {
-          var listUl = document.createElement('ul');
-          list.items.forEach(item => {
-            var itemElement = document.createElement('li');
-            if (typeof item === 'object') {
-              Object.keys(item).forEach(itemKey => {
-                itemElement.innerHTML += `${itemKey[0].toUpperCase()}${itemKey.slice(1)}: ${item[itemKey]}, `;
-              });
-              itemElement.innerHTML = itemElement.innerHTML.slice(0, itemElement.innerHTML.length - 2);
-            } else {
-              itemElement.innerHTML = item;
-            }
-            listUl.appendChild(itemElement);
-          });
-          listContainer.appendChild(listUl);
-        }
-        island.appendChild(listContainer);
-      });
-    }
-    island.classList.add('visible');
   }
 } catch (error) {
   if (storage.get("developer")) {
