@@ -13,7 +13,6 @@ var answers = [];
 var responses = [];
 var active = false;
 var timestamps = false;
-var unsavedChanges = false;
 var noReloadCourse = false;
 
 try {
@@ -194,26 +193,17 @@ try {
         if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
         if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.ta(init);
       });
-    reloadUnsavedInputs();
+    ui.reloadUnsavedInputs();
   }
 
   init();
 
   window.addEventListener('beforeunload', function (event) {
-    if (!unsavedChanges) return;
+    if (!ui.unsavedChanges) return;
     const confirmationMessage = 'You have unsaved changes. Do you really want to leave?';
     event.returnValue = confirmationMessage;
     return confirmationMessage;
   });
-
-  function reloadUnsavedInputs() {
-    document.querySelectorAll('textarea').forEach(input => input.addEventListener('input', () => {
-      unsavedChanges = true;
-    }));
-    document.querySelectorAll('input').forEach(input => input.addEventListener('change', () => {
-      unsavedChanges = true;
-    }));
-  }
 
   document.querySelector('[data-timestamps]').addEventListener("click", toggleTimestamps);
 
@@ -402,7 +392,7 @@ try {
 
   function flagResponse() {
     if (!active) return;
-    unsavedChanges = true;
+    ui.unsavedChanges = true;
     fetch(domain + '/flag', {
       method: "POST",
       headers: {
@@ -432,7 +422,7 @@ try {
         return await r.json();
       })
       .then(() => {
-        unsavedChanges = false;
+        ui.unsavedChanges = false;
         ui.toast("Flagged response for review.", 3000, "success", "bi bi-flag-fill");
         init();
       })
@@ -445,7 +435,7 @@ try {
 
   function unflagResponse() {
     if (!active) return;
-    unsavedChanges = true;
+    ui.unsavedChanges = true;
     fetch(domain + '/unflag', {
       method: "POST",
       headers: {
@@ -475,7 +465,7 @@ try {
         return await r.json();
       })
       .then(() => {
-        unsavedChanges = false;
+        ui.unsavedChanges = false;
         ui.toast("Unflagged response.", 3000, "success", "bi bi-flag-fill");
         init();
       })
@@ -488,7 +478,7 @@ try {
 
   function markCorrect() {
     if (!active) return;
-    unsavedChanges = true;
+    ui.unsavedChanges = true;
     fetch(domain + '/mark_correct', {
       method: "POST",
       headers: {
@@ -518,7 +508,7 @@ try {
         return await r.json();
       })
       .then(() => {
-        unsavedChanges = false;
+        ui.unsavedChanges = false;
         ui.toast("Successfully updated status.", 3000, "success", "bi bi-check-lg");
         noReloadCourse = true;
         init();
@@ -560,7 +550,7 @@ try {
 
   function markIncorrectConfirm(reason, e) {
     if (!active) return;
-    unsavedChanges = true;
+    ui.unsavedChanges = true;
     fetch(domain + '/mark_incorrect?usr=' + storage.get("code"), {
       method: "POST",
       headers: {
@@ -590,7 +580,7 @@ try {
         return await r.json();
       })
       .then(() => {
-        unsavedChanges = false;
+        ui.unsavedChanges = false;
         ui.toast("Successfully updated status.", 3000, "success", "bi bi-check-lg");
         noReloadCourse = true;
         init();

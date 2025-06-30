@@ -32,6 +32,7 @@ export function admin(returnFunction) {
                     storage.set("pwd", inputValues[1]);
                     ui.view();
                     authModalOpen = false;
+                    ui.reloadUnsavedInputs();
                     returnFunction();
                 },
                 close: true,
@@ -60,6 +61,7 @@ export function ta(returnFunction) {
                     storage.set("pwd", inputValue);
                     ui.view();
                     authModalOpen = false;
+                    ui.reloadUnsavedInputs();
                     returnFunction();
                 },
                 close: true,
@@ -75,6 +77,7 @@ export function logout(returnFunction = null) {
     storage.delete("pwd");
     storage.delete("code");
     ui.view();
+    ui.reloadUnsavedInputs();
     if (returnFunction) returnFunction();
     return;
 }
@@ -124,6 +127,7 @@ export async function sync(domain, hideWelcome = false) {
                     class: 'submit-button',
                     onclick: (inputValue) => {
                         storage.set("otp", inputValue);
+                        ui.reloadUnsavedInputs();
                         sync(domain);
                     },
                     close: true,
@@ -369,6 +373,7 @@ export async function sync(domain, hideWelcome = false) {
                             })
                             .then(r => {
                                 ui.toast(r.message, 3000, "success", "bi bi-key");
+                                ui.reloadUnsavedInputs();
                                 sync(domain);
                             })
                             .catch((e) => {
@@ -394,6 +399,7 @@ function prompt(backingUp = true, type = 'settings', func = () => { }, domain, o
                 class: 'cancel-button',
                 onclick: () => {
                     if (otp) storage.set("otp", otp);
+                    ui.reloadUnsavedInputs();
                     sync(domain, true);
                 },
                 close: true,
@@ -404,6 +410,7 @@ function prompt(backingUp = true, type = 'settings', func = () => { }, domain, o
                 onclick: async () => {
                     func();
                     if (otp) storage.set("otp", otp);
+                    ui.reloadUnsavedInputs();
                     sync(domain, true);
                 },
                 close: true,

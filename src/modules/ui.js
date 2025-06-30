@@ -685,3 +685,14 @@ export function stopLoader() {
   const loader = document.getElementById("loader");
   if (loader) loader.classList.remove("active");
 }
+
+export var unsavedChanges = false;
+
+export function reloadUnsavedInputs() {
+  document.querySelectorAll('textarea').forEach(input => input.addEventListener('input', () => {
+    unsavedChanges = true;
+  }));
+  document.querySelectorAll('input').forEach(input => input.addEventListener('change', () => {
+    unsavedChanges = true;
+  }));
+}

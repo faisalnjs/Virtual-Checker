@@ -35,7 +35,6 @@ try {
   let multipleChoice = null;
   let highestDataElement = null;
   let restoredSetType = "";
-  var unsavedChanges = false;
 
   let historyIndex = 0;
 
@@ -106,24 +105,15 @@ try {
     // Initialize questionsAnswered if not already set
     if (!storage.get("questionsAnswered")) storage.set("questionsAnswered", []);
     document.querySelector("[data-sync]").addEventListener("click", () => auth.sync(domain));
-    reloadUnsavedInputs();
+    ui.reloadUnsavedInputs();
   };
 
   window.addEventListener('beforeunload', function (event) {
-    if (!unsavedChanges) return;
+    if (!ui.unsavedChanges) return;
     const confirmationMessage = 'You have unsaved changes. Do you really want to leave?';
     event.returnValue = confirmationMessage;
     return confirmationMessage;
   });
-
-  function reloadUnsavedInputs() {
-    document.querySelectorAll('textarea').forEach(input => input.addEventListener('input', () => {
-      unsavedChanges = true;
-    }));
-    document.querySelectorAll('input').forEach(input => input.addEventListener('change', () => {
-      unsavedChanges = true;
-    }));
-  }
 
   // Process check
   function processCheck(part = null) {
@@ -293,13 +283,13 @@ try {
     var alreadyAnswered = qA.find(q => q.segment == segment && q.question == question)
     if (alreadyAnswered && alreadyAnswered.status == 'Correct') {
       window.scroll(0, 0);
-      unsavedChanges = false;
+      ui.unsavedChanges = false;
       setTimeout(() => {
         document.getElementById("submit-button").disabled = false;
       }, 3000);
       return ui.modeless(`<i class="bi bi-exclamation-lg"></i>`, 'Already Correct');
     }
-    unsavedChanges = true;
+    ui.unsavedChanges = true;
     await fetch(domain + '/check_answer', {
       method: "POST",
       headers: {
@@ -314,7 +304,7 @@ try {
     })
       .then(r => r.json())
       .then(r => {
-        unsavedChanges = false;
+        ui.unsavedChanges = false;
         window.scroll(0, 0);
         if (typeof r.correct != 'undefined') {
           ui.modeless(`<i class="bi bi-${(r.correct) ? 'check' : 'x'}-lg"></i>`, (r.correct) ? 'Correct' : 'Try Again', r.reason || null);
@@ -370,7 +360,7 @@ try {
         }, 3000);
         ui.view("api-fail");
       })
-    reloadUnsavedInputs();
+    ui.reloadUnsavedInputs();
   }
 
   // Limit seat code input to integers
@@ -407,7 +397,7 @@ try {
               onclick: () => {
                 ui.view("");
                 document.getElementById("code-input").focus();
-                unsavedChanges = true
+                ui.unsavedChanges = true
                 ui.view("settings/code");
               }
             },
@@ -423,7 +413,7 @@ try {
                 const params = new URLSearchParams(window.location.search);
                 params.set("code", input);
                 history.replaceState({}, "", "?" + params.toString());
-                unsavedChanges = false;
+                ui.unsavedChanges = false;
               },
               close: true,
             },
@@ -438,7 +428,7 @@ try {
         const params = new URLSearchParams(window.location.search);
         params.set("code", input);
         history.replaceState({}, "", "?" + params.toString());
-        unsavedChanges = false;
+        ui.unsavedChanges = false;
       };
     } else {
       ui.alert("Error", "Seat code isn't possible");
@@ -519,7 +509,7 @@ try {
       } catch (error) {
         ui.view("api-fail");
       }
-      reloadUnsavedInputs();
+      ui.reloadUnsavedInputs();
     }
   }
 
@@ -642,7 +632,7 @@ try {
         });
       }, 100);
     }
-    reloadUnsavedInputs();
+    ui.reloadUnsavedInputs();
   }
 
   async function updateQuestion() {
@@ -911,7 +901,7 @@ try {
       feedContainer.classList.remove('show');
     }
 
-    reloadUnsavedInputs();
+    ui.reloadUnsavedInputs();
   }
 
   function prevQuestion() {
@@ -953,7 +943,7 @@ try {
       "e": ["Sometimes", "Cannot be determined"],
     };
     button.addEventListener("click", (e) => {
-      unsavedChanges = true;
+      ui.unsavedChanges = true;
       const choice = e.target.getAttribute("data-multiple-choice");
       // Set content of multiple choice card
       const content = document.querySelector(`[data-answer-mode="choice"]>div`);
@@ -1011,7 +1001,7 @@ try {
 
   // Store click to storage and history
   function storeClick(code, segment, question, answer, reason, type) {
-    unsavedChanges = true;
+    ui.unsavedChanges = true;
     const history = storage.get("history") || [];
     const timestamp = Date.now();
     history.push({
@@ -1025,7 +1015,7 @@ try {
     });
     storage.set("history", history);
     updateHistory();
-    unsavedChanges = false;
+    ui.unsavedChanges = false;
   }
 
   document.getElementById("history-first").addEventListener("click", () => {
@@ -1229,18 +1219,18 @@ try {
       }).then(() => {
         storage.set("questionsAnswered", qA);
       });
-      reloadUnsavedInputs();
+      ui.reloadUnsavedInputs();
       return qA;
     } else {
       feed.innerHTML = "<p>Submitted clicks will show up here!</p>";
-      reloadUnsavedInputs();
+      ui.reloadUnsavedInputs();
       return [];
     }
   }
 
   function flagResponse(event, isInQuestion = false) {
     event.srcElement.disabled = true;
-    unsavedChanges = true;
+    ui.unsavedChanges = true;
     fetch(domain + '/flag', {
       method: "POST",
       headers: {
@@ -1254,7 +1244,7 @@ try {
     })
       .then(q => q.json())
       .then(() => {
-        unsavedChanges = false;
+        ui.unsavedChanges = false;
         ui.toast("Flagged response for review.", 3000, "success", "bi bi-flag-fill");
         isInQuestion ? updateQuestion() : updateHistory();
       })
@@ -1266,7 +1256,7 @@ try {
 
   function unflagResponse(event, isInQuestion = false) {
     event.srcElement.disabled = true;
-    unsavedChanges = true;
+    ui.unsavedChanges = true;
     fetch(domain + '/unflag', {
       method: "POST",
       headers: {
@@ -1280,7 +1270,7 @@ try {
     })
       .then(q => q.json())
       .then(() => {
-        unsavedChanges = false;
+        ui.unsavedChanges = false;
         ui.toast("Unflagged response.", 3000, "success", "bi bi-flag-fill");
         isInQuestion ? updateQuestion() : updateHistory();
       })
@@ -1331,7 +1321,7 @@ try {
       if (highestDataElement === null || parseInt(element.getAttribute('data-set-input'), 10) > parseInt(highestDataElement.getAttribute('data-set-input'), 10)) highestDataElement = element;
     });
     if (highestDataElement !== null) {
-      unsavedChanges = true;
+      ui.unsavedChanges = true;
       var newSetInput = document.createElement('input');
       newSetInput.setAttribute('type', 'text');
       newSetInput.setAttribute('autocomplete', 'off');
@@ -1347,7 +1337,7 @@ try {
       newSetInput.focus();
       document.querySelector("[data-remove-set-input]").disabled = false;
     }
-    reloadUnsavedInputs();
+    ui.reloadUnsavedInputs();
   }
 
   // Remove set input
@@ -1381,12 +1371,12 @@ try {
 
   // Change FRQ choice
   frqInput.addEventListener("change", (input) => {
-    unsavedChanges = true;
+    ui.unsavedChanges = true;
     document.querySelector('[data-answer-mode="frq"] h1').innerText = input.target.value;
   });
 
   frqInput.addEventListener("input", (input) => {
-    unsavedChanges = true;
+    ui.unsavedChanges = true;
     document.querySelector('[data-answer-mode="frq"] h1').innerText = input.target.value;
   });
 
@@ -1396,7 +1386,7 @@ try {
   }
 
   function addPart() {
-    unsavedChanges = true;
+    ui.unsavedChanges = true;
     frqPartInputs = document.querySelectorAll('.frq-parts .part input');
     highestDataElement = frqPartInputs[frqPartInputs.length - 1];
     var newPartLetter = String.fromCharCode(highestDataElement.getAttribute('data-frq-part').charCodeAt(0) + 1);
@@ -1412,7 +1402,7 @@ try {
     highestDataElement.querySelector('input').focus();
     document.querySelector("[data-remove-frq-part]").disabled = false;
     if (newPartLetter === 'z') document.querySelector("[data-add-frq-part]").disabled = true;
-    reloadUnsavedInputs();
+    ui.reloadUnsavedInputs();
   }
 
   // Remove FRQ part

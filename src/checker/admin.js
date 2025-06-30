@@ -24,7 +24,6 @@ var expandedReports = [];
 var loadedSegment = null;
 var loadedSegmentEditor = false;
 var loadedSegmentCreator = false;
-var unsavedChanges = false;
 var noReloadCourse = false;
 var logs = [];
 
@@ -243,7 +242,7 @@ try {
       .then(async c => {
         courses = c;
         if (document.querySelector('.users')) {
-          reloadUnsavedInputs();
+          ui.reloadUnsavedInputs();
           return;
         }
         if (document.getElementById("course-period-input") && !loadedSegmentEditor && !loadedSegmentCreator && !noReloadCourse) {
@@ -471,26 +470,17 @@ try {
       updateSegments();
     }
     if (document.getElementById("sort-segments-types")) document.getElementById("sort-segments-types").value = await settings('sort-segments');
-    reloadUnsavedInputs();
+    ui.reloadUnsavedInputs();
   }
 
   init();
 
   window.addEventListener('beforeunload', function (event) {
-    if (!unsavedChanges) return;
+    if (!ui.unsavedChanges) return;
     const confirmationMessage = 'You have unsaved changes. Do you really want to leave?';
     event.returnValue = confirmationMessage;
     return confirmationMessage;
   });
-
-  function reloadUnsavedInputs() {
-    document.querySelectorAll('textarea').forEach(input => input.addEventListener('input', () => {
-      unsavedChanges = true;
-    }));
-    document.querySelectorAll('input').forEach(input => input.addEventListener('change', () => {
-      unsavedChanges = true;
-    }));
-  }
 
   if (document.getElementById("course-period-input")) document.getElementById("course-period-input").addEventListener("change", updateSegments);
   if (document.querySelector('[data-select-multiple]')) document.querySelector('[data-select-multiple]').addEventListener("click", toggleSelecting);
@@ -530,7 +520,7 @@ try {
 
   function deleteMultiple() {
     if (!active) return;
-    unsavedChanges = true;
+    ui.unsavedChanges = true;
     document.querySelectorAll('.selected').forEach(e => e.remove());
   }
 
@@ -601,7 +591,7 @@ try {
         window.open(course.syllabus, '_blank');
       });
       if (document.querySelector('[data-syllabus-remove]')) document.querySelector('[data-syllabus-remove]').addEventListener("click", () => {
-        unsavedChanges = true;
+        ui.unsavedChanges = true;
         fetch(domain + '/syllabus', {
           method: "DELETE",
           headers: {
@@ -628,7 +618,7 @@ try {
             return await r.json();
           })
           .then(() => {
-            unsavedChanges = false;
+            ui.unsavedChanges = false;
             init();
           })
           .catch((e) => {
@@ -724,7 +714,7 @@ try {
     // document.querySelectorAll('[sort-segment-questions-decreasing]').forEach(a => a.addEventListener('click', sortSegmentQuestionsDecreasing));
     document.querySelectorAll('[report]').forEach(a => a.addEventListener('click', toggleDetailedReport));
     document.querySelectorAll('[data-edit-segment]').forEach(a => a.addEventListener('click', editSegment));
-    reloadUnsavedInputs();
+    ui.reloadUnsavedInputs();
   }
 
   // function toggleSegment() {
@@ -762,7 +752,7 @@ try {
         periods: JSON.stringify(coursePeriods)
       })
     });
-    unsavedChanges = true;
+    ui.unsavedChanges = true;
     fetch(domain + '/courses', {
       method: "POST",
       headers: {
@@ -791,7 +781,7 @@ try {
         return await r.json();
       })
       .then(c => {
-        unsavedChanges = false;
+        ui.unsavedChanges = false;
         courses = c;
         if (document.querySelector(".course-reorder .reorder")) {
           document.querySelector(".course-reorder .reorder").innerHTML = "";
@@ -817,7 +807,7 @@ try {
       });
     // Show submit confirmation
     ui.modeless(`<i class="bi bi-check-lg"></i>`, "Saved");
-    reloadUnsavedInputs();
+    ui.reloadUnsavedInputs();
   });
 
   // Save Segment Order
@@ -834,7 +824,7 @@ try {
   //       due: segments.find(s => String(s.number) === String(segmentNumber)).due
   //     };
   //   }).sort((a, b) => a.order - b.order);
-  //   unsavedChanges = true;
+  //   ui.unsavedChanges = true;
   //   fetch(domain + '/segments', {
   //     method: "POST",
   //     headers: {
@@ -859,7 +849,7 @@ try {
   //       return await r.json();
   //     })
   //     .then(c => {
-  //       unsavedChanges = false;
+  //       ui.unsavedChanges = false;
   //       segments = c;
   //       updateSegments();
   //     })
@@ -871,7 +861,7 @@ try {
   //     });
   //   // Show submit confirmation
   //   ui.modeless(`<i class="bi bi-check-lg"></i>`, "Saved");
-  //   reloadUnsavedInputs();
+  //   ui.reloadUnsavedInputs();
   // });
 
   // Save
@@ -944,7 +934,7 @@ try {
     }
     formData.append('usr', storage.get("usr"));
     formData.append('pwd', storage.get("pwd"));
-    unsavedChanges = true;
+    ui.unsavedChanges = true;
     fetch(domain + '/save', {
       method: "POST",
       body: formData,
@@ -965,7 +955,7 @@ try {
         }
       })
       .then(() => {
-        unsavedChanges = false;
+        ui.unsavedChanges = false;
       })
       .catch((e) => {
         console.error(e);
@@ -1085,7 +1075,7 @@ try {
     this.parentElement.parentElement.insertBefore(group, this.parentElement);
     this.parentElement.querySelector('[data-remove-segment-question-input]').disabled = false;
     this.parentElement.querySelector('[data-remove-segment-question-input]').addEventListener('click', removeSegmentQuestion);
-    reloadUnsavedInputs();
+    ui.reloadUnsavedInputs();
   }
 
   function removeSegmentQuestion() {
@@ -1168,7 +1158,7 @@ try {
     document.querySelectorAll('[data-remove-correct-answer-input]').forEach(a => a.addEventListener('click', removeCorrectAnswer));
     document.querySelectorAll('[data-remove-incorrect-answer-input]').forEach(a => a.addEventListener('click', removeIncorrectAnswer));
     document.querySelectorAll('[data-toggle-latex]').forEach(a => a.addEventListener('click', toggleQuestionLatex));
-    reloadUnsavedInputs();
+    ui.reloadUnsavedInputs();
   }
 
   function addCorrectAnswer() {
@@ -1179,7 +1169,7 @@ try {
     this.parentElement.insertBefore(input, this);
     document.querySelectorAll('[data-add-correct-answer-input]').forEach(a => a.addEventListener('click', addCorrectAnswer));
     document.querySelectorAll('[data-remove-correct-answer-input]').forEach(a => a.addEventListener('click', removeCorrectAnswer));
-    reloadUnsavedInputs();
+    ui.reloadUnsavedInputs();
   }
 
   function addIncorrectAnswer() {
@@ -1190,7 +1180,7 @@ try {
     this.parentElement.insertBefore(input, this);
     document.querySelectorAll('[data-add-incorrect-answer-input]').forEach(a => a.addEventListener('click', addIncorrectAnswer));
     document.querySelectorAll('[data-remove-incorrect-answer-input]').forEach(a => a.addEventListener('click', removeIncorrectAnswer));
-    reloadUnsavedInputs();
+    ui.reloadUnsavedInputs();
   }
 
   function removeCorrectAnswer() {
@@ -1210,7 +1200,7 @@ try {
     const question_id = this.parentElement.querySelector('#question-id-input').value;
     var isLatex = false;
     if (!icon.classList.contains('bi-cursor-text')) isLatex = true;
-    unsavedChanges = true;
+    ui.unsavedChanges = true;
     fetch(domain + `/question/${isLatex ? 'not_' : ''}latex`, {
       method: "POST",
       headers: {
@@ -1239,7 +1229,7 @@ try {
         return await r.json();
       })
       .then(() => {
-        unsavedChanges = false;
+        ui.unsavedChanges = false;
         if (icon.classList.contains('bi-cursor-text')) {
           icon.classList.remove('bi-cursor-text');
           icon.classList.add('bi-calculator-fill');
@@ -1294,7 +1284,7 @@ try {
     document.querySelectorAll('[data-remove-question-input]').forEach(a => a.addEventListener('click', removeQuestion));
     document.querySelectorAll('[data-toggle-question]').forEach(a => a.addEventListener('click', toggleQuestion));
     document.querySelectorAll('[data-select]').forEach(a => a.addEventListener('click', toggleSelected));
-    reloadUnsavedInputs();
+    ui.reloadUnsavedInputs();
   }
 
   function removeQuestion() {
@@ -1339,7 +1329,7 @@ try {
     const clickYRelativeToElement = event.clientY - rect.top;
     const distanceFromBottom = rect.height - clickYRelativeToElement;
     if (distanceFromBottom <= 26) {
-      unsavedChanges = true;
+      ui.unsavedChanges = true;
       await fetch(domain + '/upload', {
         method: "DELETE",
         headers: {
@@ -1369,7 +1359,7 @@ try {
           return await r.json();
         })
         .then(() => {
-          unsavedChanges = false;
+          ui.unsavedChanges = false;
           ui.modeless(`<i class="bi bi-file-earmark-x"></i>`, "Removed");
           init();
         })
@@ -1621,7 +1611,7 @@ try {
 
   function flagResponse() {
     if (!active) return;
-    unsavedChanges = true;
+    ui.unsavedChanges = true;
     fetch(domain + '/flag', {
       method: "POST",
       headers: {
@@ -1651,7 +1641,7 @@ try {
         return await r.json();
       })
       .then(() => {
-        unsavedChanges = false;
+        ui.unsavedChanges = false;
         ui.toast("Flagged response for review.", 3000, "success", "bi bi-flag-fill");
         init();
       })
@@ -1664,7 +1654,7 @@ try {
 
   function unflagResponse() {
     if (!active) return;
-    unsavedChanges = true;
+    ui.unsavedChanges = true;
     fetch(domain + '/unflag', {
       method: "POST",
       headers: {
@@ -1694,7 +1684,7 @@ try {
         return await r.json();
       })
       .then(() => {
-        unsavedChanges = false;
+        ui.unsavedChanges = false;
         ui.toast("Unflagged response.", 3000, "success", "bi bi-flag-fill");
         init();
       })
@@ -1707,7 +1697,7 @@ try {
 
   function markCorrect() {
     if (!active) return;
-    unsavedChanges = true;
+    ui.unsavedChanges = true;
     fetch(domain + '/mark_correct', {
       method: "POST",
       headers: {
@@ -1737,7 +1727,7 @@ try {
         return await r.json();
       })
       .then(() => {
-        unsavedChanges = false;
+        ui.unsavedChanges = false;
         ui.toast("Successfully updated status.", 3000, "success", "bi bi-check-lg");
         noReloadCourse = true;
         init();
@@ -1780,7 +1770,7 @@ try {
 
   function markIncorrectConfirm(reason, e) {
     if (!active) return;
-    unsavedChanges = true;
+    ui.unsavedChanges = true;
     fetch(domain + '/mark_incorrect', {
       method: "POST",
       headers: {
@@ -1809,7 +1799,7 @@ try {
         return await r.json();
       })
       .then(() => {
-        unsavedChanges = false;
+        ui.unsavedChanges = false;
         ui.toast("Successfully updated status.", 3000, "success", "bi bi-check-lg");
         noReloadCourse = true;
         init();
@@ -2102,7 +2092,7 @@ try {
     for (let i = 0; i < updatedSegments.length; i++) {
       updatedSegments[i].order = i;
     }
-    unsavedChanges = true;
+    ui.unsavedChanges = true;
     if (sortAs) return updatedSegments;
     fetch(domain + '/segments', {
       method: "POST",
@@ -2132,7 +2122,7 @@ try {
         return await r.json();
       })
       .then(c => {
-        unsavedChanges = false;
+        ui.unsavedChanges = false;
         segments = c;
         updateSegments();
         ui.view();
@@ -2217,7 +2207,7 @@ try {
     draggableQuestionList = createSwapy(document.getElementById("question-list"), {
       animation: 'none'
     });
-    reloadUnsavedInputs();
+    ui.reloadUnsavedInputs();
   }
 
   function toggleDetailedReport() {
@@ -2288,7 +2278,7 @@ try {
       if (document.getElementById(er)) document.getElementById(er).classList.add('active');
     });
     document.querySelectorAll('[report]').forEach(a => a.addEventListener('click', toggleDetailedReport));
-    reloadUnsavedInputs();
+    ui.reloadUnsavedInputs();
   }
 
   function addExistingQuestion(question) {
@@ -2375,7 +2365,7 @@ try {
     draggableQuestionList = createSwapy(document.getElementById("question-list"), {
       animation: 'none'
     });
-    reloadUnsavedInputs();
+    ui.reloadUnsavedInputs();
   }
 
   function removeExistingQuestion() {
@@ -2424,7 +2414,7 @@ try {
       };
     }));
     ui.toast(loadedSegmentEditor ? "Updating segment..." : "Creating segment...", 3000, "info", "bi bi-plus-circle-fill");
-    unsavedChanges = true;
+    ui.unsavedChanges = true;
     fetch(domain + '/segment', {
       method: "POST",
       headers: {
@@ -2460,7 +2450,7 @@ try {
         return await r.json();
       })
       .then(() => {
-        unsavedChanges = false;
+        ui.unsavedChanges = false;
         ui.toast(loadedSegmentEditor ? "Segment updated successfully." : "Segment created successfully.", 3000, "success", "bi bi-check-circle-fill");
         editSegment(null, number.value);
       })
@@ -2518,7 +2508,7 @@ try {
   }
 
   function deleteSegment() {
-    unsavedChanges = true;
+    ui.unsavedChanges = true;
     fetch(domain + '/segment', {
       method: "DELETE",
       headers: {
@@ -2547,7 +2537,7 @@ try {
         return await r.json();
       })
       .then(() => {
-        unsavedChanges = false;
+        ui.unsavedChanges = false;
         ui.toast("Segment deleted successfully.", 3000, "success", "bi bi-trash-fill");
         window.location.href = '/admin/';
       })
@@ -2609,7 +2599,7 @@ try {
       return newCourseModal(inputValues);
     }
     ui.toast("Creating course...", 3000, "info", "bi bi-plus-circle-fill");
-    unsavedChanges = true;
+    ui.unsavedChanges = true;
     fetch(domain + '/course', {
       method: "POST",
       headers: {
@@ -2641,7 +2631,7 @@ try {
         return await r.json();
       })
       .then(() => {
-        unsavedChanges = false;
+        ui.unsavedChanges = false;
         ui.toast("Course created successfully.", 3000, "success", "bi bi-check-circle-fill");
         return window.location.href = '/admin/';
       })
@@ -2656,7 +2646,7 @@ try {
     if (!active) return;
     const course = courses.find(c => document.getElementById("course-period-input") ? (String(c.id) === document.getElementById("course-period-input").value) : null);
     if (!course) return;
-    unsavedChanges = true;
+    ui.unsavedChanges = true;
     fetch(domain + '/due_dates', {
       method: "DELETE",
       headers: {
@@ -2685,7 +2675,7 @@ try {
         return await r.json();
       })
       .then(() => {
-        unsavedChanges = false;
+        ui.unsavedChanges = false;
         ui.toast("Segments due dates removed successfully.", 3000, "success", "bi bi-calendar-minus");
         return window.location.href = '/admin/';
       })
@@ -2769,7 +2759,7 @@ try {
     if (!active) return;
     const course = courses.find(c => document.getElementById("course-period-input") ? (String(c.id) === document.getElementById("course-period-input").value) : null);
     if (!course) return;
-    unsavedChanges = true;
+    ui.unsavedChanges = true;
     fetch(domain + '/responses', {
       method: "DELETE",
       headers: {
@@ -2798,7 +2788,7 @@ try {
         return await r.json();
       })
       .then(() => {
-        unsavedChanges = false;
+        ui.unsavedChanges = false;
         ui.toast("Course responses cleared successfully.", 3000, "success", "bi bi-check-circle-fill");
         return window.location.href = '/admin/responses';
       })
@@ -2903,7 +2893,7 @@ try {
     if (document.getElementById("export-report-period").value) exportReportOptions['period'] = document.getElementById("export-report-period").value;
     if (document.getElementById("export-report-start-date").value) exportReportOptions['start'] = document.getElementById("export-report-start-date").value;
     if (document.getElementById("export-report-end-date").value) exportReportOptions['end'] = document.getElementById("export-report-end-date").value;
-    unsavedChanges = true;
+    ui.unsavedChanges = true;
     await fetch(domain + '/report', {
       method: "POST",
       headers: {
@@ -2935,10 +2925,10 @@ try {
           document.getElementById("export-report-period").disabled = false;
           document.getElementById("export-report-start-date").disabled = false;
           document.getElementById("export-report-end-date").disabled = false;
-          unsavedChanges = true;
+          ui.unsavedChanges = true;
           return;
         }
-        unsavedChanges = false;
+        ui.unsavedChanges = false;
         ui.toast("Report generated successfully.", 3000, "success", "bi bi-check-circle-fill");
         ui.toast(`Downloading ${r.filename.split('/')[r.filename.split('/').length - 1]}...`, 3000, "info", "bi bi-download");
         const link = document.createElement('a');
@@ -3038,7 +3028,7 @@ try {
 
   function editUser(inputValues, user) {
     if (!active) return;
-    unsavedChanges = true;
+    ui.unsavedChanges = true;
     fetch(domain + '/user', {
       method: "POST",
       headers: {
@@ -3072,7 +3062,7 @@ try {
         return await r.json();
       })
       .then(() => {
-        unsavedChanges = false;
+        ui.unsavedChanges = false;
         ui.toast("Successfully edited user.", 3000, "success", "bi bi-check-lg");
         init();
       })
@@ -3160,7 +3150,7 @@ try {
 
   function addUser(inputValues) {
     if (!active) return;
-    unsavedChanges = true;
+    ui.unsavedChanges = true;
     fetch(domain + '/users', {
       method: "POST",
       headers: {
@@ -3194,7 +3184,7 @@ try {
         return await r.json();
       })
       .then(() => {
-        unsavedChanges = false;
+        ui.unsavedChanges = false;
         ui.toast("Successfully added user.", 3000, "success", "bi bi-check-lg");
         init();
       })
@@ -3240,7 +3230,7 @@ try {
 
   function deleteUser(inputValues, user) {
     if (!active) return;
-    unsavedChanges = true;
+    ui.unsavedChanges = true;
     fetch(domain + '/users', {
       method: "DELETE",
       headers: {
@@ -3270,7 +3260,7 @@ try {
         return await r.json();
       })
       .then(() => {
-        unsavedChanges = false;
+        ui.unsavedChanges = false;
         ui.toast("Successfully deleted user.", 3000, "success", "bi bi-check-lg");
         init();
       })
@@ -3336,7 +3326,7 @@ try {
 
   function clearLogs() {
     if (!active) return;
-    unsavedChanges = true;
+    ui.unsavedChanges = true;
     fetch(domain + '/logs', {
       method: "DELETE",
       headers: {
@@ -3364,7 +3354,7 @@ try {
         return await r.json();
       })
       .then(() => {
-        unsavedChanges = false;
+        ui.unsavedChanges = false;
         ui.toast("Successfully cleared logs.", 3000, "success", "bi bi-check-lg");
         init();
       })
@@ -3404,7 +3394,7 @@ try {
 
   function clearLog(id) {
     if (!active) return;
-    unsavedChanges = true;
+    ui.unsavedChanges = true;
     fetch(domain + '/logs', {
       method: "DELETE",
       headers: {
@@ -3433,7 +3423,7 @@ try {
         return await r.json();
       })
       .then(() => {
-        unsavedChanges = false;
+        ui.unsavedChanges = false;
         ui.toast("Successfully cleared log.", 3000, "success", "bi bi-check-lg");
         init();
       })
@@ -3474,7 +3464,7 @@ try {
 
   function undoAction(id) {
     if (!active) return;
-    unsavedChanges = true;
+    ui.unsavedChanges = true;
     fetch(domain + '/log', {
       method: "POST",
       headers: {
@@ -3503,7 +3493,7 @@ try {
         return await r.json();
       })
       .then(() => {
-        unsavedChanges = false;
+        ui.unsavedChanges = false;
         ui.toast("Successfully undid action.", 3000, "success", "bi bi-check-lg");
         init();
       })
@@ -3540,7 +3530,7 @@ try {
 
   function removeOTPs() {
     if (!active) return;
-    unsavedChanges = true;
+    ui.unsavedChanges = true;
     fetch(domain + '/otps', {
       method: "DELETE",
       headers: {
@@ -3568,7 +3558,7 @@ try {
         return await r.json();
       })
       .then(() => {
-        unsavedChanges = false;
+        ui.unsavedChanges = false;
         ui.toast("Successfully removed OTPs.", 3000, "success", "bi bi-check-lg");
         init();
       })
@@ -3606,7 +3596,7 @@ try {
 
   function removeOTP(seatCode) {
     if (!active) return;
-    unsavedChanges = true;
+    ui.unsavedChanges = true;
     fetch(domain + '/otps', {
       method: "DELETE",
       headers: {
@@ -3635,7 +3625,7 @@ try {
         return await r.json();
       })
       .then(() => {
-        unsavedChanges = false;
+        ui.unsavedChanges = false;
         ui.toast("Successfully removed OTP.", 3000, "success", "bi bi-check-lg");
         init();
       })
