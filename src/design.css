@@ -610,7 +610,7 @@ div.ML__keyboard {
 }
 
 .hiddenOnLoad.show {
-  max-height: 500px;
+  max-height: 100000px;
   overflow: visible;
   transition: 0.5s var(--easing);
 }

@@ -1559,6 +1559,8 @@ try {
     });
     rows[0].lastElementChild.focus();
     ui.setUnsavedChanges(true);
+    var columns = document.querySelectorAll('#matrix [data-matrix-row]:first-child [data-matrix-column]');
+    if (columns.length === 10) document.querySelector("[data-add-matrix-column]").disabled = true;
     document.querySelector("[data-remove-matrix-column]").disabled = false;
     ui.reloadUnsavedInputs();
   }
@@ -1572,6 +1574,7 @@ try {
       var lastColumn = row.lastElementChild;
       if (lastColumn) lastColumn.remove();
     });
+    if (rows[0].children.length < 10) document.querySelector("[data-add-matrix-column]").disabled = false;
     if (rows[0].children.length === 1) document.querySelector("[data-remove-matrix-column]").disabled = true;
   }
 
@@ -1593,6 +1596,8 @@ try {
     document.getElementById('matrix').appendChild(newRow);
     newRow.firstElementChild.focus();
     ui.setUnsavedChanges(true);
+    var rows = document.querySelectorAll('[data-matrix-row]');
+    if (rows.length === 10) document.querySelector("[data-add-matrix-row]").disabled = true;
     document.querySelector("[data-remove-matrix-row]").disabled = false;
     ui.reloadUnsavedInputs();
   }
@@ -1605,6 +1610,7 @@ try {
     if (rows.length > 1) {
       var lastRow = rows[rows.length - 1];
       lastRow.remove();
+      if (rows.length < 10) document.querySelector("[data-add-matrix-row]").disabled = false;
       if (rows.length === 2) document.querySelector("[data-remove-matrix-row]").disabled = true;
     }
   }
