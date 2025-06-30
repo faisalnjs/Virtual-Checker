@@ -294,7 +294,7 @@ try {
           lists: [
             {
               title: 'Correct Answers',
-              items: answers.find(a => a.id === questions.find(q => q.id == r.question_id).id).correct_answers
+              items: answers.find(a => a.id === question.id).correct_answers
             },
             {
               title: 'Incorrect Answers',
@@ -340,7 +340,7 @@ try {
           lists: [
             {
               title: 'Correct Answers',
-              items: answers.find(a => a.id === questions.find(q => q.id == r.question_id).id).correct_answers
+              items: answers.find(a => a.id === question.id).correct_answers
             },
             {
               title: 'Incorrect Answers',

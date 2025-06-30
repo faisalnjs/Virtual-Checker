@@ -1451,11 +1451,11 @@ try {
             lists: [
               {
                 title: 'Correct Answers',
-                items: answers.find(a => a.id === questions.find(q => q.id == r.question_id).id).correct_answers
+                items: answers.find(a => a.id === question.id).correct_answers
               },
               {
                 title: 'Incorrect Answers',
-                items: answers.find(a => a.id === questions.find(q => q.id == r.question_id).id).incorrect_answers
+                items: answers.find(a => a.id === question.id).incorrect_answers
               },
             ],
           });
@@ -1555,11 +1555,11 @@ try {
           lists: [
             {
               title: 'Correct Answers',
-              items: answers.find(a => a.id === questions.find(q => q.id == r.question_id).id).correct_answers
+              items: answers.find(a => a.id === question.id).correct_answers
             },
             {
               title: 'Incorrect Answers',
-              items: answers.find(a => a.id === questions.find(q => q.id == r.question_id).id).incorrect_answers
+              items: answers.find(a => a.id === question.id).incorrect_answers
             },
           ],
         });
@@ -2305,6 +2305,28 @@ try {
         </div>
       </div>
       <button class="space" id="remove-existing-question-button" square tooltip="Remove Question"><i class="bi bi-trash"></i></button>`;
+      inner.addEventListener('mouseenter', () => {
+        var question = addingQuestion;
+        island({
+          id: `ID ${question.id}`,
+          title: `Question ${question.number}`,
+          subtitle: `${question.question}`,
+          subtitleLatex: question.latex,
+          lists: [
+            {
+              title: 'Correct Answers',
+              items: answers.find(a => a.id === question.id).correct_answers
+            },
+            {
+              title: 'Incorrect Answers',
+              items: answers.find(a => a.id === question.id).incorrect_answers
+            },
+          ],
+        });
+      });
+      inner.addEventListener('mouseleave', () => {
+        island();
+      });
     } else if (loadedSegmentCreator && (typeof question === 'string')) {
       if (!addingQuestion) return;
       document.getElementById("add-question-input").value = addingQuestion.id;
@@ -2322,14 +2344,37 @@ try {
         </div>
       </div>
       <button class="space" id="remove-existing-question-button" square tooltip="Remove Question"><i class="bi bi-trash"></i></button>`;
+      inner.addEventListener('mouseenter', () => {
+        var question = addingQuestion;
+        island({
+          id: `ID ${question.id}`,
+          title: `Question ${question.number}`,
+          subtitle: `${question.question}`,
+          subtitleLatex: question.latex,
+          lists: [
+            {
+              title: 'Correct Answers',
+              items: answers.find(a => a.id === question.id).correct_answers
+            },
+            {
+              title: 'Incorrect Answers',
+              items: answers.find(a => a.id === question.id).incorrect_answers
+            },
+          ],
+        });
+      });
+      inner.addEventListener('mouseleave', () => {
+        island();
+      });
     } else if (this) {
       if (!document.getElementById("add-question-input").selectedOptions[0]) return;
-      div.setAttribute("data-swapy-slot", `questionList-${document.getElementById("add-question-input").value}`);
-      inner.setAttribute("data-swapy-item", `questionList-${document.getElementById("add-question-input").value}`);
+      var questionId = document.getElementById("add-question-input").value;
+      div.setAttribute("data-swapy-slot", `questionList-${questionId}`);
+      inner.setAttribute("data-swapy-item", `questionList-${questionId}`);
       inner.innerHTML = `<div class="drag" data-swapy-handle><i class="bi bi-grip-vertical"></i></div>
       <div class="input-group">
         <div class="space" id="question-container">
-          <input type="text" id="${document.getElementById("add-question-input").value}" value="${document.getElementById("add-question-input").selectedOptions[0].innerHTML}" disabled>
+          <input type="text" id="${questionId}" value="${document.getElementById("add-question-input").selectedOptions[0].innerHTML}" disabled>
         </div>
       </div>
       <div class="input-group small">
@@ -2338,6 +2383,28 @@ try {
         </div>
       </div>
       <button class="space" id="remove-existing-question-button" square tooltip="Remove Question"><i class="bi bi-trash"></i></button>`;
+      inner.addEventListener('mouseenter', () => {
+        var question = questions.find(q => String(q.id) === String(questionId));
+        island({
+          id: `ID ${question.id}`,
+          title: `Question ${question.number}`,
+          subtitle: `${question.question}`,
+          subtitleLatex: question.latex,
+          lists: [
+            {
+              title: 'Correct Answers',
+              items: answers.find(a => a.id === question.id).correct_answers
+            },
+            {
+              title: 'Incorrect Answers',
+              items: answers.find(a => a.id === question.id).incorrect_answers
+            },
+          ],
+        });
+      });
+      inner.addEventListener('mouseleave', () => {
+        island();
+      });
       document.getElementById("add-question-input").removeChild(document.getElementById("add-question-input").selectedOptions[0]);
     } else {
       var newQuestion = document.getElementById("add-question-input").children[document.getElementById("add-question-input").children.length - 1];
