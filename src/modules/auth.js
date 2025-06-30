@@ -147,7 +147,7 @@ export async function sync(domain, hideWelcome = false) {
                         var re = await r.json();
                         if (re.error || re.message) {
                             ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
-                            if (re.error === "Access denied.") {
+                            if ((re.error === "Access denied.") || (re.message === "Access denied.")) {
                                 if (storage.get("otp")) storage.delete("otp");
                                 sync(domain);
                             }
@@ -200,7 +200,7 @@ export async function sync(domain, hideWelcome = false) {
                                                                 var re = await r.json();
                                                                 if (re.error || re.message) {
                                                                     ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
-                                                                    if (re.error === "Access denied.") sync(domain);
+                                                                    if ((re.error === "Access denied.") || (re.message === "Access denied.")) sync(domain);
                                                                     throw new Error(re.error || re.message);
                                                                 } else {
                                                                     throw new Error("API error");
@@ -251,7 +251,7 @@ export async function sync(domain, hideWelcome = false) {
                                                                 var re = await r.json();
                                                                 if (re.error || re.message) {
                                                                     ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
-                                                                    if (re.error === "Access denied.") sync(domain);
+                                                                    if ((re.error === "Access denied.") || (re.message === "Access denied.")) sync(domain);
                                                                     throw new Error(re.error || re.message);
                                                                 } else {
                                                                     throw new Error("API error");

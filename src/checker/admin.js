@@ -110,7 +110,7 @@ try {
         .catch((e) => {
           console.error(e);
           ui.view("api-fail");
-          if (e.error === "Access denied.") return auth.admin(init);
+          if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
           pollingOff();
         });
     }
@@ -154,7 +154,7 @@ try {
         .catch((e) => {
           console.error(e);
           ui.view("api-fail");
-          if (e.error === "Access denied.") return auth.admin(init);
+          if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
           pollingOff();
         });
     }
@@ -213,7 +213,7 @@ try {
         .catch((e) => {
           console.error(e);
           ui.view("api-fail");
-          if (e.error === "Access denied.") return auth.admin(init);
+          if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
           pollingOff();
         });
     }
@@ -432,35 +432,35 @@ try {
                       .catch((e) => {
                         console.error(e);
                         ui.view("api-fail");
-                        if (e.error === "Access denied.") return auth.admin(init);
+                        if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
                         pollingOff();
                       });
                   })
                   .catch((e) => {
                     console.error(e);
                     ui.view("api-fail");
-                    if (e.error === "Access denied.") return auth.admin(init);
+                    if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
                     pollingOff();
                   });
               })
               .catch((e) => {
                 console.error(e);
                 ui.view("api-fail");
-                if (e.error === "Access denied.") return auth.admin(init);
+                if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
                 pollingOff();
               });
           })
           .catch((e) => {
             console.error(e);
             ui.view("api-fail");
-            if (e.error === "Access denied.") return auth.admin(init);
+            if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
             pollingOff();
           });
       })
       .catch((e) => {
         console.error(e);
         if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
-        if (e.error === "Access denied.") return auth.admin(init);
+        if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
         pollingOff();
       });
     if (document.getElementById("course-period-input") && !loadedSegmentEditor && !loadedSegmentCreator && !noReloadCourse) {
@@ -634,7 +634,7 @@ try {
           .catch((e) => {
             console.error(e);
             ui.view("api-fail");
-            if (e.error === "Access denied.") return auth.admin(init);
+            if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
             pollingOff();
           });
       });
@@ -812,7 +812,7 @@ try {
       .catch((e) => {
         console.error(e);
         if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
-        if (e.error === "Access denied.") return auth.admin(init);
+        if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
         pollingOff();
       });
     // Show submit confirmation
@@ -866,7 +866,7 @@ try {
   //     .catch((e) => {
   //       console.error(e);
   //       ui.view("api-fail");
-  //       if (e.error === "Access denied.") return auth.admin(init);
+  //       if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
   //       pollingOff();
   //     });
   //   // Show submit confirmation
@@ -970,7 +970,7 @@ try {
       .catch((e) => {
         console.error(e);
         if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
-        if (e.error === "Access denied.") return auth.admin(init);
+        if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
         pollingOff();
       });
     document.querySelectorAll("#save-button").forEach(w => w.disabled = true);
@@ -1254,7 +1254,7 @@ try {
       .catch((e) => {
         console.error(e);
         if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
-        if (e.error === "Access denied.") return auth.admin(init);
+        if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
         pollingOff();
       });
   }
@@ -1376,7 +1376,7 @@ try {
         .catch((e) => {
           console.error(e);
           ui.view("api-fail");
-          if (e.error === "Access denied.") return auth.admin(init);
+          if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
           pollingOff();
         });
     } else {
@@ -1658,7 +1658,7 @@ try {
       .catch((e) => {
         console.error(e);
         if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
-        if (e.error === "Access denied.") return auth.admin(init);
+        if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
       });
   }
 
@@ -1701,7 +1701,7 @@ try {
       .catch((e) => {
         console.error(e);
         if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
-        if (e.error === "Access denied.") return auth.admin(init);
+        if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
       });
   }
 
@@ -1745,7 +1745,7 @@ try {
       .catch((e) => {
         console.error(e);
         if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
-        if (e.error === "Access denied.") return auth.admin(init);
+        if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
         pollingOff();
       });
   }
@@ -1817,7 +1817,7 @@ try {
       .catch((e) => {
         console.error(e);
         if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
-        if (e.error === "Access denied.") return auth.admin(init);
+        if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
         pollingOff();
       });
   }
@@ -2141,7 +2141,7 @@ try {
       .catch((e) => {
         console.error(e);
         if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
-        if (e.error === "Access denied.") return auth.admin(init);
+        if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
         pollingOff();
       });
   }
@@ -2467,7 +2467,7 @@ try {
       .catch((e) => {
         console.error(e);
         if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
-        if (e.error === "Access denied.") return auth.admin(init);
+        if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
       });
   }
 
@@ -2554,7 +2554,7 @@ try {
       .catch((e) => {
         console.error(e);
         if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
-        if (e.error === "Access denied.") return auth.admin(init);
+        if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
       });
   }
 
@@ -2648,7 +2648,7 @@ try {
       .catch((e) => {
         console.error(e);
         if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
-        if (e.error === "Access denied.") return auth.admin(init);
+        if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
       });
   }
 
@@ -2692,7 +2692,7 @@ try {
       .catch((e) => {
         console.error(e);
         if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
-        if (e.error === "Access denied.") return auth.admin(init);
+        if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
       });
   }
 
@@ -2805,7 +2805,7 @@ try {
       .catch((e) => {
         console.error(e);
         if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
-        if (e.error === "Access denied.") return auth.admin(init);
+        if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
       });
   }
 
@@ -2836,7 +2836,7 @@ try {
     } catch (e) {
       console.error(e);
       ui.view("api-fail");
-      if (e.error === "Access denied.") return auth.admin(init);
+      if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
     }
   }
 
@@ -2876,7 +2876,7 @@ try {
       .catch((e) => {
         console.error(e);
         if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
-        if (e.error === "Access denied.") return auth.admin(init);
+        if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
       });
   }
 
@@ -2958,7 +2958,7 @@ try {
       .catch((e) => {
         console.error(e);
         if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
-        if (e.error === "Access denied.") return auth.admin(init);
+        if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
       });
   }
 
@@ -3079,7 +3079,7 @@ try {
       .catch((e) => {
         console.error(e);
         if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
-        if (e.error === "Access denied.") return auth.admin(init);
+        if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
         pollingOff();
       });
   }
@@ -3201,7 +3201,7 @@ try {
       .catch((e) => {
         console.error(e);
         if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
-        if (e.error === "Access denied.") return auth.admin(init);
+        if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
         pollingOff();
       });
   }
@@ -3277,7 +3277,7 @@ try {
       .catch((e) => {
         console.error(e);
         if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
-        if (e.error === "Access denied.") return auth.admin(init);
+        if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
         pollingOff();
       });
   }
@@ -3371,7 +3371,7 @@ try {
       .catch((e) => {
         console.error(e);
         if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
-        if (e.error === "Access denied.") return auth.admin(init);
+        if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
         pollingOff();
       });
   }
@@ -3440,7 +3440,7 @@ try {
       .catch((e) => {
         console.error(e);
         if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
-        if (e.error === "Access denied.") return auth.admin(init);
+        if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
         pollingOff();
       });
   }
@@ -3510,7 +3510,7 @@ try {
       .catch((e) => {
         console.error(e);
         if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
-        if (e.error === "Access denied.") return auth.admin(init);
+        if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
         pollingOff();
       });
   }
@@ -3575,7 +3575,7 @@ try {
       .catch((e) => {
         console.error(e);
         if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
-        if (e.error === "Access denied.") return auth.admin(init);
+        if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
         pollingOff();
       });
   }
@@ -3642,7 +3642,7 @@ try {
       .catch((e) => {
         console.error(e);
         if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
-        if (e.error === "Access denied.") return auth.admin(init);
+        if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
         pollingOff();
       });
   }

@@ -2,6 +2,7 @@
 import * as ui from "/src/modules/ui.js";
 import storage from "/src/modules/storage.js";
 import * as auth from "/src/modules/auth.js";
+import island from "/src/modules/island.js";
 
 const domain = ((window.location.hostname.search('check') != -1) || (window.location.hostname.search('127') != -1)) ? 'https://api.check.vssfalcons.com' : `http://${document.domain}:5000`;
 if (window.location.pathname.split('?')[0].endsWith('/admin')) window.location.pathname = '/admin/';
@@ -173,25 +174,25 @@ try {
                   .catch((e) => {
                     console.error(e);
                     ui.view("api-fail");
-                    if (e.error === "Access denied.") return auth.ta(init);
+                    if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.ta(init);
                   });
               })
               .catch((e) => {
                 console.error(e);
-                ui.view("api-fail");
-                if (e.error === "Access denied.") return auth.ta(init);
+                if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+                if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.ta(init);
               });
           })
           .catch((e) => {
             console.error(e);
             ui.view("api-fail");
-            if (e.error === "Access denied.") return auth.ta(init);
+            if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.ta(init);
           });
       })
       .catch((e) => {
         console.error(e);
         if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
-        if (e.error === "Access denied.") return auth.ta(init);
+        if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.ta(init);
       });
     reloadUnsavedInputs();
   }
@@ -293,6 +294,28 @@ try {
       buttonGrid.className = "button-grid inputs";
       buttonGrid.id = `response-${r.id}`;
       buttonGrid.innerHTML = `<input type="text" autocomplete="off" class="small" id="response-id-input" value="${r.id}" disabled hidden />${(r.flagged == '1') ? `<button square data-unflag-response tooltip="Unflag Response"><i class="bi bi-flag-fill"></i></button>` : `<button square data-flag-response tooltip="Flag Response"><i class="bi bi-flag"></i></button>`}<input type="text" autocomplete="off" class="small" id="response-segment-input" value="${r.segment}" disabled data-segment /><input type="text" autocomplete="off" class="small" id="response-question-input" value="${questions.find(q => q.id == r.question_id).number}" disabled data-question /><input type="text" autocomplete="off" class="small${(((r.status === 'Invalid Format') || (r.status === 'Unknown, Recorded')) && document.querySelector('.awaitingResponses .section') && (answers.find(a => a.id === questions.find(q => q.id == r.question_id).id).correct_answers.length > 0)) ? ' hideonhover' : ''}" id="response-seat-code-input" value="${r.seatCode}" disabled data-seat-code /><input type="text" autocomplete="off" class="small" id="response-time-taken-input" value="${timeTaken}" disabled data-time-taken${(typeof timeDifference != 'undefined') ? ` time="${timeDifference}"` : ''} /><input type="text" autocomplete="off" class="small" id="response-time-taken-input" value="${timeTakenToRevise}" disabled data-time-taken${(typeof timeDifference != 'undefined') ? ` time="${timeDifference}"` : ''} /><!--<input type="text" autocomplete="off" class="small" id="response-time-taken-input" value="${result}" disabled data-time-taken />--><input type="text" autocomplete="off" id="response-response-input" value="${responseString}" disabled />${(r.status === 'Incorrect') ? `<button square data-edit-reason tooltip="Edit Reason"><i class="bi bi-reply${(r.reason) ? '-fill' : ''}"></i></button>` : ''}<input type="text" autocomplete="off" class="smedium${(((r.status === 'Invalid Format') || (r.status === 'Unknown, Recorded')) && document.querySelector('.awaitingResponses .section') && (answers.find(a => a.id === questions.find(q => q.id == r.question_id).id).correct_answers.length > 0)) ? ' hideonhover' : ''}" id="response-timestamp-input" value="${date.getMonth() + 1}/${date.getDate()} ${hours % 12 || 12}:${minutes < 10 ? '0' + minutes : minutes} ${hours >= 12 ? 'PM' : 'AM'}" disabled />${(((r.status === 'Invalid Format') || (r.status === 'Unknown, Recorded')) && document.querySelector('.awaitingResponses .section') && (answers.find(a => a.id === questions.find(q => q.id == r.question_id).id).correct_answers.length > 0)) ? `<input type="text" autocomplete="off" class="showonhover" id="response-correct-responses-input" value="${correctResponsesString}" disabled />` : ''}<button square id="mark-correct-button"${(r.status === 'Correct') ? ' disabled' : ''} tooltip="Mark Correct"><i class="bi bi-check-circle${(r.status === 'Correct') ? '-fill' : ''}"></i></button><button square id="mark-incorrect-button"${(r.status === 'Incorrect') ? ' disabled' : ''} tooltip="Mark Incorrect"><i class="bi bi-x-circle${(r.status === 'Incorrect') ? '-fill' : ''}"></i></button>`;
+      buttonGrid.addEventListener('mouseenter', () => {
+        var question = questions.find(q => q.id == r.question_id);
+        island({
+          id: `ID ${question.id}`,
+          title: `Question ${question.number}`,
+          subtitle: `${question.question}`,
+          subtitleLatex: question.latex,
+          lists: [
+            {
+              title: 'Correct Answers',
+              items: answers.find(a => a.id === questions.find(q => q.id == r.question_id).id).correct_answers
+            },
+            {
+              title: 'Incorrect Answers',
+              items: answers.find(a => a.id === questions.find(q => q.id == r.question_id).id).incorrect_answers
+            },
+          ],
+        });
+      });
+      buttonGrid.addEventListener('mouseleave', () => {
+        island();
+      });
       document.querySelector('.responses .section').appendChild(buttonGrid);
       if (((r.status === 'Invalid Format') || (r.status === 'Unknown, Recorded')) && document.querySelector('.awaitingResponses .section')) document.querySelector('.awaitingResponses .section').appendChild(buttonGrid);
       var trend = trendingResponses.find(t => (t.segment === r.segment) && (t.question_id === r.question_id) && (t.response === responseString) && (t.status === r.status));
@@ -317,6 +340,28 @@ try {
       var buttonGrid = document.createElement('div');
       buttonGrid.className = "button-grid inputs";
       buttonGrid.innerHTML = `<input type="text" autocomplete="off" class="small" id="response-id-input" value="${r.id}" disabled hidden /><input type="text" autocomplete="off" class="small" id="response-segment-input" value="${r.segment}" disabled data-segment /><input type="text" autocomplete="off" class="small" id="response-question-input" value="${questions.find(q => q.id == r.question_id).number}" disabled data-question /><input type="text" autocomplete="off" id="response-response-input" value="${r.response}" disabled /><input type="text" autocomplete="off" class="small" id="response-count-input" value="${r.count}" disabled /><button square id="mark-correct-button"${(r.status === 'Correct') ? ' disabled' : ''} tooltip="Mark Correct"><i class="bi bi-check-circle${(r.status === 'Correct') ? '-fill' : ''}"></i></button><button square id="mark-incorrect-button"${(r.status === 'Incorrect') ? ' disabled' : ''} tooltip="Mark Incorrect"><i class="bi bi-x-circle${(r.status === 'Incorrect') ? '-fill' : ''}"></i></button>`;
+      buttonGrid.addEventListener('mouseenter', () => {
+        var question = questions.find(q => q.id == r.question_id);
+        island({
+          id: `ID ${question.id}`,
+          title: `Question ${question.number}`,
+          subtitle: `${question.question}`,
+          subtitleLatex: question.latex,
+          lists: [
+            {
+              title: 'Correct Answers',
+              items: answers.find(a => a.id === questions.find(q => q.id == r.question_id).id).correct_answers
+            },
+            {
+              title: 'Incorrect Answers',
+              items: answers.find(a => a.id === questions.find(q => q.id == r.question_id).id).incorrect_answers
+            },
+          ],
+        });
+      });
+      buttonGrid.addEventListener('mouseleave', () => {
+        island();
+      });
       document.querySelector('.trendingResponses .section').appendChild(buttonGrid);
     });
     document.querySelectorAll('#mark-correct-button').forEach(a => a.addEventListener('click', markCorrect));
@@ -394,7 +439,7 @@ try {
       .catch((e) => {
         console.error(e);
         if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
-        if (e.error === "Access denied.") return auth.ta(init);
+        if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.ta(init);
       });
   }
 
@@ -437,7 +482,7 @@ try {
       .catch((e) => {
         console.error(e);
         if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
-        if (e.error === "Access denied.") return auth.ta(init);
+        if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.ta(init);
       });
   }
 
@@ -481,7 +526,7 @@ try {
       .catch((e) => {
         console.error(e);
         if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
-        if (e.error === "Access denied.") return auth.ta(init);
+        if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.ta(init);
       });
   }
 
@@ -553,7 +598,7 @@ try {
       .catch((e) => {
         console.error(e);
         if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
-        if (e.error === "Access denied.") return auth.ta(init);
+        if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.ta(init);
       });
   }
 
