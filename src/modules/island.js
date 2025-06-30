@@ -1,21 +1,27 @@
 import { convertLatexToMarkup, renderMathInElement } from "mathlive";
 
 var lastIslandId = null;
+var islandSource = null;
+var islandSource2 = null;
 
-export default function island(data) {
+export default function spawnIsland(source = null, dataType = 'question', data = {}, source2 = null) {
     var island = document.querySelector('.island');
     if (!island) {
         island = document.createElement('div');
         island.classList.add('island');
         document.body.appendChild(island);
     }
-    if (!data) return island.classList.remove('visible');
+    if (Object.keys(data).length === 0) return island.classList.remove('visible');
     if (island.offsetWidth < 250) return island.classList.remove('visible');
     if (data.id) {
         if (lastIslandId && (data.id === lastIslandId)) return island.classList.add('visible');
         lastIslandId = data.id;
     }
     island.innerHTML = '';
+    if (source) islandSource = source;
+    if (source2) islandSource2 = source2;
+    island.setAttribute('datatype', dataType);
+    island.setAttribute('sourceid', String(data.sourceId || ''));
     if (data.id) {
         var id = document.createElement('code');
         id.innerHTML = data.id;
@@ -65,4 +71,57 @@ export default function island(data) {
         });
     }
     island.classList.add('visible');
+}
+
+export function moveFromCurrent(moveBy) {
+    var island = document.querySelector('.island');
+    var sourceId = island.getAttribute('sourceid');
+    var dataType = island.getAttribute('datatype');
+    if (!sourceId || !dataType || !islandSource) return;
+    if (!islandSource[0]) return;
+    var keys = Object.keys(islandSource[0]);
+    var key = keys.includes('id') ? 'id' : keys.includes('number') ? 'number' : keys.includes('name') ? 'name' : null;
+    if (!key) return;
+    var currentIndex = islandSource.findIndex(item => String(item[key]) === String(sourceId));
+    if (currentIndex === -1) return;
+    var newIndex = currentIndex + moveBy;
+    if (newIndex < 0 || newIndex >= islandSource.length) return;
+    var newItem = islandSource[newIndex];
+    var newData = {};
+    switch (dataType) {
+        case 'segment':
+            newData = {
+                sourceId: String(newItem.number),
+                id: `# ${newItem.number}`,
+                title: `${newItem.name}`,
+                subtitle: newItem.due ? `Due ${new Date(`${newItem.due}T00:00:00`).toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })}` : '',
+                lists: [
+                    {
+                        title: 'Questions',
+                        items: JSON.parse(newItem.question_ids)
+                    },
+                ],
+            };
+            break;
+        default:
+            newData = {
+                sourceId: String(newItem.id),
+                id: `ID ${newItem.id}`,
+                title: `Question ${newItem.number}`,
+                subtitle: `${newItem.question}`,
+                subtitleLatex: newItem.latex,
+                lists: [
+                    {
+                        title: 'Correct Answers',
+                        items: islandSource2.find(a => a.id === newItem.id).correct_answers
+                    },
+                    {
+                        title: 'Incorrect Answers',
+                        items: islandSource2.find(a => a.id === newItem.id).incorrect_answers
+                    },
+                ],
+            };
+            break;
+    }
+    spawnIsland(islandSource, dataType, newData);
 }
