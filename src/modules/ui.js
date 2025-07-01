@@ -736,7 +736,6 @@ export function expandMatrix(matrixString) {
     constructedMatrix.querySelectorAll(".matrix-cell").forEach(cell => {
       const cellHeight = cell.offsetHeight;
       const cellWidth = cell.offsetWidth;
-      console.log(cell, cellHeight, cellWidth);
       if (cellHeight > highestComputedCellHeight) highestComputedCellHeight = cellHeight;
       if (cellWidth > longestComputedCellWidth) longestComputedCellWidth = cellWidth;
     });
