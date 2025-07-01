@@ -241,7 +241,7 @@ try {
     responses1.forEach(r => {
       var responseString = r.response;
       if (responseString.includes('[[')) {
-        responseString = JSON.stringify(JSON.parse(r.response).map(innerArray => innerArray.map(numString => Number(numString))));
+        responseString = JSON.stringify(JSON.parse(r.response).map(innerArray => innerArray.map(numString => String(numString)))).replaceAll('["', '[').replaceAll('","', ', ').replaceAll('"]', ']');
       } else if (responseString.includes('[')) {
         var parsedResponse = JSON.parse(r.response);
         responseString = parsedResponse.join(', ');

@@ -753,7 +753,7 @@ try {
                   button.innerHTML = `<p${item.answer}${(item.number === '1') ? '/9' : ''}</p>\n<p>${response}`;
                 }
               } else {
-                button.innerHTML = `<p>${JSON.stringify(JSON.parse(item.answer).map(innerArray => innerArray.map(numString => Number(numString))))}</p>\n<p>${response}`;
+                button.innerHTML = `<p>${JSON.stringify(JSON.parse(item.answer).map(innerArray => innerArray.map(numString => String(numString)))).replaceAll('["', '[').replaceAll('","', ', ').replaceAll('"]', ']')}</p>\n<p>${response}`;
               }
             } else {
               button.innerHTML = `<p>${JSON.parse(`[${item.answer.slice(1, -1).split(', ')}]`).join(', ')}</p>\n<p>${response}`;
@@ -809,7 +809,7 @@ try {
                 if (rows.length === 1) {
                   removeRow();
                 } else {
-                  for (let i = 0; i < rows.length - 3; i++) {
+                  for (let i = 0; i < rows.length - 2; i++) {
                     addRow();
                   }
                 }
@@ -819,7 +819,7 @@ try {
                 if (columns === 1) {
                   removeColumn();
                 } else {
-                  for (let i = 0; i < columns - 3; i++) {
+                  for (let i = 0; i < columns - 2; i++) {
                     addColumn();
                   }
                 }
@@ -830,6 +830,7 @@ try {
                   matrixRows[i].querySelectorAll('[data-matrix-column]')[j].value = rows[i][j];
                 }
               }
+              matrixRows[matrixRows.length - 1].lastChild.focus();
             } else if (frq) {
               answerMode("frq");
               ui.setButtonSelectValue(document.getElementById("answer-mode-selector"), "frq");
@@ -932,7 +933,7 @@ try {
                 if (rows.length === 1) {
                   removeRow();
                 } else {
-                  for (let i = 0; i < rows.length - 3; i++) {
+                  for (let i = 0; i < rows.length - 2; i++) {
                     addRow();
                   }
                 }
@@ -942,7 +943,7 @@ try {
                 if (columns === 1) {
                   removeColumn();
                 } else {
-                  for (let i = 0; i < columns - 3; i++) {
+                  for (let i = 0; i < columns - 2; i++) {
                     addColumn();
                   }
                 }
@@ -953,6 +954,7 @@ try {
                   matrixRows[i].querySelectorAll('[data-matrix-column]')[j].value = rows[i][j];
                 }
               }
+              matrixRows[matrixRows.length - 1].lastChild.focus();
             } else if (frq) {
               answerMode("frq");
               ui.setButtonSelectValue(document.getElementById("answer-mode-selector"), "frq");
@@ -1225,7 +1227,7 @@ try {
                   button.innerHTML = `<p><b>Segment ${item.segment} Question #${item.number}.</b> ${unixToTimeString(item.timestamp)} (${item.code})</p>\n<p>${item.answer}${(item.number === '1') ? '/9' : ''}</p>\n<p>${response}`;
                 }
               } else {
-                button.innerHTML = `<p>${JSON.stringify(JSON.parse(item.answer).map(innerArray => innerArray.map(numString => Number(numString))))}</p>\n<p>${response}`;
+                button.innerHTML = `<p>${JSON.stringify(JSON.parse(item.answer).map(innerArray => innerArray.map(numString => String(numString)))).replaceAll('["', '[').replaceAll('","', ', ').replaceAll('"]', ']')}</p>\n<p>${response}`;
               }
             } else {
               button.innerHTML = `<p><b>Segment ${item.segment} Question #${item.number}.</b> ${unixToTimeString(item.timestamp)} (${item.code})</p>\n<p>${JSON.parse(`[${item.answer.slice(1, -1).split(', ')}]`).join(', ')}</p>\n<p>${response}`;
@@ -1282,7 +1284,7 @@ try {
                 if (rows.length === 1) {
                   removeRow();
                 } else {
-                  for (let i = 0; i < rows.length - 3; i++) {
+                  for (let i = 0; i < rows.length - 2; i++) {
                     addRow();
                   }
                 }
@@ -1292,7 +1294,7 @@ try {
                 if (columns === 1) {
                   removeColumn();
                 } else {
-                  for (let i = 0; i < columns - 3; i++) {
+                  for (let i = 0; i < columns - 2; i++) {
                     addColumn();
                   }
                 }
@@ -1303,6 +1305,7 @@ try {
                   matrixRows[i].querySelectorAll('[data-matrix-column]')[j].value = rows[i][j];
                 }
               }
+              matrixRows[matrixRows.length - 1].lastChild.focus();
             } else if (frq) {
               answerMode("frq");
               ui.setButtonSelectValue(document.getElementById("answer-mode-selector"), "frq");
