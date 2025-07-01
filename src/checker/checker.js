@@ -30,6 +30,7 @@ try {
   const prevQuestionButtons = document.querySelectorAll('[data-prev-question]');
   var period = document.getElementById("period-input").value;
 
+  var courses = [];
   let currentAnswerMode;
   let currentSetType = "brackets";
   let multipleChoice = null;
@@ -479,8 +480,8 @@ try {
           method: "GET",
           headers: { "Content-Type": "application/json" },
         });
-        const coursesData = await coursesResponse.json();
-        const course = coursesData.find(c => JSON.parse(c.periods).includes(Number(code.slice(0, 1))));
+        courses = await coursesResponse.json();
+        const course = courses.find(c => JSON.parse(c.periods).includes(Number(code.slice(0, 1))));
         if (course) {
           ui.view();
         } else {
@@ -1222,18 +1223,18 @@ try {
             if (!array) {
               if (!matrix) {
                 if (!frq) {
-                  button.innerHTML = `<p><b>Segment ${item.segment} Question #${item.number}.</b> ${unixToTimeString(item.timestamp)} (${item.code})</p>\n<p>${item.answer}</p>\n<p>${response}`;
+                  button.innerHTML = `${(item.code !== storage.get("code")) ? `<p><b>${courses.find(c => JSON.parse(c.periods).includes(Number(item.code.slice(0, 1))))?.name}</b></p>\n` : ''}<p><b>Segment ${item.segment} Question #${item.number}.</b> ${unixToTimeString(item.timestamp)} (${item.code})</p>\n<p>${item.answer}</p>\n<p>${response}`;
                 } else {
-                  button.innerHTML = `<p><b>Segment ${item.segment} Question #${item.number}.</b> ${unixToTimeString(item.timestamp)} (${item.code})</p>\n<p>${item.answer}${(item.number === '1') ? '/9' : ''}</p>\n<p>${response}`;
+                  button.innerHTML = `${(item.code !== storage.get("code")) ? `<p><b>${courses.find(c => JSON.parse(c.periods).includes(Number(item.code.slice(0, 1))))?.name}</b></p>\n` : ''}<p><b>Segment ${item.segment} Question #${item.number}.</b> ${unixToTimeString(item.timestamp)} (${item.code})</p>\n<p>${item.answer}${(item.number === '1') ? '/9' : ''}</p>\n<p>${response}`;
                 }
               } else {
-                button.innerHTML = `<p>${JSON.stringify(JSON.parse(item.answer).map(innerArray => innerArray.map(numString => String(numString)))).replaceAll('["', '[').replaceAll('","', ', ').replaceAll('"]', ']')}</p>\n<p>${response}`;
+                button.innerHTML = `${(item.code !== storage.get("code")) ? `<p><b>${courses.find(c => JSON.parse(c.periods).includes(Number(item.code.slice(0, 1))))?.name}</b></p>\n` : ''}<p><b>Segment ${item.segment} Question #${item.number}.</b> ${unixToTimeString(item.timestamp)} (${item.code})</p>\n<p>${JSON.stringify(JSON.parse(item.answer).map(innerArray => innerArray.map(numString => String(numString)))).replaceAll('["', '[').replaceAll('","', ', ').replaceAll('"]', ']')}</p>\n<p>${response}`;
               }
             } else {
-              button.innerHTML = `<p><b>Segment ${item.segment} Question #${item.number}.</b> ${unixToTimeString(item.timestamp)} (${item.code})</p>\n<p>${JSON.parse(`[${item.answer.slice(1, -1).split(', ')}]`).join(', ')}</p>\n<p>${response}`;
+              button.innerHTML = `${(item.code !== storage.get("code")) ? `<p><b>${courses.find(c => JSON.parse(c.periods).includes(Number(item.code.slice(0, 1))))?.name}</b></p>\n` : ''}<p><b>Segment ${item.segment} Question #${item.number}.</b> ${unixToTimeString(item.timestamp)} (${item.code})</p>\n<p>${JSON.parse(`[${item.answer.slice(1, -1).split(', ')}]`).join(', ')}</p>\n<p>${response}`;
             }
           } else {
-            button.innerHTML = `<p><b>Segment ${item.segment} Question #${item.number}.</b> ${unixToTimeString(item.timestamp)} (${item.code})</p>\n${convertLatexToMarkup(item.answer)}\n<p class="hint">(Equation may not display properly)</p>\n<p>${response}`;
+            button.innerHTML = `${(item.code !== storage.get("code")) ? `<p><b>${courses.find(c => JSON.parse(c.periods).includes(Number(item.code.slice(0, 1))))?.name}</b></p>\n` : ''}<p><b>Segment ${item.segment} Question #${item.number}.</b> ${unixToTimeString(item.timestamp)} (${item.code})</p>\n${convertLatexToMarkup(item.answer)}\n<p class="hint">(Equation may not display properly)</p>\n<p>${response}`;
           }
           feed.prepend(button);
           renderMathInElement(button);
