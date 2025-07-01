@@ -715,7 +715,7 @@ try {
     if (latestResponses.length > 0) {
       feedContainer.classList.add('show');
       const fetchPromises = latestResponses.map(item =>
-        fetch(`${domain}/response?seatCode=${storage.get("code")}&segment=${item.segment}&question=${item.question}&answer=${item.answer}`, {
+        fetch(`${domain}/response?seatCode=${item.code}&segment=${item.segment}&question=${item.question}&answer=${item.answer}`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -874,7 +874,7 @@ try {
 
       var latestResponse = latestResponses[0];
       if (latestResponse) {
-        fetch(`${domain}/response?seatCode=${storage.get("code")}&segment=${latestResponse.segment}&question=${latestResponse.question}&answer=${latestResponse.answer}`, {
+        fetch(`${domain}/response?seatCode=${latestResponse.code}&segment=${latestResponse.segment}&question=${latestResponse.question}&answer=${latestResponse.answer}`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -1189,7 +1189,7 @@ try {
 
       feed.innerHTML = "";
       const fetchPromises = history.sort((a, b) => a.timestamp - b.timestamp).map(item =>
-        fetch(`${domain}/response?seatCode=${storage.get("code")}&segment=${item.segment}&question=${item.question}&answer=${item.answer}`, {
+        fetch(`${domain}/response?seatCode=${item.code}&segment=${item.segment}&question=${item.question}&answer=${item.answer}`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
