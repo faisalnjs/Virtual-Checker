@@ -1083,3 +1083,8 @@ body > canvas {
 .rotate-right {
   transform: rotate(90deg);
 }
+
+[mockDisabled] {
+  opacity: 0.75;
+  cursor: not-allowed;
+}

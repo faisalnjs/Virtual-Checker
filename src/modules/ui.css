@@ -308,3 +308,31 @@ div[data-color-input] > div[data-color-preview]:hover {
   padding-left: 1.5rem;
   margin-top: 5px;
 }
+
+.matrix {
+  border: 1px solid var(--text-color);
+  margin-top: 5px;
+}
+
+.matrix .matrix-row {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  justify-content: center;
+}
+
+.matrix .matrix-row:not(:last-child) {
+  border-bottom: 1px solid var(--text-color);
+}
+
+.matrix .matrix-row .matrix-cell {
+  flex: 1;
+  text-align: center;
+  padding: 0.5rem;
+  height: var(--matrix-cell-height);
+  width: var(--matrix-cell-width);
+}
+
+.matrix .matrix-row .matrix-cell:not(:last-child) {
+  border-right: 1px solid var(--text-color);
+}

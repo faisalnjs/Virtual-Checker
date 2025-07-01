@@ -700,3 +700,113 @@ export function reloadUnsavedInputs() {
 export function setUnsavedChanges(value) {
   unsavedChanges = value;
 }
+
+export function expandMatrix(matrixString) {
+  const dialog = document.createElement("dialog");
+
+  const title = document.createElement("h2");
+    title.innerText = "Matrix";
+    dialog.append(title);
+
+  var matrix = JSON.parse(matrixString);
+
+  var constructedMatrix = document.createElement("div");
+  constructedMatrix.className = "matrix";
+
+  var highestComputedCellHeight = 0;
+  var longestComputedCellWidth = 0;
+
+  matrix.forEach(row => {
+    var rowElement = document.createElement("div");
+    rowElement.className = "matrix-row";
+    row.forEach(cell => {
+      var cellElement = document.createElement("span");
+      cellElement.className = "matrix-cell";
+      cellElement.textContent = cell;
+      rowElement.appendChild(cellElement);
+    });
+    constructedMatrix.appendChild(rowElement);
+  });
+
+  dialog.appendChild(constructedMatrix);
+
+  document.body.append(dialog);
+
+  requestAnimationFrame(() => {
+    constructedMatrix.querySelectorAll(".matrix-cell").forEach(cell => {
+      const cellHeight = cell.offsetHeight;
+      const cellWidth = cell.offsetWidth;
+      console.log(cell, cellHeight, cellWidth);
+      if (cellHeight > highestComputedCellHeight) highestComputedCellHeight = cellHeight;
+      if (cellWidth > longestComputedCellWidth) longestComputedCellWidth = cellWidth;
+    });
+  
+    constructedMatrix.style.setProperty("--matrix-cell-height", `${highestComputedCellHeight}px`);
+    constructedMatrix.style.setProperty("--matrix-cell-width", `${longestComputedCellWidth}px`);
+  });
+
+  animate(
+    dialog,
+    {
+      scale: "0.9",
+      opacity: "0",
+    },
+    {
+      scale: "1",
+      opacity: "1",
+    },
+    250,
+  );
+
+  dialog.showModal();
+
+  dialog.addEventListener("close", () => {
+    animate(
+      dialog,
+      {
+        scale: "1",
+        opacity: "1",
+      },
+      {
+        scale: "0.9",
+        opacity: "0",
+      },
+      250,
+    );
+    setTimeout(() => {
+      dialog.remove();
+    }, 250);
+  });
+
+  document.addEventListener("pointerdown", (e) => {
+    if (!dialog.contains(e.target)) {
+      closeModal();
+    }
+  });
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+      closeModal();
+    }
+  });
+
+  function closeModal() {
+    animate(
+      dialog,
+      {
+        scale: "1",
+        opacity: "1",
+      },
+      {
+        scale: "0.9",
+        opacity: "0",
+      },
+      250,
+    );
+    setTimeout(() => {
+      dialog.close();
+    }, 250);
+  }
+
+  return dialog;
+}
