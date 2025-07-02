@@ -217,6 +217,80 @@ try {
         });
     }
 
+    if (document.querySelector('.backups')) {
+      // if (document.getElementById('create-backup-button')) document.getElementById('create-backup-button').addEventListener('click', createBackupModal);
+      await fetch(domain + '/backups', {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          usr: storage.get("usr"),
+          pwd: storage.get("pwd"),
+        }),
+      })
+        .then(async (r) => {
+          if (!r.ok) {
+            try {
+              var re = await r.json();
+              if (re.error || re.message) {
+                ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+                throw new Error(re.error || re.message);
+              } else {
+                throw new Error("API error");
+              }
+            } catch (e) {
+              throw new Error(e.message || "API error");
+            }
+          }
+          return await r.json();
+        })
+        .then(backups => {
+          document.querySelector('.backups').innerHTML = '<div class="row header"><span>Name</span><span>Modified</span><span>Size</span><span>Actions</span></div>';
+          if (backups.length > 0) {
+            document.getElementById('no-backups').setAttribute('hidden', '');
+            document.querySelector('.backups').removeAttribute('hidden');
+          }
+          backups = backups.sort((a, b) => new Date(a.modified) - new Date(b.modified));
+          function humanReadableFileSize(size) {
+            const units = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+            let unitIndex = 0;
+            while (size >= 1024 && unitIndex < units.length - 1) {
+              size /= 1024;
+              unitIndex++;
+            }
+            return `${size.toFixed(2)} ${units[unitIndex]}`;
+          }
+          backups.forEach(backup => {
+            document.querySelector('.backups').innerHTML += `<div class="enhanced-item" id="${backup.file_name}">
+              <span class="file_name">${backup.file_name} <code>ZIP</code></span>
+              <span class="modified">${backup.modified}</span>
+              <span class="size">${humanReadableFileSize(backup.size)}</span>
+              <span class="actions">
+                <button class="icon" data-download-backup tooltip="Download Backup (ZIP)">
+                  <i class="bi bi-download"></i>
+                </button>
+                <button class="icon" data-delete-backup tooltip="Delete Backup">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </span>
+            </div>`;
+          });
+          // document.querySelectorAll('[data-download-backup]').forEach(button => button.addEventListener('click', downloadBackupModal));
+          // document.querySelectorAll('[data-delete-backup]').forEach(button => button.addEventListener('click', deleteBackupModal));
+          document.querySelector('.backups').innerHTML += `<button id="delete-backups-button">Delete All Backups</button>`;
+          document.getElementById('delete-backups-button').addEventListener('click', deleteBackupsModal);
+          ui.stopLoader();
+          active = true;
+        })
+        .catch((e) => {
+          console.error(e);
+          ui.view("api-fail");
+          if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
+          pollingOff();
+        });
+    }
+
     await fetch(domain + '/courses', {
       method: "GET",
       headers: {
@@ -3765,6 +3839,71 @@ try {
       .then(() => {
         ui.setUnsavedChanges(false);
         ui.toast("Successfully removed OTP.", 3000, "success", "bi bi-check-lg");
+        init();
+      })
+      .catch((e) => {
+        console.error(e);
+        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
+        pollingOff();
+      });
+  }
+
+  function deleteBackupsModal() {
+    if (!active) return;
+    ui.modal({
+      title: 'Delete All Backups',
+      body: '<p>Are you sure you would like to delete all backups? This action is not reversible.</p>',
+      buttons: [
+        {
+          text: 'Cancel',
+          class: 'cancel-button',
+          close: true,
+        },
+        {
+          text: 'Delete',
+          class: 'submit-button',
+          onclick: () => {
+            deleteBackups();
+          },
+          close: true,
+        },
+      ],
+    });
+  }
+
+  function deleteBackups() {
+    if (!active) return;
+    ui.setUnsavedChanges(true);
+    fetch(domain + '/backups', {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        usr: storage.get("usr"),
+        pwd: storage.get("pwd"),
+      }),
+    })
+      .then(async (r) => {
+        if (!r.ok) {
+          try {
+            var re = await r.json();
+            if (re.error || re.message) {
+              ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+              throw new Error(re.error || re.message);
+            } else {
+              throw new Error("API error");
+            }
+          } catch (e) {
+            throw new Error(e.message || "API error");
+          }
+        }
+        return await r.json();
+      })
+      .then(() => {
+        ui.setUnsavedChanges(false);
+        ui.toast("Successfully deleted all backups.", 3000, "success", "bi bi-check-lg");
         init();
       })
       .catch((e) => {

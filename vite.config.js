@@ -36,6 +36,7 @@ export default {
         ta: new URL('ta/index.html', import.meta.url).pathname,
         logs: new URL('admin/logs.html', import.meta.url).pathname,
         otps: new URL('admin/otps.html', import.meta.url).pathname,
+        backups: new URL('admin/backups.html', import.meta.url).pathname,
       },
     },
   },
