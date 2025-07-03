@@ -218,7 +218,7 @@ try {
     }
 
     if (document.querySelector('.backups')) {
-      // if (document.getElementById('create-backup-button')) document.getElementById('create-backup-button').addEventListener('click', createBackupModal);
+      if (document.getElementById('create-backup-button')) document.getElementById('create-backup-button').addEventListener('click', createBackupModal);
       await fetch(domain + '/backups', {
         method: "POST",
         headers: {
@@ -246,12 +246,12 @@ try {
           return await r.json();
         })
         .then(backups => {
-          document.querySelector('.backups').innerHTML = '<div class="row header"><span>Name</span><span>Modified</span><span>Size</span><span>Actions</span></div>';
+          document.querySelector('.backups').innerHTML = '<div class="row header"><span>Name</span><span>Type</span><span>Modified</span><span>Size</span><span>Actions</span></div>';
           if (backups.length > 0) {
             document.getElementById('no-backups').setAttribute('hidden', '');
             document.querySelector('.backups').removeAttribute('hidden');
           }
-          backups = backups.sort((a, b) => new Date(a.modified) - new Date(b.modified));
+          backups = backups.sort((a, b) => new Date(b.modified) - new Date(a.modified));
           function humanReadableFileSize(size) {
             const units = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
             let unitIndex = 0;
@@ -263,11 +263,12 @@ try {
           }
           backups.forEach(backup => {
             document.querySelector('.backups').innerHTML += `<div class="enhanced-item" id="${backup.file_name}">
-              <span class="file_name">${backup.file_name} <code>ZIP</code></span>
-              <span class="modified">${backup.modified}</span>
+              <span class="file_name">${backup.file_name.split('.')[0]}</span>
+              <span class="type"><code>${backup.file_name.split('.')[1].toUpperCase()}</code></span>
+              <span class="modified">${time.unixToString(backup.modified)}</span>
               <span class="size">${humanReadableFileSize(backup.size)}</span>
               <span class="actions">
-                <button class="icon" data-download-backup tooltip="Download Backup (ZIP)">
+                <button class="icon" data-download-backup tooltip="Download Backup (${backup.file_name.split('.')[1].toUpperCase()})">
                   <i class="bi bi-download"></i>
                 </button>
                 <button class="icon" data-delete-backup tooltip="Delete Backup">
@@ -276,9 +277,9 @@ try {
               </span>
             </div>`;
           });
-          // document.querySelectorAll('[data-download-backup]').forEach(button => button.addEventListener('click', downloadBackupModal));
-          // document.querySelectorAll('[data-delete-backup]').forEach(button => button.addEventListener('click', deleteBackupModal));
           document.querySelector('.backups').innerHTML += `<button id="delete-backups-button">Delete All Backups</button>`;
+          // document.querySelectorAll('[data-download-backup]').forEach(button => button.addEventListener('click', downloadBackupModal));
+          document.querySelectorAll('[data-delete-backup]').forEach(button => button.addEventListener('click', deleteBackupModal));
           document.getElementById('delete-backups-button').addEventListener('click', deleteBackupsModal);
           ui.stopLoader();
           active = true;
@@ -3849,6 +3850,76 @@ try {
       });
   }
 
+  function createBackupModal() {
+    if (!active) return;
+    ui.modal({
+      title: 'Create Backup',
+      body: '<p>Create a downloadable ZIP file backup of server contents. The backup will include all site pages, scripts, stylesheets, other assets, frontend files, frontend beta files, API files, necessary scripts, uploaded files (question images and syllabus), recently exported reports and backups, databases, templates, and server management files. Files containing hashed user passwords will not be included in the backup. Contact your hosting provider to access these private files, or log in to your hosting panel.</p>',
+      buttons: [
+        {
+          text: 'Cancel',
+          class: 'cancel-button',
+          close: true,
+        },
+        {
+          text: 'Create',
+          class: 'submit-button',
+          onclick: () => {
+            createBackup();
+          },
+          close: true,
+        },
+      ],
+    });
+  }
+
+  function createBackup() {
+    if (!active) return;
+    ui.toast("Generating backup...", 3000, "info", "bi bi-download");
+    ui.setUnsavedChanges(true);
+    fetch(domain + '/backup', {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        usr: storage.get("usr"),
+        pwd: storage.get("pwd"),
+      }),
+    })
+      .then(async (r) => {
+        if (!r.ok) {
+          try {
+            var re = await r.json();
+            if (re.error || re.message) {
+              ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+              throw new Error(re.error || re.message);
+            } else {
+              throw new Error("API error");
+            }
+          } catch (e) {
+            throw new Error(e.message || "API error");
+          }
+        }
+        return await r.json();
+      })
+      .then(r => {
+        ui.setUnsavedChanges(false);
+        if (!r || !r.filename) {
+          ui.toast("Error generating backup.", 3000, "error", "bi bi-exclamation-triangle-fill");
+          return;
+        }
+        ui.toast("Backup generated successfully.", 3000, "success", "bi bi-check-circle-fill");
+        ui.view();
+        init();
+      })
+      .catch((e) => {
+        console.error(e);
+        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
+      });
+  }
+
   function deleteBackupsModal() {
     if (!active) return;
     ui.modal({
@@ -3904,6 +3975,76 @@ try {
       .then(() => {
         ui.setUnsavedChanges(false);
         ui.toast("Successfully deleted all backups.", 3000, "success", "bi bi-check-lg");
+        init();
+      })
+      .catch((e) => {
+        console.error(e);
+        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
+        pollingOff();
+      });
+  }
+
+  function deleteBackupModal() {
+    if (!active) return;
+    const file_name = this.parentElement.parentElement.querySelector('.file_name').innerText;
+    const type = this.parentElement.parentElement.querySelector('.type').innerText;
+    const modified = this.parentElement.parentElement.querySelector('.modified').innerText;
+    const size = this.parentElement.parentElement.querySelector('.size').innerText;
+    ui.modal({
+      title: 'Delete Backup',
+      body: `<p>Are you sure you would like to delete backup? This action is not reversible.<br><br>Name: ${file_name}<br>Type: ${type}<br>Modified: ${modified}<br>Size: ${size}</p>`,
+      buttons: [
+        {
+          text: 'Cancel',
+          class: 'cancel-button',
+          close: true,
+        },
+        {
+          text: 'Delete',
+          class: 'submit-button',
+          onclick: () => {
+            deleteBackup(file_name, type);
+          },
+          close: true,
+        },
+      ],
+    });
+  }
+
+  function deleteBackup(file_name, type) {
+    if (!active) return;
+    ui.setUnsavedChanges(true);
+    fetch(domain + '/backup', {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        usr: storage.get("usr"),
+        pwd: storage.get("pwd"),
+        file_name: `${file_name}.${type.toLowerCase()}`,
+      }),
+    })
+      .then(async (r) => {
+        if (!r.ok) {
+          try {
+            var re = await r.json();
+            if (re.error || re.message) {
+              ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+              throw new Error(re.error || re.message);
+            } else {
+              throw new Error("API error");
+            }
+          } catch (e) {
+            throw new Error(e.message || "API error");
+          }
+        }
+        return await r.json();
+      })
+      .then(() => {
+        ui.setUnsavedChanges(false);
+        ui.toast("Successfully deleted backup.", 3000, "success", "bi bi-check-lg");
         init();
       })
       .catch((e) => {
