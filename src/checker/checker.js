@@ -28,7 +28,7 @@ try {
   const questionImages = document.querySelector('.images');
   const nextQuestionButtons = document.querySelectorAll('[data-next-question]');
   const prevQuestionButtons = document.querySelectorAll('[data-prev-question]');
-  var period = document.getElementById("period-input").value;
+  var period = document.getElementById("period-input")?.value;
 
   var courses = [];
   let currentAnswerMode;
@@ -107,6 +107,8 @@ try {
     if (!storage.get("questionsAnswered")) storage.set("questionsAnswered", []);
     document.querySelector("[data-sync]").addEventListener("click", () => auth.sync(domain));
     ui.reloadUnsavedInputs();
+  } else {
+    ui.stopLoader();
   };
 
   window.addEventListener('beforeunload', function (event) {
@@ -247,27 +249,27 @@ try {
   };
 
   // Submit check
-  document.getElementById("submit-button").addEventListener("click", () => processCheck());
+  document.getElementById("submit-button")?.addEventListener("click", () => processCheck());
 
   // Save check
   document.querySelectorAll(".frq-parts .part button").forEach(button => button.addEventListener("click", () => processCheck(button.getAttribute("data-save-part"))));
 
   // Remove attention ring when user types in either input
-  segmentInput.addEventListener("input", (e) => {
+  segmentInput?.addEventListener("input", (e) => {
     e.target.classList.remove("attention");
   });
-  questionInput.addEventListener("input", (e) => {
+  questionInput?.addEventListener("input", (e) => {
     e.target.classList.remove("attention");
   });
-  answerInput.addEventListener("input", (e) => {
+  answerInput?.addEventListener("input", (e) => {
     e.target.classList.remove("attention");
   });
-  mf.addEventListener("input", (e) => {
+  mf?.addEventListener("input", (e) => {
     e.target.classList.remove("attention");
   });
 
   // Prevent MathLive default behavior
-  mf.addEventListener("keydown", (e) => {
+  mf?.addEventListener("keydown", (e) => {
     if (e.ctrlKey && e.key == "Enter") {
       e.preventDefault();
     }
@@ -391,12 +393,12 @@ try {
   }
 
   // Limit seat code input to integers
-  document.getElementById("code-input").addEventListener("input", (e) => {
+  document.getElementById("code-input")?.addEventListener("input", (e) => {
     e.target.value = parseInt(e.target.value) || "";
   });
 
   // Save seat code on enter
-  document.getElementById("code-input").addEventListener("keydown", (e) => {
+  document.getElementById("code-input")?.addEventListener("keydown", (e) => {
     if (e.key == "Enter") {
       e.preventDefault();
       saveCode();
@@ -404,7 +406,7 @@ try {
   });
 
   // Save seat code button
-  document.getElementById("save-code-button").addEventListener("click", saveCode);
+  document.getElementById("save-code-button")?.addEventListener("click", saveCode);
 
   // Save seat code
   function saveCode() {
@@ -1503,20 +1505,18 @@ try {
   }
 
   // Change FRQ choice
-  frqInput.addEventListener("change", (input) => {
+  frqInput?.addEventListener("change", (input) => {
     ui.setUnsavedChanges(true);
     document.querySelector('[data-answer-mode="frq"] h1').innerText = input.target.value;
   });
 
-  frqInput.addEventListener("input", (input) => {
+  frqInput?.addEventListener("input", (input) => {
     ui.setUnsavedChanges(true);
     document.querySelector('[data-answer-mode="frq"] h1').innerText = input.target.value;
   });
 
   // Add FRQ part
-  if (document.querySelector("[data-add-frq-part]")) {
-    document.querySelector("[data-add-frq-part]").addEventListener("click", addPart);
-  }
+  if (document.querySelector("[data-add-frq-part]")) document.querySelector("[data-add-frq-part]").addEventListener("click", addPart);
 
   function addPart() {
     ui.setUnsavedChanges(true);
