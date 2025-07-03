@@ -77,6 +77,9 @@ try {
           if (users.length > 0) {
             document.getElementById('no-users').setAttribute('hidden', '');
             document.querySelector('.users').removeAttribute('hidden');
+          } else {
+            document.getElementById('no-users').removeAttribute('hidden');
+            document.querySelector('.users').setAttribute('hidden', '');
           }
           users = users.sort((a, b) => {
             const roleA = a.role.toLowerCase();
@@ -191,6 +194,9 @@ try {
           if (otps.length > 0) {
             document.getElementById('no-otps').setAttribute('hidden', '');
             document.querySelector('.otps').removeAttribute('hidden');
+          } else {
+            document.getElementById('no-otps').removeAttribute('hidden');
+            document.querySelector('.otps').setAttribute('hidden', '');
           }
           otps = otps.sort((a, b) => a.seatCode - b.seatCode);
           otps.forEach(otp => {
@@ -246,10 +252,13 @@ try {
           return await r.json();
         })
         .then(backups => {
-          document.querySelector('.backups').innerHTML = '<div class="row header"><span>Name</span><span>Type</span><span>Modified</span><span>Size</span><span>Actions</span></div>';
+          document.querySelector('.backups').innerHTML = '<div></div><div class="row header"><span>Name</span><span>Type</span><span>Modified</span><span>Size</span><span>Actions</span></div>';
           if (backups.length > 0) {
             document.getElementById('no-backups').setAttribute('hidden', '');
             document.querySelector('.backups').removeAttribute('hidden');
+          } else {
+            document.getElementById('no-backups').removeAttribute('hidden');
+            document.querySelector('.backups').setAttribute('hidden', '');
           }
           backups = backups.sort((a, b) => new Date(b.modified) - new Date(a.modified));
           function humanReadableFileSize(size) {
@@ -3852,9 +3861,27 @@ try {
 
   function createBackupModal() {
     if (!active) return;
+    if ([...document.querySelectorAll('.backups .modified')].find(b => b.innerText === time.unixToString(new Date()))) return ui.toast("Wait 1 minute before requesting another backup.", 5000, "error", "bi bi-exclamation-triangle-fill");
     ui.modal({
       title: 'Create Backup',
       body: '<p>Create a downloadable ZIP file backup of server contents. The backup will include all site pages, scripts, stylesheets, other assets, frontend files, frontend beta files, API files, necessary scripts, uploaded files (question images and syllabus), recently exported reports and backups, databases, templates, and server management files. Files containing hashed user passwords will not be included in the backup. Contact your hosting provider to access these private files, or log in to your hosting panel.</p>',
+      inputs: [
+        {
+          label: 'Include Previous Backups',
+          type: 'select',
+          options: [
+            {
+              value: 'true',
+              text: 'Yes'
+            },
+            {
+              value: 'false',
+              text: 'No'
+            }
+          ],
+          defaultValue: 'false',
+        },
+      ],
       buttons: [
         {
           text: 'Cancel',
@@ -3864,8 +3891,8 @@ try {
         {
           text: 'Create',
           class: 'submit-button',
-          onclick: () => {
-            createBackup();
+          onclick: (inputValue) => {
+            createBackup(inputValue);
           },
           close: true,
         },
@@ -3873,7 +3900,7 @@ try {
     });
   }
 
-  function createBackup() {
+  function createBackup(inputValue) {
     if (!active) return;
     ui.toast("Generating backup...", 3000, "info", "bi bi-download");
     ui.setUnsavedChanges(true);
@@ -3885,6 +3912,7 @@ try {
       body: JSON.stringify({
         usr: storage.get("usr"),
         pwd: storage.get("pwd"),
+        include_previous_backups: inputValue || false,
       }),
     })
       .then(async (r) => {
