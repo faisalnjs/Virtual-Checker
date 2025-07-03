@@ -271,7 +271,7 @@ try {
             return `${size.toFixed(2)} ${units[unitIndex]}`;
           }
           backups.forEach(backup => {
-            document.querySelector('.backups').innerHTML += `<div class="enhanced-item" id="${backup.file_name}">
+            document.querySelector('.backups').innerHTML += `<div class="enhanced-item" id="${backup.full_url}">
               <span class="file_name">${backup.file_name.split('.')[0]}</span>
               <span class="type"><code>${backup.file_name.split('.')[1].toUpperCase()}</code></span>
               <span class="modified">${time.unixToString(backup.modified)}</span>
@@ -287,7 +287,7 @@ try {
             </div>`;
           });
           document.querySelector('.backups').innerHTML += `<button id="delete-backups-button">Delete All Backups</button>`;
-          // document.querySelectorAll('[data-download-backup]').forEach(button => button.addEventListener('click', downloadBackupModal));
+          document.querySelectorAll('[data-download-backup]').forEach(button => button.addEventListener('click', downloadBackupModal));
           document.querySelectorAll('[data-delete-backup]').forEach(button => button.addEventListener('click', deleteBackupModal));
           document.getElementById('delete-backups-button').addEventListener('click', deleteBackupsModal);
           ui.stopLoader();
@@ -3946,6 +3946,44 @@ try {
         if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
         if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
       });
+  }
+
+  function downloadBackupModal() {
+    if (!active) return;
+    const filename = this.parentElement.parentElement.id;
+    const file_name = this.parentElement.parentElement.querySelector('.file_name').innerText;
+    const type = this.parentElement.parentElement.querySelector('.type').innerText;
+    const modified = this.parentElement.parentElement.querySelector('.modified').innerText;
+    const size = this.parentElement.parentElement.querySelector('.size').innerText;
+    ui.modal({
+      title: 'Download Backup',
+      body: `<p>Downloading this <code>${type}</code> backup will take up ${size} of disk space on your hard drive.<br><br>Name: ${file_name}<br>Type: ${type}<br>Modified: ${modified}<br>Size: ${size}</p>`,
+      buttons: [
+        {
+          text: 'Cancel',
+          class: 'cancel-button',
+          close: true,
+        },
+        {
+          text: 'Download',
+          class: 'submit-button',
+          onclick: () => {
+            this.disabled = true;
+            ui.toast(`Downloading ${file_name}.${type.toLowerCase()}...`, 3000, "info", "bi bi-download");
+            const link = document.createElement('a');
+            link.href = filename;
+            link.download = filename.split('/')[filename.split('/').length - 1];
+            console.log(link.href, link.download)
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            this.disabled = false;
+            ui.toast("Backup downloaded successfully.", 3000, "success", "bi bi-check-circle-fill");
+          },
+          close: true,
+        },
+      ],
+    });
   }
 
   function deleteBackupsModal() {
