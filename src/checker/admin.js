@@ -9,6 +9,7 @@ import { createSwapy } from "swapy";
 const domain = ((window.location.hostname.search('check') != -1) || (window.location.hostname.search('127') != -1)) ? 'https://api.check.vssfalcons.com' : `http://${document.domain}:5000`;
 if (window.location.pathname.split('?')[0].endsWith('/admin')) window.location.pathname = '/admin/';
 
+var archiveTypeSelected = null;
 var courses = [];
 var segments = [];
 var questions = [];
@@ -299,6 +300,59 @@ try {
           if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
           pollingOff();
         });
+    }
+
+    if (document.querySelector('.archives')) {
+      archiveType("courses");
+      document.getElementById("archive-type-selector").addEventListener("input", (e) => {
+        const mode = e.detail;
+        archiveType(mode);
+      });
+      await fetch(domain + '/archive', {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          usr: storage.get("usr"),
+          pwd: storage.get("pwd"),
+        }),
+      })
+        .then(async (r) => {
+          if (!r.ok) {
+            try {
+              var re = await r.json();
+              if (re.error || re.message) {
+                ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+                throw new Error(re.error || re.message);
+              } else {
+                throw new Error("API error");
+              }
+            } catch (e) {
+              throw new Error(e.message || "API error");
+            }
+          }
+          return await r.json();
+        })
+        .then(archive => {
+          console.log('Archive content', archive);
+          courses = archive.courses;
+          segments = archive.segments;
+          questions = archive.questions;
+          answers = archive.answers;
+          responses = archive.responses;
+          updateCourses();
+          updateSegments();
+          ui.stopLoader();
+          active = true;
+        })
+        .catch((e) => {
+          console.error(e);
+          ui.view("api-fail");
+          if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
+          pollingOff();
+        });
+      return;
     }
 
     await fetch(domain + '/courses', {
@@ -661,13 +715,58 @@ try {
     }
   }
 
+  function updateCourses() {
+    const coursesArchiveTab = document.querySelector('[data-archive-type="courses"]');
+    if (coursesArchiveTab) {
+      const coursesArchives = coursesArchiveTab.querySelector('.archives');
+      const coursesArchivesList = coursesArchives.querySelector('.section');
+      if (courses.length > 0) {
+        coursesArchiveTab.querySelector('#no-archive').setAttribute('hidden', '');
+        coursesArchives.removeAttribute('hidden');
+      } else {
+        coursesArchiveTab.querySelector('#no-archive').removeAttribute('hidden');
+        coursesArchives.setAttribute('hidden', '');
+      }
+      coursesArchivesList.innerHTML = '';
+      courses.sort((a, b) => a.id - b.id).forEach(course => {
+        var buttonGrid = document.createElement('div');
+        buttonGrid.className = "button-grid inputs";
+        buttonGrid.setAttribute('archive-type', 'course');
+        buttonGrid.id = course.id;
+        buttonGrid.innerHTML = `<button square data-select tooltip="Select Item"><i class="bi bi-circle"></i><i class="bi bi-circle-fill"></i></button>
+        <div class="input-group small">
+          <div class="space" id="question-container">
+            <input type="text" autocomplete="off" id="course-id-input" value="${course.id}" disabled />
+          </div>
+        </div>
+        <div class="input-group">
+          <div class="space" id="question-container">
+            <input type="text" autocomplete="off" id="course-name-input" value="${course.name}" disabled />
+          </div>
+        </div>
+        <div class="input-group">
+          <div class="space" id="question-container">
+            <input type="text" autocomplete="off" id="course-periods-input" value="${JSON.parse(course.periods).join(', ')}" disabled />
+          </div>
+        </div>
+        <div class="input-group">
+          <div class="space" id="question-container">
+            <input type="text" autocomplete="off" id="course-syllabus-input" value="${course.syllabus || ''}" disabled />
+          </div>
+        </div>
+        <button square data-restore-item tooltip="Restore Item"><i class="bi bi-arrow-counterclockwise"></i></button>`;
+        coursesArchivesList.appendChild(buttonGrid);
+      });
+    }
+  }
+
   function updateSegments() {
     expandedReports = [];
     document.querySelectorAll('.detailed-report.active').forEach(dr => expandedReports.push(dr.id));
     const course = courses.find(c => document.getElementById("course-period-input") ? (String(c.id) === document.getElementById("course-period-input").value) : null);
     if (document.getElementById("course-input") && course) document.getElementById("course-input").value = course.name;
     var c = segments.filter(s => String(s.course) === String(course.id));
-    if (!course) document.querySelector('[data-syllabus-upload]').setAttribute('hidden', '');
+    if (!course && document.querySelector('[data-syllabus-upload]')) document.querySelector('[data-syllabus-upload]').setAttribute('hidden', '');
     if (course && course.syllabus) {
       if (document.querySelector('[data-syllabus-upload]')) document.querySelector('[data-syllabus-upload]').setAttribute('hidden', '');
       if (document.querySelector('[data-syllabus-remove]')) document.querySelector('[data-syllabus-remove]').parentElement.removeAttribute('hidden');
@@ -4119,6 +4218,36 @@ try {
         if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
         pollingOff();
       });
+  }
+
+  function archiveType(mode) {
+    const current = document.querySelector(`[data-archive-type="${archiveTypeSelected}"]`);
+    const fromHeight = current?.getBoundingClientRect().height;
+    if (archiveTypeSelected == mode) return;
+    document.querySelectorAll("[data-archive-type]").forEach((item) => {
+      if (item.getAttribute("data-archive-type") == mode) {
+        item.style.removeProperty("display");
+      } else {
+        item.style.display = "none";
+      }
+    });
+    const container = document.getElementById("answer-container");
+    const target = document.querySelector(`[data-archive-type="${mode}"]`);
+    const toHeight = target.getBoundingClientRect().height;
+    ui.animate(
+      container,
+      fromHeight
+        ? {
+          height: fromHeight + "px",
+        }
+        : undefined,
+      {
+        height: toHeight + "px",
+      },
+      500,
+      false,
+    );
+    archiveTypeSelected = mode;
   }
 } catch (error) {
   if (storage.get("developer")) {

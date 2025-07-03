@@ -113,7 +113,8 @@ div.spacer {
   overflow: hidden;
 }
 
-[data-answer-mode] {
+[data-answer-mode],
+[data-archive-type] {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
@@ -179,7 +180,7 @@ div.spacer {
 
 [data-answer-mode="frq"] .frq-parts .part {
   display: flex;
-  gap: .25rem;
+  gap: 0.25rem;
   width: -webkit-fill-available;
   position: relative;
 }
@@ -292,7 +293,6 @@ div.spacer {
   margin-bottom: 10px;
 }
 
-
 .history-feed > button > p:empty {
   display: none;
 }
@@ -309,7 +309,7 @@ div.spacer {
   font-variant: normal;
   text-transform: none;
   line-height: 1;
-  vertical-align: -.125em;
+  vertical-align: -0.125em;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   content: "\f3cb";
