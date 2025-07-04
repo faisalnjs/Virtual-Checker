@@ -4311,6 +4311,9 @@ try {
         case 'segment':
           itemName = segments.find(s => String(s.number) === itemId).name;
           break;
+        case 'question':
+          itemName = questions.find(q => String(q.id) === itemId).number;
+          break;
         default:
           return ui.toast("Item to archive not found.", 5000, "error", "bi bi-exclamation-triangle-fill");
       }
