@@ -725,6 +725,26 @@ body:has(.selecting) #controls-container button:has(.bi-archive):not([data-archi
   display: none;
 }
 
+body:has(.selecting) #controls-container [data-polling] {
+  display: none;
+}
+
+body:has(.selecting) #controls-container [data-timestamps] {
+  display: none;
+}
+
+body:has(.selecting) #controls-container [data-clear-responses] {
+  display: none;
+}
+
+body:has(.selecting) [data-flag-response] {
+  display: none;
+}
+
+body:has(.selecting) [data-unflag-response] {
+  display: none;
+}
+
 .section:not(:has(.expanded)) {
   gap: 7.5px;
   transition: 0.25s gap var(--easing);
