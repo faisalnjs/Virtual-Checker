@@ -645,6 +645,7 @@ try {
   if (document.getElementById('export-report')) document.getElementById('export-report').addEventListener("click", exportReport);
   if (document.querySelector('[data-archive-course]')) document.querySelector('[data-archive-course]').addEventListener("click", () => archiveModal('course'));
   if (document.querySelector('[data-archive-segment]')) document.querySelector('[data-archive-segment]').addEventListener("click", () => archiveModal('segment'));
+  if (document.querySelector('[data-archive-multiple]')) document.querySelector('[data-archive-multiple]').addEventListener("click", archiveMultipleModal);
 
   function toggleSelecting() {
     if (!active) return;
@@ -4286,7 +4287,7 @@ try {
           close: true,
         },
         {
-          text: 'Continue',
+          text: 'Archive',
           class: 'submit-button',
           onclick: () => {
             archive(itemType, String(itemId), itemName);
@@ -4297,11 +4298,59 @@ try {
     });
   }
 
-  function archive(itemType, itemId, itemName = null) {
+  function archiveMultipleModal() {
+    if (!active) return;
+    var archivingList = [];
+    var archivingListString = "";
+    document.querySelectorAll('.selected').forEach(e => {
+      if (!e.id) return;
+      var itemType = e.id.split('-')[0];
+      var itemId = e.id.split('-')[1];
+      var itemName = null;
+      switch(itemType) {
+        case 'segment':
+          itemName = segments.find(s => String(s.number) === itemId).name;
+          break;
+        default:
+          return ui.toast("Item to archive not found.", 5000, "error", "bi bi-exclamation-triangle-fill");
+      }
+      if ((typeof itemId === 'object') || (typeof itemId === 'undefined')) return ui.toast("Item to archive not found.", 5000, "error", "bi bi-exclamation-triangle-fill");
+      archivingList.push({
+        type: itemType,
+        id: itemId,
+        name: itemName,
+      });
+      archivingListString += `<br>${itemName || itemId}`;
+    });
+    if (archivingList.length === 0) return ui.toast("No items selected.", 5000, "error", "bi bi-exclamation-triangle-fill");
+    ui.modal({
+      title: 'Archive Selected',
+      body: `<p>Archiving these ${archivingList[0].type}s will hide them from student view and admin-side management, and will only be accessible from the Archive page. After archiving these ${archivingList[0].type}s, editing them will be disabled.<br>${archivingListString}</p>`,
+      buttons: [
+        {
+          text: 'Cancel',
+          class: 'cancel-button',
+          close: true,
+        },
+        {
+          text: 'Archive Selected',
+          class: 'submit-button',
+          onclick: async () => {
+            for (var i = 0; i < archivingList.length; i++) {
+              await archive(archivingList[i].type, String(archivingList[i].id), archivingList[i].name);
+            }
+          },
+          close: true,
+        },
+      ],
+    });
+  }
+
+  async function archive(itemType, itemId, itemName = null) {
     if (!active || !itemType || !itemId) return;
     ui.toast(`Archiving ${itemType} ${itemName || itemId}...`, 3000, "info", "bi bi-archive");
     ui.setUnsavedChanges(true);
-    fetch(domain + '/archive', {
+    await fetch(domain + '/archive', {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -4342,11 +4391,11 @@ try {
       });
   }
 
-  function unarchive(itemType, itemId, itemName = null) {
+  async function unarchive(itemType, itemId, itemName = null) {
     if (!active || !itemType || !itemId) return;
     ui.toast(`Unarchiving ${itemType} ${itemName || itemId}...`, 3000, "info", "bi bi-archive");
     ui.setUnsavedChanges(true);
-    fetch(domain + '/unarchive', {
+    await fetch(domain + '/unarchive', {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
