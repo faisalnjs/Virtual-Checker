@@ -643,6 +643,8 @@ try {
   if (document.getElementById('remove-segments-due-dates-button')) document.getElementById('remove-segments-due-dates-button').addEventListener("click", removeAllSegmentsDueDates);
   if (document.querySelector('[data-clear-responses]')) document.querySelector('[data-clear-responses]').addEventListener("click", clearResponsesConfirm1);
   if (document.getElementById('export-report')) document.getElementById('export-report').addEventListener("click", exportReport);
+  if (document.querySelector('[data-archive-course]')) document.querySelector('[data-archive-course]').addEventListener("click", () => archiveModal('course'));
+  if (document.querySelector('[data-archive-segment]')) document.querySelector('[data-archive-segment]').addEventListener("click", () => archiveModal('segment'));
 
   function toggleSelecting() {
     if (!active) return;
@@ -4248,6 +4250,129 @@ try {
       false,
     );
     archiveTypeSelected = mode;
+  }
+
+  function archiveModal(itemType, itemId = null) {
+    if (!active) return;
+    var itemName = null;
+    if (!itemId) {
+      switch(itemType) {
+        case 'course':
+          itemId = document.getElementById("course-period-input") ? courses.find(c => (String(c.id) === document.getElementById("course-period-input").value))?.id : null;
+          itemName = document.getElementById("course-period-input") ? courses.find(c => (String(c.id) === document.getElementById("course-period-input").value))?.name : null;
+          break;
+        default:
+          return;
+      }
+    }
+    if ((typeof itemId === 'object') || (typeof itemId === 'undefined')) return ui.toast("Item to archive not found.", 5000, "error", "bi bi-exclamation-triangle-fill");
+    ui.modal({
+      title: 'Archive Item',
+      body: `<p>Archiving this ${itemType} will hide it from student view and admin-side management, and will only be accessible from the Archive page. After archiving this ${itemType}, editing it will be disabled.</p>`,
+      buttons: [
+        {
+          text: 'Cancel',
+          class: 'cancel-button',
+          close: true,
+        },
+        {
+          text: 'Continue',
+          class: 'submit-button',
+          onclick: () => {
+            archive(itemType, String(itemId), itemName);
+          },
+          close: true,
+        },
+      ],
+    });
+  }
+
+  function archive(itemType, itemId, itemName = null) {
+    if (!active || !itemType || !itemId) return;
+    ui.toast(`Archiving ${itemType} ${itemName || itemId}...`, 3000, "info", "bi bi-archive");
+    ui.setUnsavedChanges(true);
+    fetch(domain + '/archive', {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        usr: storage.get("usr"),
+        pwd: storage.get("pwd"),
+        item_type: itemType,
+        item_id: itemId,
+      }),
+    })
+      .then(async (r) => {
+        if (!r.ok) {
+          try {
+            var re = await r.json();
+            if (re.error || re.message) {
+              ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+              throw new Error(re.error || re.message);
+            } else {
+              throw new Error("API error");
+            }
+          } catch (e) {
+            throw new Error(e.message || "API error");
+          }
+        }
+        return await r.json();
+      })
+      .then(() => {
+        ui.setUnsavedChanges(false);
+        ui.toast(`Successfully archived ${itemType} ${itemName || itemId}.`, 3000, "success", "bi bi-check-lg");
+        init();
+      })
+      .catch((e) => {
+        console.error(e);
+        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
+      });
+  }
+
+  function unarchive(itemType, itemId, itemName = null) {
+    if (!active || !itemType || !itemId) return;
+    ui.toast(`Unarchiving ${itemType} ${itemName || itemId}...`, 3000, "info", "bi bi-archive");
+    ui.setUnsavedChanges(true);
+    fetch(domain + '/unarchive', {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        usr: storage.get("usr"),
+        pwd: storage.get("pwd"),
+        item_type: itemType,
+        item_id: itemId,
+      }),
+    })
+      .then(async (r) => {
+        if (!r.ok) {
+          try {
+            var re = await r.json();
+            if (re.error || re.message) {
+              ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+              throw new Error(re.error || re.message);
+            } else {
+              throw new Error("API error");
+            }
+          } catch (e) {
+            throw new Error(e.message || "API error");
+          }
+        }
+        return await r.json();
+      })
+      .then(() => {
+        ui.setUnsavedChanges(false);
+        ui.toast(`Successfully unarchived ${itemType} ${itemName || itemId}.`, 3000, "success", "bi bi-check-lg");
+        init();
+      })
+      .catch((e) => {
+        console.error(e);
+        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
+      });
   }
 } catch (error) {
   if (storage.get("developer")) {
