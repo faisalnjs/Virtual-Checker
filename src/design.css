@@ -452,6 +452,34 @@ div.ML__keyboard {
   min-width: 36px;
 }
 
+[data-multiple-choice="a"]:hover::before {
+  content: "Yes | ";
+}
+
+[data-multiple-choice="a"]:hover::after {
+  content: " | True";
+}
+
+[data-multiple-choice="b"]:hover::before {
+  content: "No | ";
+}
+
+[data-multiple-choice="b"]:hover::after {
+  content: " | False";
+}
+
+[data-multiple-choice="c"]:hover::after {
+  content: " | Both";
+}
+
+[data-multiple-choice="d"]:hover::after {
+  content: " | Neither";
+}
+
+[data-multiple-choice="e"]:hover::after {
+  content: " | Nonexistent";
+}
+
 .button-grid.reverse {
   flex-direction: row-reverse;
 }
