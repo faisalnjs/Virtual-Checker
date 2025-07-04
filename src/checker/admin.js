@@ -344,6 +344,7 @@ try {
           updateCourses();
           updateSegments();
           updateQuestions();
+          updateResponses();
           ui.stopLoader();
           active = true;
         })
@@ -754,7 +755,7 @@ try {
             <input type="text" id="course-name-input" value="${course.name}" disabled />
           </div>
         </div>
-        <div class="input-group">
+        <div class="input-group small">
           <div class="space" id="question-container">
             <input type="text" id="course-periods-input" value="${JSON.parse(course.periods).join(', ')}" disabled />
           </div>
@@ -947,7 +948,7 @@ try {
             <input type="text" id="segment-question-ids-input" value="${segment.question_ids}" disabled />
           </div>
         </div>
-        <div class="input-group">
+        <div class="input-group small">
           <div class="space" id="question-container">
             <input type="text" id="segment-course-input" value="${segment.course || ''}" disabled />
           </div>
@@ -1969,6 +1970,91 @@ try {
       document.querySelector('.trendingResponses .section').appendChild(buttonGrid);
       if (isMatrix) document.querySelector('.trendingResponses .section .button-grid:last-child #response-response-input').addEventListener('click', () => ui.expandMatrix(isMatrix));
     });
+    const responsesArchiveTab = document.querySelector('[data-archive-type="responses"]');
+    if (responsesArchiveTab) {
+      const responsesArchives = responsesArchiveTab.querySelector('.archives');
+      const responsesArchivesList = responsesArchives.querySelector('.section');
+      if (responses.length > 0) {
+        responsesArchiveTab.querySelector('#no-archive').setAttribute('hidden', '');
+        responsesArchives.removeAttribute('hidden');
+      } else {
+        responsesArchiveTab.querySelector('#no-archive').removeAttribute('hidden');
+        responsesArchives.setAttribute('hidden', '');
+      }
+      responsesArchivesList.innerHTML = '';
+      responses.sort((a, b) => a.order - b.order).forEach(response => {
+        var buttonGrid = document.createElement('div');
+        buttonGrid.className = "button-grid inputs";
+        buttonGrid.setAttribute('archive-type', 'response');
+        buttonGrid.id = response.id;
+        buttonGrid.innerHTML = `<button square data-select tooltip="Select Item"><i class="bi bi-circle"></i><i class="bi bi-circle-fill"></i></button>
+        <div class="input-group small">
+          <div class="space" id="response-container">
+            <input type="text" id="response-id-input" value="${response.id}" disabled />
+          </div>
+        </div>
+        <div class="input-group small">
+          <div class="space" id="response-container">
+            <input type="text" id="response-seat-code-input" value="${response.seatCode}" disabled />
+          </div>
+        </div>
+        <div class="input-group small">
+          <div class="space" id="response-container">
+            <input type="text" id="response-segment-input" value="${response.segment}" disabled />
+          </div>
+        </div>
+        <div class="input-group small">
+          <div class="space" id="response-container">
+            <input type="text" id="response-question-id-input" value="${response.question_id}" disabled />
+          </div>
+        </div>
+        <div class="input-group">
+          <div class="space" id="response-container">
+            <input type="text" id="response-response-input" value="${response.response || ''}" disabled />
+          </div>
+        </div>
+        <div class="input-group">
+          <div class="space" id="response-container">
+            <input type="text" id="response-status-input" value="${response.status || ''}" disabled />
+          </div>
+        </div>
+        <div class="input-group small">
+          <div class="space" id="response-container">
+            <input type="text" id="response-flagged-input" value="${response.flagged || ''}" disabled />
+          </div>
+        </div>
+        <div class="input-group">
+          <div class="space" id="response-container">
+            <input type="text" id="response-timestamp-input" value="${response.timestamp ? time.unixToString(response.timestamp) : ''}" disabled />
+          </div>
+        </div>
+        <button square data-restore-item tooltip="Restore Item"><i class="bi bi-arrow-counterclockwise"></i></button>`;
+        buttonGrid.addEventListener('mouseenter', () => {
+          var response = responses.find(q => q.id == response.id);
+          island(responses, 'response', {
+            sourceId: String(response.id),
+            id: `ID ${response.id}`,
+            title: `response ${response.number}`,
+            subtitle: `${response.response}`,
+            subtitleLatex: response.latex,
+            lists: [
+              {
+                title: 'Correct Answers',
+                items: answers.find(a => a.id === response.id).correct_answers
+              },
+              {
+                title: 'Incorrect Answers',
+                items: answers.find(a => a.id === response.id).incorrect_answers
+              },
+            ],
+          }, answers);
+        });
+        buttonGrid.addEventListener('mouseleave', () => {
+          island();
+        });
+        responsesArchivesList.appendChild(buttonGrid);
+      });
+    }
     expandedReports.forEach(er => {
       if (document.getElementById(er)) document.getElementById(er).classList.add('active');
     });
