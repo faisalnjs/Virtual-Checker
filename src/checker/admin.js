@@ -550,7 +550,7 @@ try {
                       .then(async r => {
                         responses = r;
                         if (document.getElementById("course-period-input") && !loadedSegmentEditor && !loadedSegmentCreator && !noReloadCourse) {
-                          document.getElementById("course-period-input").value = courses.find(c => JSON.parse(c.periods).includes(Number(String(responses.sort((a, b) => String(a.seatCode)[0] - String(b.seatCode)[0])[0]?.seatCode)[0]))) ? courses.find(c => JSON.parse(c.periods).includes(Number(String(responses.sort((a, b) => String(a.seatCode)[0] - String(b.seatCode)[0])[0]?.seatCode)[0]))).id : 0;
+                          document.getElementById("course-period-input").value = courses.find(c => JSON.parse(c.periods).includes(Number(String(responses.sort((a, b) => String(a.seatCode)[0] - String(b.seatCode)[0])[0]?.seatCode)[0]))) ? courses.find(c => JSON.parse(c.periods).includes(Number(String(responses.sort((a, b) => String(a.seatCode)[0] - String(b.seatCode)[0])[0]?.seatCode)[0]))).id : courses.sort((a, b) => a.id - b.id)[0]?.id;
                           await updateResponses();
                         }
                         if (noReloadCourse) await updateResponses();
@@ -604,7 +604,7 @@ try {
       if (document.querySelector('.course-reorder')) document.querySelector('.course-reorder').style.display = 'none';
       document.querySelectorAll('[data-remove-segment-input]').forEach(a => a.removeEventListener('click', removeSegment));
       document.querySelectorAll('[data-remove-segment-input]').forEach(a => a.addEventListener('click', removeSegment));
-      if (document.getElementById("course-input")) document.getElementById("course-input").value = courses.find(c => String(c.id) === String(segments.sort((a, b) => a.course - b.course)[0].course)).name;
+      if (document.getElementById("course-input")) document.getElementById("course-input").value = courses.find(c => String(c.id) === document.getElementById("course-period-input").value).name;
       updateSegments();
     }
     if (document.getElementById("sort-segments-types")) document.getElementById("sort-segments-types").value = await settings('sort-segments');
