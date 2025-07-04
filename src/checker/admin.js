@@ -830,7 +830,7 @@ try {
             var buttonGrid = document.createElement('div');
             buttonGrid.className = "button-grid inputs";
             buttonGrid.setAttribute("data-swapy-item", `segmentReorder-${s.number}`);
-            buttonGrid.innerHTML = `<button square data-select tooltip="Select Segment"><i class="bi bi-circle"></i><i class="bi bi-circle-fill"></i></button><div class="input-group small"><div class="space" id="question-container"><input type="text" autocomplete="off" id="segment-number-input" value="${s.number}" placeholder="${s.number}" /></div></div><div class="input-group"><div class="space" id="question-container"><input type="text" autocomplete="off" id="segment-name-input" value="${s.name}" placeholder="${s.name}" /></div></div><div class="input-group mediuml"><div class="space" id="question-container"><input type="date" id="segment-due-date" value="${s.due || ''}"></div></div><button square data-remove-segment-input tooltip="Remove Segment"><i class="bi bi-trash"></i></button><button square data-edit-segment tooltip="Edit Segment"><i class="bi bi-pencil"></i></button><div class="drag" data-swapy-handle><i class="bi bi-grip-vertical"></i></div>`;
+            buttonGrid.innerHTML = `<button square data-select tooltip="Select Segment"><i class="bi bi-circle"></i><i class="bi bi-circle-fill"></i></button><div class="input-group small"><div class="space" id="question-container"><input type="text" autocomplete="off" id="segment-number-input" value="${s.number}" placeholder="${s.number}" /></div></div><div class="input-group"><div class="space" id="question-container"><input type="text" autocomplete="off" id="segment-name-input" value="${s.name}" placeholder="${s.name}" /></div></div><div class="input-group mediuml"><div class="space" id="question-container"><input type="date" id="segment-due-date" value="${s.due || ''}"></div></div><button square data-remove-segment-input tooltip="Remove Segment"><i class="bi bi-trash"></i></button><button square data-archive-segment tooltip="Archive Segment"><i class="bi bi-archive"></i></button><button square data-edit-segment tooltip="Edit Segment"><i class="bi bi-pencil"></i></button><div class="drag" data-swapy-handle><i class="bi bi-grip-vertical"></i></div>`;
             buttonGrid.addEventListener('mouseenter', () => {
               island(c.sort((a, b) => a.order - b.order), 'segment', {
                 sourceId: String(s.number),
@@ -919,6 +919,9 @@ try {
     // document.querySelectorAll('[sort-segment-questions-decreasing]').forEach(a => a.addEventListener('click', sortSegmentQuestionsDecreasing));
     document.querySelectorAll('[report]').forEach(a => a.addEventListener('click', toggleDetailedReport));
     document.querySelectorAll('[data-edit-segment]').forEach(a => a.addEventListener('click', editSegment));
+    document.querySelectorAll('[data-archive-segment]').forEach(a => a.addEventListener('click', (event) => {
+      if (event.target.parentElement.parentElement.id) archiveModal('segment', event.target.parentElement.parentElement.id.split('segment-')[1]);
+    }));
     ui.reloadUnsavedInputs();
   }
 
@@ -2789,13 +2792,17 @@ try {
     var segment = new URLSearchParams(window.location.search).get('segment');
     if (!segment) {
       loadedSegmentCreator = true;
-      return document.querySelector('[data-delete-segment]')?.remove();
+      document.querySelector('[data-delete-segment]')?.remove();
+      document.querySelector('[data-archive-segment]')?.remove();
+      return;
     }
     loadedSegment = segments.find(s => String(s.number) === String(segment));
     if (!loadedSegment) {
       loadedSegmentCreator = true;
       ui.toast(`Segment ${String(segment)} not found.`, 3000, "error", "bi bi-exclamation-triangle-fill");
-      return document.querySelector('[data-delete-segment]')?.remove();
+      document.querySelector('[data-delete-segment]')?.remove();
+      document.querySelector('[data-archive-segment]')?.remove();
+      return;
     }
     loadedSegmentEditor = true;
     active = true;
@@ -4074,7 +4081,6 @@ try {
             const link = document.createElement('a');
             link.href = filename;
             link.download = filename.split('/')[filename.split('/').length - 1];
-            console.log(link.href, link.download)
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
@@ -4261,8 +4267,12 @@ try {
           itemId = document.getElementById("course-period-input") ? courses.find(c => (String(c.id) === document.getElementById("course-period-input").value))?.id : null;
           itemName = document.getElementById("course-period-input") ? courses.find(c => (String(c.id) === document.getElementById("course-period-input").value))?.name : null;
           break;
+        case 'segment':
+          itemId = loadedSegment ? loadedSegment.number : null;
+          itemName = loadedSegment ? loadedSegment.name : null;
+          break;
         default:
-          return;
+          return ui.toast("Item to archive not found.", 5000, "error", "bi bi-exclamation-triangle-fill");
       }
     }
     if ((typeof itemId === 'object') || (typeof itemId === 'undefined')) return ui.toast("Item to archive not found.", 5000, "error", "bi bi-exclamation-triangle-fill");
@@ -4322,6 +4332,7 @@ try {
       .then(() => {
         ui.setUnsavedChanges(false);
         ui.toast(`Successfully archived ${itemType} ${itemName || itemId}.`, 3000, "success", "bi bi-check-lg");
+        if (loadedSegmentEditor) return window.location.href = '/admin/';
         init();
       })
       .catch((e) => {
