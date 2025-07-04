@@ -343,6 +343,7 @@ try {
           responses = archive.responses;
           updateCourses();
           updateSegments();
+          updateQuestions();
           ui.stopLoader();
           active = true;
         })
@@ -957,6 +958,23 @@ try {
           </div>
         </div>
         <button square data-restore-item tooltip="Restore Item"><i class="bi bi-arrow-counterclockwise"></i></button>`;
+        buttonGrid.addEventListener('mouseenter', () => {
+          island(segments.sort((a, b) => a.order - b.order), 'segment', {
+            sourceId: String(segment.number),
+            id: `# ${segment.number}`,
+            title: `${segment.name}`,
+            subtitle: segment.due ? `Due ${new Date(`${segment.due}T00:00:00`).toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })}` : '',
+            lists: [
+              {
+                title: 'Questions',
+                items: JSON.parse(segment.question_ids)
+              },
+            ],
+          });
+        });
+        buttonGrid.addEventListener('mouseleave', () => {
+          island();
+        });
         segmentsArchivesList.appendChild(buttonGrid);
       });
     }
@@ -1350,87 +1368,158 @@ try {
 
   function updateQuestions() {
     if (questions.length > 0) {
-      document.querySelector('.questions .section').innerHTML = '';
-      var filteredQuestions = questions;
-      if (document.getElementById("filter-segment-input")) {
-        var selectedSegment = segments.find(segment => String(segment.number) === document.getElementById("filter-segment-input").value);
-        if (selectedSegment) filteredQuestions = filteredQuestions.filter(q => JSON.parse(selectedSegment.question_ids).find(qId => String(qId.id) === String(q.id)));
+      if (document.querySelector('.questions .section')) {
+        document.querySelector('.questions .section').innerHTML = '';
+        var filteredQuestions = questions;
+        if (document.getElementById("filter-segment-input")) {
+          var selectedSegment = segments.find(segment => String(segment.number) === document.getElementById("filter-segment-input").value);
+          if (selectedSegment) filteredQuestions = filteredQuestions.filter(q => JSON.parse(selectedSegment.question_ids).find(qId => String(qId.id) === String(q.id)));
+        }
+        filteredQuestions.forEach(q => {
+          var question = document.createElement('div');
+          question.className = "section";
+          question.id = `question-${q.id}`;
+          var buttonGrid = document.createElement('div');
+          buttonGrid.className = "button-grid inputs";
+          var allSegmentsQuestionIsIn = segments.filter(e => JSON.parse(e.question_ids).find(qId => String(qId.id) === String(q.id)));
+          var segmentsString = "";
+          segments.forEach(s => {
+            segmentsString += `<option value="${s.number}"${(allSegmentsQuestionIsIn[0] && (allSegmentsQuestionIsIn[0].number === s.number)) ? ' selected' : ''}>${s.number}</option>`;
+          });
+          buttonGrid.innerHTML = `<button square data-select tooltip="Select Question"><i class="bi bi-circle"></i><i class="bi bi-circle-fill"></i></button><div class="input-group small"><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-id-input" value="${q.id}" disabled /></div></div><div class="input-group small"><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-number-input" value="${q.number}" placeholder="${q.number}" /></div></div><div class="input-group small"><div class="space" id="question-container"><select id="question-segment-input">${segmentsString}</select></div></div><div class="input-group"><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-text-input" value="${q.question}" placeholder="${q.question}" /></div></div><button square data-toggle-latex tooltip="Toggle LaTeX Title"><i class="bi bi-${q.latex ? 'calculator-fill' : 'cursor-text'}"></i></button><button square data-remove-question-input tooltip="Remove Question"><i class="bi bi-trash"></i></button><button square data-archive-question-input tooltip="Archive Question"><i class="bi bi-archive"></i></button><button square data-toggle-question tooltip="Expand Question"><i class="bi bi-caret-down-fill"></i><i class="bi bi-caret-up-fill"></i></button>`;
+          buttonGrid.addEventListener('mouseenter', () => {
+            var question = q;
+            island(filteredQuestions, 'question', {
+              sourceId: String(question.id),
+              id: `ID ${question.id}`,
+              title: `Question ${question.number}`,
+              subtitle: `${question.question}`,
+              subtitleLatex: question.latex,
+              lists: [
+                {
+                  title: 'Correct Answers',
+                  items: answers.find(a => a.id === question.id).correct_answers
+                },
+                {
+                  title: 'Incorrect Answers',
+                  items: answers.find(a => a.id === question.id).incorrect_answers
+                },
+              ],
+            }, answers);
+          });
+          buttonGrid.addEventListener('mouseleave', () => {
+            island();
+          });
+          question.appendChild(buttonGrid);
+          var images = document.createElement('div');
+          images.classList = "attachments";
+          JSON.parse(q.images).forEach(q => {
+            var image = document.createElement('div');
+            image.classList = "image";
+            image.innerHTML = `<img src="${q}" />`;
+            image.addEventListener('click', removeImage);
+            images.appendChild(image);
+          });
+          var drop = document.createElement('div');
+          drop.classList = "drop";
+          drop.innerHTML = "+";
+          drop.id = q.id;
+          drop.addEventListener('click', renderPond);
+          images.appendChild(drop);
+          question.appendChild(images);
+          var correctAnswers = document.createElement('div');
+          correctAnswers.classList = "answers";
+          var correctAnswersString = "";
+          var questionAnswers = answers.find(a => a.id === q.id);
+          questionAnswers.correct_answers.forEach(a => {
+            correctAnswersString += `<div class="button-grid inputs"><input type="text" autocomplete="off" id="question-correct-answer-input" value="${a}" placeholder="${a}" /><button data-remove-correct-answer-input square><i class="bi bi-dash"></i></button></div>`;
+          });
+          correctAnswers.innerHTML = `<b>Correct Answers</b><div class="section correctAnswers">${correctAnswersString}<button data-add-correct-answer-input>Add Correct Answer</button></div>`;
+          question.appendChild(correctAnswers);
+          var incorrectAnswers = document.createElement('div');
+          incorrectAnswers.classList = "answers";
+          var incorrectAnswersString = "";
+          questionAnswers.incorrect_answers.forEach(a => {
+            incorrectAnswersString += `<div class="button-grid inputs"><input type="text" autocomplete="off" id="question-incorrect-answer-input" value="${a.answer}" placeholder="${a.answer || 'Answer'}" /><input type="text" autocomplete="off" id="question-incorrect-answer-reason-input" value="${a.reason}" placeholder="${a.reason || 'Reason'}" /><button data-remove-incorrect-answer-input square><i class="bi bi-dash"></i></button></div>`;
+          });
+          incorrectAnswers.innerHTML = `<b>Incorrect Answers</b><div class="section incorrectAnswers">${incorrectAnswersString}<button data-add-incorrect-answer-input>Add Incorrect Answer</button></div>`;
+          question.appendChild(incorrectAnswers);
+          document.querySelector('.questions .section').appendChild(question);
+        });
+        var addQuestionButton = document.createElement('button');
+        addQuestionButton.setAttribute('data-add-question-input', '');
+        addQuestionButton.innerText = "Add Question";
+        document.querySelector('.questions .section').appendChild(addQuestionButton);
       }
-      filteredQuestions.forEach(q => {
-        var question = document.createElement('div');
-        question.className = "section";
-        question.id = `question-${q.id}`;
-        var buttonGrid = document.createElement('div');
-        buttonGrid.className = "button-grid inputs";
-        var allSegmentsQuestionIsIn = segments.filter(e => JSON.parse(e.question_ids).find(qId => String(qId.id) === String(q.id)));
-        var segmentsString = "";
-        segments.forEach(s => {
-          segmentsString += `<option value="${s.number}"${(allSegmentsQuestionIsIn[0] && (allSegmentsQuestionIsIn[0].number === s.number)) ? ' selected' : ''}>${s.number}</option>`;
+      const questionsArchiveTab = document.querySelector('[data-archive-type="questions"]');
+      if (questionsArchiveTab) {
+        const questionsArchives = questionsArchiveTab.querySelector('.archives');
+        const questionsArchivesList = questionsArchives.querySelector('.section');
+        if (questions.length > 0) {
+          questionsArchiveTab.querySelector('#no-archive').setAttribute('hidden', '');
+          questionsArchives.removeAttribute('hidden');
+        } else {
+          questionsArchiveTab.querySelector('#no-archive').removeAttribute('hidden');
+          questionsArchives.setAttribute('hidden', '');
+        }
+        questionsArchivesList.innerHTML = '';
+        questions.sort((a, b) => a.order - b.order).forEach(question => {
+          var buttonGrid = document.createElement('div');
+          buttonGrid.className = "button-grid inputs";
+          buttonGrid.setAttribute('archive-type', 'question');
+          buttonGrid.id = question.id;
+          buttonGrid.innerHTML = `<button square data-select tooltip="Select Item"><i class="bi bi-circle"></i><i class="bi bi-circle-fill"></i></button>
+          <div class="input-group small">
+            <div class="space" id="question-container">
+              <input type="text" id="question-id-input" value="${question.id}" disabled />
+            </div>
+          </div>
+          <div class="input-group small">
+            <div class="space" id="question-container">
+              <input type="text" id="question-number-input" value="${question.number}" disabled />
+            </div>
+          </div>
+          <div class="input-group">
+            <div class="space" id="question-container">
+              <input type="text" id="question-question-input" value="${question.question || ''}" disabled />
+            </div>
+          </div>
+          <div class="input-group">
+            <div class="space" id="question-container">
+              <input type="text" id="question-images-input" value="${JSON.parse(question.images).join(', ')}" disabled />
+            </div>
+          </div>
+          <div class="input-group small">
+            <div class="space" id="question-container">
+              <input type="text" id="question-latex-input" value="${question.latex || ''}" disabled />
+            </div>
+          </div>
+          <button square data-restore-item tooltip="Restore Item"><i class="bi bi-arrow-counterclockwise"></i></button>`;
+          buttonGrid.addEventListener('mouseenter', () => {
+            island(filteredQuestions, 'question', {
+              sourceId: String(question.id),
+              id: `ID ${question.id}`,
+              title: `Question ${question.number}`,
+              subtitle: `${question.question}`,
+              subtitleLatex: question.latex,
+              lists: [
+                {
+                  title: 'Correct Answers',
+                  items: answers.find(a => a.id === question.id).correct_answers
+                },
+                {
+                  title: 'Incorrect Answers',
+                  items: answers.find(a => a.id === question.id).incorrect_answers
+                },
+              ],
+            }, answers);
+          });
+          buttonGrid.addEventListener('mouseleave', () => {
+            island();
+          });
+          questionsArchivesList.appendChild(buttonGrid);
         });
-        buttonGrid.innerHTML = `<button square data-select tooltip="Select Question"><i class="bi bi-circle"></i><i class="bi bi-circle-fill"></i></button><div class="input-group small"><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-id-input" value="${q.id}" disabled /></div></div><div class="input-group small"><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-number-input" value="${q.number}" placeholder="${q.number}" /></div></div><div class="input-group small"><div class="space" id="question-container"><select id="question-segment-input">${segmentsString}</select></div></div><div class="input-group"><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-text-input" value="${q.question}" placeholder="${q.question}" /></div></div><button square data-toggle-latex tooltip="Toggle LaTeX Title"><i class="bi bi-${q.latex ? 'calculator-fill' : 'cursor-text'}"></i></button><button square data-remove-question-input tooltip="Remove Question"><i class="bi bi-trash"></i></button><button square data-archive-question-input tooltip="Archive Question"><i class="bi bi-archive"></i></button><button square data-toggle-question tooltip="Expand Question"><i class="bi bi-caret-down-fill"></i><i class="bi bi-caret-up-fill"></i></button>`;
-        buttonGrid.addEventListener('mouseenter', () => {
-          var question = q;
-          island(filteredQuestions, 'question', {
-            sourceId: String(question.id),
-            id: `ID ${question.id}`,
-            title: `Question ${question.number}`,
-            subtitle: `${question.question}`,
-            subtitleLatex: question.latex,
-            lists: [
-              {
-                title: 'Correct Answers',
-                items: answers.find(a => a.id === question.id).correct_answers
-              },
-              {
-                title: 'Incorrect Answers',
-                items: answers.find(a => a.id === question.id).incorrect_answers
-              },
-            ],
-          }, answers);
-        });
-        buttonGrid.addEventListener('mouseleave', () => {
-          island();
-        });
-        question.appendChild(buttonGrid);
-        var images = document.createElement('div');
-        images.classList = "attachments";
-        JSON.parse(q.images).forEach(q => {
-          var image = document.createElement('div');
-          image.classList = "image";
-          image.innerHTML = `<img src="${q}" />`;
-          image.addEventListener('click', removeImage);
-          images.appendChild(image);
-        });
-        var drop = document.createElement('div');
-        drop.classList = "drop";
-        drop.innerHTML = "+";
-        drop.id = q.id;
-        drop.addEventListener('click', renderPond);
-        images.appendChild(drop);
-        question.appendChild(images);
-        var correctAnswers = document.createElement('div');
-        correctAnswers.classList = "answers";
-        var correctAnswersString = "";
-        var questionAnswers = answers.find(a => a.id === q.id);
-        questionAnswers.correct_answers.forEach(a => {
-          correctAnswersString += `<div class="button-grid inputs"><input type="text" autocomplete="off" id="question-correct-answer-input" value="${a}" placeholder="${a}" /><button data-remove-correct-answer-input square><i class="bi bi-dash"></i></button></div>`;
-        });
-        correctAnswers.innerHTML = `<b>Correct Answers</b><div class="section correctAnswers">${correctAnswersString}<button data-add-correct-answer-input>Add Correct Answer</button></div>`;
-        question.appendChild(correctAnswers);
-        var incorrectAnswers = document.createElement('div');
-        incorrectAnswers.classList = "answers";
-        var incorrectAnswersString = "";
-        questionAnswers.incorrect_answers.forEach(a => {
-          incorrectAnswersString += `<div class="button-grid inputs"><input type="text" autocomplete="off" id="question-incorrect-answer-input" value="${a.answer}" placeholder="${a.answer || 'Answer'}" /><input type="text" autocomplete="off" id="question-incorrect-answer-reason-input" value="${a.reason}" placeholder="${a.reason || 'Reason'}" /><button data-remove-incorrect-answer-input square><i class="bi bi-dash"></i></button></div>`;
-        });
-        incorrectAnswers.innerHTML = `<b>Incorrect Answers</b><div class="section incorrectAnswers">${incorrectAnswersString}<button data-add-incorrect-answer-input>Add Incorrect Answer</button></div>`;
-        question.appendChild(incorrectAnswers);
-        document.querySelector('.questions .section').appendChild(question);
-      });
-      var addQuestionButton = document.createElement('button');
-      addQuestionButton.setAttribute('data-add-question-input', '');
-      addQuestionButton.innerText = "Add Question";
-      document.querySelector('.questions .section').appendChild(addQuestionButton);
+      }
     } else {
       document.querySelector('.questions .section').innerHTML = '<button data-add-question-input>Add Question</button>';
     }
@@ -4319,7 +4408,7 @@ try {
   function archiveModal(itemType, itemId = null) {
     if (!active) return;
     var itemName = null;
-    switch(itemType) {
+    switch (itemType) {
       case 'course':
         if (!itemId) itemId = document.getElementById("course-period-input") ? courses.find(c => (String(c.id) === document.getElementById("course-period-input").value))?.id : null;
         itemName = document.getElementById("course-period-input") ? courses.find(c => (String(c.id) === document.getElementById("course-period-input").value))?.name : null;
@@ -4365,7 +4454,7 @@ try {
       var itemType = e.id.split('-')[0];
       var itemId = e.id.split('-')[1];
       var itemName = null;
-      switch(itemType) {
+      switch (itemType) {
         case 'segment':
           itemName = segments.find(s => String(s.number) === itemId).name;
           break;
