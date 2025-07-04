@@ -1314,7 +1314,7 @@ try {
         segments.forEach(s => {
           segmentsString += `<option value="${s.number}"${(allSegmentsQuestionIsIn[0] && (allSegmentsQuestionIsIn[0].number === s.number)) ? ' selected' : ''}>${s.number}</option>`;
         });
-        buttonGrid.innerHTML = `<button square data-select tooltip="Select Question"><i class="bi bi-circle"></i><i class="bi bi-circle-fill"></i></button><div class="input-group small"><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-id-input" value="${q.id}" disabled /></div></div><div class="input-group small"><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-number-input" value="${q.number}" placeholder="${q.number}" /></div></div><div class="input-group small"><div class="space" id="question-container"><select id="question-segment-input">${segmentsString}</select></div></div><div class="input-group"><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-text-input" value="${q.question}" placeholder="${q.question}" /></div></div><button square data-toggle-latex tooltip="Toggle LaTeX Title"><i class="bi bi-${q.latex ? 'calculator-fill' : 'cursor-text'}"></i></button><button square data-remove-question-input tooltip="Remove Question"><i class="bi bi-trash"></i></button><button square data-toggle-question tooltip="Expand Question"><i class="bi bi-caret-down-fill"></i><i class="bi bi-caret-up-fill"></i></button>`;
+        buttonGrid.innerHTML = `<button square data-select tooltip="Select Question"><i class="bi bi-circle"></i><i class="bi bi-circle-fill"></i></button><div class="input-group small"><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-id-input" value="${q.id}" disabled /></div></div><div class="input-group small"><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-number-input" value="${q.number}" placeholder="${q.number}" /></div></div><div class="input-group small"><div class="space" id="question-container"><select id="question-segment-input">${segmentsString}</select></div></div><div class="input-group"><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-text-input" value="${q.question}" placeholder="${q.question}" /></div></div><button square data-toggle-latex tooltip="Toggle LaTeX Title"><i class="bi bi-${q.latex ? 'calculator-fill' : 'cursor-text'}"></i></button><button square data-remove-question-input tooltip="Remove Question"><i class="bi bi-trash"></i></button><button square data-archive-question-input tooltip="Archive Question"><i class="bi bi-archive"></i></button><button square data-toggle-question tooltip="Expand Question"><i class="bi bi-caret-down-fill"></i><i class="bi bi-caret-up-fill"></i></button>`;
         buttonGrid.addEventListener('mouseenter', () => {
           var question = q;
           island(filteredQuestions, 'question', {
@@ -1390,6 +1390,9 @@ try {
     document.querySelectorAll('[data-remove-correct-answer-input]').forEach(a => a.addEventListener('click', removeCorrectAnswer));
     document.querySelectorAll('[data-remove-incorrect-answer-input]').forEach(a => a.addEventListener('click', removeIncorrectAnswer));
     document.querySelectorAll('[data-toggle-latex]').forEach(a => a.addEventListener('click', toggleQuestionLatex));
+    document.querySelectorAll('[data-archive-question-input]').forEach(a => a.addEventListener('click', (event) => {
+      if (event.target.parentElement.parentElement.id) archiveModal('question', event.target.parentElement.parentElement.id.split('question-')[1]);
+    }));
     ui.reloadUnsavedInputs();
   }
 
@@ -4262,19 +4265,20 @@ try {
   function archiveModal(itemType, itemId = null) {
     if (!active) return;
     var itemName = null;
-    if (!itemId) {
-      switch(itemType) {
-        case 'course':
-          itemId = document.getElementById("course-period-input") ? courses.find(c => (String(c.id) === document.getElementById("course-period-input").value))?.id : null;
-          itemName = document.getElementById("course-period-input") ? courses.find(c => (String(c.id) === document.getElementById("course-period-input").value))?.name : null;
-          break;
-        case 'segment':
-          itemId = loadedSegment ? loadedSegment.number : null;
-          itemName = loadedSegment ? loadedSegment.name : null;
-          break;
-        default:
-          return ui.toast("Item to archive not found.", 5000, "error", "bi bi-exclamation-triangle-fill");
-      }
+    switch(itemType) {
+      case 'course':
+        if (!itemId) itemId = document.getElementById("course-period-input") ? courses.find(c => (String(c.id) === document.getElementById("course-period-input").value))?.id : null;
+        itemName = document.getElementById("course-period-input") ? courses.find(c => (String(c.id) === document.getElementById("course-period-input").value))?.name : null;
+        break;
+      case 'segment':
+        if (!itemId) itemId = loadedSegment ? loadedSegment.number : null;
+        itemName = loadedSegment ? loadedSegment.name : null;
+        break;
+      case 'question':
+        itemName = questions.find(q => String(q.id) === itemId)?.number;
+        break;
+      default:
+        return ui.toast("Item to archive not found.", 5000, "error", "bi bi-exclamation-triangle-fill");
     }
     if ((typeof itemId === 'object') || (typeof itemId === 'undefined')) return ui.toast("Item to archive not found.", 5000, "error", "bi bi-exclamation-triangle-fill");
     ui.modal({
