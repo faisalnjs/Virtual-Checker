@@ -745,22 +745,22 @@ try {
         buttonGrid.innerHTML = `<button square data-select tooltip="Select Item"><i class="bi bi-circle"></i><i class="bi bi-circle-fill"></i></button>
         <div class="input-group small">
           <div class="space" id="question-container">
-            <input type="text" autocomplete="off" id="course-id-input" value="${course.id}" disabled />
+            <input type="text" id="course-id-input" value="${course.id}" disabled />
           </div>
         </div>
         <div class="input-group">
           <div class="space" id="question-container">
-            <input type="text" autocomplete="off" id="course-name-input" value="${course.name}" disabled />
+            <input type="text" id="course-name-input" value="${course.name}" disabled />
           </div>
         </div>
         <div class="input-group">
           <div class="space" id="question-container">
-            <input type="text" autocomplete="off" id="course-periods-input" value="${JSON.parse(course.periods).join(', ')}" disabled />
+            <input type="text" id="course-periods-input" value="${JSON.parse(course.periods).join(', ')}" disabled />
           </div>
         </div>
         <div class="input-group">
           <div class="space" id="question-container">
-            <input type="text" autocomplete="off" id="course-syllabus-input" value="${course.syllabus || ''}" disabled />
+            <input type="text" id="course-syllabus-input" value="${course.syllabus || ''}" disabled />
           </div>
         </div>
         <button square data-restore-item tooltip="Restore Item"><i class="bi bi-arrow-counterclockwise"></i></button>`;
@@ -774,7 +774,7 @@ try {
     document.querySelectorAll('.detailed-report.active').forEach(dr => expandedReports.push(dr.id));
     const course = courses.find(c => document.getElementById("course-period-input") ? (String(c.id) === document.getElementById("course-period-input").value) : null);
     if (document.getElementById("course-input") && course) document.getElementById("course-input").value = course.name;
-    var c = segments.filter(s => String(s.course) === String(course.id));
+    var c = segments.filter(s => String(s.course) === String(course?.id));
     if (!course && document.querySelector('[data-syllabus-upload]')) document.querySelector('[data-syllabus-upload]').setAttribute('hidden', '');
     if (course && course.syllabus) {
       if (document.querySelector('[data-syllabus-upload]')) document.querySelector('[data-syllabus-upload]').setAttribute('hidden', '');
@@ -912,6 +912,53 @@ try {
       }
     } else {
       if (document.querySelector('.segments .section')) document.querySelector('.segments .section').innerHTML = '<button data-add-segment-input>Add Segment</button>';
+    }
+    const segmentsArchiveTab = document.querySelector('[data-archive-type="segments"]');
+    if (segmentsArchiveTab) {
+      const segmentsArchives = segmentsArchiveTab.querySelector('.archives');
+      const segmentsArchivesList = segmentsArchives.querySelector('.section');
+      if (segments.length > 0) {
+        segmentsArchiveTab.querySelector('#no-archive').setAttribute('hidden', '');
+        segmentsArchives.removeAttribute('hidden');
+      } else {
+        segmentsArchiveTab.querySelector('#no-archive').removeAttribute('hidden');
+        segmentsArchives.setAttribute('hidden', '');
+      }
+      segmentsArchivesList.innerHTML = '';
+      segments.sort((a, b) => a.order - b.order).forEach(segment => {
+        var buttonGrid = document.createElement('div');
+        buttonGrid.className = "button-grid inputs";
+        buttonGrid.setAttribute('archive-type', 'segment');
+        buttonGrid.id = segment.number;
+        buttonGrid.innerHTML = `<button square data-select tooltip="Select Item"><i class="bi bi-circle"></i><i class="bi bi-circle-fill"></i></button>
+        <div class="input-group small">
+          <div class="space" id="question-container">
+            <input type="text" id="segment-number-input" value="${segment.number}" disabled />
+          </div>
+        </div>
+        <div class="input-group">
+          <div class="space" id="question-container">
+            <input type="text" id="segment-name-input" value="${segment.name || ''}" disabled />
+          </div>
+        </div>
+        <div class="input-group">
+          <div class="space" id="question-container">
+            <input type="text" id="segment-question-ids-input" value="${segment.question_ids}" disabled />
+          </div>
+        </div>
+        <div class="input-group">
+          <div class="space" id="question-container">
+            <input type="text" id="segment-course-input" value="${segment.course || ''}" disabled />
+          </div>
+        </div>
+        <div class="input-group">
+          <div class="space" id="question-container">
+            <input type="text" id="segment-due-date" value="${segment.due || ''}" disabled />
+          </div>
+        </div>
+        <button square data-restore-item tooltip="Restore Item"><i class="bi bi-arrow-counterclockwise"></i></button>`;
+        segmentsArchivesList.appendChild(buttonGrid);
+      });
     }
     expandedReports.forEach(er => {
       if (document.getElementById(er)) document.getElementById(er).classList.add('active');
