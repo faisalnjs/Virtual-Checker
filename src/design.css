@@ -587,6 +587,10 @@ div.ML__keyboard {
   align-items: center;
 }
 
+#checker:not(:has(input)) *:not(ul):not(ol):not(li) {
+  text-align: center;
+}
+
 .attachments {
   display: flex;
   align-items: center;
