@@ -436,6 +436,7 @@ div.ML__keyboard {
     width: unset !important;
   }
 
+  .rsmall,
   .small,
   .smedium,
   .medium,
@@ -546,8 +547,16 @@ div.ML__keyboard {
   overflow: visible !important;
 }
 
+.rsmall {
+  max-width: 50px;
+}
+
 .small {
   max-width: 75px;
+}
+
+.vsmedium {
+  max-width: 100px;
 }
 
 .smedium {

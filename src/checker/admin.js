@@ -335,7 +335,6 @@ try {
           return await r.json();
         })
         .then(archive => {
-          console.log('Archive content', archive);
           courses = archive.courses;
           segments = archive.segments;
           questions = archive.questions;
@@ -345,6 +344,7 @@ try {
           updateSegments();
           updateQuestions();
           updateResponses();
+          document.querySelector('#archive-type-selector [aria-selected="true"]')?.click();
           ui.stopLoader();
           active = true;
         })
@@ -745,7 +745,7 @@ try {
         buttonGrid.setAttribute('archive-type', 'course');
         buttonGrid.id = course.id;
         buttonGrid.innerHTML = `<button square data-select tooltip="Select Item"><i class="bi bi-circle"></i><i class="bi bi-circle-fill"></i></button>
-        <div class="input-group small">
+        <div class="input-group rsmall">
           <div class="space" id="question-container">
             <input type="text" id="course-id-input" value="${course.id}" disabled />
           </div>
@@ -768,6 +768,7 @@ try {
         <button square data-restore-item tooltip="Restore Item"><i class="bi bi-arrow-counterclockwise"></i></button>`;
         coursesArchivesList.appendChild(buttonGrid);
       });
+      coursesArchivesList.querySelectorAll('[data-restore-item]').forEach(item => item.addEventListener('click', unarchiveModal));
     }
   }
 
@@ -874,7 +875,7 @@ try {
         c.filter(s => String(s.number).startsWith(document.getElementById("sort-segment-input")?.value)).sort((a, b) => a.order - b.order).forEach(segment => {
           var detailedReport = '';
           JSON.parse(segment.question_ids).filter(q => questions.find(q1 => q1.id == q.id)?.number.startsWith(document.getElementById("sort-question-input")?.value)).forEach(q => {
-            var question = questions.find(q1 => q1.id == q.id);
+            var question = questions.find(q1 => String(q1.id) === String(q.id));
             if (!question) return;
             var questionResponses = responses.filter(seatCode => JSON.parse(courses.find(course => String(course.id) === document.getElementById("course-period-input").value).periods).includes(Number(String(seatCode.code)[0]))).filter(r => String(r.segment) === String(segment.number)).filter(r => r.question_id === question.id).filter(r => String(r.seatCode).startsWith(document.getElementById("sort-seat-input")?.value));
             if (document.getElementById('hideIncorrectAttempts').checked) questionResponses = questionResponses.filter((r, index, self) => r.status === 'Correct' || !self.some(other => other.question_id === r.question_id && other.status === 'Correct'));
@@ -945,7 +946,7 @@ try {
         </div>
         <div class="input-group">
           <div class="space" id="question-container">
-            <input type="text" id="segment-question-ids-input" value="${segment.question_ids}" disabled />
+            <input type="text" id="segment-question-ids-input" value="${JSON.parse(segment.question_ids).map(q => q.id).join(', ')}" disabled />
           </div>
         </div>
         <div class="input-group small">
@@ -978,6 +979,7 @@ try {
         });
         segmentsArchivesList.appendChild(buttonGrid);
       });
+      segmentsArchivesList.querySelectorAll('[data-restore-item]').forEach(item => item.addEventListener('click', unarchiveModal));
     }
     expandedReports.forEach(er => {
       if (document.getElementById(er)) document.getElementById(er).classList.add('active');
@@ -1470,7 +1472,7 @@ try {
           buttonGrid.setAttribute('archive-type', 'question');
           buttonGrid.id = question.id;
           buttonGrid.innerHTML = `<button square data-select tooltip="Select Item"><i class="bi bi-circle"></i><i class="bi bi-circle-fill"></i></button>
-          <div class="input-group small">
+          <div class="input-group rsmall">
             <div class="space" id="question-container">
               <input type="text" id="question-id-input" value="${question.id}" disabled />
             </div>
@@ -1490,7 +1492,7 @@ try {
               <input type="text" id="question-images-input" value="${JSON.parse(question.images).join(', ')}" disabled />
             </div>
           </div>
-          <div class="input-group small">
+          <div class="input-group rsmall">
             <div class="space" id="question-container">
               <input type="text" id="question-latex-input" value="${question.latex || ''}" disabled />
             </div>
@@ -1520,9 +1522,10 @@ try {
           });
           questionsArchivesList.appendChild(buttonGrid);
         });
+        questionsArchivesList.querySelectorAll('[data-restore-item]').forEach(item => item.addEventListener('click', unarchiveModal));
       }
     } else {
-      document.querySelector('.questions .section').innerHTML = '<button data-add-question-input>Add Question</button>';
+      if (document.querySelector('.questions .section')) document.querySelector('.questions .section').innerHTML = '<button data-add-question-input>Add Question</button>';
     }
     document.querySelectorAll('[data-add-question-input]').forEach(a => a.addEventListener('click', addQuestion));
     document.querySelectorAll('[data-remove-question-input]').forEach(a => a.addEventListener('click', removeQuestion));
@@ -1824,7 +1827,7 @@ try {
         buttonGrid.id = `response-${r.id}`;
         buttonGrid.innerHTML = `<button square data-select tooltip="Select Item"><i class="bi bi-circle"></i><i class="bi bi-circle-fill"></i></button><input type="text" autocomplete="off" class="small" id="response-id-input" value="${r.id}" disabled hidden />${(r.flagged == '1') ? `<button square data-unflag-response tooltip="Unflag Response"><i class="bi bi-flag-fill"></i></button>` : `<button square data-flag-response tooltip="Flag Response"><i class="bi bi-flag"></i></button>`}<input type="text" autocomplete="off" class="small" id="response-segment-input" value="${r.segment}" disabled data-segment /><input type="text" autocomplete="off" class="small" id="response-question-input" value="${questions.find(q => q.id == r.question_id).number}" disabled data-question /><input type="text" autocomplete="off" class="small" id="response-question-id-input" value="${questions.find(q => q.id == r.question_id).id}" disabled hidden /><input type="text" autocomplete="off" class="small${(((r.status === 'Invalid Format') || (r.status === 'Unknown, Recorded')) && document.querySelector('.awaitingResponses .section') && (answers.find(a => a.id === questions.find(q => q.id == r.question_id).id).correct_answers.length > 0)) ? ' hideonhover' : ''}" id="response-seat-code-input" value="${r.seatCode}" disabled data-seat-code /><input type="text" autocomplete="off" class="small" id="response-time-taken-input" value="${timeTaken}" disabled data-time-taken${(typeof timeDifference != 'undefined') ? ` time="${timeDifference}"` : ''} /><input type="text" autocomplete="off" class="small" id="response-time-taken-input" value="${timeTakenToRevise}" disabled data-time-taken${(typeof timeDifference != 'undefined') ? ` time="${timeDifference}"` : ''} /><!--<input type="text" autocomplete="off" class="small" id="response-time-taken-input" value="${result}" disabled data-time-taken />--><input type="text" autocomplete="off" id="response-response-input" value="${responseString}" ${isMatrix ? 'mockDisabled' : 'disabled'} />${(r.status === 'Incorrect') ? `<button square data-edit-reason tooltip="Edit Reason"><i class="bi bi-reply${(r.reason) ? '-fill' : ''}"></i></button>` : ''}<input type="text" autocomplete="off" class="smedium${(((r.status === 'Invalid Format') || (r.status === 'Unknown, Recorded')) && document.querySelector('.awaitingResponses .section') && (answers.find(a => a.id === questions.find(q => q.id == r.question_id).id).correct_answers.length > 0)) ? ' hideonhover' : ''}" id="response-timestamp-input" value="${date.getMonth() + 1}/${date.getDate()} ${hours % 12 || 12}:${minutes < 10 ? '0' + minutes : minutes} ${hours >= 12 ? 'PM' : 'AM'}" disabled />${(((r.status === 'Invalid Format') || (r.status === 'Unknown, Recorded')) && document.querySelector('.awaitingResponses .section') && (answers.find(a => a.id === questions.find(q => q.id == r.question_id).id).correct_answers.length > 0)) ? `<input type="text" autocomplete="off" class="showonhover" id="response-correct-responses-input" value="${correctResponsesString}" disabled />` : ''}<button square id="mark-correct-button"${(r.status === 'Correct') ? ' disabled' : ''} tooltip="Mark Correct"><i class="bi bi-check-circle${(r.status === 'Correct') ? '-fill' : ''}"></i></button><button square id="mark-incorrect-button"${(r.status === 'Incorrect') ? ' disabled' : ''} tooltip="Mark Incorrect"><i class="bi bi-x-circle${(r.status === 'Incorrect') ? '-fill' : ''}"></i></button>`;
         buttonGrid.addEventListener('mouseenter', () => {
-          var question = questions.find(q => q.id == r.question_id);
+          var question = questions.find(q => String(q.id) === String(r.question_id));
           island(questions, 'question', {
             sourceId: String(question.id),
             id: `ID ${question.id}`,
@@ -1945,7 +1948,7 @@ try {
       buttonGrid.className = "button-grid inputs";
       buttonGrid.innerHTML = `<input type="text" autocomplete="off" class="small" id="response-id-input" value="${r.single_response}" disabled hidden /><input type="text" autocomplete="off" class="small" id="response-segment-input" value="${r.segment}" disabled data-segment /><input type="text" autocomplete="off" class="small" id="response-question-input" value="${questions.find(q => q.id == r.question_id).number}" disabled data-question /><input type="text" autocomplete="off" class="small" id="response-question-id-input" value="${questions.find(q => q.id == r.question_id).id}" disabled hidden /><input type="text" autocomplete="off" id="response-response-input" value="${responseString}" ${isMatrix ? 'mockDisabled' : 'disabled'} /><input type="text" autocomplete="off" class="small" id="response-count-input" value="${r.count}" disabled /><button square id="mark-correct-button"${(r.status === 'Correct') ? ' disabled' : ''} tooltip="Mark Correct"><i class="bi bi-check-circle${(r.status === 'Correct') ? '-fill' : ''}"></i></button><button square id="mark-incorrect-button"${(r.status === 'Incorrect') ? ' disabled' : ''} tooltip="Mark Incorrect"><i class="bi bi-x-circle${(r.status === 'Incorrect') ? '-fill' : ''}"></i></button>`;
       buttonGrid.addEventListener('mouseenter', () => {
-        var question = questions.find(q => q.id == r.question_id);
+        var question = questions.find(q => String(q.id) === String(r.question_id));
         island(questions, 'question', {
           sourceId: String(question.id),
           id: `ID ${question.id}`,
@@ -1988,24 +1991,19 @@ try {
         buttonGrid.setAttribute('archive-type', 'response');
         buttonGrid.id = response.id;
         buttonGrid.innerHTML = `<button square data-select tooltip="Select Item"><i class="bi bi-circle"></i><i class="bi bi-circle-fill"></i></button>
-        <div class="input-group small">
+        <div class="input-group rsmall">
           <div class="space" id="response-container">
             <input type="text" id="response-id-input" value="${response.id}" disabled />
           </div>
         </div>
-        <div class="input-group small">
+        <div class="input-group rsmall">
           <div class="space" id="response-container">
             <input type="text" id="response-seat-code-input" value="${response.seatCode}" disabled />
           </div>
         </div>
         <div class="input-group small">
           <div class="space" id="response-container">
-            <input type="text" id="response-segment-input" value="${response.segment}" disabled />
-          </div>
-        </div>
-        <div class="input-group small">
-          <div class="space" id="response-container">
-            <input type="text" id="response-question-id-input" value="${response.question_id}" disabled />
+            <input type="text" id="response-segment-question-input" value="${response.segment} / ${response.question_id}" disabled />
           </div>
         </div>
         <div class="input-group">
@@ -2013,47 +2011,25 @@ try {
             <input type="text" id="response-response-input" value="${response.response || ''}" disabled />
           </div>
         </div>
-        <div class="input-group">
+        <div class="input-group vsmedium">
           <div class="space" id="response-container">
             <input type="text" id="response-status-input" value="${response.status || ''}" disabled />
           </div>
         </div>
-        <div class="input-group small">
+        <div class="input-group rsmall">
           <div class="space" id="response-container">
             <input type="text" id="response-flagged-input" value="${response.flagged || ''}" disabled />
           </div>
         </div>
-        <div class="input-group">
+        <div class="input-group medium">
           <div class="space" id="response-container">
             <input type="text" id="response-timestamp-input" value="${response.timestamp ? time.unixToString(response.timestamp) : ''}" disabled />
           </div>
         </div>
         <button square data-restore-item tooltip="Restore Item"><i class="bi bi-arrow-counterclockwise"></i></button>`;
-        buttonGrid.addEventListener('mouseenter', () => {
-          var response = responses.find(q => q.id == response.id);
-          island(responses, 'response', {
-            sourceId: String(response.id),
-            id: `ID ${response.id}`,
-            title: `response ${response.number}`,
-            subtitle: `${response.response}`,
-            subtitleLatex: response.latex,
-            lists: [
-              {
-                title: 'Correct Answers',
-                items: answers.find(a => a.id === response.id).correct_answers
-              },
-              {
-                title: 'Incorrect Answers',
-                items: answers.find(a => a.id === response.id).incorrect_answers
-              },
-            ],
-          }, answers);
-        });
-        buttonGrid.addEventListener('mouseleave', () => {
-          island();
-        });
         responsesArchivesList.appendChild(buttonGrid);
       });
+      responsesArchivesList.querySelectorAll('[data-restore-item]').forEach(item => item.addEventListener('click', unarchiveModal));
     }
     expandedReports.forEach(er => {
       if (document.getElementById(er)) document.getElementById(er).classList.add('active');
@@ -4628,6 +4604,51 @@ try {
         if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
         if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
       });
+  }
+
+  function unarchiveModal() {
+    if (!active) return;
+    if (!this || !this.parentElement) return;
+    var itemType = this.parentElement.getAttribute('archive-type');
+    var itemId = this.parentElement.id;
+    if (!itemType || !itemId) return;
+    var itemName = null;
+    switch (itemType) {
+      case 'course':
+        itemName = courses.find(c => String(c.id) === itemId)?.name;
+        break;
+      case 'segment':
+        itemName = segments.find(s => String(s.number) === itemId)?.name;
+        break;
+      case 'question':
+        itemName = questions.find(q => String(q.id) === itemId)?.number;
+        break;
+      case 'response':
+        itemName = itemId;
+        break;
+      default:
+        return ui.toast("Item to archive not found.", 5000, "error", "bi bi-exclamation-triangle-fill");
+    }
+    if ((typeof itemId === 'object') || (typeof itemId === 'undefined')) return ui.toast("Item to archive not found.", 5000, "error", "bi bi-exclamation-triangle-fill");
+    ui.modal({
+      title: 'Unarchive Item',
+      body: `<p>Unarchiving this ${itemType} will restore it to how it was before archiving, given that all dependents still have the ${itemType} linked.</p>`,
+      buttons: [
+        {
+          text: 'Cancel',
+          class: 'cancel-button',
+          close: true,
+        },
+        {
+          text: 'Unarchive',
+          class: 'submit-button',
+          onclick: () => {
+            unarchive(itemType, String(itemId), itemName);
+          },
+          close: true,
+        },
+      ],
+    });
   }
 
   async function unarchive(itemType, itemId, itemName = null) {
