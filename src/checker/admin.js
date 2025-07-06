@@ -648,12 +648,14 @@ try {
   if (document.querySelector('[data-archive-course]')) document.querySelector('[data-archive-course]').addEventListener("click", () => archiveModal('course'));
   if (document.querySelector('[data-archive-segment]')) document.querySelector('[data-archive-segment]').addEventListener("click", () => archiveModal('segment'));
   if (document.querySelector('[data-archive-multiple]')) document.querySelector('[data-archive-multiple]').addEventListener("click", archiveMultipleModal);
+  if (document.querySelector('[data-unarchive-multiple]')) document.querySelector('[data-unarchive-multiple]').addEventListener("click", unarchiveMultipleModal);
 
   function toggleSelecting() {
     if (!active) return;
     if (document.querySelector('.segments .section')) document.querySelector('.segments .section').classList.toggle('selecting');
     if (document.querySelector('.questions .section')) document.querySelector('.questions .section').classList.toggle('selecting');
     if (document.querySelector('.responses .section')) document.querySelector('.responses .section').classList.toggle('selecting');
+    document.querySelectorAll('.archives .section').forEach(a => a.classList.toggle('selecting'));
   }
 
   function removeSelecting() {
@@ -661,6 +663,7 @@ try {
     if (document.querySelector('.segments .section')) document.querySelector('.segments .section').classList.remove('selecting');
     if (document.querySelector('.questions .section')) document.querySelector('.questions .section').classList.remove('selecting');
     if (document.querySelector('.responses .section')) document.querySelector('.responses .section').classList.remove('selecting');
+    document.querySelectorAll('.archives .section').forEach(a => a.classList.toggle('selecting'));
   }
 
   function deleteMultiple() {
@@ -954,9 +957,9 @@ try {
             <input type="text" id="segment-course-input" value="${segment.course || ''}" disabled />
           </div>
         </div>
-        <div class="input-group">
+        <div class="input-group smedium">
           <div class="space" id="question-container">
-            <input type="text" id="segment-due-date" value="${segment.due || ''}" disabled />
+            <input type="text" id="segment-due-date-input" value="${segment.due || ''}" disabled />
           </div>
         </div>
         <button square data-restore-item tooltip="Restore Item"><i class="bi bi-arrow-counterclockwise"></i></button>`;
@@ -4535,7 +4538,7 @@ try {
         id: itemId,
         name: itemName,
       });
-      archivingListString += `<br>${itemName || itemId}`;
+      archivingListString += `<br>${itemType[0].toUpperCase()}${itemType.slice(1)}: ${itemName || itemId}`;
     });
     if (archivingList.length === 0) return ui.toast("No items selected.", 5000, "error", "bi bi-exclamation-triangle-fill");
     ui.modal({
@@ -4644,6 +4647,63 @@ try {
           class: 'submit-button',
           onclick: () => {
             unarchive(itemType, String(itemId), itemName);
+          },
+          close: true,
+        },
+      ],
+    });
+  }
+
+  function unarchiveMultipleModal() {
+    if (!active) return;
+    var unarchivingList = [];
+    var unarchivingListString = "";
+    document.querySelectorAll('.selected').forEach(e => {
+      if (!e.getAttribute('archive-type') || !e.id) return;
+      var itemType = e.getAttribute('archive-type');
+      var itemId = e.id;
+      var itemName = null;
+      switch (itemType) {
+        case 'course':
+          itemName = courses.find(c => String(c.id) === itemId)?.name;
+          break;
+        case 'segment':
+          itemName = segments.find(s => String(s.number) === itemId)?.name;
+          break;
+        case 'question':
+          itemName = questions.find(q => String(q.id) === itemId)?.number;
+          break;
+        case 'response':
+          itemName = itemId;
+          break;
+        default:
+          return ui.toast("Item to archive not found.", 5000, "error", "bi bi-exclamation-triangle-fill");
+      }
+      if ((typeof itemId === 'object') || (typeof itemId === 'undefined')) return ui.toast("Item to archive not found.", 5000, "error", "bi bi-exclamation-triangle-fill");
+      unarchivingList.push({
+        type: itemType,
+        id: itemId,
+        name: itemName,
+      });
+      unarchivingListString += `<br>${itemType[0].toUpperCase()}${itemType.slice(1)}: ${itemName || itemId}`;
+    });
+    if (unarchivingList.length === 0) return ui.toast("No items selected.", 5000, "error", "bi bi-exclamation-triangle-fill");
+    ui.modal({
+      title: 'Unarchive Selected',
+      body: `<p>Unarchiving these items will restore them to how they were before archiving, given that all dependents still have the item linked.<br>${unarchivingListString}</p>`,
+      buttons: [
+        {
+          text: 'Cancel',
+          class: 'cancel-button',
+          close: true,
+        },
+        {
+          text: 'Unarchive Selected',
+          class: 'submit-button',
+          onclick: async () => {
+            for (var i = 0; i < unarchivingList.length; i++) {
+              await unarchive(unarchivingList[i].type, String(unarchivingList[i].id), unarchivingList[i].name);
+            }
           },
           close: true,
         },

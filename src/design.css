@@ -722,6 +722,10 @@ div.ML__keyboard {
   display: none;
 }
 
+#controls-container [data-unarchive-multiple] {
+  display: none;
+}
+
 body:has(.selecting) #controls-container button:has(.bi-gear) {
   display: none;
 }
@@ -760,6 +764,10 @@ body:has(.selecting) #controls-container [data-archive-multiple] {
 
 body:has(.selecting) #controls-container button:has(.bi-archive):not([data-archive-multiple]) {
   display: none;
+}
+
+body:has(.selecting) #controls-container [data-unarchive-multiple] {
+  display: block;
 }
 
 body:has(.selecting) #controls-container [data-polling] {
