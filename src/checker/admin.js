@@ -1457,78 +1457,78 @@ try {
         addQuestionButton.innerText = "Add Question";
         document.querySelector('.questions .section').appendChild(addQuestionButton);
       }
-      const questionsArchiveTab = document.querySelector('[data-archive-type="questions"]');
-      if (questionsArchiveTab) {
-        const questionsArchives = questionsArchiveTab.querySelector('.archives');
-        const questionsArchivesList = questionsArchives.querySelector('.section');
-        if (questions.length > 0) {
-          questionsArchiveTab.querySelector('#no-archive').setAttribute('hidden', '');
-          questionsArchives.removeAttribute('hidden');
-        } else {
-          questionsArchiveTab.querySelector('#no-archive').removeAttribute('hidden');
-          questionsArchives.setAttribute('hidden', '');
-        }
-        questionsArchivesList.innerHTML = '';
-        questions.sort((a, b) => a.order - b.order).forEach(question => {
-          var buttonGrid = document.createElement('div');
-          buttonGrid.className = "button-grid inputs";
-          buttonGrid.setAttribute('archive-type', 'question');
-          buttonGrid.id = question.id;
-          buttonGrid.innerHTML = `<button square data-select tooltip="Select Item"><i class="bi bi-circle"></i><i class="bi bi-circle-fill"></i></button>
-          <div class="input-group rsmall">
-            <div class="space" id="question-container">
-              <input type="text" id="question-id-input" value="${question.id}" disabled />
-            </div>
-          </div>
-          <div class="input-group small">
-            <div class="space" id="question-container">
-              <input type="text" id="question-number-input" value="${question.number}" disabled />
-            </div>
-          </div>
-          <div class="input-group">
-            <div class="space" id="question-container">
-              <input type="text" id="question-question-input" value="${question.question || ''}" disabled />
-            </div>
-          </div>
-          <div class="input-group">
-            <div class="space" id="question-container">
-              <input type="text" id="question-images-input" value="${JSON.parse(question.images).join(', ')}" disabled />
-            </div>
-          </div>
-          <div class="input-group rsmall">
-            <div class="space" id="question-container">
-              <input type="text" id="question-latex-input" value="${question.latex || ''}" disabled />
-            </div>
-          </div>
-          <button square data-restore-item tooltip="Restore Item"><i class="bi bi-arrow-counterclockwise"></i></button>`;
-          buttonGrid.addEventListener('mouseenter', () => {
-            island(filteredQuestions, 'question', {
-              sourceId: String(question.id),
-              id: `ID ${question.id}`,
-              title: `Question ${question.number}`,
-              subtitle: `${question.question}`,
-              subtitleLatex: question.latex,
-              lists: [
-                {
-                  title: 'Correct Answers',
-                  items: answers.find(a => a.id === question.id).correct_answers
-                },
-                {
-                  title: 'Incorrect Answers',
-                  items: answers.find(a => a.id === question.id).incorrect_answers
-                },
-              ],
-            }, answers);
-          });
-          buttonGrid.addEventListener('mouseleave', () => {
-            island();
-          });
-          questionsArchivesList.appendChild(buttonGrid);
-        });
-        questionsArchivesList.querySelectorAll('[data-restore-item]').forEach(item => item.addEventListener('click', unarchiveModal));
-      }
     } else {
       if (document.querySelector('.questions .section')) document.querySelector('.questions .section').innerHTML = '<button data-add-question-input>Add Question</button>';
+    }
+    const questionsArchiveTab = document.querySelector('[data-archive-type="questions"]');
+    if (questionsArchiveTab) {
+      const questionsArchives = questionsArchiveTab.querySelector('.archives');
+      const questionsArchivesList = questionsArchives.querySelector('.section');
+      if (questions.length > 0) {
+        questionsArchiveTab.querySelector('#no-archive').setAttribute('hidden', '');
+        questionsArchives.removeAttribute('hidden');
+      } else {
+        questionsArchiveTab.querySelector('#no-archive').removeAttribute('hidden');
+        questionsArchives.setAttribute('hidden', '');
+      }
+      questionsArchivesList.innerHTML = '';
+      questions.sort((a, b) => a.order - b.order).forEach(question => {
+        var buttonGrid = document.createElement('div');
+        buttonGrid.className = "button-grid inputs";
+        buttonGrid.setAttribute('archive-type', 'question');
+        buttonGrid.id = question.id;
+        buttonGrid.innerHTML = `<button square data-select tooltip="Select Item"><i class="bi bi-circle"></i><i class="bi bi-circle-fill"></i></button>
+        <div class="input-group rsmall">
+          <div class="space" id="question-container">
+            <input type="text" id="question-id-input" value="${question.id}" disabled />
+          </div>
+        </div>
+        <div class="input-group small">
+          <div class="space" id="question-container">
+            <input type="text" id="question-number-input" value="${question.number}" disabled />
+          </div>
+        </div>
+        <div class="input-group">
+          <div class="space" id="question-container">
+            <input type="text" id="question-question-input" value="${question.question || ''}" disabled />
+          </div>
+        </div>
+        <div class="input-group">
+          <div class="space" id="question-container">
+            <input type="text" id="question-images-input" value="${JSON.parse(question.images).join(', ')}" disabled />
+          </div>
+        </div>
+        <div class="input-group rsmall">
+          <div class="space" id="question-container">
+            <input type="text" id="question-latex-input" value="${question.latex || ''}" disabled />
+          </div>
+        </div>
+        <button square data-restore-item tooltip="Restore Item"><i class="bi bi-arrow-counterclockwise"></i></button>`;
+        buttonGrid.addEventListener('mouseenter', () => {
+          island(filteredQuestions, 'question', {
+            sourceId: String(question.id),
+            id: `ID ${question.id}`,
+            title: `Question ${question.number}`,
+            subtitle: `${question.question}`,
+            subtitleLatex: question.latex,
+            lists: [
+              {
+                title: 'Correct Answers',
+                items: answers.find(a => a.id === question.id)?.correct_answers
+              },
+              {
+                title: 'Incorrect Answers',
+                items: answers.find(a => a.id === question.id)?.incorrect_answers
+              },
+            ],
+          }, answers);
+        });
+        buttonGrid.addEventListener('mouseleave', () => {
+          island();
+        });
+        questionsArchivesList.appendChild(buttonGrid);
+      });
+      questionsArchivesList.querySelectorAll('[data-restore-item]').forEach(item => item.addEventListener('click', unarchiveModal));
     }
     document.querySelectorAll('[data-add-question-input]').forEach(a => a.addEventListener('click', addQuestion));
     document.querySelectorAll('[data-remove-question-input]').forEach(a => a.addEventListener('click', removeQuestion));
