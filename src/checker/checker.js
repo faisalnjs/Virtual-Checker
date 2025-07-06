@@ -1115,22 +1115,22 @@ try {
     ui.setUnsavedChanges(false);
   }
 
-  document.getElementById("history-first").addEventListener("click", () => {
+  document.getElementById("history-first")?.addEventListener("click", () => {
     historyIndex = getHistoryDates().length - 1;
     updateHistory();
   });
 
-  document.getElementById("history-backward").addEventListener("click", () => {
+  document.getElementById("history-backward")?.addEventListener("click", () => {
     historyIndex++;
     updateHistory();
   });
 
-  document.getElementById("history-forward").addEventListener("click", () => {
+  document.getElementById("history-forward")?.addEventListener("click", () => {
     historyIndex--;
     updateHistory();
   });
 
-  document.getElementById("history-last").addEventListener("click", () => {
+  document.getElementById("history-last")?.addEventListener("click", () => {
     historyIndex = 0;
     updateHistory();
   });
