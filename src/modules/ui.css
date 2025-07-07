@@ -237,7 +237,7 @@ div[data-color-input] > div[data-color-preview]:hover {
   border-radius: 0.25rem;
   white-space: nowrap;
   font-size: 0.875rem !important;
-  font-family: inherit !important;
+  font-family: "Figtree" !important;
   font-weight: normal !important;
   opacity: 0;
   pointer-events: none;

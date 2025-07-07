@@ -999,8 +999,8 @@ try {
     // document.querySelectorAll('[sort-segment-questions-decreasing]').forEach(a => a.addEventListener('click', sortSegmentQuestionsDecreasing));
     document.querySelectorAll('[report]').forEach(a => a.addEventListener('click', toggleDetailedReport));
     document.querySelectorAll('[data-edit-segment]').forEach(a => a.addEventListener('click', editSegment));
-    document.querySelectorAll('[data-archive-segment]').forEach(a => a.addEventListener('click', (event) => {
-      if (event.target.parentElement.parentElement.id) archiveModal('segment', event.target.parentElement.parentElement.id.split('segment-')[1]);
+    document.querySelectorAll('[data-archive-segment]').forEach(a => a.addEventListener('click', () => {
+      if (a.parentElement.parentElement.id) archiveModal('segment', a.parentElement.parentElement.id.split('segment-')[1]);
     }));
     ui.reloadUnsavedInputs();
   }
@@ -1426,47 +1426,56 @@ try {
           var toolbar = document.createElement('div');
           toolbar.innerHTML = `<div id="toolbar-container">
             <span class="ql-formats">
-              <select class="ql-font"></select>
-              <select class="ql-size"></select>
+              <select class="ql-font" tooltip="Font"></select>
+              <select class="ql-size" tooltip="Text Size"></select>
             </span>
             <span class="ql-formats">
-              <button class="ql-bold"></button>
-              <button class="ql-italic"></button>
-              <button class="ql-underline"></button>
-              <button class="ql-strike"></button>
+              <button class="ql-bold" tooltip="Bold"></button>
+              <button class="ql-italic" tooltip="Italic"></button>
+              <button class="ql-underline" tooltip="Underline"></button>
+              <button class="ql-strike" tooltip="Strikethrough"></button>
             </span>
             <span class="ql-formats">
-              <select class="ql-color"></select>
-              <select class="ql-background"></select>
+              <select class="ql-color" tooltip="Text Color"></select>
+              <select class="ql-background" tooltip="Highlight"></select>
             </span>
             <span class="ql-formats">
-              <button class="ql-script" value="sub"></button>
-              <button class="ql-script" value="super"></button>
+              <button class="ql-script" value="sub" tooltip="Subscript"></button>
+              <button class="ql-script" value="super" tooltip="Superscript"></button>
             </span>
             <span class="ql-formats">
-              <button class="ql-header" value="1"></button>
-              <button class="ql-header" value="2"></button>
-              <button class="ql-blockquote"></button>
-              <button class="ql-code-block"></button>
+              <button class="ql-header" value="1" tooltip="Heading"></button>
+              <button class="ql-header" value="2" tooltip="Subheading"></button>
+              <button class="ql-blockquote" tooltip="Blockquote"></button>
+              <button class="ql-code-block" tooltip="Code Block"></button>
             </span>
             <span class="ql-formats">
-              <button class="ql-list" value="ordered"></button>
-              <button class="ql-list" value="bullet"></button>
-              <button class="ql-indent" value="-1"></button>
-              <button class="ql-indent" value="+1"></button>
+              <button class="ql-list" value="ordered" tooltip="Number List"></button>
+              <button class="ql-list" value="bullet" tooltip="Bullet List"></button>
+              <button class="ql-indent" value="-1" tooltip="Remove Indent"></button>
+              <button class="ql-indent" value="+1" tooltip="Indent"></button>
             </span>
             <span class="ql-formats">
-              <button class="ql-direction" value="rtl"></button>
-              <select class="ql-align"></select>
+              <button class="ql-direction" value="rtl" tooltip="Text Direction"></button>
+              <select class="ql-align" tooltip="Alignment"></select>
             </span>
             <span class="ql-formats">
-              <button class="ql-link"></button>
-              <button class="ql-image"></button>
-              <button class="ql-video"></button>
-              <button class="ql-formula"></button>
+              <button class="ql-link" tooltip="Link"></button>
+              <button class="ql-image" tooltip="Image"></button>
+              <button class="ql-video" tooltip="Video"></button>
+              <button class="ql-formula" tooltip="LaTeX"></button>
             </span>
             <span class="ql-formats">
-              <button class="ql-clean"></button>
+              <button class="ql-clean" tooltip="Clear Formatting"></button>
+              <button data-clear-rich-content tooltip="Clear Description"><i class="bi bi-x-lg"></i></button>
+            </span>
+            <span class="ql-formats">
+              <button data-export-rich-content tooltip="Export To Clipboard"><i class="bi bi-clipboard-fill"></i></button>
+              <button data-import-rich-content tooltip="Import From Clipboard"><i class="bi bi-clipboard-plus-fill"></i></button>
+            </span>
+            <span class="ql-formats">
+              <button data-undo-rich-content tooltip="Undo"><i class="bi bi-arrow-counterclockwise"></i></button>
+              <button data-redo-rich-content tooltip="Redo"><i class="bi bi-arrow-clockwise"></i></button>
             </span>
           </div>`;
           textareaContainer.appendChild(toolbar);
@@ -1605,8 +1614,46 @@ try {
     document.querySelectorAll('[data-remove-correct-answer-input]').forEach(a => a.addEventListener('click', removeCorrectAnswer));
     document.querySelectorAll('[data-remove-incorrect-answer-input]').forEach(a => a.addEventListener('click', removeIncorrectAnswer));
     document.querySelectorAll('[data-toggle-latex]').forEach(a => a.addEventListener('click', toggleQuestionLatex));
-    document.querySelectorAll('[data-archive-question-input]').forEach(a => a.addEventListener('click', (event) => {
-      if (event.target.parentElement.parentElement.id) archiveModal('question', event.target.parentElement.parentElement.id.split('question-')[1]);
+    document.querySelectorAll('[data-archive-question-input]').forEach(a => a.addEventListener('click', () => {
+      if (a.parentElement.parentElement.id) archiveModal('question', a.parentElement.parentElement.id.split('question-')[1]);
+    }));
+    document.querySelectorAll('[data-clear-rich-content]').forEach(a => a.addEventListener('click', () => {
+      if (!a.parentElement.parentElement.parentElement.parentElement.parentElement.id) return;
+      renderedEditors[Number(a.parentElement.parentElement.parentElement.parentElement.parentElement.id.split('question-')[1])].setContents();
+    }));
+    document.querySelectorAll('[data-undo-rich-content]').forEach(a => a.addEventListener('click', () => {
+      if (!a.parentElement.parentElement.parentElement.parentElement.parentElement.id) return;
+      renderedEditors[Number(a.parentElement.parentElement.parentElement.parentElement.parentElement.id.split('question-')[1])].history.undo();
+    }));
+    document.querySelectorAll('[data-redo-rich-content]').forEach(a => a.addEventListener('click', () => {
+      if (!a.parentElement.parentElement.parentElement.parentElement.parentElement.id) return;
+      renderedEditors[Number(a.parentElement.parentElement.parentElement.parentElement.parentElement.id.split('question-')[1])].history.redo();
+    }));
+    document.querySelectorAll('[data-export-rich-content]').forEach(a => a.addEventListener('click', () => {
+      if (!a.parentElement.parentElement.parentElement.parentElement.parentElement.id) return;
+      navigator.clipboard.writeText(JSON.stringify(renderedEditors[Number(a.parentElement.parentElement.parentElement.parentElement.parentElement.id.split('question-')[1])].getContents())).then(() => {
+        ui.toast("Content copied to clipboard.", 3000, "success", "bi bi-clipboard-check-fill");
+      }).catch((err) => {
+        console.error('Failed to copy content: ', err);
+        ui.toast("Failed to copy content to clipboard.", 5000, "error", "bi bi-exclamation-triangle-fill");
+      });
+    }));
+    document.querySelectorAll('[data-import-rich-content]').forEach(a => a.addEventListener('click', () => {
+      if (!a.parentElement.parentElement.parentElement.parentElement.parentElement.id) return;
+      navigator.clipboard.readText().then((text) => {
+        try {
+          const content = JSON.parse(text);
+          if (!text || !text.includes("ops") || !content) return ui.toast("Invalid clipboard content.", 5000, "error", "bi bi-exclamation-triangle-fill");;
+          renderedEditors[Number(a.parentElement.parentElement.parentElement.parentElement.parentElement.id.split('question-')[1])].setContents(content);
+          ui.toast("Content imported from clipboard.", 3000, "success", "bi bi-clipboard-check-fill");
+        } catch (err) {
+          console.error('Failed to parse content: ', err);
+          ui.toast("Failed to parse content from clipboard.", 5000, "error", "bi bi-exclamation-triangle-fill");
+        }
+      }).catch((err) => {
+        console.error('Failed to read clipboard: ', err);
+        ui.toast("Failed to read content from clipboard.", 5000, "error", "bi bi-exclamation-triangle-fill");
+      });
     }));
     ui.reloadUnsavedInputs();
   }

@@ -749,10 +749,6 @@ div.ML__keyboard {
   padding-left: 20px !important;
 } */
 
-.description {
-  margin-bottom: 7.5px;
-}
-
 .description a {
   color: var(--accent-color) !important;
 }
@@ -773,6 +769,7 @@ div.ML__keyboard {
 
 .description .ql-toolbar .ql-picker-label {
   color: var(--text-color) !important;
+  font-family: "Figtree";
 }
 
 .description .ql-toolbar .ql-stroke {
@@ -782,7 +779,7 @@ div.ML__keyboard {
 .description .ql-toolbar .ql-fill {
   fill: var(--text-color) !important;
 }
-
+.description .ql-toolbar button:hover,
 .description .ql-toolbar button:hover .ql-picker-label,
 .description .ql-toolbar .ql-active .ql-picker-label {
   color: var(--accent-color) !important;
@@ -821,9 +818,14 @@ div.ML__keyboard {
 }
 
 .description .ql-toolbar button:focus,
-.description .ql-toolbar .ql-picker-item:hover,
+.description .ql-toolbar .ql-picker-item,
 .description .ql-toolbar .ql-picker-item.ql-selected {
   color: var(--accent-text-color) !important;
+  font-family: "Figtree";
+}
+
+.description .ql-toolbar .ql-picker-item:hover {
+  color: var(--text-color) !important;
 }
 
 .description .ql-picker-options {
@@ -911,6 +913,7 @@ div.ML__keyboard {
 
 .questions .section.expanded .description {
   overflow: visible;
+  margin-bottom: 7.5px;
 }
 
 .segments .section.expanded .bi-caret-up-fill,
