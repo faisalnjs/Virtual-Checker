@@ -10,6 +10,7 @@ import { getExtendedPeriodRange } from "/src/periods/periods";
 import { convertLatexToAsciiMath, convertLatexToMarkup, renderMathInElement } from "mathlive";
 import mediumZoom from "medium-zoom";
 import confetti from "canvas-confetti";
+import Quill from "quill";
 ``;
 
 try {
@@ -672,9 +673,17 @@ try {
     document.getElementById("submit-button").disabled = true;
     document.querySelector('.hiddenOnLoad:has(#answer-container)').classList.remove('show');
     document.querySelector('[data-question-title]').setAttribute('hidden', '');
+    document.querySelector('[data-question-description]').setAttribute('hidden', '');
+    document.querySelector('[data-question-description]').innerHTML = '';
     const feedContainer = document.querySelector('.input-group:has(> #question-history-feed)');
     feedContainer.classList.remove('show');
-    if (!question) return questionImages.innerHTML = '<p style="padding-top: 10px;">There are no questions in this segment.</p>';
+    feedContainer.setAttribute('hidden', '');
+    document.getElementById('answer-mode-selector').removeAttribute('hidden');
+    if (!question) {
+      questionImages.innerHTML = '<p style="margin-bottom: -12px;">There are no questions in this segment.</p>';
+      document.getElementById('answer-mode-selector').setAttribute('hidden', '');
+      return;
+    }
     if ((question.question.length > 0) && (question.question != ' ')) {
       if (question.latex) {
         document.querySelector('[data-question-title]').innerHTML = convertLatexToMarkup(question.question);
@@ -683,6 +692,20 @@ try {
         document.querySelector('[data-question-title]').innerText = question.question;
       };
       document.querySelector('[data-question-title]').removeAttribute('hidden');
+    }
+    if (question.description && question.description.includes('ops') && (question.description != '{"ops":[{"insert":"\\n"}]}') && JSON.parse(question.description)) {
+      var textarea = document.createElement('div');
+      document.querySelector('[data-question-description]').appendChild(textarea);
+      var quill = new Quill(textarea, {
+        readOnly: true,
+        modules: {
+          syntax: true,
+          toolbar: false,
+        },
+        theme: 'snow'
+      });
+      quill.setContents(JSON.parse(question.description));
+      document.querySelector('[data-question-description]').removeAttribute('hidden');
     }
     JSON.parse(question.images).forEach(image => {
       var i = document.createElement('img');
@@ -716,6 +739,7 @@ try {
     feed.innerHTML = "";
     var latestResponses = (storage.get("history") || []).filter(r => (String(r.segment) === String(segments.value)) && (String(r.question) === String(question.id))).sort((a, b) => b.timestamp - a.timestamp);
     if (latestResponses.length > 0) {
+      feedContainer.removeAttribute('hidden');
       feedContainer.classList.add('show');
       const fetchPromises = latestResponses.map(item =>
         fetch(`${domain}/response?seatCode=${item.code}&segment=${item.segment}&question=${item.question}&answer=${item.answer}`, {

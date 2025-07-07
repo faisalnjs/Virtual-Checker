@@ -25,6 +25,10 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,400;0,700;1,400;1,700&display=swap"
     rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <link rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
 </head>
 
 <body class="col">
@@ -93,6 +97,7 @@
       <ul></ul>
     </div>
     <h6 data-question-title hidden></h6>
+    <div class="description minimal" data-question-description hidden></div>
     <div class="input-group hiddenOnLoad">
       <label for="question-history-feed">Previous Responses:</label>
       <div class="col history-feed" id="question-history-feed"></div>
@@ -207,7 +212,8 @@
             </div>
           </div>
           <div class="button-grid">
-            <button square data-add-matrix-column tooltip="Add Matrix Column"><i class="bi bi-arrow-90deg-left rotate-right"></i></button>
+            <button square data-add-matrix-column tooltip="Add Matrix Column"><i
+                class="bi bi-arrow-90deg-left rotate-right"></i></button>
             <button square data-remove-matrix-column tooltip="Remove Matrix Column"><i class="bi bi-x"></i></button>
           </div>
           <div class="button-grid">
@@ -319,8 +325,10 @@
     <button data-modal-view="settings/credits">Credits</button>
     <button data-sync>Sync Settings & History</button>
     <div class="row center" style="gap: 7.5px; margin-top: 5px;">
-      <a href="https://github.com/faisalnjs/virtual-checker" class="icon" tooltip="GitHub Repository"><i class="bi bi-github"></i></a>
-      <a href="https://dangoweb.com/?from=virtual-checker" class="icon" tooltip="Cloud Hosting"><i class="bi bi-cloud-fill"></i></a>
+      <a href="https://github.com/faisalnjs/virtual-checker" class="icon" tooltip="GitHub Repository"><i
+          class="bi bi-github"></i></a>
+      <a href="https://dangoweb.com/?from=virtual-checker" class="icon" tooltip="Cloud Hosting"><i
+          class="bi bi-cloud-fill"></i></a>
     </div>
     <div data-modal-page="code" data-page-title="Seat Code">
       <input type="text" inputmode="numeric" placeholder="000" maxlength="3" id="code-input" />
@@ -464,7 +472,8 @@
         href="https://status.dangoweb.com/">server maintenance</a>, or contact support below.
     </p>
     <div class="row center" style="gap: 7.5px; margin-top: 5px;">
-      <a href="https://github.com/faisalnjs/virtual-checker/issues" class="icon" tooltip="GitHub Issues"><i class="bi bi-github"></i></a>
+      <a href="https://github.com/faisalnjs/virtual-checker/issues" class="icon" tooltip="GitHub Issues"><i
+          class="bi bi-github"></i></a>
       <a href="https://faisaln.com/discord" class="icon" tooltip="Discord Server"><i class="bi bi-discord"></i></a>
       <a href="mailto:contact@faisaln.com" class="icon" tooltip="Email"><i class="bi bi-envelope-fill"></i></a>
     </div>

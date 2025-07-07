@@ -749,6 +749,14 @@ div.ML__keyboard {
   padding-left: 20px !important;
 } */
 
+.description.minimal .ql-container {
+  background: transparent !important;
+}
+
+.description.minimal .ql-container .ql-editor {
+  padding: 0 !important;
+}
+
 .description a {
   color: var(--accent-color) !important;
 }
@@ -863,8 +871,26 @@ div.ML__keyboard {
   border-color: var(--accent-color) !important;
 }
 
+.description .ql-code-block-container {
+  border-radius: 0.3rem !important;
+}
+
 .description .ql-code-block-container .ql-ui {
   width: fit-content;
+  color: var(--text-color);
+  font-size: 12.5px;
+  border-radius: 0.2rem;
+}
+
+.description .ql-editor .ql-video {
+  width: -webkit-fill-available;
+  min-height: 400px;
+  border-radius: 0.3rem;
+}
+
+.description .ql-editor p > img {
+  width: -webkit-fill-available;
+  border-radius: 0.3rem;
 }
 
 .hiddenOnLoad {
@@ -907,7 +933,7 @@ div.ML__keyboard {
 .questions .section.expanded .EasyMDEContainer,
 .questions .section.expanded .attachments,
 .questions .section.expanded .answers {
-  max-height: 1000px;
+  max-height: 10000px;
   transition: 0.25s var(--easing);
 }
 
@@ -1159,7 +1185,7 @@ hidden,
 
 [data-question-title] {
   font-size: 20px;
-  margin-top: 10px;
+  margin-top: 5px;
   line-height: 1.5;
 }
 
