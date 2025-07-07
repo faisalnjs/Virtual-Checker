@@ -6,6 +6,7 @@ import * as auth from "/src/modules/auth.js";
 import island from "/src/modules/island.js";
 import { createSwapy } from "swapy";
 import Quill from "quill";
+import "faz-quill-emoji/autoregister";
 
 const domain = ((window.location.hostname.search('check') != -1) || (window.location.hostname.search('127') != -1)) ? 'https://api.check.vssfalcons.com' : `http://${document.domain}:5000`;
 if (window.location.pathname.split('?')[0].endsWith('/admin')) window.location.pathname = '/admin/';
@@ -1434,6 +1435,7 @@ try {
               <button class="ql-italic" tooltip="Italic"></button>
               <button class="ql-underline" tooltip="Underline"></button>
               <button class="ql-strike" tooltip="Strikethrough"></button>
+              <button class="ql-faz-emoji" tooltip="Emoji"></button>
             </span>
             <span class="ql-formats">
               <select class="ql-color" tooltip="Text Color"></select>
@@ -1486,6 +1488,9 @@ try {
             modules: {
               syntax: true,
               toolbar,
+              fazEmoji: {
+                collection: 'fluent-emoji',
+              },
             },
             placeholder: 'Add some written content to your question...',
             theme: 'snow'

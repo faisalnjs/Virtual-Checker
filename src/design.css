@@ -892,6 +892,35 @@ div.ML__keyboard {
   border-radius: 0.3rem;
 }
 
+.description .faz-quill-emoji-scroll {
+  height: 250px !important;
+}
+
+.description .faz-quill-emoji-tab-panels,
+.description .faz-quill-emoji-dropdown-content,
+.description .faz-quill-emoji-dropdown,
+.description .faz-quill-emoji-tab-group,
+.description .faz-quill-emoji-scroll {
+  border-radius: 10px;
+}
+
+.description .faz-quill-emoji-input-group {
+  display: flex;
+  align-items: center;
+  padding: 5px 12.5px;
+  gap: 5px;
+}
+
+.description .faz-quill-emoji-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 25px);
+  padding: 5px 0 5px 12.5px;
+}
+
+.description .faz-quill-emoji-item img {
+  min-height: 25px;
+}
+
 .hiddenOnLoad {
   max-height: 0px;
   overflow: hidden;

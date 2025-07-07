@@ -11,6 +11,7 @@ import { convertLatexToAsciiMath, convertLatexToMarkup, renderMathInElement } fr
 import mediumZoom from "medium-zoom";
 import confetti from "canvas-confetti";
 import Quill from "quill";
+import "faz-quill-emoji/autoregister";
 ``;
 
 try {
@@ -701,6 +702,9 @@ try {
         modules: {
           syntax: true,
           toolbar: false,
+          fazEmoji: {
+            collection: 'fluent-emoji',
+          },
         },
         theme: 'snow'
       });
