@@ -892,7 +892,7 @@ div.ML__keyboard {
   border-radius: 0.3rem;
 }
 
-.description .faz-quill-emoji-scroll {
+/* .description .faz-quill-emoji-scroll {
   height: 250px !important;
 }
 
@@ -919,6 +919,61 @@ div.ML__keyboard {
 
 .description .faz-quill-emoji-item img {
   min-height: 25px;
+} */
+
+.description .faz-quill-emoji-dropdown,
+.description .faz-quill-emoji-input-group,
+.description .faz-quill-emoji-loader {
+  background: transparent;
+}
+
+.description .faz-quill-emoji-dropdown-content {
+  background: var(--surface-color);
+}
+
+.description .faz-quill-emoji-tab {
+  color: var(--surface-text-color) !important;
+}
+
+.description .faz-quill-emoji-tab.active:before {
+  background: var(--accent-color) !important;
+  left: -5px;
+}
+
+.description .faz-quill-emoji-loader svg {
+  color: var(--accent-text-color) !important;
+}
+
+.description .faz-quill-emoji-list {
+  grid-template-columns: repeat(9, 1fr) !important;
+  gap: 5px !important;
+}
+
+.description .faz-quill-emoji-tab-list {
+  margin-right: -5px;
+  margin-left: 15px;
+}
+
+.description .faz-quill-emoji-tab {
+  padding: 0 10px !important;
+}
+
+.description .faz-quill-emoji-input-group input {
+  background: var(--accent-color);
+  color: var(--accent-text-color);
+}
+
+.description .faz-quill-emoji-input-group svg {
+  color: var(--accent-text-color);
+  height: 17px;
+  width: 17px;
+  left: 10px;
+}
+
+.description .faz-quill-emoji-loader {
+  top: 21.5px;
+  left: unset;
+  right: 85px;
 }
 
 .hiddenOnLoad {
