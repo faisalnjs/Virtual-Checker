@@ -884,12 +884,11 @@ div.ML__keyboard {
 
 .description .ql-editor .ql-video {
   width: -webkit-fill-available;
-  min-height: 400px;
+  min-height: 22vw;
   border-radius: 0.3rem;
 }
 
 .description .ql-editor p > img {
-  width: -webkit-fill-available;
   border-radius: 0.3rem;
 }
 

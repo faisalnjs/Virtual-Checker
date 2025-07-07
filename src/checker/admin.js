@@ -456,7 +456,7 @@ try {
             if (document.getElementById("filter-segment-input")) {
               document.getElementById("filter-segment-input").innerHTML = '<option value="" selected>#</option>';
               segments.forEach(segment => {
-                document.getElementById("filter-segment-input").innerHTML += `<option value="${segment.number}">${segment.number}</option>`;
+                document.getElementById("filter-segment-input").innerHTML += `<option value="${segment.number}" ${(document.location.search.split('?segment=')[1] && (document.location.search.split('?segment=')[1] === String(segment.number))) ? 'selected' : ''}>${segment.number}</option>`;
               });
             }
             if (document.getElementById("speed-mode-segments")) updateSpeedModeSegments();
@@ -1793,7 +1793,7 @@ try {
   async function renderPond() {
     if (!active) return;
     await save(true);
-    const url = '/admin/upload.html?question=' + this.id;
+    const url = '/admin/upload?question=' + this.id;
     const width = 600;
     const height = 600;
     const left = (window.screen.width / 2) - (width / 2);
@@ -2482,7 +2482,7 @@ try {
 
   async function renderSpeedPond(segment = 0, startingQuestionId, startingQuestion) {
     if (!active) return;
-    const url = `/admin/upload.html?segment=${segment}${(startingQuestionId && startingQuestion) ? `&startingQuestionId=${startingQuestionId}&startingQuestion=${startingQuestion}` : ''}`;
+    const url = `/admin/upload?segment=${segment}${(startingQuestionId && startingQuestion) ? `&startingQuestionId=${startingQuestionId}&startingQuestion=${startingQuestion}` : ''}`;
     const width = 600;
     const height = 600;
     const left = (window.screen.width / 2) - (width / 2);
@@ -2518,7 +2518,7 @@ try {
 
   async function renderSyllabusPond() {
     if (!active) return;
-    const url = '/admin/upload.html?syllabus=' + document.getElementById("course-period-input").value;
+    const url = '/admin/upload?syllabus=' + document.getElementById("course-period-input").value;
     const width = 600;
     const height = 150;
     const left = (window.screen.width / 2) - (width / 2);
@@ -3064,7 +3064,7 @@ try {
         id: q.querySelectorAll('input')[0].id
       };
     }));
-    ui.toast(loadedSegmentEditor ? "Updating segment..." : "Creating segment...", 3000, "info", "bi bi-plus-circle-fill");
+    ui.toast(loadedSegmentEditor ? "Updating segment..." : "Creating segment...", 3000, "info", loadedSegmentEditor ? "bi bi-floppy-fill" : "bi bi-plus-circle-fill");
     ui.setUnsavedChanges(true);
     fetch(domain + '/segment', {
       method: "POST",
@@ -3119,6 +3119,7 @@ try {
       loadedSegmentCreator = true;
       document.querySelector('[data-delete-segment]')?.remove();
       document.querySelector('[data-archive-segment]')?.remove();
+      document.querySelector('[edit-segment-questions]')?.remove();
       return;
     }
     loadedSegment = segments.find(s => String(s.number) === String(segment));
@@ -3127,6 +3128,7 @@ try {
       ui.toast(`Segment ${String(segment)} not found.`, 3000, "error", "bi bi-exclamation-triangle-fill");
       document.querySelector('[data-delete-segment]')?.remove();
       document.querySelector('[data-archive-segment]')?.remove();
+      document.querySelector('[edit-segment-questions]')?.remove();
       return;
     }
     loadedSegmentEditor = true;
@@ -3138,6 +3140,25 @@ try {
     JSON.parse(loadedSegment.question_ids).forEach(q => addExistingQuestion(q.id));
     document.getElementById("create-button").innerText = "Save";
     document.querySelector('[data-delete-segment]')?.addEventListener('click', deleteSegmentConfirm);
+    document.querySelector('[edit-segment-questions]')?.addEventListener('click', () => {
+      if (ui.unsavedChanges) return ui.toast("You have unsaved changes. Please save or discard them before editing questions.", 3000, "error", "bi bi-exclamation-triangle-fill");
+      const url = `/admin/questions?segment=${loadedSegment.number}`;
+      const width = window.outerWidth;
+      const height = window.outerHeight;
+      const left = window.screenLeft;
+      const top = window.screenTop;
+      const windowFeatures = `width=${width},height=${height},resizable=no,scrollbars=no,status=yes,left=${left},top=${top}`;
+      const newWindow = window.open(url, '_blank', windowFeatures);
+      window.addEventListener('message', (event) => {
+        if (event.origin !== (window.location.protocol + '//' + window.location.hostname + (window.location.port ? ':' + window.location.port : ''))) return;
+      }, false);
+      const checkWindowClosed = setInterval(async function () {
+        if (newWindow && newWindow.closed) {
+          clearInterval(checkWindowClosed);
+          window.location.reload();
+        }
+      }, 1000);
+    });
   }
 
   function deleteSegmentConfirm() {
