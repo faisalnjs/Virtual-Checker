@@ -5,27 +5,10 @@ import * as time from "/src/modules/time.js";
 import * as auth from "/src/modules/auth.js";
 import island from "/src/modules/island.js";
 import { createSwapy } from "swapy";
-// import EasyMDE from "easymde";
-// import { Editor } from "@tiptap/core";
-// import StarterKit from "@tiptap/starter-kit";
-// import Underline from "@tiptap/extension-underline";
-// import Superscript from "@tiptap/extension-superscript";
-// import Subscript from "@tiptap/extension-subscript";
-// import MarkButton from "@tiptap/components/tiptap-ui/mark-button";
-// import BubbleMenu from "@tiptap/extension-bubble-menu";
-// import Mathematics from "@tiptap/extension-mathematics";
 import Quill from "quill";
 
 const domain = ((window.location.hostname.search('check') != -1) || (window.location.hostname.search('127') != -1)) ? 'https://api.check.vssfalcons.com' : `http://${document.domain}:5000`;
 if (window.location.pathname.split('?')[0].endsWith('/admin')) window.location.pathname = '/admin/';
-
-// Mathematics.configure({
-//   shouldRender: (state, pos, node) => {
-//     const $pos = state.doc.resolve(pos)
-//     return node.type.name === 'text' && $pos.parent.type.name !== 'codeBlock'
-//   },
-// });
-
 
 var archiveTypeSelected = null;
 var courses = [];
@@ -1488,33 +1471,8 @@ try {
           </div>`;
           textareaContainer.appendChild(toolbar);
           var textarea = document.createElement('div');
-          // textarea.innerHTML = `<div className="tiptap-button-group" data-orientation="horizontal">
-          //   <MarkButton type="bold" />
-          //   <MarkButton type="italic" />
-          //   <MarkButton type="strike" />
-          //   <MarkButton type="code" />
-          //   <MarkButton type="underline" />
-          //   <MarkButton type="superscript" />
-          //   <MarkButton type="subscript" />
-          // </div>`;
           textareaContainer.appendChild(textarea);
           question.appendChild(textareaContainer);
-          // new EasyMDE({
-          //   element: textarea,
-          //   initialValue: q.description,
-          // });
-          // new Editor({
-          //   element: textarea,
-          //   shouldRerenderOnTransaction: true,
-          //   extensions: [
-          //     StarterKit,
-          //     Underline,
-          //     Superscript,
-          //     Subscript,
-          //     Mathematics,
-          //   ],
-          //   content: '<p>Hello World!</p>',
-          // });
           var quill = new Quill(textarea, {
             modules: {
               syntax: true,

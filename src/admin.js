@@ -3,7 +3,6 @@ import "./reset.css";
 import "./layout.css";
 import "./design.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
-// import "easymde/dist/easymde.min.css";
 import "quill/dist/quill.core.css";
 import "quill/dist/quill.snow.css";
 import "quill/dist/quill.bubble.css";
