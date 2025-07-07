@@ -218,14 +218,16 @@ div[data-color-input] > div[data-color-preview]:hover {
   transition: 0.5s opacity;
 }
 
-[tooltip] {
+[tooltip],
+[aria-label] {
   position: relative;
   cursor: pointer;
 }
 
-[tooltip]::after {
+[tooltip]::after,
+[aria-label]::after {
   content: attr(tooltip);
-  position: absolute;
+  position: absolute !important;
   top: -1.5rem;
   left: 50%;
   transform: translateX(-50%);
@@ -234,7 +236,9 @@ div[data-color-input] > div[data-color-preview]:hover {
   padding: 0.25rem 0.5rem;
   border-radius: 0.25rem;
   white-space: nowrap;
-  font-size: 0.875rem;
+  font-size: 0.875rem !important;
+  font-family: inherit !important;
+  font-weight: normal !important;
   opacity: 0;
   pointer-events: none;
   transition: 0.2s ease-in-out;
@@ -242,23 +246,31 @@ div[data-color-input] > div[data-color-preview]:hover {
   line-height: normal;
 }
 
-[tooltip][reverse]::after {
+[aria-label]::after {
+  content: attr(aria-label) !important;
+}
+
+[tooltip][reverse]::after,
+[aria-label][reverse]::after {
   top: unset;
   bottom: -1.5rem;
 }
 
-[tooltip]:hover::after {
+[tooltip]:hover::after,
+[aria-label]:hover::after {
   opacity: 1;
   top: -2rem;
   transition: 0.2s ease-in-out;
 }
 
-[tooltip][reverse]:hover::after {
+[tooltip][reverse]:hover::after,
+[aria-label][reverse]:hover::after {
   top: unset;
   bottom: -2rem;
 }
 
-*:has(> [tooltip]) {
+*:has(> [tooltip]),
+*:has(> [aria-label]) {
   position: relative;
   overflow: visible !important;
 }

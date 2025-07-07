@@ -5,9 +5,27 @@ import * as time from "/src/modules/time.js";
 import * as auth from "/src/modules/auth.js";
 import island from "/src/modules/island.js";
 import { createSwapy } from "swapy";
+// import EasyMDE from "easymde";
+// import { Editor } from "@tiptap/core";
+// import StarterKit from "@tiptap/starter-kit";
+// import Underline from "@tiptap/extension-underline";
+// import Superscript from "@tiptap/extension-superscript";
+// import Subscript from "@tiptap/extension-subscript";
+// import MarkButton from "@tiptap/components/tiptap-ui/mark-button";
+// import BubbleMenu from "@tiptap/extension-bubble-menu";
+// import Mathematics from "@tiptap/extension-mathematics";
+import Quill from "quill";
 
 const domain = ((window.location.hostname.search('check') != -1) || (window.location.hostname.search('127') != -1)) ? 'https://api.check.vssfalcons.com' : `http://${document.domain}:5000`;
 if (window.location.pathname.split('?')[0].endsWith('/admin')) window.location.pathname = '/admin/';
+
+// Mathematics.configure({
+//   shouldRender: (state, pos, node) => {
+//     const $pos = state.doc.resolve(pos)
+//     return node.type.name === 'text' && $pos.parent.type.name !== 'codeBlock'
+//   },
+// });
+
 
 var archiveTypeSelected = null;
 var courses = [];
@@ -27,6 +45,7 @@ var loadedSegmentEditor = false;
 var loadedSegmentCreator = false;
 var noReloadCourse = false;
 var logs = [];
+var renderedEditors = {};
 
 var draggableQuestionList = null;
 var draggableSegmentReorder = null;
@@ -1197,6 +1216,7 @@ try {
             number: question.querySelector('#question-number-input').value,
             segment: question.querySelector('#question-segment-input').value,
             question: question.querySelector('#question-text-input').value,
+            description: JSON.stringify(renderedEditors[Number(question.id.split('-')[1])].getContents()),
             images: Array.from(question.querySelectorAll('.attachments img')).map(q => {
               return q.src;
             }),
@@ -1381,6 +1401,7 @@ try {
           var selectedSegment = segments.find(segment => String(segment.number) === document.getElementById("filter-segment-input").value);
           if (selectedSegment) filteredQuestions = filteredQuestions.filter(q => JSON.parse(selectedSegment.question_ids).find(qId => String(qId.id) === String(q.id)));
         }
+        renderedEditors = {};
         filteredQuestions.forEach(q => {
           var question = document.createElement('div');
           question.className = "section";
@@ -1417,6 +1438,93 @@ try {
             island();
           });
           question.appendChild(buttonGrid);
+          var textareaContainer = document.createElement('div');
+          textareaContainer.classList = "description";
+          var toolbar = document.createElement('div');
+          toolbar.innerHTML = `<div id="toolbar-container">
+            <span class="ql-formats">
+              <select class="ql-font"></select>
+              <select class="ql-size"></select>
+            </span>
+            <span class="ql-formats">
+              <button class="ql-bold"></button>
+              <button class="ql-italic"></button>
+              <button class="ql-underline"></button>
+              <button class="ql-strike"></button>
+            </span>
+            <span class="ql-formats">
+              <select class="ql-color"></select>
+              <select class="ql-background"></select>
+            </span>
+            <span class="ql-formats">
+              <button class="ql-script" value="sub"></button>
+              <button class="ql-script" value="super"></button>
+            </span>
+            <span class="ql-formats">
+              <button class="ql-header" value="1"></button>
+              <button class="ql-header" value="2"></button>
+              <button class="ql-blockquote"></button>
+              <button class="ql-code-block"></button>
+            </span>
+            <span class="ql-formats">
+              <button class="ql-list" value="ordered"></button>
+              <button class="ql-list" value="bullet"></button>
+              <button class="ql-indent" value="-1"></button>
+              <button class="ql-indent" value="+1"></button>
+            </span>
+            <span class="ql-formats">
+              <button class="ql-direction" value="rtl"></button>
+              <select class="ql-align"></select>
+            </span>
+            <span class="ql-formats">
+              <button class="ql-link"></button>
+              <button class="ql-image"></button>
+              <button class="ql-video"></button>
+              <button class="ql-formula"></button>
+            </span>
+            <span class="ql-formats">
+              <button class="ql-clean"></button>
+            </span>
+          </div>`;
+          textareaContainer.appendChild(toolbar);
+          var textarea = document.createElement('div');
+          // textarea.innerHTML = `<div className="tiptap-button-group" data-orientation="horizontal">
+          //   <MarkButton type="bold" />
+          //   <MarkButton type="italic" />
+          //   <MarkButton type="strike" />
+          //   <MarkButton type="code" />
+          //   <MarkButton type="underline" />
+          //   <MarkButton type="superscript" />
+          //   <MarkButton type="subscript" />
+          // </div>`;
+          textareaContainer.appendChild(textarea);
+          question.appendChild(textareaContainer);
+          // new EasyMDE({
+          //   element: textarea,
+          //   initialValue: q.description,
+          // });
+          // new Editor({
+          //   element: textarea,
+          //   shouldRerenderOnTransaction: true,
+          //   extensions: [
+          //     StarterKit,
+          //     Underline,
+          //     Superscript,
+          //     Subscript,
+          //     Mathematics,
+          //   ],
+          //   content: '<p>Hello World!</p>',
+          // });
+          var quill = new Quill(textarea, {
+            modules: {
+              syntax: true,
+              toolbar,
+            },
+            placeholder: 'Add some written content to your question...',
+            theme: 'snow'
+          });
+          if (JSON.parse(q.description)) quill.setContents(JSON.parse(q.description));
+          renderedEditors[q.id] = quill;
           var images = document.createElement('div');
           images.classList = "attachments";
           JSON.parse(q.images).forEach(q => {

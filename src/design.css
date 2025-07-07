@@ -644,6 +644,227 @@ div.ML__keyboard {
   cursor: pointer;
 }
 
+/* .EasyMDEContainer {
+  align-self: stretch;
+}
+
+.EasyMDEContainer .editor-toolbar {
+  border: none !important;
+  padding: 5px 0 10px 0 !important;
+}
+
+.EasyMDEContainer .editor-toolbar .easymde-dropdown,
+.EasyMDEContainer .editor-toolbar button {
+  background-color: var(--surface-color) !important;
+  height: 2.25em !important;
+  width: fit-content !important;
+  padding: 0.125em 0.75em 0 0.75em !important;
+  border: none !important;
+  border-radius: 0.5rem !important;
+}
+
+.EasyMDEContainer .editor-toolbar .easymde-dropdown:not(:last-child),
+.EasyMDEContainer .editor-toolbar button:not(:last-child) {
+  margin-right: 0.2em;
+}
+
+.EasyMDEContainer .editor-toolbar button.active,
+.EasyMDEContainer .editor-toolbar button:hover {
+  color: var(--accent-text-color) !important;
+  background-color: var(--accent-color) !important;
+}
+
+.EasyMDEContainer .editor-toolbar i.separator {
+  margin: 0 0.4em 0 0.2em !important;
+  border-color: var(--surface-color) !important;
+}
+
+.EasyMDEContainer .CodeMirror {
+  background: var(--surface-color) !important;
+  border: none !important;
+  border-radius: 0.5rem !important;
+  color: var(--text-color) !important;
+  caret-color: var(--text-color) !important;
+}
+
+.EasyMDEContainer .CodeMirror:has(*:focus-visible) {
+  outline: none;
+  box-shadow: 0 0 0 0.125rem var(--accent-color) inset;
+  transition: box-shadow 100ms ease;
+}
+
+.EasyMDEContainer .CodeMirror-scroll {
+  margin: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+.EasyMDEContainer .editor-statusbar {
+  color: var(--text-color) !important;
+  margin: -40px auto 10px auto;
+  position: relative;
+  width: calc(100% - 11px);
+  display: flex;
+  justify-content: flex-end;
+  border-radius: 0.25rem;
+}
+
+.EasyMDEContainer .editor-statusbar span {
+  min-width: unset !important;
+}
+
+.EasyMDEContainer .CodeMirror-cursor {
+  border-left: 1px solid var(--text-color) !important;
+}
+
+.EasyMDEContainer .editor-preview {
+  background-color: var(--background-color);
+  border: none !important;
+}
+
+.EasyMDEContainer .editor-toolbar.fullscreen {
+  background-color: var(--background-color);
+  padding: 10px !important;
+  height: fit-content;
+}
+
+.EasyMDEContainer .CodeMirror-sided,
+.EasyMDEContainer .CodeMirror-fullscreen,
+.EasyMDEContainer .editor-preview-side {
+  width: calc((100% - 40px) / 2) !important;
+}
+
+.EasyMDEContainer .CodeMirror-fullscreen,
+.EasyMDEContainer .editor-preview-side {
+  top: 56px !important;
+  bottom: 10px !important;
+}
+
+.EasyMDEContainer .CodeMirror-fullscreen {
+  left: 10px !important;
+  border-bottom-right-radius: 0.5rem !important;
+}
+
+.EasyMDEContainer .editor-preview-side {
+  right: 10px !important;
+  padding-left: 20px !important;
+} */
+
+.description {
+  margin-bottom: 7.5px;
+}
+
+.description a {
+  color: var(--accent-color) !important;
+}
+
+.description .ql-toolbar {
+  background: var(--surface-color);
+  border: none !important;
+  border-radius: 0.5rem;
+  margin-bottom: 7.5px;
+}
+
+.description .ql-toolbar #toolbar-container {
+  display: flex;
+  align-content: stretch;
+  flex-wrap: wrap;
+  gap: 5px 0;
+}
+
+.description .ql-toolbar .ql-picker-label {
+  color: var(--text-color) !important;
+}
+
+.description .ql-toolbar .ql-stroke {
+  stroke: var(--text-color) !important;
+}
+
+.description .ql-toolbar .ql-fill {
+  fill: var(--text-color) !important;
+}
+
+.description .ql-toolbar button:hover .ql-picker-label,
+.description .ql-toolbar .ql-active .ql-picker-label {
+  color: var(--accent-color) !important;
+}
+
+.description .ql-toolbar button:hover .ql-stroke,
+.description .ql-toolbar .ql-active .ql-stroke {
+  stroke: var(--accent-color) !important;
+}
+
+.description .ql-toolbar button:hover .ql-fill,
+.description .ql-toolbar .ql-active .ql-fill {
+  fill: var(--accent-color) !important;
+}
+
+.description .ql-container {
+  font-size: inherit !important;
+  background: var(--surface-color);
+  border: none !important;
+  border-radius: 0.5rem;
+  font-family: inherit !important;
+}
+
+.description .ql-container .ql-editor {
+  border-radius: 0.5rem;
+}
+
+.description .ql-editor.ql-blank::before {
+  color: var(--text-color) !important;
+  opacity: 0.5 !important;
+}
+
+.description .ql-toolbar .ql-picker-label:hover,
+.description .ql-toolbar .ql-picker-label.ql-active {
+  color: var(--text-color) !important;
+}
+
+.description .ql-toolbar button:focus,
+.description .ql-toolbar .ql-picker-item:hover,
+.description .ql-toolbar .ql-picker-item.ql-selected {
+  color: var(--accent-text-color) !important;
+}
+
+.description .ql-picker-options {
+  background: var(--accent-color) !important;
+}
+
+.description .ql-toolbar .ql-picker.ql-expanded .ql-picker-label,
+.description .ql-toolbar .ql-picker.ql-expanded .ql-picker-options {
+  border-color: var(--accent-color) !important;
+}
+
+.description .ql-picker.ql-font .ql-picker-label:not([data-value])::before,
+.description .ql-picker.ql-font .ql-picker-item:not([data-value])::before {
+  content: "Default Font" !important;
+}
+
+.description .ql-tooltip {
+  background: var(--accent-color) !important;
+  color: var(--accent-text-color) !important;
+  border: none !important;
+  border-radius: 0.5rem !important;
+  box-shadow: none !important;
+}
+
+.description .ql-tooltip input[type="text"] {
+  border: none !important;
+  color: var(--text-color) !important;
+}
+
+.description .ql-tooltip a {
+  color: var(--accent-text-color) !important;
+}
+
+.description .ql-editor blockquote {
+  border-color: var(--accent-color) !important;
+}
+
+.description .ql-code-block-container .ql-ui {
+  width: fit-content;
+}
+
 .hiddenOnLoad {
   max-height: 0px;
   overflow: hidden;
@@ -661,6 +882,8 @@ div.ML__keyboard {
 }
 
 .segments .section .questions,
+.questions .section .description,
+.questions .section .EasyMDEContainer,
 .questions .section .attachments,
 .questions .section .answers {
   max-height: 0px;
@@ -678,10 +901,16 @@ div.ML__keyboard {
 }
 
 .segments .section.expanded .questions,
+.questions .section.expanded .description,
+.questions .section.expanded .EasyMDEContainer,
 .questions .section.expanded .attachments,
 .questions .section.expanded .answers {
   max-height: 1000px;
   transition: 0.25s var(--easing);
+}
+
+.questions .section.expanded .description {
+  overflow: visible;
 }
 
 .segments .section.expanded .bi-caret-up-fill,
