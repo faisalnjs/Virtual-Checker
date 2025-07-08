@@ -1255,7 +1255,7 @@ try {
       });
     document.querySelectorAll("#save-button").forEach(w => w.disabled = true);
     window.scroll(0, 0);
-    if ((typeof hideResult != 'boolean')) ui.modeless(`<i class="bi bi-check-lg"></i>`, "Saved");
+    if (typeof hideResult != 'boolean') ui.modeless(`<i class="bi bi-check-lg"></i>`, "Saved");
     await init();
     setTimeout(() => {
       document.querySelectorAll("#save-button").forEach(w => w.disabled = false);
@@ -1648,7 +1648,7 @@ try {
       navigator.clipboard.readText().then((text) => {
         try {
           const content = JSON.parse(text);
-          if (!text || !text.includes("ops") || !content) return ui.toast("Invalid clipboard content.", 5000, "error", "bi bi-exclamation-triangle-fill");;
+          if (!text || !text.includes("ops") || !content) return ui.toast("Invalid clipboard content.", 5000, "error", "bi bi-exclamation-triangle-fill");
           renderedEditors[Number(a.parentElement.parentElement.parentElement.parentElement.parentElement.id.split('question-')[1])].setContents(content);
           ui.toast("Content imported from clipboard.", 3000, "success", "bi bi-clipboard-check-fill");
         } catch (err) {
@@ -1798,6 +1798,7 @@ try {
   async function renderPond() {
     if (!active) return;
     await save(true);
+    document.querySelector(`#question-${this.id} [data-toggle-question]`).click();
     const url = '/admin/upload?question=' + this.id;
     const width = 600;
     const height = 600;
@@ -2445,6 +2446,7 @@ try {
       var option = document.createElement('option');
       option.value = segment.number;
       option.innerHTML = segment.name;
+      if (document.location.search.split('?segment=')[1] && (document.location.search.split('?segment=')[1] === String(segment.number))) option.selected = true;
       document.getElementById("speed-mode-segments").appendChild(option);
     });
   }
@@ -2466,13 +2468,11 @@ try {
     var segmentId = 0;
     var startingQuestionId = null;
     var startingQuestion = null;
-    if (document.getElementById("speed-mode-segments")) {
-      segmentId = document.getElementById("speed-mode-segments").value;
-    } else if (document.getElementById("speed-mode-starting-question-id")) {
+    if (!document.getElementById("speed-mode-segments") && !document.getElementById("speed-mode-starting-question-id")) return;
+    if (document.getElementById("speed-mode-segments")) segmentId = document.getElementById("speed-mode-segments").value;
+    if (document.getElementById("speed-mode-starting-question-id")) {
       startingQuestionId = document.getElementById("speed-mode-starting-question-id").value;
       startingQuestion = document.getElementById("speed-mode-starting-question").value;
-    } else {
-      return;
     }
     renderSpeedPond(segmentId, startingQuestionId, startingQuestion);
   }

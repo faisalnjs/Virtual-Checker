@@ -355,10 +355,12 @@
   </dialog>
   <dialog data-modal-page="speed" data-page-title="Speed Mode">
     <p>
-      Rapidly add questions to a segment by pasting or uploading images - one for each. Images will be saved to a new
-      integer numbered question. To quit, close the popup.
+      Rapidly create new questions by pasting or uploading images - one for each. Images will be saved to a new
+      integer numbered question. To quit, close the popup. Enter the first question name (e.g. 39):
     </p>
     <select id="speed-mode-segments"></select>
+    <input type="number" id="speed-mode-starting-question-id" step="1" min="1" disabled hidden>
+    <input type="text" id="speed-mode-starting-question">
     <div data-modal-actions>
       <button class="submit-button" id="enable-speed-mode-button">Start</button>
     </div>
