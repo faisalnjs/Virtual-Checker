@@ -1,4 +1,5 @@
 import * as ui from "/src/modules/ui.js";
+import storage from "/src/modules/storage.js";
 import * as themes from "/src/themes/themes.js";
 import { insertFromIndex } from "/src/symbols/symbols.js";
 import { moveFromCurrent } from "/src/modules/island.js";
@@ -49,6 +50,32 @@ try {
       document.querySelector('.island').classList.remove('visible');
     } else if (e.key == "]" && island && !islandOpen && !isTyping) {
       document.querySelector('.island').classList.add('visible');
+    } else if (e.key == "Backspace" && !isTyping && !anyDialogOpen) {
+      const filterSegmentInput = document.getElementById("filter-segment-input");
+      if (filterSegmentInput) {
+        filterSegmentInput.value = "";
+        filterSegmentInput.dispatchEvent(new Event("change"));
+      }
+      const sortQuestionInput = document.getElementById("sort-question-input");
+      if (sortQuestionInput) {
+        sortQuestionInput.value = "";
+        sortQuestionInput.dispatchEvent(new Event("input"));
+      }
+      const sortSeatInput = document.getElementById("sort-seat-input");
+      if (sortSeatInput) {
+        sortSeatInput.value = "";
+        sortSeatInput.dispatchEvent(new Event("input"));
+      }
+      const filterLogsByUsernameInput = document.getElementById("filter-logs-by-username-input");
+      if (filterLogsByUsernameInput) {
+        filterLogsByUsernameInput.value = "";
+        filterLogsByUsernameInput.dispatchEvent(new Event("input"));
+      }
+      const filterLogsByActionInput = document.getElementById("filter-logs-by-action-input");
+      if (filterLogsByActionInput) {
+        filterLogsByActionInput.value = "";
+        filterLogsByActionInput.dispatchEvent(new Event("change"));
+      }
     }
   });
 } catch (error) {

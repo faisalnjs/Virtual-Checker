@@ -1,3 +1,4 @@
+import storage from "/src/modules/storage.js";
 import "/node_modules/mathlive/dist/mathlive-fonts.css";
 import { MathfieldElement } from "mathlive";
 

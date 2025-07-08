@@ -417,18 +417,18 @@ try {
         }
         if (document.getElementById("export-report-course")) updateExportReportCourses();
         if (document.getElementById("course-period-input")) document.getElementById("course-period-input").addEventListener("change", updateResponses);
-        if (document.getElementById("filter-segment-input")) document.getElementById("filter-segment-input").addEventListener("input", updateResponses);
+        if (document.getElementById("filter-segment-input")) document.getElementById("filter-segment-input").addEventListener("change", updateResponses);
         if (document.getElementById("sort-question-input")) document.getElementById("sort-question-input").addEventListener("input", updateResponses);
         if (document.getElementById("sort-seat-input")) document.getElementById("sort-seat-input").addEventListener("input", updateResponses);
         if (document.getElementById("course-period-input")) document.getElementById("course-period-input").addEventListener("change", updateSegments);
-        if (document.getElementById("filter-segment-input")) document.getElementById("filter-segment-input").addEventListener("input", updateSegments);
+        if (document.getElementById("filter-segment-input")) document.getElementById("filter-segment-input").addEventListener("change", updateSegments);
         if (document.getElementById("sort-question-input")) document.getElementById("sort-question-input").addEventListener("input", updateSegments);
         if (document.getElementById("sort-seat-input")) document.getElementById("sort-seat-input").addEventListener("input", updateSegments);
         if (document.getElementById("course-period-input")) document.getElementById("course-period-input").addEventListener("change", updateQuestionReports);
-        if (document.getElementById("filter-segment-input")) document.getElementById("filter-segment-input").addEventListener("input", updateQuestionReports);
+        if (document.getElementById("filter-segment-input")) document.getElementById("filter-segment-input").addEventListener("change", updateQuestionReports);
         if (document.getElementById("sort-question-input")) document.getElementById("sort-question-input").addEventListener("input", updateQuestionReports);
         if (document.getElementById("sort-seat-input")) document.getElementById("sort-seat-input").addEventListener("input", updateQuestionReports);
-        if (document.getElementById("filter-segment-input")) document.getElementById("filter-segment-input").addEventListener("input", updateQuestions);
+        if (document.getElementById("filter-segment-input")) document.getElementById("filter-segment-input").addEventListener("change", updateQuestions);
         if (document.getElementById("course-period-input")) document.getElementById("course-period-input").addEventListener("input", updateCourses);
         await fetch(domain + '/segments', {
           method: "GET",

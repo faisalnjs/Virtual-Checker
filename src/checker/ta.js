@@ -81,7 +81,7 @@ try {
           });
         }
         document.getElementById("course-period-input").addEventListener("change", updateResponses);
-        document.getElementById("sort-segment-input").addEventListener("input", updateResponses);
+        document.getElementById("filter-segment-input").addEventListener("input", updateResponses);
         document.getElementById("sort-question-input").addEventListener("input", updateResponses);
         document.getElementById("sort-seat-input").addEventListener("input", updateResponses);
         await fetch(domain + '/questions?usr=' + storage.get("code"), {
@@ -230,7 +230,7 @@ try {
     var timedResponses = [];
     var responses1 = responses
       .filter(r => courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value) ? JSON.parse(courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value)?.periods).includes(Number(String(r.seatCode)[0])) : false)
-      .filter(r => String(r.segment).startsWith(document.getElementById("sort-segment-input")?.value))
+      .filter(r => document.getElementById("filter-segment-input")?.value ? (String(r.segment) === document.getElementById("filter-segment-input").value) : true)
       .filter(r => questions.find(q => q.id == r.question_id).number.startsWith(document.getElementById("sort-question-input")?.value))
       .filter(r => String(r.seatCode).startsWith(document.getElementById("sort-seat-input")?.value))
       .sort((a, b) => {
