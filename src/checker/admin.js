@@ -417,18 +417,19 @@ try {
         }
         if (document.getElementById("export-report-course")) updateExportReportCourses();
         if (document.getElementById("course-period-input")) document.getElementById("course-period-input").addEventListener("change", updateResponses);
-        if (document.getElementById("sort-segment-input")) document.getElementById("sort-segment-input").addEventListener("input", updateResponses);
+        if (document.getElementById("filter-segment-input")) document.getElementById("filter-segment-input").addEventListener("input", updateResponses);
         if (document.getElementById("sort-question-input")) document.getElementById("sort-question-input").addEventListener("input", updateResponses);
         if (document.getElementById("sort-seat-input")) document.getElementById("sort-seat-input").addEventListener("input", updateResponses);
         if (document.getElementById("course-period-input")) document.getElementById("course-period-input").addEventListener("change", updateSegments);
-        if (document.getElementById("sort-segment-input")) document.getElementById("sort-segment-input").addEventListener("input", updateSegments);
+        if (document.getElementById("filter-segment-input")) document.getElementById("filter-segment-input").addEventListener("input", updateSegments);
         if (document.getElementById("sort-question-input")) document.getElementById("sort-question-input").addEventListener("input", updateSegments);
         if (document.getElementById("sort-seat-input")) document.getElementById("sort-seat-input").addEventListener("input", updateSegments);
         if (document.getElementById("course-period-input")) document.getElementById("course-period-input").addEventListener("change", updateQuestionReports);
-        if (document.getElementById("sort-segment-input")) document.getElementById("sort-segment-input").addEventListener("input", updateQuestionReports);
+        if (document.getElementById("filter-segment-input")) document.getElementById("filter-segment-input").addEventListener("input", updateQuestionReports);
         if (document.getElementById("sort-question-input")) document.getElementById("sort-question-input").addEventListener("input", updateQuestionReports);
         if (document.getElementById("sort-seat-input")) document.getElementById("sort-seat-input").addEventListener("input", updateQuestionReports);
         if (document.getElementById("filter-segment-input")) document.getElementById("filter-segment-input").addEventListener("input", updateQuestions);
+        if (document.getElementById("course-period-input")) document.getElementById("course-period-input").addEventListener("input", updateCourses);
         await fetch(domain + '/segments', {
           method: "GET",
           headers: {
@@ -454,12 +455,7 @@ try {
           .then(async c => {
             segments = c;
             if (document.getElementById("course-period-input") && !loadedSegmentEditor && !loadedSegmentCreator && !noReloadCourse) updateSegments();
-            if (document.getElementById("filter-segment-input")) {
-              document.getElementById("filter-segment-input").innerHTML = '<option value="" selected>#</option>';
-              segments.forEach(segment => {
-                document.getElementById("filter-segment-input").innerHTML += `<option value="${segment.number}" ${(document.location.search.split('?segment=')[1] && (document.location.search.split('?segment=')[1] === String(segment.number))) ? 'selected' : ''}>${segment.number}</option>`;
-              });
-            }
+            if (document.getElementById("filter-segment-input")) updateCourses();
             if (document.getElementById("speed-mode-segments")) updateSpeedModeSegments();
             await fetch(domain + '/questions', {
               method: "GET",
@@ -733,6 +729,15 @@ try {
   }
 
   function updateCourses() {
+    if (document.getElementById("filter-segment-input")) {
+      document.getElementById("filter-segment-input").innerHTML = '<option value="" selected>#</option>';
+      var filteredSegments = segments;
+      const course = courses.find(c => document.getElementById("course-period-input") ? (String(c.id) === document.getElementById("course-period-input").value) : null);
+      if (course) filteredSegments = filteredSegments.filter(segment => String(segment.course) === String(course.id));
+      filteredSegments.forEach(segment => {
+        document.getElementById("filter-segment-input").innerHTML += `<option value="${segment.number}" ${(document.location.search.split('?segment=')[1] && (document.location.search.split('?segment=')[1] === String(segment.number))) ? 'selected' : ''}>${segment.number}</option>`;
+      });
+    }
     const coursesArchiveTab = document.querySelector('[data-archive-type="courses"]');
     if (coursesArchiveTab) {
       const coursesArchives = coursesArchiveTab.querySelector('.archives');
@@ -878,7 +883,7 @@ try {
         });
       }
       if (document.querySelector('.segment-reports')) {
-        c.filter(s => String(s.number).startsWith(document.getElementById("sort-segment-input")?.value)).sort((a, b) => a.order - b.order).forEach(segment => {
+        c.filter(s => document.getElementById("filter-segment-input")?.value ? (String(s.number) === document.getElementById("filter-segment-input").value) : true).sort((a, b) => a.order - b.order).forEach(segment => {
           var detailedReport = '';
           JSON.parse(segment.question_ids).filter(q => questions.find(q1 => q1.id == q.id)?.number.startsWith(document.getElementById("sort-question-input")?.value)).forEach(q => {
             var question = questions.find(q1 => String(q1.id) === String(q.id));
@@ -1888,7 +1893,7 @@ try {
     var timedResponses = [];
     var responses1 = responses
       .filter(r => courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value) ? JSON.parse(courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value)?.periods).includes(Number(String(r.seatCode)[0])) : false)
-      .filter(r => String(r.segment).startsWith(document.getElementById("sort-segment-input")?.value))
+      .filter(r => document.getElementById("filter-segment-input")?.value ? (String(r.segment) === document.getElementById("filter-segment-input").value) : true)
       .filter(r => questions.find(q => q.id == r.question_id).number.startsWith(document.getElementById("sort-question-input")?.value))
       .filter(r => String(r.seatCode).startsWith(document.getElementById("sort-seat-input")?.value))
       .sort((a, b) => {
