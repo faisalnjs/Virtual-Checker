@@ -443,6 +443,7 @@ div.ML__keyboard {
   .mediuml,
   .mediumll,
   .large,
+  .vlarge,
   square {
     max-width: unset !important;
   }
@@ -579,15 +580,19 @@ div.ML__keyboard {
   max-width: 305px;
 }
 
+.vlarge {
+  max-width: 450px;
+}
+
 .fit {
   width: fit-content !important;
 }
 
-#checker:not(:has(input)) {
+#checker:not(:has(input)):not(:has(select)) {
   align-items: center;
 }
 
-#checker:not(:has(input)) *:not(ul):not(ol):not(li) {
+#checker:not(:has(input)):not(:has(select)) *:not(ul):not(ol):not(li) {
   text-align: center;
 }
 
