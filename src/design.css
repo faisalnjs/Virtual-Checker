@@ -1277,6 +1277,7 @@ hidden,
   margin-bottom: 5px;
 }
 
+.segment-report,
 .detailed-report-question {
   display: flex;
   align-items: center;

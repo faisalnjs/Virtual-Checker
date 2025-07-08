@@ -889,6 +889,7 @@ try {
             document.querySelector('.segment-reports').innerHTML = '';
           } else {
             document.querySelector('.section:has(> .segment-reports)').removeAttribute('hidden');
+            var segmentResponses = [];
             var detailedReport = '';
             JSON.parse(segment.question_ids).filter(q => questions.find(q1 => q1.id == q.id)?.number.startsWith(document.getElementById("sort-question-input")?.value)).forEach(q => {
               var question = questions.find(q1 => String(q1.id) === String(q.id));
@@ -906,7 +907,8 @@ try {
                     <span class="color-name">${r.status}</span>
                     <span class="color-box ${(r.status === 'Correct') ? 'correct' : (r.status === 'Incorrect') ? 'incorrect' : r.status.includes('Recorded') ? 'waiting' : 'other'}"></span>
                   </div>
-                </div>`
+                </div>`;
+                segmentResponses.push(r);
               });
               detailedReport += `<div class="detailed-report-question"${(questionResponses.length != 0) ? ` report="segment-question-${q.id}"` : ''}>
                 <b>Question ${question.number} (${questionResponses.length} Response${(questionResponses.length != 1) ? 's' : ''})</b>
@@ -923,6 +925,12 @@ try {
             });
             document.querySelector('.segment-reports').innerHTML += `<div class="segment-report"${(JSON.parse(segment.question_ids) != 0) ? ` report="segment-${segment.number}"` : ''}>
               <b>Segment ${segment.number} (${JSON.parse(segment.question_ids).length} Question${JSON.parse(segment.question_ids).length != 1 ? 's' : ''})</b>
+              <div class="barcount-wrapper">
+                ${(segmentResponses.filter(r => r.status === 'Correct').length != 0) ? `<div class="barcount correct" style="width: calc(${segmentResponses.filter(r => r.status === 'Correct').length / (segmentResponses.length || 1)} * 100%)">${segmentResponses.filter(r => r.status === 'Correct').length}</div>` : ''}
+                ${(segmentResponses.filter(r => ((r.status !== 'Correct') && (r.status !== 'Incorrect') && !r.status.includes('Recorded'))).length != 0) ? `<div class="barcount other" style="width: calc(${segmentResponses.filter(r => ((r.status !== 'Correct') && (r.status !== 'Incorrect') && !r.status.includes('Recorded'))).length / (segmentResponses.length || 1)} * 100%)">${segmentResponses.filter(r => ((r.status !== 'Correct') && (r.status !== 'Incorrect') && !r.status.includes('Recorded'))).length}</div>` : ''}
+                ${(segmentResponses.filter(r => r.status.includes('Recorded')).length != 0) ? `<div class="barcount waiting" style="width: calc(${segmentResponses.filter(r => r.status.includes('Recorded')).length / (segmentResponses.length || 1)} * 100%)">${segmentResponses.filter(r => r.status.includes('Recorded')).length}</div>` : ''}
+                ${(segmentResponses.filter(r => r.status === 'Incorrect').length != 0) ? `<div class="barcount incorrect" style="width: calc(${segmentResponses.filter(r => r.status === 'Incorrect').length / (segmentResponses.length || 1)} * 100%)">${segmentResponses.filter(r => r.status === 'Incorrect').length}</div>` : ''}
+              </div>
             </div>
             ${(JSON.parse(segment.question_ids).length != 0) ? `<div class="section detailed-report" id="segment-${segment.number}">
               ${detailedReport}
