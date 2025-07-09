@@ -25,6 +25,10 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,400;0,700;1,400;1,700&display=swap"
     rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <link rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
 </head>
 
 <body class="col">
@@ -93,6 +97,7 @@
       <ul></ul>
     </div>
     <h6 data-question-title hidden></h6>
+    <div class="description minimal" data-question-description hidden></div>
     <div class="input-group hiddenOnLoad">
       <label for="question-history-feed">Previous Responses:</label>
       <div class="col history-feed" id="question-history-feed"></div>
@@ -102,6 +107,7 @@
       <button aria-selected="true" data-value="input">Text</button>
       <button aria-selected="false" data-value="math">Math</button>
       <button aria-selected="false" data-value="set">Set</button>
+      <button aria-selected="false" data-value="matrix">Matrix</button>
       <!-- <button aria-selected="false" data-value="frq">FRQ</button> -->
     </div>
     <div class="input-group hiddenOnLoad">
@@ -132,7 +138,7 @@
               <button data-insert-symbol="8"></button>
               <button data-insert-symbol="9"></button>
             </div>
-            <button class="icon" data-modal-view="symbols">
+            <button class="icon" data-modal-view="symbols" tooltip="All Symbols">
               <i class="bi bi-three-dots"></i>
             </button>
           </div>
@@ -160,7 +166,7 @@
               <button data-insert-symbol="8" data-target-input="set-input"></button>
               <button data-insert-symbol="9" data-target-input="set-input"></button>
             </div>
-            <button class="icon" data-modal-view="symbols">
+            <button class="icon" data-modal-view="symbols" tooltip="All Symbols">
               <i class="bi bi-three-dots"></i>
             </button>
           </div>
@@ -177,6 +183,44 @@
             <button square data-remove-set-input disabled tooltip="Remove Set Item"><i class="bi bi-dash"></i></button>
           </div>
         </div>
+        <div data-answer-mode="matrix">
+          <div class="row">
+            <div class="button-grid" id="insert-row">
+              <button data-insert-symbol="0" data-target-input="set-input"></button>
+              <button data-insert-symbol="1" data-target-input="set-input"></button>
+              <button data-insert-symbol="2" data-target-input="set-input"></button>
+              <button data-insert-symbol="3" data-target-input="set-input"></button>
+              <button data-insert-symbol="4" data-target-input="set-input"></button>
+              <button data-insert-symbol="5" data-target-input="set-input"></button>
+              <button data-insert-symbol="6" data-target-input="set-input"></button>
+              <button data-insert-symbol="7" data-target-input="set-input"></button>
+              <button data-insert-symbol="8" data-target-input="set-input"></button>
+              <button data-insert-symbol="9" data-target-input="set-input"></button>
+            </div>
+            <button class="icon" data-modal-view="symbols" tooltip="All Symbols">
+              <i class="bi bi-three-dots"></i>
+            </button>
+          </div>
+          <div class="input-group" id="matrix">
+            <div class="row" data-matrix-row="1">
+              <input type="text" autocomplete="off" id="matrix-column" data-matrix-column="1" />
+              <input type="text" autocomplete="off" id="matrix-column" data-matrix-column="2" />
+            </div>
+            <div class="row" data-matrix-row="2">
+              <input type="text" autocomplete="off" id="matrix-column" data-matrix-column="1" />
+              <input type="text" autocomplete="off" id="matrix-column" data-matrix-column="2" />
+            </div>
+          </div>
+          <div class="button-grid">
+            <button square data-add-matrix-column tooltip="Add Matrix Column"><i
+                class="bi bi-arrow-90deg-left rotate-right"></i></button>
+            <button square data-remove-matrix-column tooltip="Remove Matrix Column"><i class="bi bi-x"></i></button>
+          </div>
+          <div class="button-grid">
+            <button square data-add-matrix-row tooltip="Add Matrix Row"><i class="bi bi-arrow-return-left"></i></button>
+            <button square data-remove-matrix-row tooltip="Remove Matrix Row"><i class="bi bi-x"></i></button>
+          </div>
+        </div>
         <div data-answer-mode="frq">
           <div class="row">
             <div class="button-grid" id="insert-row">
@@ -191,7 +235,7 @@
               <button data-insert-symbol="8" data-target-input="default-frq-part-symbols"></button>
               <button data-insert-symbol="9" data-target-input="default-frq-part-symbols"></button>
             </div>
-            <button class="icon" data-modal-view="symbols">
+            <button class="icon" data-modal-view="symbols" tooltip="All Symbols">
               <i class="bi bi-three-dots"></i>
             </button>
           </div>
@@ -217,8 +261,8 @@
               <button data-save-part="d">Save</button>
             </div>
             <div class="button-grid">
-              <button square data-add-frq-part tooltip="Add Part"><i class="bi bi-plus"></i></button>
-              <button square data-remove-frq-part disabled tooltip="Remove Part"><i class="bi bi-dash"></i></button>
+              <button square data-add-frq-part tooltip="Add FRQ Part"><i class="bi bi-plus"></i></button>
+              <button square data-remove-frq-part disabled tooltip="Remove FRQ Part"><i class="bi bi-dash"></i></button>
             </div>
           </div>
           <input type="range" min="0" max="9" value="4" step="1" id="frq-input" />
@@ -279,9 +323,12 @@
     <button data-modal-view="settings/keybinds">Keyboard Shortcuts</button>
     <button data-modal-view="settings/reset">Reset</button>
     <button data-modal-view="settings/credits">Credits</button>
+    <button data-sync>Sync Settings & History</button>
     <div class="row center" style="gap: 7.5px; margin-top: 5px;">
-      <a href="https://github.com/faisalnjs/virtual-checker" class="icon" tooltip="GitHub Repository"><i class="bi bi-github"></i></a>
-      <a href="https://dangoweb.com/?from=virtual-checker" class="icon" tooltip="Cloud Hosting"><i class="bi bi-cloud-fill"></i></a>
+      <a href="https://github.com/faisalnjs/virtual-checker" class="icon" tooltip="GitHub Repository"><i
+          class="bi bi-github"></i></a>
+      <a href="https://dangoweb.com/?from=virtual-checker" class="icon" tooltip="Cloud Hosting"><i
+          class="bi bi-cloud-fill"></i></a>
     </div>
     <div data-modal-page="code" data-page-title="Seat Code">
       <input type="text" inputmode="numeric" placeholder="000" maxlength="3" id="code-input" />
@@ -395,8 +442,11 @@
     </div>
     <div data-modal-page="credits" data-page-title="Credits">
       <img src="banner-transparent.png" alt="Virtual Checker Banner">
+      <div></div>
+      <div></div>
       <p><a href="https://github.com/khui0">khui0</a> - Base Virtual Clicker commits before 5/21/2024</p>
-      <p><a href="https://github.com/faisalnjs">faisalnjs</a> - Virtual Checker, base Virtual Clicker commits after 5/21/2024</p>
+      <p><a href="https://github.com/faisalnjs">faisalnjs</a> - Virtual Checker, base Virtual Clicker commits after
+        5/21/2024</p>
     </div>
   </dialog>
   <dialog data-modal-page="clear-data-fix" data-page-title="Settings May Not Save">
@@ -422,20 +472,22 @@
         href="https://status.dangoweb.com/">server maintenance</a>, or contact support below.
     </p>
     <div class="row center" style="gap: 7.5px; margin-top: 5px;">
-      <a href="https://github.com/faisalnjs/virtual-checker/issues" class="icon" tooltip="GitHub Issues"><i class="bi bi-github"></i></a>
+      <a href="https://github.com/faisalnjs/virtual-checker/issues" class="icon" tooltip="GitHub Issues"><i
+          class="bi bi-github"></i></a>
       <a href="https://faisaln.com/discord" class="icon" tooltip="Discord Server"><i class="bi bi-discord"></i></a>
       <a href="mailto:contact@faisaln.com" class="icon" tooltip="Email"><i class="bi bi-envelope-fill"></i></a>
     </div>
   </dialog>
   <dialog data-modal-page="menu" data-page-title="Virtual Checker">
     <div class="menu-icons">
+      <a href="/ta/" tooltip="TAs"><i class="bi bi-person-check"></i></a>
       <a href="/admin/" tooltip="Admin"><i class="bi bi-gear-wide-connected"></i></a>
     </div>
   </dialog>
   <dialog data-modal-page="no-course" data-page-title="Course Not Found">
     <p>The entered seat code does not match any course in the system. Please check your code and try again.</p>
     <div data-modal-actions>
-      <button data-modal-view="settings/code">Change Seat Code</button>
+      <button class="submit-button" data-modal-view="settings/code">Change Seat Code</button>
     </div>
   </dialog>
   <div id="loader" class="active">

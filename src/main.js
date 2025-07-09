@@ -3,6 +3,9 @@ import "./reset.css";
 import "./layout.css";
 import "./design.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
+import "quill/dist/quill.core.css";
+import "quill/dist/quill.snow.css";
+import "katex/dist/katex.min.css";
 
 import "/src/modules/mathlive.js";
 
@@ -31,7 +34,7 @@ try {
 
   let developerTimeout;
   let developerClicks = 0;
-  document.getElementById("version-string").addEventListener("click", () => {
+  document.getElementById("version-string")?.addEventListener("click", () => {
     developerClicks++;
     clearTimeout(developerTimeout);
     developerTimeout = setTimeout(() => {

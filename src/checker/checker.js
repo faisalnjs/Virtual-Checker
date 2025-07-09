@@ -2,6 +2,7 @@
 /* eslint-disable no-inner-declarations */
 import * as ui from "/src/modules/ui.js";
 import storage from "/src/modules/storage.js";
+import * as auth from "/src/modules/auth.js";
 
 import { autocomplete, uniqueSymbols } from "/src/symbols/symbols.js";
 import { unixToString, unixToTimeString } from "/src/modules/time.js";
@@ -9,6 +10,8 @@ import { getExtendedPeriodRange } from "/src/periods/periods";
 import { convertLatexToAsciiMath, convertLatexToMarkup, renderMathInElement } from "mathlive";
 import mediumZoom from "medium-zoom";
 import confetti from "canvas-confetti";
+import Quill from "quill";
+import "faz-quill-emoji/autoregister";
 ``;
 
 try {
@@ -27,14 +30,14 @@ try {
   const questionImages = document.querySelector('.images');
   const nextQuestionButtons = document.querySelectorAll('[data-next-question]');
   const prevQuestionButtons = document.querySelectorAll('[data-prev-question]');
-  var period = document.getElementById("period-input").value;
+  var period = document.getElementById("period-input")?.value;
 
+  var courses = [];
   let currentAnswerMode;
   let currentSetType = "brackets";
   let multipleChoice = null;
   let highestDataElement = null;
   let restoredSetType = "";
-  var unsavedChanges = false;
 
   let historyIndex = 0;
 
@@ -104,24 +107,18 @@ try {
     document.getElementById("answer-suggestion").addEventListener("click", () => answerInput.focus());
     // Initialize questionsAnswered if not already set
     if (!storage.get("questionsAnswered")) storage.set("questionsAnswered", []);
-    reloadUnsavedInputs();
+    document.querySelector("[data-sync]").addEventListener("click", () => auth.sync(domain));
+    ui.reloadUnsavedInputs();
+  } else {
+    ui.stopLoader();
   };
 
   window.addEventListener('beforeunload', function (event) {
-    if (!unsavedChanges) return;
+    if (!ui.unsavedChanges) return;
     const confirmationMessage = 'You have unsaved changes. Do you really want to leave?';
     event.returnValue = confirmationMessage;
     return confirmationMessage;
   });
-
-  function reloadUnsavedInputs() {
-    document.querySelectorAll('textarea').forEach(input => input.addEventListener('input', () => {
-      unsavedChanges = true;
-    }));
-    document.querySelectorAll('input').forEach(input => input.addEventListener('change', () => {
-      unsavedChanges = true;
-    }));
-  }
 
   // Process check
   function processCheck(part = null) {
@@ -140,7 +137,7 @@ try {
           var values = "";
           var setInputs = document.querySelectorAll('[data-set-input]');
           setInputs.forEach(a => {
-            if ((a.value.length > 0) && (a.value != ' ')) values += a.value.replaceAll(',', '').trim() + ", ";
+            if ((a.value.length > 0) && (a.value != ' ')) values += `"${a.value.replaceAll(',', '').trim()}", `;
           });
           values = values.slice(0, -2);
           switch (currentSetType) {
@@ -163,6 +160,23 @@ try {
               break;
           };
           return values;
+        } else if (mode === "matrix") {
+          var matrix = [];
+          var matrixRows = document.querySelectorAll('#matrix [data-matrix-row]');
+          matrixRows.forEach(row => {
+            var matrixRow = [];
+            row.querySelectorAll('[data-matrix-column]').forEach(input => {
+              var value = input.value?.trim();
+              if (value.length > 0) {
+                matrixRow.push(value);
+              } else {
+                matrixRow.push("");
+              }
+            });
+            matrix.push(matrixRow);
+          });
+          var matrixString = JSON.stringify(matrix);
+          return matrixString;
         } else if (mode === "frq") {
           if (part && document.querySelector(`[data-frq-part="${part}"]`)) {
             return document.querySelector(`[data-frq-part="${part}"]`).value?.trim();
@@ -191,6 +205,12 @@ try {
         } else if (mode === "set") {
           setInput.classList.add("attention");
           setInput.focus();
+          setTimeout(() => {
+            document.getElementById("submit-button").disabled = false;
+          }, 3000);
+        } else if (mode === "matrix") {
+          document.querySelector('#matrix [data-matrix-row]:first-child [data-matrix-column]').classList.add("attention");
+          document.querySelector('#matrix [data-matrix-row]:first-child [data-matrix-column]').focus();
           setTimeout(() => {
             document.getElementById("submit-button").disabled = false;
           }, 3000);
@@ -231,27 +251,27 @@ try {
   };
 
   // Submit check
-  document.getElementById("submit-button").addEventListener("click", () => processCheck());
+  document.getElementById("submit-button")?.addEventListener("click", () => processCheck());
 
   // Save check
   document.querySelectorAll(".frq-parts .part button").forEach(button => button.addEventListener("click", () => processCheck(button.getAttribute("data-save-part"))));
 
   // Remove attention ring when user types in either input
-  segmentInput.addEventListener("input", (e) => {
+  segmentInput?.addEventListener("input", (e) => {
     e.target.classList.remove("attention");
   });
-  questionInput.addEventListener("input", (e) => {
+  questionInput?.addEventListener("input", (e) => {
     e.target.classList.remove("attention");
   });
-  answerInput.addEventListener("input", (e) => {
+  answerInput?.addEventListener("input", (e) => {
     e.target.classList.remove("attention");
   });
-  mf.addEventListener("input", (e) => {
+  mf?.addEventListener("input", (e) => {
     e.target.classList.remove("attention");
   });
 
   // Prevent MathLive default behavior
-  mf.addEventListener("keydown", (e) => {
+  mf?.addEventListener("keydown", (e) => {
     if (e.ctrlKey && e.key == "Enter") {
       e.preventDefault();
     }
@@ -276,6 +296,7 @@ try {
       });
     }
     document.querySelectorAll('[data-answer-mode="set"] .button-grid')[1].style.flexWrap = 'nowrap';
+    resetMatrix();
     frqInput.value = 4;
     // Switch input mode (exit multiple choice)
     answerMode(mode);
@@ -291,13 +312,13 @@ try {
     var alreadyAnswered = qA.find(q => q.segment == segment && q.question == question)
     if (alreadyAnswered && alreadyAnswered.status == 'Correct') {
       window.scroll(0, 0);
-      unsavedChanges = false;
+      ui.setUnsavedChanges(false);
       setTimeout(() => {
         document.getElementById("submit-button").disabled = false;
       }, 3000);
       return ui.modeless(`<i class="bi bi-exclamation-lg"></i>`, 'Already Correct');
     }
-    unsavedChanges = true;
+    ui.setUnsavedChanges(true);
     await fetch(domain + '/check_answer', {
       method: "POST",
       headers: {
@@ -312,7 +333,7 @@ try {
     })
       .then(r => r.json())
       .then(r => {
-        unsavedChanges = false;
+        ui.setUnsavedChanges(false);
         window.scroll(0, 0);
         if (typeof r.correct != 'undefined') {
           ui.modeless(`<i class="bi bi-${(r.correct) ? 'check' : 'x'}-lg"></i>`, (r.correct) ? 'Correct' : 'Try Again', r.reason || null);
@@ -333,13 +354,18 @@ try {
         }
         storage.set("questionsAnswered", qA);
         resetInputs();
-        if ((typeof r.correct === 'undefined') || r.correct || (typeof r.error !== 'undefined')) nextQuestion();
-        updateQuestion();
+        if ((typeof r.correct === 'undefined') || r.correct || (typeof r.error !== 'undefined')) {
+          nextQuestion();
+        } else {
+          updateQuestion();
+        }
         var storageClickMode = "text";
         if (mode === "math" && !multipleChoice) {
           storageClickMode = "latex";
         } else if (mode === "set" && !multipleChoice) {
           storageClickMode = "array";
+        } else if (mode === "matrix" && !multipleChoice) {
+          storageClickMode = "matrix";
         } else if (mode === "frq" && !multipleChoice) {
           storageClickMode = "frq";
         };
@@ -365,16 +391,16 @@ try {
         }, 3000);
         ui.view("api-fail");
       })
-    reloadUnsavedInputs();
+    ui.reloadUnsavedInputs();
   }
 
   // Limit seat code input to integers
-  document.getElementById("code-input").addEventListener("input", (e) => {
+  document.getElementById("code-input")?.addEventListener("input", (e) => {
     e.target.value = parseInt(e.target.value) || "";
   });
 
   // Save seat code on enter
-  document.getElementById("code-input").addEventListener("keydown", (e) => {
+  document.getElementById("code-input")?.addEventListener("keydown", (e) => {
     if (e.key == "Enter") {
       e.preventDefault();
       saveCode();
@@ -382,7 +408,7 @@ try {
   });
 
   // Save seat code button
-  document.getElementById("save-code-button").addEventListener("click", saveCode);
+  document.getElementById("save-code-button")?.addEventListener("click", saveCode);
 
   // Save seat code
   function saveCode() {
@@ -402,7 +428,7 @@ try {
               onclick: () => {
                 ui.view("");
                 document.getElementById("code-input").focus();
-                unsavedChanges = true
+                ui.setUnsavedChanges(true);
                 ui.view("settings/code");
               }
             },
@@ -418,7 +444,7 @@ try {
                 const params = new URLSearchParams(window.location.search);
                 params.set("code", input);
                 history.replaceState({}, "", "?" + params.toString());
-                unsavedChanges = false;
+                ui.setUnsavedChanges(false);
               },
               close: true,
             },
@@ -433,7 +459,7 @@ try {
         const params = new URLSearchParams(window.location.search);
         params.set("code", input);
         history.replaceState({}, "", "?" + params.toString());
-        unsavedChanges = false;
+        ui.setUnsavedChanges(false);
       };
     } else {
       ui.alert("Error", "Seat code isn't possible");
@@ -458,8 +484,8 @@ try {
           method: "GET",
           headers: { "Content-Type": "application/json" },
         });
-        const coursesData = await coursesResponse.json();
-        const course = coursesData.find(c => JSON.parse(c.periods).includes(Number(code.slice(0, 1))));
+        courses = await coursesResponse.json();
+        const course = courses.find(c => JSON.parse(c.periods).includes(Number(code.slice(0, 1))));
         if (course) {
           ui.view();
         } else {
@@ -510,12 +536,11 @@ try {
         });
         questionsArray = await questionsResponse.json();
         updateSegment();
-        if (document.querySelector('#checker .images').innerHTML === '') await updateQuestion();
         ui.stopLoader();
       } catch (error) {
         ui.view("api-fail");
       }
-      reloadUnsavedInputs();
+      ui.reloadUnsavedInputs();
     }
   }
 
@@ -638,7 +663,7 @@ try {
         });
       }, 100);
     }
-    reloadUnsavedInputs();
+    ui.reloadUnsavedInputs();
   }
 
   async function updateQuestion() {
@@ -649,9 +674,17 @@ try {
     document.getElementById("submit-button").disabled = true;
     document.querySelector('.hiddenOnLoad:has(#answer-container)').classList.remove('show');
     document.querySelector('[data-question-title]').setAttribute('hidden', '');
+    document.querySelector('[data-question-description]').setAttribute('hidden', '');
+    document.querySelector('[data-question-description]').innerHTML = '';
     const feedContainer = document.querySelector('.input-group:has(> #question-history-feed)');
     feedContainer.classList.remove('show');
-    if (!question) return questionImages.innerHTML = '<p style="padding-top: 10px;">There are no questions in this segment.</p>';
+    feedContainer.setAttribute('hidden', '');
+    document.getElementById('answer-mode-selector').removeAttribute('hidden');
+    if (!question) {
+      questionImages.innerHTML = '<p style="margin-bottom: -12px;">There are no questions in this segment.</p>';
+      document.getElementById('answer-mode-selector').setAttribute('hidden', '');
+      return;
+    }
     if ((question.question.length > 0) && (question.question != ' ')) {
       if (question.latex) {
         document.querySelector('[data-question-title]').innerHTML = convertLatexToMarkup(question.question);
@@ -660,6 +693,23 @@ try {
         document.querySelector('[data-question-title]').innerText = question.question;
       };
       document.querySelector('[data-question-title]').removeAttribute('hidden');
+    }
+    if (question.description && question.description.includes('ops') && (question.description != '{"ops":[{"insert":"\\n"}]}') && JSON.parse(question.description)) {
+      var textarea = document.createElement('div');
+      document.querySelector('[data-question-description]').appendChild(textarea);
+      var quill = new Quill(textarea, {
+        readOnly: true,
+        modules: {
+          syntax: true,
+          toolbar: false,
+          fazEmoji: {
+            collection: 'fluent-emoji',
+          },
+        },
+        theme: 'snow'
+      });
+      quill.setContents(JSON.parse(question.description));
+      document.querySelector('[data-question-description]').removeAttribute('hidden');
     }
     JSON.parse(question.images).forEach(image => {
       var i = document.createElement('img');
@@ -687,13 +737,16 @@ try {
       if (i) i.innerHTML = `${JSON.parse(selectedSegment.question_ids).find(q2 => String(q2.id) === String(q.question)).name} - ${q.status}`;
     });
 
+    resetInputs();
+
     const feed = document.getElementById('question-history-feed');
     feed.innerHTML = "";
     var latestResponses = (storage.get("history") || []).filter(r => (String(r.segment) === String(segments.value)) && (String(r.question) === String(question.id))).sort((a, b) => b.timestamp - a.timestamp);
     if (latestResponses.length > 0) {
+      feedContainer.removeAttribute('hidden');
       feedContainer.classList.add('show');
       const fetchPromises = latestResponses.map(item =>
-        fetch(`${domain}/response?seatCode=${storage.get("code")}&segment=${item.segment}&question=${item.question}&answer=${item.answer}`, {
+        fetch(`${domain}/response?seatCode=${item.code}&segment=${item.segment}&question=${item.question}&answer=${item.answer}`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -715,6 +768,7 @@ try {
           const button = document.createElement("button");
           const latex = item.type === "latex";
           const array = item.type === "array";
+          const matrix = item.type === "matrix";
           const frq = item.type === "frq";
           button.id = r.id;
           button.classList = (r.status === "Incorrect") ? 'incorrect' : (r.status === "Correct") ? 'correct' : '';
@@ -723,13 +777,17 @@ try {
           item.number = questionsArray.find(question => question.id === Number(item.question)).number;
           if (!latex) {
             if (!array) {
-              if (!frq) {
-                button.innerHTML = `<p>${item.answer}</p>\n<p>${response}`;
+              if (!matrix) {
+                if (!frq) {
+                  button.innerHTML = `<p>${item.answer}</p>\n<p>${response}`;
+                } else {
+                  button.innerHTML = `<p${item.answer}${(item.number === '1') ? '/9' : ''}</p>\n<p>${response}`;
+                }
               } else {
-                button.innerHTML = `<p${item.answer}${(item.number === '1') ? '/9' : ''}</p>\n<p>${response}`;
+                button.innerHTML = `<p>${JSON.stringify(JSON.parse(item.answer).map(innerArray => innerArray.map(numString => String(numString)))).replaceAll('["', '[').replaceAll('","', ', ').replaceAll('"]', ']')}</p>\n<p>${response}`;
               }
             } else {
-              button.innerHTML = `<p>${item.answer.slice(1, -1)}</p>\n<p>${response}`;
+              button.innerHTML = `<p>${JSON.parse(`[${item.answer.slice(1, -1).split(', ')}]`).join(', ')}</p>\n<p>${response}`;
             }
           } else {
             button.innerHTML = `${convertLatexToMarkup(item.answer)}\n<p class="hint">(Equation may not display properly)</p>\n<p>${response}`;
@@ -767,12 +825,43 @@ try {
               };
               ui.setButtonSelectValue(document.getElementById("set-type-selector"), restoredSetType);
               var i = 0;
-              item.answer.slice(1, -1).split(', ').forEach(a => {
+              JSON.parse(`[${item.answer.slice(1, -1).split(', ')}]`).forEach(a => {
                 setInputs = document.querySelectorAll("[data-set-input]");
                 setInputs[i].value = a;
                 i++;
                 if (i < item.answer.slice(1, -1).split(', ').length) addSet();
               });
+            } else if (matrix) {
+              answerMode("matrix");
+              ui.setButtonSelectValue(document.getElementById("answer-mode-selector"), "matrix");
+              resetMatrix();
+              var rows = JSON.parse(item.answer);
+              if (rows.length != 2) {
+                if (rows.length === 1) {
+                  removeRow();
+                } else {
+                  for (let i = 0; i < rows.length - 2; i++) {
+                    addRow();
+                  }
+                }
+              }
+              var columns = rows[0].length;
+              if (columns != 2) {
+                if (columns === 1) {
+                  removeColumn();
+                } else {
+                  for (let i = 0; i < columns - 2; i++) {
+                    addColumn();
+                  }
+                }
+              }
+              var matrixRows = document.querySelectorAll('#matrix [data-matrix-row]');
+              for (let i = 0; i < rows.length; i++) {
+                for (let j = 0; j < rows[i].length; j++) {
+                  matrixRows[i].querySelectorAll('[data-matrix-column]')[j].value = rows[i][j];
+                }
+              }
+              matrixRows[matrixRows.length - 1].lastChild.focus();
             } else if (frq) {
               answerMode("frq");
               ui.setButtonSelectValue(document.getElementById("answer-mode-selector"), "frq");
@@ -816,7 +905,7 @@ try {
 
       var latestResponse = latestResponses[0];
       if (latestResponse) {
-        fetch(`${domain}/response?seatCode=${storage.get("code")}&segment=${latestResponse.segment}&question=${latestResponse.question}&answer=${latestResponse.answer}`, {
+        fetch(`${domain}/response?seatCode=${latestResponse.code}&segment=${latestResponse.segment}&question=${latestResponse.question}&answer=${latestResponse.answer}`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -830,6 +919,7 @@ try {
             }
             const latex = latestResponse.type === "latex";
             const array = latestResponse.type === "array";
+            const matrix = latestResponse.type === "matrix";
             const frq = latestResponse.type === "frq";
             questionInput.value = latestResponse.question;
             if (latex) {
@@ -859,12 +949,43 @@ try {
               };
               ui.setButtonSelectValue(document.getElementById("set-type-selector"), restoredSetType);
               var i = 0;
-              latestResponse.answer.slice(1, -1).split(', ').forEach(a => {
+              JSON.parse(`[${latestResponse.answer.slice(1, -1).split(', ')}]`).forEach(a => {
                 setInputs = document.querySelectorAll("[data-set-input]");
                 setInputs[i].value = a;
                 i++;
                 if (i < latestResponse.answer.slice(1, -1).split(', ').length) addSet();
               });
+            } else if (matrix) {
+              answerMode("matrix");
+              ui.setButtonSelectValue(document.getElementById("answer-mode-selector"), "matrix");
+              resetMatrix();
+              var rows = JSON.parse(latestResponse.answer);
+              if (rows.length != 2) {
+                if (rows.length === 1) {
+                  removeRow();
+                } else {
+                  for (let i = 0; i < rows.length - 2; i++) {
+                    addRow();
+                  }
+                }
+              }
+              var columns = rows[0].length;
+              if (columns != 2) {
+                if (columns === 1) {
+                  removeColumn();
+                } else {
+                  for (let i = 0; i < columns - 2; i++) {
+                    addColumn();
+                  }
+                }
+              }
+              var matrixRows = document.querySelectorAll('#matrix [data-matrix-row]');
+              for (let i = 0; i < rows.length; i++) {
+                for (let j = 0; j < rows[i].length; j++) {
+                  matrixRows[i].querySelectorAll('[data-matrix-column]')[j].value = rows[i][j];
+                }
+              }
+              matrixRows[matrixRows.length - 1].lastChild.focus();
             } else if (frq) {
               answerMode("frq");
               ui.setButtonSelectValue(document.getElementById("answer-mode-selector"), "frq");
@@ -905,7 +1026,7 @@ try {
       feedContainer.classList.remove('show');
     }
 
-    reloadUnsavedInputs();
+    ui.reloadUnsavedInputs();
   }
 
   function prevQuestion() {
@@ -944,10 +1065,10 @@ try {
       "b": ["Disagree", "False", "No"],
       "c": ["Both", "Always"],
       "d": ["Neither", "Never"],
-      "e": ["Sometimes", "Cannot be determined"],
+      "e": ["Sometimes", "Cannot be determined", "Does not exist"],
     };
     button.addEventListener("click", (e) => {
-      unsavedChanges = true;
+      ui.setUnsavedChanges(true);
       const choice = e.target.getAttribute("data-multiple-choice");
       // Set content of multiple choice card
       const content = document.querySelector(`[data-answer-mode="choice"]>div`);
@@ -1005,7 +1126,7 @@ try {
 
   // Store click to storage and history
   function storeClick(code, segment, question, answer, reason, type) {
-    unsavedChanges = true;
+    ui.setUnsavedChanges(true);
     const history = storage.get("history") || [];
     const timestamp = Date.now();
     history.push({
@@ -1019,25 +1140,25 @@ try {
     });
     storage.set("history", history);
     updateHistory();
-    unsavedChanges = false;
+    ui.setUnsavedChanges(false);
   }
 
-  document.getElementById("history-first").addEventListener("click", () => {
+  document.getElementById("history-first")?.addEventListener("click", () => {
     historyIndex = getHistoryDates().length - 1;
     updateHistory();
   });
 
-  document.getElementById("history-backward").addEventListener("click", () => {
+  document.getElementById("history-backward")?.addEventListener("click", () => {
     historyIndex++;
     updateHistory();
   });
 
-  document.getElementById("history-forward").addEventListener("click", () => {
+  document.getElementById("history-forward")?.addEventListener("click", () => {
     historyIndex--;
     updateHistory();
   });
 
-  document.getElementById("history-last").addEventListener("click", () => {
+  document.getElementById("history-last")?.addEventListener("click", () => {
     historyIndex = 0;
     updateHistory();
   });
@@ -1099,7 +1220,7 @@ try {
 
       feed.innerHTML = "";
       const fetchPromises = history.sort((a, b) => a.timestamp - b.timestamp).map(item =>
-        fetch(`${domain}/response?seatCode=${storage.get("code")}&segment=${item.segment}&question=${item.question}&answer=${item.answer}`, {
+        fetch(`${domain}/response?seatCode=${item.code}&segment=${item.segment}&question=${item.question}&answer=${item.answer}`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -1121,6 +1242,7 @@ try {
           const button = document.createElement("button");
           const latex = item.type === "latex";
           const array = item.type === "array";
+          const matrix = item.type === "matrix";
           const frq = item.type === "frq";
           button.id = r.id;
           button.classList = (r.status === "Incorrect") ? 'incorrect' : (r.status === "Correct") ? 'correct' : '';
@@ -1129,16 +1251,20 @@ try {
           item.number = questionsArray.find(question => question.id === Number(item.question)).number;
           if (!latex) {
             if (!array) {
-              if (!frq) {
-                button.innerHTML = `<p><b>Segment ${item.segment} Question #${item.number}.</b> ${unixToTimeString(item.timestamp)} (${item.code})</p>\n<p>${item.answer}</p>\n<p>${response}`;
+              if (!matrix) {
+                if (!frq) {
+                  button.innerHTML = `${(item.code !== storage.get("code")) ? `<p><b>${courses.find(c => JSON.parse(c.periods).includes(Number(item.code.slice(0, 1))))?.name}</b></p>\n` : ''}<p><b>Segment ${item.segment} Question #${item.number}.</b> ${unixToTimeString(item.timestamp)} (${item.code})</p>\n<p>${item.answer}</p>\n<p>${response}`;
+                } else {
+                  button.innerHTML = `${(item.code !== storage.get("code")) ? `<p><b>${courses.find(c => JSON.parse(c.periods).includes(Number(item.code.slice(0, 1))))?.name}</b></p>\n` : ''}<p><b>Segment ${item.segment} Question #${item.number}.</b> ${unixToTimeString(item.timestamp)} (${item.code})</p>\n<p>${item.answer}${(item.number === '1') ? '/9' : ''}</p>\n<p>${response}`;
+                }
               } else {
-                button.innerHTML = `<p><b>Segment ${item.segment} Question #${item.number}.</b> ${unixToTimeString(item.timestamp)} (${item.code})</p>\n<p>${item.answer}${(item.number === '1') ? '/9' : ''}</p>\n<p>${response}`;
+                button.innerHTML = `${(item.code !== storage.get("code")) ? `<p><b>${courses.find(c => JSON.parse(c.periods).includes(Number(item.code.slice(0, 1))))?.name}</b></p>\n` : ''}<p><b>Segment ${item.segment} Question #${item.number}.</b> ${unixToTimeString(item.timestamp)} (${item.code})</p>\n<p>${JSON.stringify(JSON.parse(item.answer).map(innerArray => innerArray.map(numString => String(numString)))).replaceAll('["', '[').replaceAll('","', ', ').replaceAll('"]', ']')}</p>\n<p>${response}`;
               }
             } else {
-              button.innerHTML = `<p><b>Segment ${item.segment} Question #${item.number}.</b> ${unixToTimeString(item.timestamp)} (${item.code})</p>\n<p>${item.answer.slice(1, -1)}</p>\n<p>${response}`;
+              button.innerHTML = `${(item.code !== storage.get("code")) ? `<p><b>${courses.find(c => JSON.parse(c.periods).includes(Number(item.code.slice(0, 1))))?.name}</b></p>\n` : ''}<p><b>Segment ${item.segment} Question #${item.number}.</b> ${unixToTimeString(item.timestamp)} (${item.code})</p>\n<p>${JSON.parse(`[${item.answer.slice(1, -1).split(', ')}]`).join(', ')}</p>\n<p>${response}`;
             }
           } else {
-            button.innerHTML = `<p><b>Segment ${item.segment} Question #${item.number}.</b> ${unixToTimeString(item.timestamp)} (${item.code})</p>\n${convertLatexToMarkup(item.answer)}\n<p class="hint">(Equation may not display properly)</p>\n<p>${response}`;
+            button.innerHTML = `${(item.code !== storage.get("code")) ? `<p><b>${courses.find(c => JSON.parse(c.periods).includes(Number(item.code.slice(0, 1))))?.name}</b></p>\n` : ''}<p><b>Segment ${item.segment} Question #${item.number}.</b> ${unixToTimeString(item.timestamp)} (${item.code})</p>\n${convertLatexToMarkup(item.answer)}\n<p class="hint">(Equation may not display properly)</p>\n<p>${response}`;
           }
           feed.prepend(button);
           renderMathInElement(button);
@@ -1174,12 +1300,43 @@ try {
               };
               ui.setButtonSelectValue(document.getElementById("set-type-selector"), restoredSetType);
               var i = 0;
-              item.answer.slice(1, -1).split(', ').forEach(a => {
+              JSON.parse(`[${item.answer.slice(1, -1).split(', ')}]`).forEach(a => {
                 setInputs = document.querySelectorAll("[data-set-input]");
                 setInputs[i].value = a;
                 i++;
                 if (i < item.answer.slice(1, -1).split(', ').length) addSet();
               });
+            } else if (matrix) {
+              answerMode("matrix");
+              ui.setButtonSelectValue(document.getElementById("answer-mode-selector"), "matrix");
+              resetMatrix();
+              var rows = JSON.parse(item.answer);
+              if (rows.length != 2) {
+                if (rows.length === 1) {
+                  removeRow();
+                } else {
+                  for (let i = 0; i < rows.length - 2; i++) {
+                    addRow();
+                  }
+                }
+              }
+              var columns = rows[0].length;
+              if (columns != 2) {
+                if (columns === 1) {
+                  removeColumn();
+                } else {
+                  for (let i = 0; i < columns - 2; i++) {
+                    addColumn();
+                  }
+                }
+              }
+              var matrixRows = document.querySelectorAll('#matrix [data-matrix-row]');
+              for (let i = 0; i < rows.length; i++) {
+                for (let j = 0; j < rows[i].length; j++) {
+                  matrixRows[i].querySelectorAll('[data-matrix-column]')[j].value = rows[i][j];
+                }
+              }
+              matrixRows[matrixRows.length - 1].lastChild.focus();
             } else if (frq) {
               answerMode("frq");
               ui.setButtonSelectValue(document.getElementById("answer-mode-selector"), "frq");
@@ -1212,7 +1369,7 @@ try {
               autocomplete.update();
             }
           });
-          if (qA.find(q => (q.segment === item.segment) && (q.question === item.question))) qA.find(q => (q.segment === item.segment) && (q.question === item.question)).status = (r.status === "Correct") ? "Correct" : "In Progress";
+          if (qA.find(q => (q.segment === item.segment) && (q.question === item.question))) qA.find(q => (q.segment === item.segment) && (q.question === item.question)).status = (r.status.includes("Recorded")) ? "Pending" : r.status;
         });
         if (results.find(({ item, ...r }) => r.flagged == '1')) {
           var p = document.createElement("p");
@@ -1223,31 +1380,32 @@ try {
       }).then(() => {
         storage.set("questionsAnswered", qA);
       });
-      reloadUnsavedInputs();
+      ui.reloadUnsavedInputs();
       return qA;
     } else {
       feed.innerHTML = "<p>Submitted clicks will show up here!</p>";
-      reloadUnsavedInputs();
+      ui.reloadUnsavedInputs();
       return [];
     }
   }
 
   function flagResponse(event, isInQuestion = false) {
     event.srcElement.disabled = true;
-    unsavedChanges = true;
+    ui.setUnsavedChanges(true);
     fetch(domain + '/flag', {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
+        usr: storage.get("code"),
         question_id: event.srcElement.parentElement.id,
         seatCode: storage.get("code"),
       }),
     })
       .then(q => q.json())
       .then(() => {
-        unsavedChanges = false;
+        ui.setUnsavedChanges(false);
         ui.toast("Flagged response for review.", 3000, "success", "bi bi-flag-fill");
         isInQuestion ? updateQuestion() : updateHistory();
       })
@@ -1259,20 +1417,21 @@ try {
 
   function unflagResponse(event, isInQuestion = false) {
     event.srcElement.disabled = true;
-    unsavedChanges = true;
+    ui.setUnsavedChanges(true);
     fetch(domain + '/unflag', {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
+        usr: storage.get("code"),
         question_id: event.srcElement.parentElement.id,
         seatCode: storage.get("code"),
       }),
     })
       .then(q => q.json())
       .then(() => {
-        unsavedChanges = false;
+        ui.setUnsavedChanges(false);
         ui.toast("Unflagged response.", 3000, "success", "bi bi-flag-fill");
         isInQuestion ? updateQuestion() : updateHistory();
       })
@@ -1295,6 +1454,8 @@ try {
         answerLabel.setAttribute("for", "math-input");
       } else if (mode === "set") {
         answerLabel.setAttribute("for", "set-input");
+      } else if (mode === "matrix") {
+        answerLabel.setAttribute("for", "matrix");
       } else if (mode === "frq") {
         answerLabel.setAttribute("for", "frq-input");
       }
@@ -1323,7 +1484,7 @@ try {
       if (highestDataElement === null || parseInt(element.getAttribute('data-set-input'), 10) > parseInt(highestDataElement.getAttribute('data-set-input'), 10)) highestDataElement = element;
     });
     if (highestDataElement !== null) {
-      unsavedChanges = true;
+      ui.setUnsavedChanges(true);
       var newSetInput = document.createElement('input');
       newSetInput.setAttribute('type', 'text');
       newSetInput.setAttribute('autocomplete', 'off');
@@ -1339,7 +1500,7 @@ try {
       newSetInput.focus();
       document.querySelector("[data-remove-set-input]").disabled = false;
     }
-    reloadUnsavedInputs();
+    ui.reloadUnsavedInputs();
   }
 
   // Remove set input
@@ -1372,23 +1533,21 @@ try {
   }
 
   // Change FRQ choice
-  frqInput.addEventListener("change", (input) => {
-    unsavedChanges = true;
+  frqInput?.addEventListener("change", (input) => {
+    ui.setUnsavedChanges(true);
     document.querySelector('[data-answer-mode="frq"] h1').innerText = input.target.value;
   });
 
-  frqInput.addEventListener("input", (input) => {
-    unsavedChanges = true;
+  frqInput?.addEventListener("input", (input) => {
+    ui.setUnsavedChanges(true);
     document.querySelector('[data-answer-mode="frq"] h1').innerText = input.target.value;
   });
 
   // Add FRQ part
-  if (document.querySelector("[data-add-frq-part]")) {
-    document.querySelector("[data-add-frq-part]").addEventListener("click", addPart);
-  }
+  if (document.querySelector("[data-add-frq-part]")) document.querySelector("[data-add-frq-part]").addEventListener("click", addPart);
 
   function addPart() {
-    unsavedChanges = true;
+    ui.setUnsavedChanges(true);
     frqPartInputs = document.querySelectorAll('.frq-parts .part input');
     highestDataElement = frqPartInputs[frqPartInputs.length - 1];
     var newPartLetter = String.fromCharCode(highestDataElement.getAttribute('data-frq-part').charCodeAt(0) + 1);
@@ -1404,7 +1563,7 @@ try {
     highestDataElement.querySelector('input').focus();
     document.querySelector("[data-remove-frq-part]").disabled = false;
     if (newPartLetter === 'z') document.querySelector("[data-add-frq-part]").disabled = true;
-    reloadUnsavedInputs();
+    ui.reloadUnsavedInputs();
   }
 
   // Remove FRQ part
@@ -1416,6 +1575,87 @@ try {
     frqParts = document.querySelectorAll('.frq-parts .part');
     if (frqParts.length > 4) frqParts[frqParts.length - 1].remove();
     if (frqParts.length === 5) document.querySelector("[data-remove-frq-part]").disabled = true;
+  }
+
+  // Add matrix column
+  if (document.querySelector("[data-add-matrix-column]")) document.querySelector("[data-add-matrix-column]").addEventListener("click", addColumn);
+
+  function addColumn() {
+    var rows = [...document.getElementById('matrix').children];
+    rows.forEach(row => {
+      var newColumn = document.createElement('input');
+      newColumn.setAttribute('type', 'text');
+      newColumn.setAttribute('autocomplete', 'off');
+      newColumn.setAttribute('data-matrix-column', row.children.length + 1);
+      row.appendChild(newColumn);
+    });
+    rows[0].lastElementChild.focus();
+    ui.setUnsavedChanges(true);
+    var columns = document.querySelectorAll('#matrix [data-matrix-row]:first-child [data-matrix-column]');
+    if (columns.length === 10) document.querySelector("[data-add-matrix-column]").disabled = true;
+    document.querySelector("[data-remove-matrix-column]").disabled = false;
+    ui.reloadUnsavedInputs();
+  }
+
+  // Remove matrix column
+  if (document.querySelector("[data-remove-matrix-column]")) document.querySelector("[data-remove-matrix-column]").addEventListener("click", removeColumn);
+
+  function removeColumn() {
+    var rows = [...document.getElementById('matrix').children];
+    rows.forEach(row => {
+      var lastColumn = row.lastElementChild;
+      if (lastColumn) lastColumn.remove();
+    });
+    if (rows[0].children.length < 10) document.querySelector("[data-add-matrix-column]").disabled = false;
+    if (rows[0].children.length === 1) document.querySelector("[data-remove-matrix-column]").disabled = true;
+  }
+
+  // Add matrix row
+  if (document.querySelector("[data-add-matrix-row]")) document.querySelector("[data-add-matrix-row]").addEventListener("click", addRow);
+
+  function addRow() {
+    var newRow = document.createElement('div');
+    newRow.classList.add('row');
+    newRow.setAttribute('data-matrix-row', document.querySelectorAll('[data-matrix-row]').length + 1);
+    var columns = document.querySelectorAll('[data-matrix-row]:first-child [data-matrix-column]');
+    columns.forEach(column => {
+      var newColumn = document.createElement('input');
+      newColumn.setAttribute('type', 'text');
+      newColumn.setAttribute('autocomplete', 'off');
+      newColumn.setAttribute('data-matrix-column', column.getAttribute('data-matrix-column'));
+      newRow.appendChild(newColumn);
+    });
+    document.getElementById('matrix').appendChild(newRow);
+    newRow.firstElementChild.focus();
+    ui.setUnsavedChanges(true);
+    var rows = document.querySelectorAll('[data-matrix-row]');
+    if (rows.length === 10) document.querySelector("[data-add-matrix-row]").disabled = true;
+    document.querySelector("[data-remove-matrix-row]").disabled = false;
+    ui.reloadUnsavedInputs();
+  }
+
+  // Remove matrix row
+  if (document.querySelector("[data-remove-matrix-row]")) document.querySelector("[data-remove-matrix-row]").addEventListener("click", removeRow);
+
+  function removeRow() {
+    var rows = document.querySelectorAll('[data-matrix-row]');
+    if (rows.length > 1) {
+      var lastRow = rows[rows.length - 1];
+      lastRow.remove();
+      if (rows.length < 10) document.querySelector("[data-add-matrix-row]").disabled = false;
+      if (rows.length === 2) document.querySelector("[data-remove-matrix-row]").disabled = true;
+    }
+  }
+
+  function resetMatrix() {
+    var matrix = document.getElementById('matrix');
+    matrix.innerHTML = '<div class="row" data-matrix-row="1"><input type="text" autocomplete="off" id="matrix-column" data-matrix-column="1" /><input type="text" autocomplete="off" id="matrix-column" data-matrix-column="2" /></div><div class="row" data-matrix-row="2"><input type="text" autocomplete="off" id="matrix-column" data-matrix-column="1" /><input type="text" autocomplete="off" id="matrix-column" data-matrix-column="2" /></div>';
+    document.querySelectorAll('[data-answer-mode="matrix"] .button-grid')[1].innerHTML = '<button square data-add-matrix-column tooltip="Add Matrix Column"><i class="bi bi-arrow-90deg-left rotate-right"></i></button><button square data-remove-matrix-column tooltip="Remove Matrix Column"><i class="bi bi-x"></i></button>';
+    document.querySelectorAll('[data-answer-mode="matrix"] .button-grid')[2].innerHTML = '<button square data-add-matrix-row tooltip="Add Matrix Row"><i class="bi bi-arrow-return-left"></i></button><button square data-remove-matrix-row tooltip="Remove Matrix Row"><i class="bi bi-x"></i></button>';
+    if (document.querySelector("[data-add-matrix-column]")) document.querySelector("[data-add-matrix-column]").addEventListener("click", addColumn);
+    if (document.querySelector("[data-remove-matrix-column]")) document.querySelector("[data-remove-matrix-column]").addEventListener("click", removeColumn);
+    if (document.querySelector("[data-add-matrix-row]")) document.querySelector("[data-add-matrix-row]").addEventListener("click", addRow);
+    if (document.querySelector("[data-remove-matrix-row]")) document.querySelector("[data-remove-matrix-row]").addEventListener("click", removeRow);
   }
 } catch (error) {
   if (storage.get("developer")) {

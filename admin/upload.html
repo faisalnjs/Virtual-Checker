@@ -12,6 +12,10 @@
             display: none;
         }
 
+        * {
+            font-family: "Figtree", sans-serif;
+        }
+
         button#paste {
             background: dodgerblue;
             width: -webkit-fill-available;
@@ -44,21 +48,232 @@
             margin-bottom: 1em;
         }
     </style>
+    <style>
+        .description {
+            margin-top: 1em;
+        }
+
+        .description a {
+            color: dodgerblue !important;
+        }
+
+        .description .ql-toolbar {
+            background: #efefef;
+            border: none !important;
+            border-radius: 0.5rem;
+            margin-bottom: 7.5px;
+        }
+
+        .description .ql-toolbar #toolbar-container {
+            display: flex;
+            align-content: stretch;
+            flex-wrap: wrap;
+            gap: 5px 0;
+        }
+
+        .description .ql-toolbar .ql-picker-label {
+            color: black !important;
+            font-family: "Figtree";
+        }
+
+        .description .ql-toolbar .ql-stroke {
+            stroke: black !important;
+        }
+
+        .description .ql-toolbar .ql-fill {
+            fill: black !important;
+        }
+
+        .description .ql-toolbar button:hover,
+        .description .ql-toolbar button:hover .ql-picker-label,
+        .description .ql-toolbar .ql-active .ql-picker-label {
+            color: dodgerblue !important;
+        }
+
+        .description .ql-toolbar button:hover .ql-stroke,
+        .description .ql-toolbar .ql-active .ql-stroke {
+            stroke: dodgerblue !important;
+        }
+
+        .description .ql-toolbar button:hover .ql-fill,
+        .description .ql-toolbar .ql-active .ql-fill {
+            fill: dodgerblue !important;
+        }
+
+        .description .ql-container {
+            font-size: inherit !important;
+            background: #efefef;
+            border: none !important;
+            border-radius: 0.5rem;
+            font-family: inherit !important;
+        }
+
+        .description .ql-container .ql-editor {
+            border-radius: 0.5rem;
+        }
+
+        .description .ql-editor.ql-blank::before {
+            color: black !important;
+            opacity: 0.5 !important;
+        }
+
+        .description .ql-toolbar .ql-picker-label:hover,
+        .description .ql-toolbar .ql-picker-label.ql-active {
+            color: black !important;
+        }
+
+        .description .ql-toolbar button:focus,
+        .description .ql-toolbar .ql-picker-item,
+        .description .ql-toolbar .ql-picker-item.ql-selected {
+            color: white !important;
+            font-family: "Figtree";
+        }
+
+        .description .ql-toolbar .ql-picker-item:hover {
+            color: black !important;
+        }
+
+        .description .ql-picker-options {
+            background: dodgerblue !important;
+        }
+
+        .description .ql-toolbar .ql-picker.ql-expanded .ql-picker-label,
+        .description .ql-toolbar .ql-picker.ql-expanded .ql-picker-options {
+            border-color: dodgerblue !important;
+        }
+
+        .description .ql-picker.ql-font .ql-picker-label:not([data-value])::before,
+        .description .ql-picker.ql-font .ql-picker-item:not([data-value])::before {
+            content: "Default Font" !important;
+        }
+
+        .description .ql-tooltip {
+            background: dodgerblue !important;
+            color: white !important;
+            border: none !important;
+            border-radius: 0.5rem !important;
+            box-shadow: none !important;
+        }
+
+        .description .ql-tooltip input[type="text"] {
+            border: none !important;
+            color: black !important;
+        }
+
+        .description .ql-tooltip a {
+            color: white !important;
+        }
+
+        .description .ql-editor blockquote {
+            border-color: dodgerblue !important;
+        }
+
+        .description .ql-code-block-container {
+            border-radius: 0.3rem !important;
+        }
+
+        .description .ql-code-block-container .ql-ui {
+            width: fit-content;
+            color: black;
+            font-size: 12.5px;
+            border-radius: 0.2rem;
+        }
+
+        .description .ql-editor .ql-video {
+            width: -webkit-fill-available;
+            min-height: 22vw;
+            border-radius: 0.3rem;
+        }
+
+        .description .ql-editor p>img {
+            border-radius: 0.3rem;
+        }
+
+        .description .faz-quill-emoji-dropdown,
+        .description .faz-quill-emoji-input-group,
+        .description .faz-quill-emoji-loader {
+            background: transparent;
+        }
+
+        .description .faz-quill-emoji-dropdown-content {
+            background: #efefef;
+        }
+
+        .description .faz-quill-emoji-tab {
+            color: var(--surface-text-color) !important;
+        }
+
+        .description .faz-quill-emoji-tab.active:before {
+            background: dodgerblue !important;
+            left: -5px;
+        }
+
+        .description .faz-quill-emoji-loader svg {
+            color: white !important;
+        }
+
+        .description .faz-quill-emoji-list {
+            grid-template-columns: repeat(9, 1fr) !important;
+            gap: 5px !important;
+        }
+
+        .description .faz-quill-emoji-tab-list {
+            margin-right: -5px;
+            margin-left: 15px;
+        }
+
+        .description .faz-quill-emoji-tab {
+            padding: 0 10px !important;
+        }
+
+        .description .faz-quill-emoji-input-group input {
+            background: dodgerblue;
+            color: white;
+        }
+
+        .description .faz-quill-emoji-input-group svg {
+            color: white;
+            height: 17px;
+            width: 17px;
+            left: 10px;
+        }
+
+        .description .faz-quill-emoji-loader {
+            top: 21.5px;
+            left: unset;
+            right: 85px;
+        }
+    </style>
 </head>
 
 <body>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,400;0,700;1,400;1,700&display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
     <link href="https://unpkg.com/filepond@^4/dist/filepond.css" rel="stylesheet" />
     <link href="https://unpkg.com/filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css"
         rel="stylesheet" />
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/faz-quill-emoji@0.1.3/dist/faz.quill.emoji.css" type="text/css" />
     <input type="text" placeholder="Question Text" />
     <input type="text" placeholder="Correct Answer 1" />
     <input type="text" placeholder="Correct Answer 2" />
     <input type="file" />
     <button id="paste" onclick="paste()">Paste</button>
+    <div class="description"></div>
     <script
         src="https://unpkg.com/filepond-plugin-file-validate-type/dist/filepond-plugin-file-validate-type.js"></script>
     <script src="https://unpkg.com/filepond-plugin-image-preview/dist/filepond-plugin-image-preview.js"></script>
     <script src="https://unpkg.com/filepond@^4/dist/filepond.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.snow.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.js"></script>
+    <script src="https://unpkg.com/faz-quill-emoji@0.1.3"></script>
     <script>
         const urlParams = new URLSearchParams(window.location.search);
         const question = urlParams.get('question');
@@ -90,6 +305,7 @@
                 file.setMetadata('title', document.querySelectorAll('input[type="text"]')[0].value || startingQuestion);
                 file.setMetadata('correctAnswer1', document.querySelectorAll('input[type="text"]')[1].value || null);
                 file.setMetadata('correctAnswer2', document.querySelectorAll('input[type="text"]')[2].value || null);
+                file.setMetadata('description', JSON.stringify(quill.getContents()) || '{"ops":[{"insert":"\n"}]}');
                 pond.processFile(file);
             };
         });
@@ -109,7 +325,83 @@
             if (!item) return;
             pond.addFile(await item.getType(item.types.filter(type => type.startsWith('image/'))[0]));
         };
-        if (!startingQuestionId || !startingQuestion) document.querySelectorAll('input[type="text"]').forEach(e => e.remove());
+        var quill = null;
+        if (!startingQuestionId || !startingQuestion) {
+            document.querySelectorAll('input[type="text"]').forEach(e => e.remove());
+            document.querySelector('.description').remove();
+        } else {
+            var textareaContainer = document.querySelector('.description')
+            var toolbar = document.createElement('div');
+            toolbar.innerHTML = `<div id="toolbar-container">
+                <span class="ql-formats">
+                <select class="ql-font" tooltip="Font"></select>
+                <select class="ql-size" tooltip="Text Size"></select>
+                </span>
+                <span class="ql-formats">
+                <button class="ql-bold" tooltip="Bold"></button>
+                <button class="ql-italic" tooltip="Italic"></button>
+                <button class="ql-underline" tooltip="Underline"></button>
+                <button class="ql-strike" tooltip="Strikethrough"></button>
+                <button class="ql-faz-emoji" tooltip="Emoji"></button>
+                </span>
+                <span class="ql-formats">
+                <select class="ql-color" tooltip="Text Color"></select>
+                <select class="ql-background" tooltip="Highlight"></select>
+                </span>
+                <span class="ql-formats">
+                <button class="ql-script" value="sub" tooltip="Subscript"></button>
+                <button class="ql-script" value="super" tooltip="Superscript"></button>
+                </span>
+                <span class="ql-formats">
+                <button class="ql-header" value="1" tooltip="Heading"></button>
+                <button class="ql-header" value="2" tooltip="Subheading"></button>
+                <button class="ql-blockquote" tooltip="Blockquote"></button>
+                <button class="ql-code-block" tooltip="Code Block"></button>
+                </span>
+                <span class="ql-formats">
+                <button class="ql-list" value="ordered" tooltip="Number List"></button>
+                <button class="ql-list" value="bullet" tooltip="Bullet List"></button>
+                <button class="ql-indent" value="-1" tooltip="Remove Indent"></button>
+                <button class="ql-indent" value="+1" tooltip="Indent"></button>
+                </span>
+                <span class="ql-formats">
+                <button class="ql-direction" value="rtl" tooltip="Text Direction"></button>
+                <select class="ql-align" tooltip="Alignment"></select>
+                </span>
+                <span class="ql-formats">
+                <button class="ql-link" tooltip="Link"></button>
+                <button class="ql-image" tooltip="Image"></button>
+                <button class="ql-video" tooltip="Video"></button>
+                <button class="ql-formula" tooltip="LaTeX"></button>
+                </span>
+                <span class="ql-formats">
+                <button class="ql-clean" tooltip="Clear Formatting"></button>
+                <button data-clear-rich-content tooltip="Clear Description"><i class="bi bi-x-lg"></i></button>
+                </span>
+                <span class="ql-formats">
+                <button data-export-rich-content tooltip="Export To Clipboard"><i class="bi bi-clipboard-fill"></i></button>
+                <button data-import-rich-content tooltip="Import From Clipboard"><i class="bi bi-clipboard-plus-fill"></i></button>
+                </span>
+                <span class="ql-formats">
+                <button data-undo-rich-content tooltip="Undo"><i class="bi bi-arrow-counterclockwise"></i></button>
+                <button data-redo-rich-content tooltip="Redo"><i class="bi bi-arrow-clockwise"></i></button>
+                </span>
+            </div>`;
+            textareaContainer.appendChild(toolbar);
+            var textarea = document.createElement('div');
+            textareaContainer.appendChild(textarea);
+            quill = new Quill(textarea, {
+                modules: {
+                    syntax: true,
+                    toolbar,
+                    fazEmoji: {
+                        collection: 'fluent-emoji',
+                    },
+                },
+                placeholder: 'Add some written content to your question...',
+                theme: 'snow'
+            });
+        };
     </script>
 </body>
 

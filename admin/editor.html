@@ -92,6 +92,7 @@
       <div class="button-grid">
         <button class="space fit" sort-segment-questions-increasing>Sort Increasing (1A-9Z)</button>
         <button class="space fit" sort-segment-questions-decreasing>Sort Decreasing (9Z-1A)</button>
+        <button class="space fit" edit-segment-questions>Edit Questions (Popup)</button>
       </div>
       <div class="section" id="question-list">
         <div class="button-grid inputs">
@@ -128,6 +129,9 @@
     </button>
     <button class="icon" data-delete-segment tooltip="Delete Segment">
       <i class="bi bi-trash"></i>
+    </button>
+    <button class="icon" data-archive-segment tooltip="Archive Segment">
+      <i class="bi bi-archive"></i>
     </button>
     <!-- <button class="pill" data-modal-view="settings/code" tooltip="Change Seat Code">
         <span class="code">000</span>
@@ -171,6 +175,7 @@
     <button data-modal-view="settings/keybinds">Keyboard Shortcuts</button>
     <button data-modal-view="settings/reset">Reset</button>
     <button data-modal-view="settings/credits">Credits</button>
+    <button data-logout>Log Out</button>
     <!-- <div class="row center" style="gap: 7.5px; margin-top: 5px;">
       <a href="https://github.com/faisalnjs/virtual-checker" class="icon" tooltip="GitHub Repository"><i class="bi bi-github"></i></a>
       <a href="https://dangoweb.com/?from=virtual-checker" class="icon" tooltip="Cloud Hosting"><i class="bi bi-cloud-fill"></i></a>
@@ -288,6 +293,8 @@
     </div>
     <div data-modal-page="credits" data-page-title="Credits">
       <img src="../banner-transparent.png" alt="Virtual Checker Banner">
+      <div></div>
+      <div></div>
       <p><a href="https://github.com/khui0">khui0</a> - Base Virtual Clicker commits before 5/21/2024</p>
       <p><a href="https://github.com/faisalnjs">faisalnjs</a> - Virtual Checker, base Virtual Clicker commits after
         5/21/2024</p>
@@ -316,7 +323,8 @@
         href="https://status.dangoweb.com/">server maintenance</a>, or contact support below.
     </p>
     <div class="row center" style="gap: 7.5px; margin-top: 5px;">
-      <a href="https://github.com/faisalnjs/virtual-checker/issues" class="icon" tooltip="GitHub Issues"><i class="bi bi-github"></i></a>
+      <a href="https://github.com/faisalnjs/virtual-checker/issues" class="icon" tooltip="GitHub Issues"><i
+          class="bi bi-github"></i></a>
       <a href="https://faisaln.com/discord" class="icon" tooltip="Discord Server"><i class="bi bi-discord"></i></a>
       <a href="mailto:contact@faisaln.com" class="icon" tooltip="Email"><i class="bi bi-envelope-fill"></i></a>
     </div>
@@ -328,6 +336,11 @@
       <a href="/admin/responses" tooltip="Responses"><i class="bi bi-chat-left-text"></i></a>
       <a href="/admin/reports" tooltip="Reports"><i class="bi bi-bar-chart"></i></a>
       <a href="/admin/editor" class="active" tooltip="Segment Editor"><i class="bi bi-pencil"></i></a>
+      <a href="/admin/archive" tooltip="Archive"><i class="bi bi-archive"></i></a>
+      <a href="/admin/backups" tooltip="Backups"><i class="bi bi-file-zip"></i></a>
+      <a href="/admin/users" tooltip="Users"><i class="bi bi-person-fill-lock"></i></a>
+      <a href="/admin/logs" tooltip="TA Manager"><i class="bi bi-person-exclamation"></i></a>
+      <a href="/admin/otps" tooltip="OTPs"><i class="bi bi-key"></i></a>
       <a href="/" tooltip="Exit"><i class="bi bi-door-open"></i></a>
     </div>
   </dialog>
@@ -339,7 +352,7 @@
     <input type="number" id="speed-mode-starting-question-id" step="1" min="1" disabled hidden>
     <input type="text" id="speed-mode-starting-question">
     <div data-modal-actions>
-      <button id="enable-speed-mode-button">Start</button>
+      <button class="submit-button" id="enable-speed-mode-button">Start</button>
     </div>
   </dialog>
   <div id="loader" class="active">

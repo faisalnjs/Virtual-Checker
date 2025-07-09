@@ -3,14 +3,10 @@ import "./reset.css";
 import "./layout.css";
 import "./design.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
-import "quill/dist/quill.core.css";
-import "quill/dist/quill.snow.css";
-import "katex/dist/katex.min.css";
-import "faz-quill-emoji/dist/faz.quill.emoji.css";
 
 import "/src/modules/mathlive.js";
 
-import "/src/checker/admin.js";
+import "/src/checker/ta.js";
 import "/src/symbols/symbols.js";
 import "/src/themes/themes.js";
 import "/src/keybinds/keybinds.js";
@@ -125,7 +121,7 @@ try {
   }
 } catch (error) {
   if (storage.get("developer")) {
-    alert(`Error @ admin.js: ${error.message}`);
+    alert(`Error @ ta.js: ${error.message}`);
   };
   throw error;
 };

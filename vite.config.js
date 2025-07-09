@@ -1,9 +1,25 @@
 import webfontDownload from "vite-plugin-webfont-dl";
 import version from "vite-plugin-package-version";
+import { viteStaticCopy } from "vite-plugin-static-copy";
 
 export default {
   appType: 'mpa',
-  plugins: [webfontDownload(), version()],
+  plugins: [
+    webfontDownload(),
+    version(),
+    viteStaticCopy({
+      targets: [
+        {
+          src: 'public/admin/.htaccess',
+          dest: 'admin',
+        },
+        {
+          src: 'public/ta/.htaccess',
+          dest: 'ta',
+        },
+      ],
+    }),
+  ],
   build: {
     rollupOptions: {
       input: {
@@ -16,6 +32,11 @@ export default {
         responses: new URL('admin/responses.html', import.meta.url).pathname,
         reports: new URL('admin/reports.html', import.meta.url).pathname,
         editor: new URL('admin/editor.html', import.meta.url).pathname,
+        users: new URL('admin/users.html', import.meta.url).pathname,
+        ta: new URL('ta/index.html', import.meta.url).pathname,
+        logs: new URL('admin/logs.html', import.meta.url).pathname,
+        otps: new URL('admin/otps.html', import.meta.url).pathname,
+        backups: new URL('admin/backups.html', import.meta.url).pathname,
       },
     },
   },

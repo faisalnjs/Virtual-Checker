@@ -106,11 +106,15 @@ div.spacer {
 }
 
 #answer-container {
-  overflow: hidden;
   border-radius: 0.5rem;
 }
 
-[data-answer-mode] {
+#answer-container:not(:hover) {
+  overflow: hidden;
+}
+
+[data-answer-mode],
+[data-archive-type] {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
@@ -176,7 +180,7 @@ div.spacer {
 
 [data-answer-mode="frq"] .frq-parts .part {
   display: flex;
-  gap: .25rem;
+  gap: 0.25rem;
   width: -webkit-fill-available;
   position: relative;
 }
@@ -268,6 +272,7 @@ div.spacer {
 }
 
 #question-history-feed {
+  min-height: 100px;
   max-height: 300px;
 }
 
@@ -288,7 +293,6 @@ div.spacer {
   margin-bottom: 10px;
 }
 
-
 .history-feed > button > p:empty {
   display: none;
 }
@@ -305,7 +309,7 @@ div.spacer {
   font-variant: normal;
   text-transform: none;
   line-height: 1;
-  vertical-align: -.125em;
+  vertical-align: -0.125em;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   content: "\f3cb";
@@ -332,6 +336,11 @@ label {
   background-color: transparent;
 }
 
+label:has(i) {
+  flex-direction: row;
+  gap: 5px;
+}
+
 #theme-editor {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -349,4 +358,54 @@ label {
   align-self: stretch;
   gap: 12.5px;
   width: -webkit-fill-available;
+}
+
+.enhanced-list > * {
+  width: -webkit-fill-available;
+}
+
+.enhanced-list .header {
+  align-items: center;
+  justify-content: space-between;
+  padding: 7.5px 15px;
+  background: var(--surface-color);
+  border: 1px solid var(--accent-text-color);
+  border-radius: 10px;
+  line-height: 25px;
+  position: sticky;
+  top: 15px;
+  z-index: 100;
+}
+
+.enhanced-list .enhanced-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  align-self: center;
+  padding: 7.5px 15px;
+  background: var(--surface-color);
+  border: 1px solid var(--accent-text-color);
+  border-radius: 10px;
+  line-height: 25px;
+  width: 99%;
+  gap: 10px;
+}
+
+.enhanced-list .header > *:not(.fit),
+.enhanced-list .enhanced-item > *:not(.fit) {
+  flex: 1;
+}
+
+.enhanced-list .header > *:last-child,
+.enhanced-list .enhanced-item > *:last-child {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.enhanced-list .enhanced-item.disabled {
+  text-decoration: line-through;
+}
+
+.enhanced-list .enhanced-item.disabled [data-undo-action] {
+  display: none;
 }

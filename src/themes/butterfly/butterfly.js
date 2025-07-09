@@ -1,3 +1,4 @@
+import storage from "/src/modules/storage.js";
 import "./butterfly.css";
 import star0 from "./stars/star0.png";
 import star1 from "./stars/star1.png";

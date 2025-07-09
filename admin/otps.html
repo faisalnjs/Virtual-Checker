@@ -5,10 +5,10 @@
   <meta charset="UTF-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="shortcut icon" href="favicon.ico" type="image/x-icon" media="(prefers-color-scheme: dark)" />
-  <link rel="shortcut icon" href="favicon-dark.ico" type="image/x-icon" media="(prefers-color-scheme: light)" />
+  <link rel="shortcut icon" href="../favicon.ico" type="image/x-icon" media="(prefers-color-scheme: dark)" />
+  <link rel="shortcut icon" href="../favicon-dark.ico" type="image/x-icon" media="(prefers-color-scheme: light)" />
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-  <title>404 - Virtual Checker</title>
+  <title>OTPs - Virtual Checker</title>
   <meta name="title" content="Virtual Checker" />
   <meta name="description" content="Next generation AI-powered homework checking, cloud hosted ☁️🚀✅" />
   <meta property="og:type" content="website" />
@@ -52,10 +52,21 @@
     </svg>
     <div class="info">
       <h1>Virtual Checker</h1>
+      <button class="icon menu" data-modal-view="menu" tooltip="Menu" reverse>
+        <i class="bi bi-list"></i>
+      </button>
     </div>
   </div>
   <div id="checker">
-    <h1>404 Not Found</h1>
+    <div class="section">
+      <h1>OTPs</h1>
+      <div id="no-otps" class="row">
+        <p>No OTPs found.</p>
+        <div></div>
+      </div>
+      <div class="section otps enhanced-list" hidden></div>
+      <button id="remove-otps">Remove All OTPs</button>
+    </div>
   </div>
   <!-- Controls -->
   <div id="controls-container" class="pill">
@@ -63,14 +74,14 @@
       <i class="bi bi-gear"></i>
     </button>
     <!-- <button class="pill" data-modal-view="settings/code" tooltip="Change Seat Code">
-      <span class="code">000</span>
-    </button>
-    <button class="icon" data-modal-view="history" tooltip="Click History">
-      <i class="bi bi-clock-history"></i>
-    </button> -->
-    <!-- <button class="icon" data-modal-view="clear-data-fix" tooltip="Clear Data Fix">
-        <i class="bi bi-exclamation-triangle"></i>
+        <span class="code">000</span>
+      </button>
+      <button class="icon" data-modal-view="history" tooltip="Click History">
+        <i class="bi bi-clock-history"></i>
       </button> -->
+    <!-- <button class="icon" data-modal-view="clear-data-fix" tooltip="Clear Data Fix">
+          <i class="bi bi-exclamation-triangle"></i>
+        </button> -->
   </div>
   <!-- Symbols -->
   <dialog data-modal-page="symbols" data-page-title="Symbols">
@@ -97,11 +108,136 @@
   </dialog>
   <!-- Settings -->
   <dialog data-modal-page="settings" data-page-title="Settings">
-    <img src="banner-transparent.png" alt="Virtual Checker Banner">
+    <img src="../banner-transparent.png" alt="Virtual Checker Banner">
     <span class="version" id="version-string"></span>
-    <div class="row center" style="gap: 7.5px; margin-top: 5px;">
+    <!-- <button data-modal-view="settings/code">Seat Code</button> -->
+    <button data-modal-view="settings/theme">Theme</button>
+    <button data-modal-view="settings/keybinds">Keyboard Shortcuts</button>
+    <button data-modal-view="settings/reset">Reset</button>
+    <button data-modal-view="settings/credits">Credits</button>
+    <button data-logout>Log Out</button>
+    <!-- <div class="row center" style="gap: 7.5px; margin-top: 5px;">
       <a href="https://github.com/faisalnjs/virtual-checker" class="icon" tooltip="GitHub Repository"><i class="bi bi-github"></i></a>
       <a href="https://dangoweb.com/?from=virtual-checker" class="icon" tooltip="Cloud Hosting"><i class="bi bi-cloud-fill"></i></a>
+    </div> -->
+    <div data-modal-page="code" data-page-title="Seat Code">
+      <input type="text" inputmode="numeric" placeholder="000" maxlength="3" id="code-input" />
+      <button data-modal-view="settings/code/help">Need help?</button>
+      <div data-modal-actions>
+        <button id="save-code-button">Save</button>
+      </div>
+      <div data-modal-page="help" data-page-title="Seat Code Finder">
+        <label for="period-input">Period</label>
+        <select id="period-input">
+          <option value="1">1</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
+          <option value="4">4</option>
+          <option value="5">5</option>
+          <option value="6">6</option>
+          <option value="7">7</option>
+          <option value="8">8</option>
+          <option value="9">9</option>
+        </select>
+        <p>Where do you sit?</p>
+        <p class="hint">Screen</p>
+        <div id="seat-grid"></div>
+      </div>
+    </div>
+    <div data-modal-page="theme" data-page-title="Theme">
+      <div id="theme-preview">
+        <h1 class="text-placeholder">000</h1>
+        <p class="text-placeholder">Question</p>
+        <div class="control-placeholder"></div>
+        <p class="text-placeholder">Answer</p>
+        <div class="control-placeholder"></div>
+        <div class="control-placeholder pill"></div>
+      </div>
+      <div id="theme-selector">
+        <button data-modal-view="settings/theme/editor">Custom</button>
+      </div>
+      <div data-modal-actions>
+        <button id="theme-reset">Reset</button>
+        <button id="theme-apply">Apply</button>
+      </div>
+      <div data-modal-page="editor" data-page-title="Custom Theme">
+        <div id="editor-preview">
+          <h1 class="text-placeholder">000</h1>
+          <p class="text-placeholder">Question</p>
+          <div class="control-placeholder"></div>
+          <p class="text-placeholder">Answer</p>
+          <div class="control-placeholder"></div>
+          <div class="control-placeholder pill"></div>
+        </div>
+        <div id="theme-editor">
+          <label>
+            Color Scheme
+            <select name="color-scheme">
+              <option value="light">Light</option>
+              <option value="dark">Dark</option>
+            </select>
+          </label>
+          <label>
+            Text
+            <div data-color-input="text-color"></div>
+          </label>
+          <label>
+            Background
+            <div data-color-input="background-color"></div>
+          </label>
+          <label>
+            Surface
+            <div data-color-input="surface-color"></div>
+          </label>
+          <label>
+            Accent
+            <div data-color-input="accent-color"></div>
+          </label>
+          <label>
+            Accent Text
+            <div data-color-input="accent-text-color"></div>
+          </label>
+          <label>
+            Error
+            <div data-color-input="error-color"></div>
+          </label>
+        </div>
+        <label>
+          Theme Code
+          <input type="text" id="theme-code" />
+        </label>
+        <p>
+          <i class="bi bi-exclamation-circle"></i> Use <kbd>Shift</kbd> + <kbd>R</kbd> to reset
+          the theme if you can't get back here
+        </p>
+        <div data-modal-actions>
+          <button id="editor-reset">Reset</button>
+          <button id="editor-apply">Apply</button>
+        </div>
+      </div>
+    </div>
+    <div data-modal-page="keybinds" data-page-title="Keyboard Shortcuts">
+      <p><kbd>Ctrl</kbd> + <kbd>Enter</kbd> Submit check</p>
+      <p><kbd>Alt</kbd> + <kbd>1-9</kbd> Insert nth symbol</p>
+      <p><kbd>Ctrl</kbd> + <kbd>/</kbd> Open Keyboard Shortcuts</p>
+      <p><kbd>Ctrl</kbd> + <kbd>,</kbd> Open Settings</p>
+      <p><kbd>Ctrl</kbd> + <kbd>.</kbd> Open History</p>
+      <p><kbd>Shift</kbd> + <kbd>R</kbd> Reset theme</p>
+      <p><kbd>Ctrl</kbd> + <kbd>S</kbd> Launch Speed Mode</p>
+    </div>
+    <div data-modal-page="reset" data-page-title="Reset">
+      <button data-reset="history">Clear History</button>
+      <button data-reset="all">Reset All Settings</button>
+      <button data-reset="cache">Force Reset Cache</button>
+      <button onclick="window.open('/resetcookies')">How To Reset Cookies</button>
+    </div>
+    <div data-modal-page="credits" data-page-title="Credits">
+      <img src="../banner-transparent.png" alt="Virtual Checker Banner">
+      <div></div>
+      <div></div>
+      <p><a href="https://github.com/khui0">khui0</a> - Base Virtual Clicker commits before 5/21/2024</p>
+      <p><a href="https://github.com/faisalnjs">faisalnjs</a> - Virtual Checker, base Virtual Clicker commits after
+        5/21/2024</p>
     </div>
   </dialog>
   <dialog data-modal-page="clear-data-fix" data-page-title="Settings May Not Save">
@@ -121,6 +257,33 @@
       </li>
     </ol>
   </dialog>
+  <dialog data-modal-page="api-fail" data-page-title="API Offline">
+    <p>
+      The Virtual Checker API is currently offline. Please try again later, check for <a
+        href="https://status.dangoweb.com/">server maintenance</a>, or contact support below.
+    </p>
+    <div class="row center" style="gap: 7.5px; margin-top: 5px;">
+      <a href="https://github.com/faisalnjs/virtual-checker/issues" class="icon" tooltip="GitHub Issues"><i
+          class="bi bi-github"></i></a>
+      <a href="https://faisaln.com/discord" class="icon" tooltip="Discord Server"><i class="bi bi-discord"></i></a>
+      <a href="mailto:contact@faisaln.com" class="icon" tooltip="Email"><i class="bi bi-envelope-fill"></i></a>
+    </div>
+  </dialog>
+  <dialog data-modal-page="menu" data-page-title="Virtual Checker">
+    <div class="menu-icons">
+      <a href="/admin/" tooltip="Segments"><i class="bi bi-list-check"></i></a>
+      <a href="/admin/questions" tooltip="Questions"><i class="bi bi-patch-question"></i></a>
+      <a href="/admin/responses" tooltip="Responses"><i class="bi bi-chat-left-text"></i></a>
+      <a href="/admin/reports" tooltip="Reports"><i class="bi bi-bar-chart"></i></a>
+      <a href="/admin/editor" tooltip="Segment Editor"><i class="bi bi-pencil"></i></a>
+      <a href="/admin/archive" tooltip="Archive"><i class="bi bi-archive"></i></a>
+      <a href="/admin/backups" tooltip="Backups"><i class="bi bi-file-zip"></i></a>
+      <a href="/admin/users" tooltip="Users"><i class="bi bi-person-fill-lock"></i></a>
+      <a href="/admin/logs" tooltip="TA Manager"><i class="bi bi-person-exclamation"></i></a>
+      <a href="/admin/otps" class="active" tooltip="OTPs"><i class="bi bi-key"></i></a>
+      <a href="/" tooltip="Exit"><i class="bi bi-door-open"></i></a>
+    </div>
+  </dialog>
   <div id="loader" class="active">
     <svg xmlns="http://www.w3.org/2000/svg" height="2.5em" viewBox="0 0 1041 732" fill="none"
       class="virtual-checker-logo">
@@ -132,7 +295,7 @@
         fill="currentColor" />
     </svg>
   </div>
-  <script src="src/main.js" type="module"></script>
+  <script src="../src/admin.js" type="module"></script>
 </body>
 
 </html>

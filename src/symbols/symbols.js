@@ -94,6 +94,13 @@ document.querySelectorAll("[data-insert-symbol]").forEach((button) => {
   const index = button.getAttribute("data-insert-symbol");
   const symbol = Object.values(symbols)[index];
   button.innerHTML = symbol;
+  const keys = [];
+  Object.entries(symbols).forEach(([key, value]) => {
+    if (value == symbol) {
+      keys.push(key);
+    }
+  });
+  button.setAttribute("tooltip", keys.join(", "));
   button.addEventListener("click", () => {
     var answerMode = document.querySelector('#answer-mode-selector [aria-selected="true"]').getAttribute("data-value");
     if (currentFocusedInput && document.querySelector(`[data-answer-mode="${answerMode}"]`).contains(currentFocusedInput)) {
@@ -108,41 +115,43 @@ document.querySelectorAll("[data-insert-symbol]").forEach((button) => {
   });
 });
 
-// Loop through unique symbols and append them to DOM
-uniqueSymbols.forEach((symbol) => {
-  const button = new ui.Element("button", symbol, {
-    click: () => {
-      // Close the modal
-      ui.view("");
-      // Insert symbol
-      var answerMode = document.querySelector('#answer-mode-selector [aria-selected="true"]').getAttribute("data-value");
-      if (currentFocusedInput && document.querySelector(`[data-answer-mode="${answerMode}"]`).contains(currentFocusedInput)) {
-        insert(symbol, currentFocusedInput);
-      } else if (lastFocusedInput && document.querySelector(`[data-answer-mode="${answerMode}"]`).contains(lastFocusedInput)) {
-        insert(symbol, lastFocusedInput);
-      } else if (button.getAttribute("data-target-input") && document.getElementById(button.getAttribute("data-target-input"))) {
-        insert(symbol, document.getElementById(button.getAttribute("data-target-input")));
-      } else {
-        insert(symbol);
-      };
-    },
-  }).element;
-  // Show symbol name
-  const keys = [];
-  Object.entries(symbols).forEach(([key, value]) => {
-    if (value == symbol) {
-      keys.push(key);
-    }
+if (document.querySelector("#symbols-grid")) {
+  // Loop through unique symbols and append them to DOM
+  uniqueSymbols.forEach((symbol) => {
+    const button = new ui.Element("button", symbol, {
+      click: () => {
+        // Close the modal
+        ui.view("");
+        // Insert symbol
+        var answerMode = document.querySelector('#answer-mode-selector [aria-selected="true"]').getAttribute("data-value");
+        if (currentFocusedInput && document.querySelector(`[data-answer-mode="${answerMode}"]`).contains(currentFocusedInput)) {
+          insert(symbol, currentFocusedInput);
+        } else if (lastFocusedInput && document.querySelector(`[data-answer-mode="${answerMode}"]`).contains(lastFocusedInput)) {
+          insert(symbol, lastFocusedInput);
+        } else if (button.getAttribute("data-target-input") && document.getElementById(button.getAttribute("data-target-input"))) {
+          insert(symbol, document.getElementById(button.getAttribute("data-target-input")));
+        } else {
+          insert(symbol);
+        };
+      },
+    }).element;
+    // Show symbol name
+    const keys = [];
+    Object.entries(symbols).forEach(([key, value]) => {
+      if (value == symbol) {
+        keys.push(key);
+      }
+    });
+    button.title = keys.join(", ");
+    document.querySelector("#symbols-grid").append(button);
+    ui.addTooltip(button, keys.join(", "));
   });
-  button.title = keys.join(", ");
-  document.querySelector("#symbols-grid").append(button);
-  ui.addTooltip(button, keys.join(", "));
-});
 
-// Fill missing space
-const emptySpaces = 6 - (uniqueSymbols.length % 6);
-for (let i = 0; i < emptySpaces; i++) {
-  document.querySelector("#symbols-grid").append(document.createElement("div"));
+  // Fill missing space
+  const emptySpaces = 6 - (uniqueSymbols.length % 6);
+  for (let i = 0; i < emptySpaces; i++) {
+    document.querySelector("#symbols-grid").append(document.createElement("div"));
+  }
 }
 
 // Insert symbol at cursor position

@@ -38,40 +38,131 @@ export function modal(options) {
   }
 
   if (options.input) {
-    const input = document.createElement("input");
-    input.type = options.input.type || "text";
+    if (options.input.label) {
+      const label = document.createElement("label");
+      label.innerHTML = options.input.label;
+      dialog.appendChild(label);
+    }
+    const input = document.createElement((options.input.type === "select") ? "select" : "input");
+    if (options.input.type !== "select") input.type = options.input.type || "text";
+    if ((options.input.type === "select") && options.input.multiple) input.multiple = options.input.multiple;
+    if ((options.input.type === "select") && options.input.options) {
+      options.input.options.forEach(option => {
+        const optionElement = document.createElement("option");
+        optionElement.value = option.value;
+        optionElement.textContent = option.text;
+        if (option.selected) optionElement.selected = true;
+        input.appendChild(optionElement);
+      });
+    }
     input.placeholder = options.input.placeholder || "";
-    input.value = options.input.defaultValue || "";
+    if (options.input.defaultValue) input.value = options.input.defaultValue || "";
     input.className = "dialog-input";
     input.min = options.input.min || "";
     input.max = options.input.max || "";
+    if (options.input.required) input.required = options.input.required;
+    if (options.input.innerHTML) input.innerHTML = options.input.innerHTML;
     dialog.appendChild(input);
   }
 
   if (options.inputs) {
     options.inputs.forEach(input => {
-      const inputElement = document.createElement("input");
-      inputElement.type = input.type || "text";
+      if (input.label) {
+        const label = document.createElement("label");
+        label.innerHTML = input.label;
+        dialog.appendChild(label);
+      }
+      const inputElement = document.createElement((input.type === "select") ? "select" : "input");
+      if (input.type !== "select") inputElement.type = input.type || "text";
+      if ((input.type === "select") && input.multiple) inputElement.multiple = input.multiple;
+      if ((input.type === "select") && input.options) {
+        input.options.forEach(option => {
+          const optionElement = document.createElement("option");
+          optionElement.value = option.value;
+          optionElement.textContent = option.text;
+          if (option.selected) optionElement.selected = true;
+          inputElement.appendChild(optionElement);
+        });
+      }
       inputElement.placeholder = input.placeholder || "";
-      inputElement.value = input.defaultValue || "";
+      if (input.defaultValue) inputElement.value = input.defaultValue || "";
       inputElement.className = "dialog-input";
       inputElement.min = input.min || "";
       inputElement.max = input.max || "";
+      if (input.required) inputElement.required = input.required;
+      if (input.innerHTML) inputElement.innerHTML = input.innerHTML;
       dialog.appendChild(inputElement);
     });
   }
 
   document.body.append(dialog);
 
-  if (options.buttons.length > 0) {
+  if (options.buttonGroups && options.buttonGroups.length > 0) {
+    options.buttonGroups.forEach(buttonGroup => {
+      var buttonGroupsContainerElement = document.createElement("div");
+      if (buttonGroup.label) {
+        var buttonGroupLabelElement = document.createElement("label");
+        if (buttonGroup.icon) buttonGroup.label = `<i class="bi ${buttonGroup.icon}"></i> ${buttonGroup.label}`;
+        buttonGroupLabelElement.innerHTML = buttonGroup.label;
+        dialog.appendChild(buttonGroupLabelElement);
+      }
+      var buttonGroupContainerElement = document.createElement("div");
+      buttonGroupContainerElement.className = "button-grid";
+      buttonGroup.buttons.forEach(button => {
+        if (button.icon) button.text = `<i class="bi ${button.icon}"></i> ${button.text}`;
+        var btnElement = new Element("button", button.text, {
+          click: () => {
+            if (button.onclick) {
+              var hasEmptyRequiredInput = false;
+              dialog.querySelectorAll(".dialog-input").forEach(dialogInput => {
+                if (dialogInput.required && !dialogInput.value) {
+                  dialogInput.classList.add("attention");
+                  if (!hasEmptyRequiredInput) dialogInput.focus();
+                  hasEmptyRequiredInput = true;
+                } else {
+                  dialogInput.classList.remove("attention");
+                }
+              });
+              if (hasEmptyRequiredInput) return;
+              const inputValue = (dialog.querySelectorAll(".dialog-input").length > 1) ? [...dialog.querySelectorAll(".dialog-input")].map(dialogInput => {
+                return dialogInput.multiple ? [...dialogInput.selectedOptions].map(e => Number(e.value)) : dialogInput.value;
+              }) : (dialog.querySelector(".dialog-input") ? dialog.querySelector(".dialog-input").value : null);
+              button.onclick(inputValue);
+            }
+            if (button.close) {
+              closeModal();
+            }
+          },
+        }, button.class).element;
+        btnElement.style.width = "-webkit-fill-available";
+        buttonGroupContainerElement.appendChild(btnElement);
+      });
+      buttonGroupsContainerElement.appendChild(buttonGroupContainerElement);
+      dialog.appendChild(buttonGroupsContainerElement);
+    });
+  }
+
+  if (options.buttons && options.buttons.length > 0) {
     var buttonsContainerElement = document.createElement("div");
     buttonsContainerElement.className = "button-grid";
     options.buttons.forEach(button => {
+      if (button.icon) button.text = + `<i class="bi ${button.icon}"></i> `;
       var btnElement = new Element("button", button.text, {
         click: () => {
           if (button.onclick) {
+            var hasEmptyRequiredInput = false;
+            dialog.querySelectorAll(".dialog-input").forEach(dialogInput => {
+              if (dialogInput.required && !dialogInput.value) {
+                dialogInput.classList.add("attention");
+                if (!hasEmptyRequiredInput) dialogInput.focus();
+                hasEmptyRequiredInput = true;
+              } else {
+                dialogInput.classList.remove("attention");
+              }
+            });
+            if (hasEmptyRequiredInput) return;
             const inputValue = (dialog.querySelectorAll(".dialog-input").length > 1) ? [...dialog.querySelectorAll(".dialog-input")].map(dialogInput => {
-              return dialogInput.value;
+              return dialogInput.multiple ? [...dialogInput.selectedOptions].map(e => Number(e.value)) : dialogInput.value;
             }) : (dialog.querySelector(".dialog-input") ? dialog.querySelector(".dialog-input").value : null);
             button.onclick(inputValue);
           }
@@ -593,4 +684,128 @@ export function startLoader() {
 export function stopLoader() {
   const loader = document.getElementById("loader");
   if (loader) loader.classList.remove("active");
+}
+
+export var unsavedChanges = false;
+
+export function reloadUnsavedInputs() {
+  document.querySelectorAll('textarea').forEach(input => input.addEventListener('input', () => {
+    unsavedChanges = true;
+  }));
+  document.querySelectorAll('input').forEach(input => input.addEventListener('change', () => {
+    unsavedChanges = true;
+  }));
+}
+
+export function setUnsavedChanges(value) {
+  unsavedChanges = value;
+}
+
+export function expandMatrix(matrixString) {
+  const dialog = document.createElement("dialog");
+
+  const title = document.createElement("h2");
+    title.innerText = "Matrix";
+    dialog.append(title);
+
+  var matrix = JSON.parse(matrixString);
+
+  var constructedMatrix = document.createElement("div");
+  constructedMatrix.className = "matrix";
+
+  var highestComputedCellHeight = 0;
+  var longestComputedCellWidth = 0;
+
+  matrix.forEach(row => {
+    var rowElement = document.createElement("div");
+    rowElement.className = "matrix-row";
+    row.forEach(cell => {
+      var cellElement = document.createElement("span");
+      cellElement.className = "matrix-cell";
+      cellElement.textContent = cell;
+      rowElement.appendChild(cellElement);
+    });
+    constructedMatrix.appendChild(rowElement);
+  });
+
+  dialog.appendChild(constructedMatrix);
+
+  document.body.append(dialog);
+
+  requestAnimationFrame(() => {
+    constructedMatrix.querySelectorAll(".matrix-cell").forEach(cell => {
+      const cellHeight = cell.offsetHeight;
+      const cellWidth = cell.offsetWidth;
+      if (cellHeight > highestComputedCellHeight) highestComputedCellHeight = cellHeight;
+      if (cellWidth > longestComputedCellWidth) longestComputedCellWidth = cellWidth;
+    });
+  
+    constructedMatrix.style.setProperty("--matrix-cell-height", `${highestComputedCellHeight}px`);
+    constructedMatrix.style.setProperty("--matrix-cell-width", `${longestComputedCellWidth}px`);
+  });
+
+  animate(
+    dialog,
+    {
+      scale: "0.9",
+      opacity: "0",
+    },
+    {
+      scale: "1",
+      opacity: "1",
+    },
+    250,
+  );
+
+  dialog.showModal();
+
+  dialog.addEventListener("close", () => {
+    animate(
+      dialog,
+      {
+        scale: "1",
+        opacity: "1",
+      },
+      {
+        scale: "0.9",
+        opacity: "0",
+      },
+      250,
+    );
+    setTimeout(() => {
+      dialog.remove();
+    }, 250);
+  });
+
+  document.addEventListener("pointerdown", (e) => {
+    if (!dialog.contains(e.target)) {
+      closeModal();
+    }
+  });
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+      closeModal();
+    }
+  });
+
+  function closeModal() {
+    animate(
+      dialog,
+      {
+        scale: "1",
+        opacity: "1",
+      },
+      {
+        scale: "0.9",
+        opacity: "0",
+      },
+      250,
+    );
+    setTimeout(() => {
+      dialog.close();
+    }, 250);
+  }
+
+  return dialog;
 }

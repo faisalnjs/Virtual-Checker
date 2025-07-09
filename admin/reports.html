@@ -67,10 +67,10 @@
             <select id="course-period-input"></select>
           </div>
         </div>
-        <div class="input-group small">
-          <label for="sort-segment-input">Segment</label>
+        <div class="input-group vlarge">
+          <label for="filter-segment-input">Segment</label>
           <div class="space" id="question-container">
-            <input type="text" autocomplete="off" id="sort-segment-input" value="" placeholder="1" />
+            <select id="filter-segment-input"></select>
           </div>
         </div>
         <div class="input-group small">
@@ -99,16 +99,16 @@
           <span class="color-name">Correct</span>
         </div>
         <div class="color">
-          <span class="color-box incorrect"></span>
-          <span class="color-name">Incorrect</span>
-        </div>
-        <div class="color">
           <span class="color-box other"></span>
           <span class="color-name">Other</span>
         </div>
         <div class="color">
           <span class="color-box waiting"></span>
           <span class="color-name">Waiting</span>
+        </div>
+        <div class="color">
+          <span class="color-box incorrect"></span>
+          <span class="color-name">Incorrect</span>
         </div>
       </div>
       <div class="section seat-code-reports"></div>
@@ -180,6 +180,7 @@
     <button data-modal-view="settings/keybinds">Keyboard Shortcuts</button>
     <button data-modal-view="settings/reset">Reset</button>
     <button data-modal-view="settings/credits">Credits</button>
+    <button data-logout>Log Out</button>
     <!-- <div class="row center" style="gap: 7.5px; margin-top: 5px;">
       <a href="https://github.com/faisalnjs/virtual-checker" class="icon" tooltip="GitHub Repository"><i class="bi bi-github"></i></a>
       <a href="https://dangoweb.com/?from=virtual-checker" class="icon" tooltip="Cloud Hosting"><i class="bi bi-cloud-fill"></i></a>
@@ -297,6 +298,8 @@
     </div>
     <div data-modal-page="credits" data-page-title="Credits">
       <img src="../banner-transparent.png" alt="Virtual Checker Banner">
+      <div></div>
+      <div></div>
       <p><a href="https://github.com/khui0">khui0</a> - Base Virtual Clicker commits before 5/21/2024</p>
       <p><a href="https://github.com/faisalnjs">faisalnjs</a> - Virtual Checker, base Virtual Clicker commits after
         5/21/2024</p>
@@ -325,7 +328,8 @@
         href="https://status.dangoweb.com/">server maintenance</a>, or contact support below.
     </p>
     <div class="row center" style="gap: 7.5px; margin-top: 5px;">
-      <a href="https://github.com/faisalnjs/virtual-checker/issues" class="icon" tooltip="GitHub Issues"><i class="bi bi-github"></i></a>
+      <a href="https://github.com/faisalnjs/virtual-checker/issues" class="icon" tooltip="GitHub Issues"><i
+          class="bi bi-github"></i></a>
       <a href="https://faisaln.com/discord" class="icon" tooltip="Discord Server"><i class="bi bi-discord"></i></a>
       <a href="mailto:contact@faisaln.com" class="icon" tooltip="Email"><i class="bi bi-envelope-fill"></i></a>
     </div>
@@ -337,6 +341,11 @@
       <a href="/admin/responses" tooltip="Responses"><i class="bi bi-chat-left-text"></i></a>
       <a href="/admin/reports" class="active" tooltip="Reports"><i class="bi bi-bar-chart"></i></a>
       <a href="/admin/editor" tooltip="Segment Editor"><i class="bi bi-pencil"></i></a>
+      <a href="/admin/archive" tooltip="Archive"><i class="bi bi-archive"></i></a>
+      <a href="/admin/backups" tooltip="Backups"><i class="bi bi-file-zip"></i></a>
+      <a href="/admin/users" tooltip="Users"><i class="bi bi-person-fill-lock"></i></a>
+      <a href="/admin/logs" tooltip="TA Manager"><i class="bi bi-person-exclamation"></i></a>
+      <a href="/admin/otps" tooltip="OTPs"><i class="bi bi-key"></i></a>
       <a href="/" tooltip="Exit"><i class="bi bi-door-open"></i></a>
     </div>
   </dialog>
@@ -347,7 +356,7 @@
     </p>
     <select id="speed-mode-segments"></select>
     <div data-modal-actions>
-      <button id="enable-speed-mode-button">Start</button>
+      <button class="submit-button" id="enable-speed-mode-button">Start</button>
     </div>
   </dialog>
   <dialog data-modal-page="sort-segments" data-page-title="Sort Segments">
@@ -361,7 +370,7 @@
       <option value="za">Decreasing (9Z-1A)</option>
     </select>
     <div data-modal-actions>
-      <button id="sort-segments-button">Sort</button>
+      <button class="submit-button" id="sort-segments-button">Sort</button>
     </div>
   </dialog>
   <dialog data-modal-page="export-report" data-page-title="Export Report">
@@ -388,7 +397,7 @@
     <label for="export-report-end-date">End Due Date (Inclusive)</label>
     <input type="date" id="export-report-end-date" value="" />
     <div data-modal-actions>
-      <button id="export-report">Generate</button>
+      <button class="submit-button" id="export-report">Generate</button>
     </div>
   </dialog>
   <div id="loader" class="active">

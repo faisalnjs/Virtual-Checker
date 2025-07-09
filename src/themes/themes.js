@@ -39,7 +39,7 @@ try {
       selectedTheme = value;
       document.getElementById("theme-preview").setAttribute("data-theme", value);
     });
-    document.getElementById("theme-selector").append(button);
+    document.getElementById("theme-selector")?.append(button);
   });
 
   if (storage.get("theme") == "custom") {
@@ -50,12 +50,12 @@ try {
     // Built-in theme
     const theme = storage.get("theme") || "";
     document.body.setAttribute("data-theme", theme);
-    document.getElementById("theme-preview").setAttribute("data-theme", theme);
+    document.getElementById("theme-preview")?.setAttribute("data-theme", theme);
     selectedTheme = theme;
   }
   enableTransitions();
 
-  document.getElementById("theme-apply").addEventListener("click", () => {
+  document.getElementById("theme-apply")?.addEventListener("click", () => {
     const value = selectedTheme;
     disableTransitions();
     document.body.setAttribute("data-theme", value);
@@ -68,7 +68,7 @@ try {
     }
   });
 
-  document.getElementById("theme-reset").addEventListener("click", resetTheme);
+  document.getElementById("theme-reset")?.addEventListener("click", resetTheme);
 
   // Editor
 
@@ -97,28 +97,28 @@ try {
     });
   });
 
-  document.getElementById("editor-apply").addEventListener("click", () => {
+  document.getElementById("editor-apply")?.addEventListener("click", () => {
     storage.set("custom-theme", customTheme);
     storage.set("theme", "custom");
     applyCustomTheme();
   });
 
-  document.getElementById("editor-reset").addEventListener("click", () => {
+  document.getElementById("editor-reset")?.addEventListener("click", () => {
     Object.assign(customTheme, defaultTheme);
     updateEditorFields();
     updateEditorPreview();
     updateThemeCode();
   });
 
-  document.getElementById("theme-code").addEventListener("input", (e) => {
+  document.getElementById("theme-code")?.addEventListener("input", (e) => {
     if (e.target.value?.trim()) {
       const theme = decodeThemeCode(e.target.value);
       theme && updateEditorPreview(theme);
     }
   });
 
-  document.getElementById("theme-code").addEventListener("blur", validateThemeCode);
-  document.getElementById("theme-code").addEventListener("keydown", (e) => {
+  document.getElementById("theme-code")?.addEventListener("blur", validateThemeCode);
+  document.getElementById("theme-code")?.addEventListener("keydown", (e) => {
     if (e.key == "Enter") {
       validateThemeCode();
     }
@@ -151,7 +151,7 @@ try {
     const preview = document.getElementById("editor-preview");
     Object.entries(theme).forEach(([key, value]) => {
       const prefix = key == "color-scheme" ? "" : "--";
-      preview.style.setProperty(prefix + key, value);
+      preview?.style.setProperty(prefix + key, value);
     });
   }
 
@@ -161,7 +161,7 @@ try {
       const prefix = key == "color-scheme" ? "" : "--";
       document.body.style.setProperty(prefix + key, value);
     });
-    document.getElementById("theme-preview").removeAttribute("data-theme");
+    document.getElementById("theme-preview")?.removeAttribute("data-theme");
   }
 
   function removeCustomTheme() {
@@ -173,7 +173,7 @@ try {
   }
 
   function updateThemeCode() {
-    document.getElementById("theme-code").value = encodeThemeCode(customTheme);
+    if (document.getElementById("theme-code")) document.getElementById("theme-code").value = encodeThemeCode(customTheme);
   }
 
   function encodeThemeCode(theme) {
@@ -194,7 +194,7 @@ try {
   }
 
   // Load theme editor
-  document.querySelector(`[data-modal-page="editor"]`).addEventListener("view", () => {
+  document.querySelector(`[data-modal-page="editor"]`)?.addEventListener("view", () => {
     Object.assign(customTheme, storage.get("custom-theme") || defaultTheme);
     updateEditorFields();
     updateEditorPreview();

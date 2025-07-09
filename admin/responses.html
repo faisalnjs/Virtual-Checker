@@ -67,10 +67,10 @@
             <select id="course-period-input"></select>
           </div>
         </div>
-        <div class="input-group small">
-          <label for="sort-segment-input">Segment</label>
+        <div class="input-group vlarge">
+          <label for="filter-segment-input">Segment</label>
           <div class="space" id="question-container">
-            <input type="text" autocomplete="off" id="sort-segment-input" value="" placeholder="1" />
+            <select id="filter-segment-input" value=""></select>
           </div>
         </div>
         <div class="input-group small">
@@ -107,12 +107,18 @@
         <div class="button-grid inputs">
           <!-- <input type="text" autocomplete="off" class="small" id="response-id-input" value="" disabled /> -->
           <button square id="flag-response-button" tooltip="Flag Response"><i class="bi bi-flag"></i></button>
-          <input type="text" autocomplete="off" class="small" id="response-segment-input" value="" disabled data-segment />
-          <input type="text" autocomplete="off" class="small" id="response-question-input" value="" disabled data-question />
-          <input type="text" autocomplete="off" class="small" id="response-seat-code-input" value="" disabled data-seat-code />
-          <input type="text" autocomplete="off" class="small" id="response-time-taken-input" value="" disabled data-time-taken />
-          <input type="text" autocomplete="off" class="small" id="response-time-taken-input" value="" disabled data-time-taken />
-          <input type="text" autocomplete="off" class="small" id="response-time-taken-input" value="" disabled data-time-taken />
+          <input type="text" autocomplete="off" class="small" id="response-segment-input" value="" disabled
+            data-segment />
+          <input type="text" autocomplete="off" class="small" id="response-question-input" value="" disabled
+            data-question />
+          <input type="text" autocomplete="off" class="small" id="response-seat-code-input" value="" disabled
+            data-seat-code />
+          <input type="text" autocomplete="off" class="small" id="response-time-taken-input" value="" disabled
+            data-time-taken />
+          <input type="text" autocomplete="off" class="small" id="response-time-taken-input" value="" disabled
+            data-time-taken />
+          <input type="text" autocomplete="off" class="small" id="response-time-taken-input" value="" disabled
+            data-time-taken />
           <input type="text" autocomplete="off" id="response-response-input" value="" disabled />
           <input type="text" autocomplete="off" class="smedium" id="response-timestamp-input" value="" disabled />
           <button square id="mark-correct-button" tooltip="Mark Correct"><i class="bi bi-check-circle"></i></button>
@@ -131,8 +137,10 @@
       </div>
       <div class="section">
         <div class="button-grid inputs">
-          <input type="text" autocomplete="off" class="small" id="response-segment-input" value="" disabled data-segment />
-          <input type="text" autocomplete="off" class="small" id="response-question-input" value="" disabled data-question />
+          <input type="text" autocomplete="off" class="small" id="response-segment-input" value="" disabled
+            data-segment />
+          <input type="text" autocomplete="off" class="small" id="response-question-input" value="" disabled
+            data-question />
           <input type="text" autocomplete="off" id="response-response-input" value="" disabled />
           <input type="text" autocomplete="off" class="small" id="response-count-input" value="" disabled />
           <button square id="mark-correct-button" tooltip="Mark Correct"><i class="bi bi-check-circle"></i></button>
@@ -159,12 +167,18 @@
         <div class="button-grid inputs">
           <!-- <input type="text" autocomplete="off" class="small" id="response-id-input" value="" disabled /> -->
           <button square id="flag-response-button" tooltip="Flag Response"><i class="bi bi-flag"></i></button>
-          <input type="text" autocomplete="off" class="small" id="response-segment-input" value="" disabled data-segment />
-          <input type="text" autocomplete="off" class="small" id="response-question-input" value="" disabled data-question />
-          <input type="text" autocomplete="off" class="small" id="response-seat-code-input" value="" disabled data-seat-code />
-          <input type="text" autocomplete="off" class="small" id="response-time-taken-input" value="" disabled data-time-taken />
-          <input type="text" autocomplete="off" class="small" id="response-time-taken-input" value="" disabled data-time-taken />
-          <input type="text" autocomplete="off" class="small" id="response-time-taken-input" value="" disabled data-time-taken />
+          <input type="text" autocomplete="off" class="small" id="response-segment-input" value="" disabled
+            data-segment />
+          <input type="text" autocomplete="off" class="small" id="response-question-input" value="" disabled
+            data-question />
+          <input type="text" autocomplete="off" class="small" id="response-seat-code-input" value="" disabled
+            data-seat-code />
+          <input type="text" autocomplete="off" class="small" id="response-time-taken-input" value="" disabled
+            data-time-taken />
+          <input type="text" autocomplete="off" class="small" id="response-time-taken-input" value="" disabled
+            data-time-taken />
+          <input type="text" autocomplete="off" class="small" id="response-time-taken-input" value="" disabled
+            data-time-taken />
           <input type="text" autocomplete="off" id="response-response-input" value="" disabled />
           <input type="text" autocomplete="off" class="smedium" id="response-timestamp-input" value="" disabled />
           <button square id="mark-correct-button" tooltip="Mark Correct"><i class="bi bi-check-circle"></i></button>
@@ -177,6 +191,13 @@
   <div id="controls-container" class="pill">
     <button class="icon" data-modal-view="settings" tooltip="Settings">
       <i class="bi bi-gear"></i>
+    </button>
+    <button class="icon" data-archive-multiple tooltip="Archive Selected">
+      <i class="bi bi-archive"></i>
+    </button>
+    <button class="icon" data-select-multiple tooltip="Select Multiple">
+      <i class="bi bi-circle"></i>
+      <i class="bi bi-x"></i>
     </button>
     <button class="icon" data-polling tooltip="Toggle Polling">
       <i class="bi bi-skip-forward-circle"></i>
@@ -231,6 +252,7 @@
     <button data-modal-view="settings/keybinds">Keyboard Shortcuts</button>
     <button data-modal-view="settings/reset">Reset</button>
     <button data-modal-view="settings/credits">Credits</button>
+    <button data-logout>Log Out</button>
     <!-- <div class="row center" style="gap: 7.5px; margin-top: 5px;">
       <a href="https://github.com/faisalnjs/virtual-checker" class="icon" tooltip="GitHub Repository"><i class="bi bi-github"></i></a>
       <a href="https://dangoweb.com/?from=virtual-checker" class="icon" tooltip="Cloud Hosting"><i class="bi bi-cloud-fill"></i></a>
@@ -348,8 +370,11 @@
     </div>
     <div data-modal-page="credits" data-page-title="Credits">
       <img src="../banner-transparent.png" alt="Virtual Checker Banner">
+      <div></div>
+      <div></div>
       <p><a href="https://github.com/khui0">khui0</a> - Base Virtual Clicker commits before 5/21/2024</p>
-      <p><a href="https://github.com/faisalnjs">faisalnjs</a> - Virtual Checker, base Virtual Clicker commits after 5/21/2024</p>
+      <p><a href="https://github.com/faisalnjs">faisalnjs</a> - Virtual Checker, base Virtual Clicker commits after
+        5/21/2024</p>
     </div>
   </dialog>
   <dialog data-modal-page="clear-data-fix" data-page-title="Settings May Not Save">
@@ -375,7 +400,8 @@
         href="https://status.dangoweb.com/">server maintenance</a>, or contact support below.
     </p>
     <div class="row center" style="gap: 7.5px; margin-top: 5px;">
-      <a href="https://github.com/faisalnjs/virtual-checker/issues" class="icon" tooltip="GitHub Issues"><i class="bi bi-github"></i></a>
+      <a href="https://github.com/faisalnjs/virtual-checker/issues" class="icon" tooltip="GitHub Issues"><i
+          class="bi bi-github"></i></a>
       <a href="https://faisaln.com/discord" class="icon" tooltip="Discord Server"><i class="bi bi-discord"></i></a>
       <a href="mailto:contact@faisaln.com" class="icon" tooltip="Email"><i class="bi bi-envelope-fill"></i></a>
     </div>
@@ -387,6 +413,11 @@
       <a href="/admin/responses" class="active" tooltip="Responses"><i class="bi bi-chat-left-text"></i></a>
       <a href="/admin/reports" tooltip="Reports"><i class="bi bi-bar-chart"></i></a>
       <a href="/admin/editor" tooltip="Segment Editor"><i class="bi bi-pencil"></i></a>
+      <a href="/admin/archive" tooltip="Archive"><i class="bi bi-archive"></i></a>
+      <a href="/admin/backups" tooltip="Backups"><i class="bi bi-file-zip"></i></a>
+      <a href="/admin/users" tooltip="Users"><i class="bi bi-person-fill-lock"></i></a>
+      <a href="/admin/logs" tooltip="TA Manager"><i class="bi bi-person-exclamation"></i></a>
+      <a href="/admin/otps" tooltip="OTPs"><i class="bi bi-key"></i></a>
       <a href="/" tooltip="Exit"><i class="bi bi-door-open"></i></a>
     </div>
   </dialog>

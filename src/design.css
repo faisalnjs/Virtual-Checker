@@ -141,6 +141,22 @@ select.disabled:disabled {
   opacity: 0.5;
 }
 
+select[multiple] {
+  padding: 0.5em;
+  height: fit-content;
+  max-height: 5em;
+}
+
+select[multiple] option:not(:last-child) {
+  margin-bottom: 2px;
+}
+
+select[multiple] option:checked {
+  background: var(--accent-color);
+  color: var(--accent-text-color);
+  border-radius: 0.2rem;
+}
+
 .drag {
   height: 2.25em;
   width: 2.25em;
@@ -398,7 +414,7 @@ div.ML__keyboard {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 2.5px;
+  gap: 0.25rem;
   width: -webkit-fill-available;
 }
 
@@ -420,12 +436,14 @@ div.ML__keyboard {
     width: unset !important;
   }
 
+  .rsmall,
   .small,
   .smedium,
   .medium,
   .mediuml,
   .mediumll,
   .large,
+  .vlarge,
   square {
     max-width: unset !important;
   }
@@ -434,6 +452,34 @@ div.ML__keyboard {
 #checker button {
   width: inherit;
   min-width: 36px;
+}
+
+[data-multiple-choice="a"]:hover::before {
+  content: "Yes | ";
+}
+
+[data-multiple-choice="a"]:hover::after {
+  content: " | True";
+}
+
+[data-multiple-choice="b"]:hover::before {
+  content: "No | ";
+}
+
+[data-multiple-choice="b"]:hover::after {
+  content: " | False";
+}
+
+[data-multiple-choice="c"]:hover::after {
+  content: " | Both";
+}
+
+[data-multiple-choice="d"]:hover::after {
+  content: " | Neither";
+}
+
+[data-multiple-choice="e"]:hover::after {
+  content: " | Nonexistent";
 }
 
 .button-grid.reverse {
@@ -502,8 +548,16 @@ div.ML__keyboard {
   overflow: visible !important;
 }
 
+.rsmall {
+  max-width: 50px;
+}
+
 .small {
   max-width: 75px;
+}
+
+.vsmedium {
+  max-width: 100px;
 }
 
 .smedium {
@@ -526,12 +580,20 @@ div.ML__keyboard {
   max-width: 305px;
 }
 
-.fit {
-  width: fit-content;
+.vlarge {
+  max-width: 450px;
 }
 
-#checker:not(:has(input)) {
+.fit {
+  width: fit-content !important;
+}
+
+#checker:not(:has(input)):not(:has(select)) {
   align-items: center;
+}
+
+#checker:not(:has(input)):not(:has(select)) *:not(ul):not(ol):not(li) {
+  text-align: center;
 }
 
 .attachments {
@@ -587,6 +649,204 @@ div.ML__keyboard {
   cursor: pointer;
 }
 
+.description.minimal .ql-container {
+  background: transparent !important;
+}
+
+.description.minimal .ql-container .ql-editor {
+  padding: 0 !important;
+}
+
+.description a {
+  color: var(--accent-color) !important;
+}
+
+.description .ql-toolbar {
+  background: var(--surface-color);
+  border: none !important;
+  border-radius: 0.5rem;
+  margin-bottom: 7.5px;
+}
+
+.description .ql-toolbar #toolbar-container {
+  display: flex;
+  align-content: stretch;
+  flex-wrap: wrap;
+  gap: 5px 0;
+}
+
+.description .ql-toolbar .ql-picker-label {
+  color: var(--text-color) !important;
+  font-family: "Figtree";
+}
+
+.description .ql-toolbar .ql-stroke {
+  stroke: var(--text-color) !important;
+}
+
+.description .ql-toolbar .ql-fill {
+  fill: var(--text-color) !important;
+}
+.description .ql-toolbar button:hover,
+.description .ql-toolbar button:hover .ql-picker-label,
+.description .ql-toolbar .ql-active .ql-picker-label {
+  color: var(--accent-color) !important;
+}
+
+.description .ql-toolbar button:hover .ql-stroke,
+.description .ql-toolbar .ql-active .ql-stroke {
+  stroke: var(--accent-color) !important;
+}
+
+.description .ql-toolbar button:hover .ql-fill,
+.description .ql-toolbar .ql-active .ql-fill {
+  fill: var(--accent-color) !important;
+}
+
+.description .ql-container {
+  font-size: inherit !important;
+  background: var(--surface-color);
+  border: none !important;
+  border-radius: 0.5rem;
+  font-family: inherit !important;
+}
+
+.description .ql-container .ql-editor {
+  border-radius: 0.5rem;
+}
+
+.description .ql-editor.ql-blank::before {
+  color: var(--text-color) !important;
+  opacity: 0.5 !important;
+}
+
+.description .ql-toolbar .ql-picker-label:hover,
+.description .ql-toolbar .ql-picker-label.ql-active {
+  color: var(--text-color) !important;
+}
+
+.description .ql-toolbar button:focus,
+.description .ql-toolbar .ql-picker-item,
+.description .ql-toolbar .ql-picker-item.ql-selected {
+  color: var(--accent-text-color) !important;
+  font-family: "Figtree";
+}
+
+.description .ql-toolbar .ql-picker-item:hover {
+  color: var(--text-color) !important;
+}
+
+.description .ql-picker-options {
+  background: var(--accent-color) !important;
+}
+
+.description .ql-toolbar .ql-picker.ql-expanded .ql-picker-label,
+.description .ql-toolbar .ql-picker.ql-expanded .ql-picker-options {
+  border-color: var(--accent-color) !important;
+}
+
+.description .ql-picker.ql-font .ql-picker-label:not([data-value])::before,
+.description .ql-picker.ql-font .ql-picker-item:not([data-value])::before {
+  content: "Default Font" !important;
+}
+
+.description .ql-tooltip {
+  background: var(--accent-color) !important;
+  color: var(--accent-text-color) !important;
+  border: none !important;
+  border-radius: 0.5rem !important;
+  box-shadow: none !important;
+}
+
+.description .ql-tooltip input[type="text"] {
+  border: none !important;
+  color: var(--text-color) !important;
+}
+
+.description .ql-tooltip a {
+  color: var(--accent-text-color) !important;
+}
+
+.description .ql-editor blockquote {
+  border-color: var(--accent-color) !important;
+}
+
+.description .ql-code-block-container {
+  border-radius: 0.3rem !important;
+}
+
+.description .ql-code-block-container .ql-ui {
+  width: fit-content;
+  color: var(--text-color);
+  font-size: 12.5px;
+  border-radius: 0.2rem;
+}
+
+.description .ql-editor .ql-video {
+  width: -webkit-fill-available;
+  min-height: 22vw;
+  border-radius: 0.3rem;
+}
+
+.description .ql-editor p > img {
+  border-radius: 0.3rem;
+}
+
+.description .faz-quill-emoji-dropdown,
+.description .faz-quill-emoji-input-group,
+.description .faz-quill-emoji-loader {
+  background: transparent;
+}
+
+.description .faz-quill-emoji-dropdown-content {
+  background: var(--surface-color);
+}
+
+.description .faz-quill-emoji-tab {
+  color: var(--surface-text-color) !important;
+}
+
+.description .faz-quill-emoji-tab.active:before {
+  background: var(--accent-color) !important;
+  left: -5px;
+}
+
+.description .faz-quill-emoji-loader svg {
+  color: var(--accent-text-color) !important;
+}
+
+.description .faz-quill-emoji-list {
+  grid-template-columns: repeat(9, 1fr) !important;
+  gap: 5px !important;
+}
+
+.description .faz-quill-emoji-tab-list {
+  margin-right: -5px;
+  margin-left: 15px;
+}
+
+.description .faz-quill-emoji-tab {
+  padding: 0 10px !important;
+}
+
+.description .faz-quill-emoji-input-group input {
+  background: var(--accent-color);
+  color: var(--accent-text-color);
+}
+
+.description .faz-quill-emoji-input-group svg {
+  color: var(--accent-text-color);
+  height: 17px;
+  width: 17px;
+  left: 10px;
+}
+
+.description .faz-quill-emoji-loader {
+  top: 21.5px;
+  left: unset;
+  right: 85px;
+}
+
 .hiddenOnLoad {
   max-height: 0px;
   overflow: hidden;
@@ -594,7 +854,7 @@ div.ML__keyboard {
 }
 
 .hiddenOnLoad.show {
-  max-height: 500px;
+  max-height: 100000px;
   overflow: visible;
   transition: 0.5s var(--easing);
 }
@@ -604,6 +864,8 @@ div.ML__keyboard {
 }
 
 .segments .section .questions,
+.questions .section .description,
+.questions .section .EasyMDEContainer,
 .questions .section .attachments,
 .questions .section .answers {
   max-height: 0px;
@@ -621,10 +883,17 @@ div.ML__keyboard {
 }
 
 .segments .section.expanded .questions,
+.questions .section.expanded .description,
+.questions .section.expanded .EasyMDEContainer,
 .questions .section.expanded .attachments,
 .questions .section.expanded .answers {
-  max-height: 1000px;
+  max-height: 10000px;
   transition: 0.25s var(--easing);
+}
+
+.questions .section.expanded .description {
+  overflow: visible;
+  margin-bottom: 7.5px;
 }
 
 .segments .section.expanded .bi-caret-up-fill,
@@ -665,6 +934,14 @@ div.ML__keyboard {
   display: none;
 }
 
+#controls-container [data-archive-multiple] {
+  display: none;
+}
+
+#controls-container [data-unarchive-multiple] {
+  display: none;
+}
+
 body:has(.selecting) #controls-container button:has(.bi-gear) {
   display: none;
 }
@@ -690,6 +967,42 @@ body:has(.selecting) #controls-container button:has(.bi-arrows-move) {
 }
 
 body:has(.selecting) #controls-container button:has(.bi-sort-down) {
+  display: none;
+}
+
+body:has(.selecting) #controls-container button:has(.bi-calendar-minus) {
+  display: none;
+}
+
+body:has(.selecting) #controls-container [data-archive-multiple] {
+  display: block;
+}
+
+body:has(.selecting) #controls-container button:has(.bi-archive):not([data-archive-multiple]) {
+  display: none;
+}
+
+body:has(.selecting) #controls-container [data-unarchive-multiple] {
+  display: block;
+}
+
+body:has(.selecting) #controls-container [data-polling] {
+  display: none;
+}
+
+body:has(.selecting) #controls-container [data-timestamps] {
+  display: none;
+}
+
+body:has(.selecting) #controls-container [data-clear-responses] {
+  display: none;
+}
+
+body:has(.selecting) [data-flag-response] {
+  display: none;
+}
+
+body:has(.selecting) [data-unflag-response] {
   display: none;
 }
 
@@ -826,7 +1139,7 @@ hidden,
 
 [data-question-title] {
   font-size: 20px;
-  margin-top: 10px;
+  margin-top: 5px;
   line-height: 1.5;
 }
 
@@ -917,7 +1230,6 @@ hidden,
   justify-content: center;
   width: -webkit-fill-available;
   min-width: 10%;
-  max-width: 70%;
   color: white;
 }
 
@@ -965,6 +1277,7 @@ hidden,
   margin-bottom: 5px;
 }
 
+.segment-report,
 .detailed-report-question {
   display: flex;
   align-items: center;
@@ -1019,16 +1332,16 @@ hidden,
 }
 
 .showonhover {
-  display: none;
+  display: none !important;
 }
 
 *:has(> .showonhover):hover .showonhover {
-  display: inline-block;
+  display: inherit !important;
   padding-left: 5px;
 }
 
 *:has(> .hideonhover):hover .hideonhover {
-  display: none;
+  display: none !important;
 }
 
 .redonhover:hover {
@@ -1062,4 +1375,13 @@ hidden,
 
 body > canvas {
   background: transparent;
+}
+
+.rotate-right {
+  transform: rotate(90deg);
+}
+
+[mockDisabled] {
+  opacity: 0.75;
+  cursor: not-allowed;
 }

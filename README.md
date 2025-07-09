@@ -5,12 +5,16 @@
 Next generation AI-powered homework checking, cloud hosted ☁️🚀✅
 
 - Courses, Periods, Segments, Questions
+- Image Uploads, Math, Sets, Matrices
 - Correct, Incorrect, Pending Statuses
-- Multi-selecting & Response Polling
 - Known Correct & Incorrect Answers
-- Image Uploads, Math, Set Inputs
+- Multi-selecting & Response Polling
+- OTPs & Settings, History Backups
 - Instant AI Response Matching
 - Flag Response for Review
+- Course, Segment Reports
+- Teacher Assistant Users
+- Backups & Archiving
 - Many More Features
 
 [![Wakatime](https://wakatime.com/badge/user/074621a8-639e-4f3e-b6d9-f23b6bb481a9/project/7100b5bf-f2be-41d1-896e-136cd000ea6e.svg)](https://faisaln.com/portfolio/virtual-checker)

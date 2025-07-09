@@ -2,11 +2,16 @@
 import * as ui from "/src/modules/ui.js";
 import storage from "/src/modules/storage.js";
 import * as time from "/src/modules/time.js";
+import * as auth from "/src/modules/auth.js";
+import island from "/src/modules/island.js";
 import { createSwapy } from "swapy";
+import Quill from "quill";
+import "faz-quill-emoji/autoregister";
 
 const domain = ((window.location.hostname.search('check') != -1) || (window.location.hostname.search('127') != -1)) ? 'https://api.check.vssfalcons.com' : `http://${document.domain}:5000`;
 if (window.location.pathname.split('?')[0].endsWith('/admin')) window.location.pathname = '/admin/';
 
+var archiveTypeSelected = null;
 var courses = [];
 var segments = [];
 var questions = [];
@@ -22,14 +27,18 @@ var expandedReports = [];
 var loadedSegment = null;
 var loadedSegmentEditor = false;
 var loadedSegmentCreator = false;
-var unsavedChanges = false;
 var noReloadCourse = false;
+var logs = [];
+var renderedEditors = {};
 
 var draggableQuestionList = null;
 var draggableSegmentReorder = null;
 
 try {
   async function init() {
+    if (!storage.get("usr") || !storage.get("pwd")) return auth.admin(init);
+    if (document.querySelector('[data-logout]')) document.querySelector('[data-logout]').addEventListener('click', () => auth.logout(init));
+
     formData = new FormData();
 
     // Show clear data fix guide
@@ -39,6 +48,318 @@ try {
     //   storage.set("created", Date.now());
     // }
 
+    if (document.querySelector('.users')) {
+      if (document.getElementById('add-user-button')) document.getElementById('add-user-button').addEventListener('click', addUserModal);
+      await fetch(domain + '/users', {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          usr: storage.get("usr"),
+          pwd: storage.get("pwd"),
+        }),
+      })
+        .then(async (r) => {
+          if (!r.ok) {
+            try {
+              var re = await r.json();
+              if (re.error || re.message) {
+                ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+                throw new Error(re.error || re.message);
+              } else {
+                throw new Error("API error");
+              }
+            } catch (e) {
+              throw new Error(e.message || "API error");
+            }
+          }
+          return await r.json();
+        })
+        .then(users => {
+          document.querySelector('.users').innerHTML = '<div class="row header"><span>Username / Seat Code</span><span>Role</span><span>Partial Access Courses</span><span>Full Access Courses</span><span>Actions</span></div>';
+          if (users.length > 0) {
+            document.getElementById('no-users').setAttribute('hidden', '');
+            document.querySelector('.users').removeAttribute('hidden');
+          } else {
+            document.getElementById('no-users').removeAttribute('hidden');
+            document.querySelector('.users').setAttribute('hidden', '');
+          }
+          users = users.sort((a, b) => {
+            const roleA = a.role.toLowerCase();
+            const roleB = b.role.toLowerCase();
+            if (roleA < roleB) return -1;
+            if (roleA > roleB) return 1;
+            return a.username.localeCompare(b.username);
+          });
+          users.forEach(user => {
+            document.querySelector('.users').innerHTML += `<div class="enhanced-item" id="${user.username}">
+              <span class="username">${user.username}</span>
+              <span class="role">${user.role}</span>
+              <span class="partialAccessCourses">${JSON.stringify(user.main_courses)}</span>
+              <span class="fullAccessCourses">${JSON.stringify(user.access_courses)}</span>
+              <span class="actions">
+                <button class="icon" data-edit-user tooltip="Edit User">
+                  <i class="bi bi-pencil"></i>
+                </button>
+                <button class="icon" data-delete-user tooltip="Delete User">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </span>
+            </div>`;
+          });
+          document.querySelectorAll('[data-edit-user]').forEach(button => button.addEventListener('click', editUserModal));
+          document.querySelectorAll('[data-delete-user]').forEach(button => button.addEventListener('click', deleteUserModal));
+          ui.stopLoader();
+          active = true;
+        })
+        .catch((e) => {
+          console.error(e);
+          ui.view("api-fail");
+          if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
+          pollingOff();
+        });
+    }
+
+    if (document.querySelector('.logs')) {
+      if (document.getElementById('clear-logs')) document.getElementById('clear-logs').addEventListener('click', clearLogsModal);
+      if (document.getElementById("filter-logs-by-username-input")) document.getElementById("filter-logs-by-username-input").addEventListener("input", updateLogs);
+      if (document.getElementById("filter-logs-by-action-input")) document.getElementById("filter-logs-by-action-input").addEventListener("input", updateLogs);
+      await fetch(domain + '/logs', {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          usr: storage.get("usr"),
+          pwd: storage.get("pwd"),
+        }),
+      })
+        .then(async (r) => {
+          if (!r.ok) {
+            try {
+              var re = await r.json();
+              if (re.error || re.message) {
+                ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+                throw new Error(re.error || re.message);
+              } else {
+                throw new Error("API error");
+              }
+            } catch (e) {
+              throw new Error(e.message || "API error");
+            }
+          }
+          return await r.json();
+        })
+        .then(l => {
+          logs = l;
+          updateLogs();
+          ui.stopLoader();
+          active = true;
+        })
+        .catch((e) => {
+          console.error(e);
+          ui.view("api-fail");
+          if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
+          pollingOff();
+        });
+    }
+
+    if (document.querySelector('.otps')) {
+      if (document.getElementById('remove-otps')) document.getElementById('remove-otps').addEventListener('click', removeOTPsModal);
+      await fetch(domain + '/otps', {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          usr: storage.get("usr"),
+          pwd: storage.get("pwd"),
+        }),
+      })
+        .then(async (r) => {
+          if (!r.ok) {
+            try {
+              var re = await r.json();
+              if (re.error || re.message) {
+                ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+                throw new Error(re.error || re.message);
+              } else {
+                throw new Error("API error");
+              }
+            } catch (e) {
+              throw new Error(e.message || "API error");
+            }
+          }
+          return await r.json();
+        })
+        .then(otps => {
+          document.querySelector('.otps').innerHTML = '<div class="row header"><span>Seat Code</span><span>Saved Settings</span><span>Saved History</span><span>Actions</span></div>';
+          if (otps.length > 0) {
+            document.getElementById('no-otps').setAttribute('hidden', '');
+            document.querySelector('.otps').removeAttribute('hidden');
+          } else {
+            document.getElementById('no-otps').removeAttribute('hidden');
+            document.querySelector('.otps').setAttribute('hidden', '');
+          }
+          otps = otps.sort((a, b) => a.seatCode - b.seatCode);
+          otps.forEach(otp => {
+            document.querySelector('.otps').innerHTML += `<div class="enhanced-item" id="${otp.seatCode}">
+              <span class="seatCode">${otp.seatCode}</span>
+              <span class="settings">${(Object.keys(JSON.parse(otp.settings.replace(/'/g, '"'))).length > 0) ? '<i class="bi bi-check-lg"></i>' : ''}</span>
+              <span class="history">${(Object.keys(JSON.parse(otp.history.replace(/'/g, '"'))).length > 0) ? '<i class="bi bi-check-lg"></i>' : ''}</span>
+              <span class="actions">
+                <button class="icon" data-remove-otp tooltip="Remove OTP">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </span>
+            </div>`;
+          });
+          document.querySelectorAll('[data-remove-otp]').forEach(button => button.addEventListener('click', removeOTPModal));
+          ui.stopLoader();
+          active = true;
+        })
+        .catch((e) => {
+          console.error(e);
+          ui.view("api-fail");
+          if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
+          pollingOff();
+        });
+    }
+
+    if (document.querySelector('.backups')) {
+      if (document.getElementById('create-backup-button')) document.getElementById('create-backup-button').addEventListener('click', createBackupModal);
+      await fetch(domain + '/backups', {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          usr: storage.get("usr"),
+          pwd: storage.get("pwd"),
+        }),
+      })
+        .then(async (r) => {
+          if (!r.ok) {
+            try {
+              var re = await r.json();
+              if (re.error || re.message) {
+                ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+                throw new Error(re.error || re.message);
+              } else {
+                throw new Error("API error");
+              }
+            } catch (e) {
+              throw new Error(e.message || "API error");
+            }
+          }
+          return await r.json();
+        })
+        .then(backups => {
+          document.querySelector('.backups').innerHTML = '<div></div><div class="row header"><span>Name</span><span>Type</span><span>Modified</span><span>Size</span><span>Actions</span></div>';
+          if (backups.length > 0) {
+            document.getElementById('no-backups').setAttribute('hidden', '');
+            document.querySelector('.backups').removeAttribute('hidden');
+          } else {
+            document.getElementById('no-backups').removeAttribute('hidden');
+            document.querySelector('.backups').setAttribute('hidden', '');
+          }
+          backups = backups.sort((a, b) => new Date(b.modified) - new Date(a.modified));
+          function humanReadableFileSize(size) {
+            const units = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+            let unitIndex = 0;
+            while (size >= 1024 && unitIndex < units.length - 1) {
+              size /= 1024;
+              unitIndex++;
+            }
+            return `${size.toFixed(2)} ${units[unitIndex]}`;
+          }
+          backups.forEach(backup => {
+            document.querySelector('.backups').innerHTML += `<div class="enhanced-item" id="${backup.full_url}">
+              <span class="file_name">${backup.file_name.split('.')[0]}</span>
+              <span class="type"><code>${backup.file_name.split('.')[1].toUpperCase()}</code></span>
+              <span class="modified">${time.unixToString(backup.modified)}</span>
+              <span class="size">${humanReadableFileSize(backup.size)}</span>
+              <span class="actions">
+                <button class="icon" data-download-backup tooltip="Download Backup (${backup.file_name.split('.')[1].toUpperCase()})">
+                  <i class="bi bi-download"></i>
+                </button>
+                <button class="icon" data-delete-backup tooltip="Delete Backup">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </span>
+            </div>`;
+          });
+          document.querySelector('.backups').innerHTML += `<button id="delete-backups-button">Delete All Backups</button>`;
+          document.querySelectorAll('[data-download-backup]').forEach(button => button.addEventListener('click', downloadBackupModal));
+          document.querySelectorAll('[data-delete-backup]').forEach(button => button.addEventListener('click', deleteBackupModal));
+          document.getElementById('delete-backups-button').addEventListener('click', deleteBackupsModal);
+          ui.stopLoader();
+          active = true;
+        })
+        .catch((e) => {
+          console.error(e);
+          ui.view("api-fail");
+          if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
+          pollingOff();
+        });
+    }
+
+    if (document.querySelector('.archives')) {
+      archiveType("courses");
+      document.getElementById("archive-type-selector").addEventListener("input", (e) => {
+        const mode = e.detail;
+        archiveType(mode);
+      });
+      await fetch(domain + '/archive', {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          usr: storage.get("usr"),
+          pwd: storage.get("pwd"),
+        }),
+      })
+        .then(async (r) => {
+          if (!r.ok) {
+            try {
+              var re = await r.json();
+              if (re.error || re.message) {
+                ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+                throw new Error(re.error || re.message);
+              } else {
+                throw new Error("API error");
+              }
+            } catch (e) {
+              throw new Error(e.message || "API error");
+            }
+          }
+          return await r.json();
+        })
+        .then(archive => {
+          courses = archive.courses;
+          segments = archive.segments;
+          questions = archive.questions;
+          answers = archive.answers;
+          responses = archive.responses;
+          updateCourses();
+          updateSegments();
+          updateQuestions();
+          updateResponses();
+          document.querySelector('#archive-type-selector [aria-selected="true"]')?.click();
+          ui.stopLoader();
+          active = true;
+        })
+        .catch((e) => {
+          console.error(e);
+          ui.view("api-fail");
+          if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
+          pollingOff();
+        });
+      return;
+    }
+
     await fetch(domain + '/courses', {
       method: "GET",
       headers: {
@@ -46,11 +367,27 @@ try {
       }
     })
       .then(async (r) => {
-        if (!r.ok) throw new Error(r.error || r.message || "API error");
+        if (!r.ok) {
+          try {
+            var re = await r.json();
+            if (re.error || re.message) {
+              ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+              throw new Error(re.error || re.message);
+            } else {
+              throw new Error("API error");
+            }
+          } catch (e) {
+            throw new Error(e.message || "API error");
+          }
+        }
         return await r.json();
       })
       .then(async c => {
         courses = c;
+        if (document.querySelector('.users')) {
+          ui.reloadUnsavedInputs();
+          return;
+        }
         if (document.getElementById("course-period-input") && !loadedSegmentEditor && !loadedSegmentCreator && !noReloadCourse) {
           document.getElementById("course-period-input").innerHTML = "";
           c.sort((a, b) => a.id - b.id).forEach(course => {
@@ -80,18 +417,19 @@ try {
         }
         if (document.getElementById("export-report-course")) updateExportReportCourses();
         if (document.getElementById("course-period-input")) document.getElementById("course-period-input").addEventListener("change", updateResponses);
-        if (document.getElementById("sort-segment-input")) document.getElementById("sort-segment-input").addEventListener("input", updateResponses);
+        if (document.getElementById("filter-segment-input")) document.getElementById("filter-segment-input").addEventListener("change", updateResponses);
         if (document.getElementById("sort-question-input")) document.getElementById("sort-question-input").addEventListener("input", updateResponses);
         if (document.getElementById("sort-seat-input")) document.getElementById("sort-seat-input").addEventListener("input", updateResponses);
         if (document.getElementById("course-period-input")) document.getElementById("course-period-input").addEventListener("change", updateSegments);
-        if (document.getElementById("sort-segment-input")) document.getElementById("sort-segment-input").addEventListener("input", updateSegments);
+        if (document.getElementById("filter-segment-input")) document.getElementById("filter-segment-input").addEventListener("change", updateSegments);
         if (document.getElementById("sort-question-input")) document.getElementById("sort-question-input").addEventListener("input", updateSegments);
         if (document.getElementById("sort-seat-input")) document.getElementById("sort-seat-input").addEventListener("input", updateSegments);
         if (document.getElementById("course-period-input")) document.getElementById("course-period-input").addEventListener("change", updateQuestionReports);
-        if (document.getElementById("sort-segment-input")) document.getElementById("sort-segment-input").addEventListener("input", updateQuestionReports);
+        if (document.getElementById("filter-segment-input")) document.getElementById("filter-segment-input").addEventListener("change", updateQuestionReports);
         if (document.getElementById("sort-question-input")) document.getElementById("sort-question-input").addEventListener("input", updateQuestionReports);
         if (document.getElementById("sort-seat-input")) document.getElementById("sort-seat-input").addEventListener("input", updateQuestionReports);
-        if (document.getElementById("filter-segment-input")) document.getElementById("filter-segment-input").addEventListener("input", updateQuestions);
+        if (document.getElementById("filter-segment-input")) document.getElementById("filter-segment-input").addEventListener("change", updateQuestions);
+        if (document.getElementById("course-period-input")) document.getElementById("course-period-input").addEventListener("input", updateCourses);
         await fetch(domain + '/segments', {
           method: "GET",
           headers: {
@@ -99,18 +437,25 @@ try {
           }
         })
           .then(async (r) => {
-            if (!r.ok) throw new Error(r.error || r.message || "API error");
+            if (!r.ok) {
+              try {
+                var re = await r.json();
+                if (re.error || re.message) {
+                  ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+                  throw new Error(re.error || re.message);
+                } else {
+                  throw new Error("API error");
+                }
+              } catch (e) {
+                throw new Error(e.message || "API error");
+              }
+            }
             return await r.json();
           })
           .then(async c => {
             segments = c;
             if (document.getElementById("course-period-input") && !loadedSegmentEditor && !loadedSegmentCreator && !noReloadCourse) updateSegments();
-            if (document.getElementById("filter-segment-input")) {
-              document.getElementById("filter-segment-input").innerHTML = '<option value="" selected>#</option>';
-              segments.forEach(segment => {
-                document.getElementById("filter-segment-input").innerHTML += `<option value="${segment.number}">${segment.number}</option>`;
-              });
-            }
+            if (document.getElementById("filter-segment-input")) updateCourses();
             if (document.getElementById("speed-mode-segments")) updateSpeedModeSegments();
             await fetch(domain + '/questions', {
               method: "GET",
@@ -119,7 +464,19 @@ try {
               }
             })
               .then(async (r) => {
-                if (!r.ok) throw new Error(r.error || r.message || "API error");
+                if (!r.ok) {
+                  try {
+                    var re = await r.json();
+                    if (re.error || re.message) {
+                      ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+                      throw new Error(re.error || re.message);
+                    } else {
+                      throw new Error("API error");
+                    }
+                  } catch (e) {
+                    throw new Error(e.message || "API error");
+                  }
+                }
                 return await r.json();
               })
               .then(async q => {
@@ -137,32 +494,64 @@ try {
                 }
                 if (document.getElementById("speed-mode-starting-question")) updateSpeedModeStartingQuestion();
                 await fetch(domain + '/answers', {
-                  method: "GET",
+                  method: "POST",
                   headers: {
                     "Content-Type": "application/json",
-                  }
+                  },
+                  body: JSON.stringify({
+                    usr: storage.get("usr"),
+                    pwd: storage.get("pwd"),
+                  }),
                 })
                   .then(async (r) => {
-                    if (!r.ok) throw new Error(r.error || r.message || "API error");
+                    if (!r.ok) {
+                      try {
+                        var re = await r.json();
+                        if (re.error || re.message) {
+                          ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+                          throw new Error(re.error || re.message);
+                        } else {
+                          throw new Error("API error");
+                        }
+                      } catch (e) {
+                        throw new Error(e.message || "API error");
+                      }
+                    }
                     return await r.json();
                   })
                   .then(async a => {
                     answers = a;
                     if (document.querySelector('.questions.section')) updateQuestions();
                     await fetch(domain + '/responses', {
-                      method: "GET",
+                      method: "POST",
                       headers: {
                         "Content-Type": "application/json",
-                      }
+                      },
+                      body: JSON.stringify({
+                        usr: storage.get("usr"),
+                        pwd: storage.get("pwd"),
+                      }),
                     })
                       .then(async (r) => {
-                        if (!r.ok) throw new Error(r.error || r.message || "API error");
+                        if (!r.ok) {
+                          try {
+                            var re = await r.json();
+                            if (re.error || re.message) {
+                              ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+                              throw new Error(re.error || re.message);
+                            } else {
+                              throw new Error("API error");
+                            }
+                          } catch (e) {
+                            throw new Error(e.message || "API error");
+                          }
+                        }
                         return await r.json();
                       })
                       .then(async r => {
                         responses = r;
                         if (document.getElementById("course-period-input") && !loadedSegmentEditor && !loadedSegmentCreator && !noReloadCourse) {
-                          document.getElementById("course-period-input").value = courses.find(c => JSON.parse(c.periods).includes(Number(String(responses.sort((a, b) => String(a.seatCode)[0] - String(b.seatCode)[0])[0]?.seatCode)[0]))) ? courses.find(c => JSON.parse(c.periods).includes(Number(String(responses.sort((a, b) => String(a.seatCode)[0] - String(b.seatCode)[0])[0]?.seatCode)[0]))).id : 0;
+                          document.getElementById("course-period-input").value = courses.find(c => JSON.parse(c.periods).includes(Number(String(responses.sort((a, b) => String(a.seatCode)[0] - String(b.seatCode)[0])[0]?.seatCode)[0]))) ? courses.find(c => JSON.parse(c.periods).includes(Number(String(responses.sort((a, b) => String(a.seatCode)[0] - String(b.seatCode)[0])[0]?.seatCode)[0]))).id : courses.sort((a, b) => a.id - b.id)[0]?.id;
                           await updateResponses();
                         }
                         if (noReloadCourse) await updateResponses();
@@ -181,60 +570,56 @@ try {
                       .catch((e) => {
                         console.error(e);
                         ui.view("api-fail");
+                        if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
                         pollingOff();
                       });
                   })
                   .catch((e) => {
                     console.error(e);
                     ui.view("api-fail");
+                    if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
                     pollingOff();
                   });
               })
               .catch((e) => {
                 console.error(e);
                 ui.view("api-fail");
+                if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
                 pollingOff();
               });
           })
           .catch((e) => {
             console.error(e);
             ui.view("api-fail");
+            if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
             pollingOff();
           });
       })
       .catch((e) => {
         console.error(e);
-        ui.view("api-fail");
+        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
         pollingOff();
       });
     if (document.getElementById("course-period-input") && !loadedSegmentEditor && !loadedSegmentCreator && !noReloadCourse) {
       if (document.querySelector('.course-reorder')) document.querySelector('.course-reorder').style.display = 'none';
       document.querySelectorAll('[data-remove-segment-input]').forEach(a => a.removeEventListener('click', removeSegment));
       document.querySelectorAll('[data-remove-segment-input]').forEach(a => a.addEventListener('click', removeSegment));
-      if (document.getElementById("course-input")) document.getElementById("course-input").value = courses.find(c => String(c.id) === String(segments.sort((a, b) => a.course - b.course)[0].course)).name;
+      if (document.getElementById("course-input")) document.getElementById("course-input").value = courses.find(c => String(c.id) === document.getElementById("course-period-input").value).name;
       updateSegments();
     }
     if (document.getElementById("sort-segments-types")) document.getElementById("sort-segments-types").value = await settings('sort-segments');
-    reloadUnsavedInputs();
+    ui.reloadUnsavedInputs();
   }
 
   init();
 
   window.addEventListener('beforeunload', function (event) {
-    if (!unsavedChanges) return;
+    if (!ui.unsavedChanges) return;
     const confirmationMessage = 'You have unsaved changes. Do you really want to leave?';
     event.returnValue = confirmationMessage;
     return confirmationMessage;
   });
-
-  function reloadUnsavedInputs() {
-    document.querySelectorAll('textarea').forEach(input => input.addEventListener('input', () => {
-      unsavedChanges = true;
-    }));
-    document.querySelectorAll('input').forEach(input => input.addEventListener('change', () => {
-      unsavedChanges = true;
-    }));
-  }
 
   if (document.getElementById("course-period-input")) document.getElementById("course-period-input").addEventListener("change", updateSegments);
   if (document.querySelector('[data-select-multiple]')) document.querySelector('[data-select-multiple]').addEventListener("click", toggleSelecting);
@@ -259,28 +644,40 @@ try {
   if (document.getElementById('remove-segments-due-dates-button')) document.getElementById('remove-segments-due-dates-button').addEventListener("click", removeAllSegmentsDueDates);
   if (document.querySelector('[data-clear-responses]')) document.querySelector('[data-clear-responses]').addEventListener("click", clearResponsesConfirm1);
   if (document.getElementById('export-report')) document.getElementById('export-report').addEventListener("click", exportReport);
+  if (document.querySelector('[data-archive-course]')) document.querySelector('[data-archive-course]').addEventListener("click", () => archiveModal('course'));
+  if (document.querySelector('[data-archive-segment]')) document.querySelector('[data-archive-segment]').addEventListener("click", () => archiveModal('segment'));
+  if (document.querySelector('[data-archive-multiple]')) document.querySelector('[data-archive-multiple]').addEventListener("click", archiveMultipleModal);
+  if (document.querySelector('[data-unarchive-multiple]')) document.querySelector('[data-unarchive-multiple]').addEventListener("click", unarchiveMultipleModal);
 
   function toggleSelecting() {
     if (!active) return;
     if (document.querySelector('.segments .section')) document.querySelector('.segments .section').classList.toggle('selecting');
     if (document.querySelector('.questions .section')) document.querySelector('.questions .section').classList.toggle('selecting');
+    if (document.querySelector('.responses .section')) document.querySelector('.responses .section').classList.toggle('selecting');
+    document.querySelectorAll('.archives .section').forEach(a => a.classList.toggle('selecting'));
   }
 
   function removeSelecting() {
     if (!active) return;
     if (document.querySelector('.segments .section')) document.querySelector('.segments .section').classList.remove('selecting');
     if (document.querySelector('.questions .section')) document.querySelector('.questions .section').classList.remove('selecting');
+    if (document.querySelector('.responses .section')) document.querySelector('.responses .section').classList.remove('selecting');
+    document.querySelectorAll('.archives .section').forEach(a => a.classList.toggle('selecting'));
   }
 
   function deleteMultiple() {
     if (!active) return;
-    unsavedChanges = true;
+    ui.setUnsavedChanges(true);
     document.querySelectorAll('.selected').forEach(e => e.remove());
   }
 
   function toggleSelected() {
     if (!active) return;
-    this.parentElement.parentElement.classList.toggle('selected');
+    if (this.parentElement.parentElement.classList.contains('selecting')) {
+      this.parentElement.classList.toggle('selected');
+    } else {
+      this.parentElement.parentElement.classList.toggle('selected');
+    }
   }
 
   function removeAllSelected() {
@@ -331,13 +728,68 @@ try {
     }
   }
 
+  function updateCourses() {
+    if (document.getElementById("filter-segment-input")) {
+      document.getElementById("filter-segment-input").innerHTML = '<option value="" selected>#</option>';
+      var filteredSegments = segments;
+      const course = courses.find(c => document.getElementById("course-period-input") ? (String(c.id) === document.getElementById("course-period-input").value) : null);
+      if (course) filteredSegments = filteredSegments.filter(segment => String(segment.course) === String(course.id));
+      filteredSegments.forEach(segment => {
+        document.getElementById("filter-segment-input").innerHTML += `<option value="${segment.number}" ${(document.location.search.split('?segment=')[1] && (document.location.search.split('?segment=')[1] === String(segment.number))) ? 'selected' : ''}>${segment.number} - ${segment.name}${segment.due ? ` (Due ${new Date(`${segment.due}T00:00:00`).toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })})` : ''}</option>`;
+      });
+    }
+    const coursesArchiveTab = document.querySelector('[data-archive-type="courses"]');
+    if (coursesArchiveTab) {
+      const coursesArchives = coursesArchiveTab.querySelector('.archives');
+      const coursesArchivesList = coursesArchives.querySelector('.section');
+      if (courses.length > 0) {
+        coursesArchiveTab.querySelector('#no-archive').setAttribute('hidden', '');
+        coursesArchives.removeAttribute('hidden');
+      } else {
+        coursesArchiveTab.querySelector('#no-archive').removeAttribute('hidden');
+        coursesArchives.setAttribute('hidden', '');
+      }
+      coursesArchivesList.innerHTML = '';
+      courses.sort((a, b) => a.id - b.id).forEach(course => {
+        var buttonGrid = document.createElement('div');
+        buttonGrid.className = "button-grid inputs";
+        buttonGrid.setAttribute('archive-type', 'course');
+        buttonGrid.id = course.id;
+        buttonGrid.innerHTML = `<button square data-select tooltip="Select Item"><i class="bi bi-circle"></i><i class="bi bi-circle-fill"></i></button>
+        <div class="input-group rsmall">
+          <div class="space" id="question-container">
+            <input type="text" id="course-id-input" value="${course.id}" disabled />
+          </div>
+        </div>
+        <div class="input-group">
+          <div class="space" id="question-container">
+            <input type="text" id="course-name-input" value="${course.name}" disabled />
+          </div>
+        </div>
+        <div class="input-group small">
+          <div class="space" id="question-container">
+            <input type="text" id="course-periods-input" value="${JSON.parse(course.periods).join(', ')}" disabled />
+          </div>
+        </div>
+        <div class="input-group">
+          <div class="space" id="question-container">
+            <input type="text" id="course-syllabus-input" value="${course.syllabus || ''}" disabled />
+          </div>
+        </div>
+        <button square data-restore-item tooltip="Restore Item"><i class="bi bi-arrow-counterclockwise"></i></button>`;
+        coursesArchivesList.appendChild(buttonGrid);
+      });
+      coursesArchivesList.querySelectorAll('[data-restore-item]').forEach(item => item.addEventListener('click', unarchiveModal));
+    }
+  }
+
   function updateSegments() {
     expandedReports = [];
     document.querySelectorAll('.detailed-report.active').forEach(dr => expandedReports.push(dr.id));
     const course = courses.find(c => document.getElementById("course-period-input") ? (String(c.id) === document.getElementById("course-period-input").value) : null);
     if (document.getElementById("course-input") && course) document.getElementById("course-input").value = course.name;
-    var c = segments.filter(s => String(s.course) === String(course.id));
-    if (!course) document.querySelector('[data-syllabus-upload]').setAttribute('hidden', '');
+    var c = segments.filter(s => String(s.course) === String(course?.id));
+    if (!course && document.querySelector('[data-syllabus-upload]')) document.querySelector('[data-syllabus-upload]').setAttribute('hidden', '');
     if (course && course.syllabus) {
       if (document.querySelector('[data-syllabus-upload]')) document.querySelector('[data-syllabus-upload]').setAttribute('hidden', '');
       if (document.querySelector('[data-syllabus-remove]')) document.querySelector('[data-syllabus-remove]').parentElement.removeAttribute('hidden');
@@ -345,7 +797,7 @@ try {
         window.open(course.syllabus, '_blank');
       });
       if (document.querySelector('[data-syllabus-remove]')) document.querySelector('[data-syllabus-remove]').addEventListener("click", () => {
-        unsavedChanges = true;
+        ui.setUnsavedChanges(true);
         fetch(domain + '/syllabus', {
           method: "DELETE",
           headers: {
@@ -356,16 +808,29 @@ try {
           }),
         })
           .then(async (r) => {
-            if (!r.ok) throw new Error(r.error || r.message || "API error");
+            if (!r.ok) {
+              try {
+                var re = await r.json();
+                if (re.error || re.message) {
+                  ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+                  throw new Error(re.error || re.message);
+                } else {
+                  throw new Error("API error");
+                }
+              } catch (e) {
+                throw new Error(e.message || "API error");
+              }
+            }
             return await r.json();
           })
           .then(() => {
-            unsavedChanges = false;
+            ui.setUnsavedChanges(false);
             init();
           })
           .catch((e) => {
             console.error(e);
             ui.view("api-fail");
+            if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
             pollingOff();
           });
       });
@@ -386,61 +851,160 @@ try {
             var buttonGrid = document.createElement('div');
             buttonGrid.className = "button-grid inputs";
             buttonGrid.setAttribute("data-swapy-item", `segmentReorder-${s.number}`);
-            buttonGrid.innerHTML = `<button square data-select tooltip="Select Segment"><i class="bi bi-circle"></i><i class="bi bi-circle-fill"></i></button><div class="input-group small"><div class="space" id="question-container"><input type="text" autocomplete="off" id="segment-number-input" value="${s.number}" placeholder="${s.number}" /></div></div><div class="input-group"><div class="space" id="question-container"><input type="text" autocomplete="off" id="segment-name-input" value="${s.name}" placeholder="${s.name}" /></div></div><div class="input-group mediuml"><div class="space" id="question-container"><input type="date" id="segment-due-date" value="${s.due || ''}"></div></div><button square data-remove-segment-input tooltip="Remove Segment"><i class="bi bi-trash"></i></button><button square data-edit-segment tooltip="Edit Segment"><i class="bi bi-pencil"></i></button><div class="drag" data-swapy-handle><i class="bi bi-grip-vertical"></i></div>`;
+            buttonGrid.innerHTML = `<button square data-select tooltip="Select Segment"><i class="bi bi-circle"></i><i class="bi bi-circle-fill"></i></button><div class="input-group small"><div class="space" id="question-container"><input type="text" autocomplete="off" id="segment-number-input" value="${s.number}" placeholder="${s.number}" /></div></div><div class="input-group"><div class="space" id="question-container"><input type="text" autocomplete="off" id="segment-name-input" value="${s.name}" placeholder="${s.name}" /></div></div><div class="input-group mediuml"><div class="space" id="question-container"><input type="date" id="segment-due-date" value="${s.due || ''}"></div></div><button square data-remove-segment-input tooltip="Remove Segment"><i class="bi bi-trash"></i></button><button square data-archive-segment tooltip="Archive Segment"><i class="bi bi-archive"></i></button><button square data-edit-segment tooltip="Edit Segment"><i class="bi bi-pencil"></i></button><div class="drag" data-swapy-handle><i class="bi bi-grip-vertical"></i></div>`;
+            buttonGrid.addEventListener('mouseenter', () => {
+              island(c.sort((a, b) => a.order - b.order), 'segment', {
+                sourceId: String(s.number),
+                id: `# ${s.number}`,
+                title: `${s.name}`,
+                subtitle: s.due ? `Due ${new Date(`${s.due}T00:00:00`).toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })}` : '',
+                lists: [
+                  {
+                    title: 'Questions',
+                    items: JSON.parse(s.question_ids)
+                  },
+                ],
+              });
+            });
+            buttonGrid.addEventListener('mouseleave', () => {
+              island();
+            });
             segment.appendChild(buttonGrid);
             document.querySelector('.segments .section').appendChild(segment);
           }
         });
-        document.querySelector('.segments .section').innerHTML += '<button data-add-segment-input>Add Segment</button>';
+        var addSegmentButton = document.createElement('button');
+        addSegmentButton.setAttribute('data-add-segment-input', '');
+        addSegmentButton.innerText = 'Add Segment';
+        document.querySelector('.segments .section').appendChild(addSegmentButton);
         if (draggableSegmentReorder) draggableSegmentReorder.destroy();
         draggableSegmentReorder = createSwapy(document.querySelector(".segments .section"), {
           animation: 'none'
         });
       }
       if (document.querySelector('.segment-reports')) {
-        c.filter(s => String(s.number).startsWith(document.getElementById("sort-segment-input")?.value)).sort((a, b) => a.order - b.order).forEach(segment => {
-          var detailedReport = '';
-          JSON.parse(segment.question_ids).filter(q => questions.find(q1 => q1.id == q.id)?.number.startsWith(document.getElementById("sort-question-input")?.value)).forEach(q => {
-            var question = questions.find(q1 => q1.id == q.id);
-            if (!question) return;
-            var questionResponses = responses.filter(seatCode => JSON.parse(courses.find(course => String(course.id) === document.getElementById("course-period-input").value).periods).includes(Number(String(seatCode.code)[0]))).filter(r => String(r.segment) === String(segment.number)).filter(r => r.question_id === question.id).filter(r => String(r.seatCode).startsWith(document.getElementById("sort-seat-input")?.value));
-            if (document.getElementById('hideIncorrectAttempts').checked) questionResponses = questionResponses.filter((r, index, self) => r.status === 'Correct' || !self.some(other => other.question_id === r.question_id && other.status === 'Correct'));
-            var detailedReport1 = '';
-            questionResponses.forEach(r => {
-              detailedReport1 += `<div class="detailed-report-question">
-                <div class="color">
-                  <span class="color-box ${(r.status === 'Correct') ? 'correct' : (r.status === 'Incorrect') ? 'incorrect' : r.status.includes('Recorded') ? 'waiting' : 'other'}"></span>
-                  <span class="color-name">${r.seatCode}<p class="showonhover"> (${time.unixToString(r.timestamp)})</p>: ${r.response}</span>
+        c.filter(s => document.getElementById("filter-segment-input")?.value ? (String(s.number) === document.getElementById("filter-segment-input").value) : true).sort((a, b) => a.order - b.order).forEach(segment => {
+          document.querySelector('.section:has(> .segment-reports)').setAttribute('hidden', '');
+          if (document.getElementById("filter-segment-input").value) {
+            document.querySelector('.segment-reports').innerHTML = '';
+          } else {
+            document.querySelector('.section:has(> .segment-reports)').removeAttribute('hidden');
+            var segmentResponses = [];
+            var detailedReport = '';
+            JSON.parse(segment.question_ids).filter(q => questions.find(q1 => q1.id == q.id)?.number.startsWith(document.getElementById("sort-question-input")?.value)).forEach(q => {
+              var question = questions.find(q1 => String(q1.id) === String(q.id));
+              if (!question) return;
+              var questionResponses = responses.filter(seatCode => JSON.parse(courses.find(course => String(course.id) === document.getElementById("course-period-input").value).periods).includes(Number(String(seatCode.seatCode)[0]))).filter(r => String(r.segment) === String(segment.number)).filter(r => r.question_id === question.id).filter(r => String(r.seatCode).startsWith(document.getElementById("sort-seat-input")?.value));
+              if (document.getElementById('hideIncorrectAttempts').checked) questionResponses = questionResponses.filter((r, index, self) => r.status === 'Correct' || !self.some(other => other.question_id === r.question_id && other.status === 'Correct'));
+              var detailedReport1 = '';
+              questionResponses.forEach(r => {
+                detailedReport1 += `<div class="detailed-report-question">
+                  <div class="color">
+                    <span class="color-box ${(r.status === 'Correct') ? 'correct' : (r.status === 'Incorrect') ? 'incorrect' : r.status.includes('Recorded') ? 'waiting' : 'other'}"></span>
+                    <span class="color-name">${r.seatCode}<p class="showonhover"> (${time.unixToString(r.timestamp)})</p>: ${r.response}</span>
+                  </div>
+                  <div class="color">
+                    <span class="color-name">${r.status}</span>
+                    <span class="color-box ${(r.status === 'Correct') ? 'correct' : (r.status === 'Incorrect') ? 'incorrect' : r.status.includes('Recorded') ? 'waiting' : 'other'}"></span>
+                  </div>
+                </div>`;
+                segmentResponses.push(r);
+              });
+              detailedReport += `<div class="detailed-report-question"${(questionResponses.length != 0) ? ` report="segment-question-${q.id}"` : ''}>
+                <b>Question ${question.number} (${questionResponses.length} Response${(questionResponses.length != 1) ? 's' : ''})</b>
+                <div class="barcount-wrapper">
+                  ${(questionResponses.filter(r => r.status === 'Correct').length != 0) ? `<div class="barcount correct" style="width: calc(${questionResponses.filter(r => r.status === 'Correct').length / (questionResponses.length || 1)} * 100%)">${questionResponses.filter(r => r.status === 'Correct').length}</div>` : ''}
+                  ${(questionResponses.filter(r => ((r.status !== 'Correct') && (r.status !== 'Incorrect') && !r.status.includes('Recorded'))).length != 0) ? `<div class="barcount other" style="width: calc(${questionResponses.filter(r => ((r.status !== 'Correct') && (r.status !== 'Incorrect') && !r.status.includes('Recorded'))).length / (questionResponses.length || 1)} * 100%)">${questionResponses.filter(r => ((r.status !== 'Correct') && (r.status !== 'Incorrect') && !r.status.includes('Recorded'))).length}</div>` : ''}
+                  ${(questionResponses.filter(r => r.status.includes('Recorded')).length != 0) ? `<div class="barcount waiting" style="width: calc(${questionResponses.filter(r => r.status.includes('Recorded')).length / (questionResponses.length || 1)} * 100%)">${questionResponses.filter(r => r.status.includes('Recorded')).length}</div>` : ''}
+                  ${(questionResponses.filter(r => r.status === 'Incorrect').length != 0) ? `<div class="barcount incorrect" style="width: calc(${questionResponses.filter(r => r.status === 'Incorrect').length / (questionResponses.length || 1)} * 100%)">${questionResponses.filter(r => r.status === 'Incorrect').length}</div>` : ''}
                 </div>
-                <div class="color">
-                  <span class="color-name">${r.status}</span>
-                  <span class="color-box ${(r.status === 'Correct') ? 'correct' : (r.status === 'Incorrect') ? 'incorrect' : r.status.includes('Recorded') ? 'waiting' : 'other'}"></span>
-                </div>
-              </div>`
+              </div>
+              ${(questionResponses.length != 0) ? `<div class="section detailed-report" id="segment-question-${q.id}">
+                ${detailedReport1}
+              </div>` : ''}`;
             });
-            detailedReport += `<div class="detailed-report-question"${(questionResponses.length != 0) ? ` report="segment-question-${q.id}"` : ''}>
-              <b>Question ${question.number} (${questionResponses.length} Response${(questionResponses.length != 1) ? 's' : ''})</b>
+            document.querySelector('.segment-reports').innerHTML += `<div class="segment-report"${(JSON.parse(segment.question_ids) != 0) ? ` report="segment-${segment.number}"` : ''}>
+              <b>Segment ${segment.number} (${JSON.parse(segment.question_ids).length} Question${JSON.parse(segment.question_ids).length != 1 ? 's' : ''})</b>
               <div class="barcount-wrapper">
-                <div class="barcount correct"${(questionResponses.length != 0) ? ` style="width: calc(${questionResponses.filter(r => r.status === 'Correct').length / (questionResponses.length || 1)} * 100%)"` : ''}>${questionResponses.filter(r => r.status === 'Correct').length}</div>
-                <div class="barcount incorrect"${(questionResponses.length != 0) ? ` style="width: calc(${questionResponses.filter(r => r.status === 'Incorrect').length / (questionResponses.length || 1)} * 100%)"` : ''}>${questionResponses.filter(r => r.status === 'Incorrect').length}</div>
-                <div class="barcount other"${(questionResponses.length != 0) ? ` style="width: calc(${questionResponses.filter(r => ((r.status !== 'Correct') && (r.status !== 'Incorrect') && !r.status.includes('Recorded'))).length / (questionResponses.length || 1)} * 100%)"` : ''}>${questionResponses.filter(r => ((r.status !== 'Correct') && (r.status !== 'Incorrect') && !r.status.includes('Recorded'))).length}</div>
-                <div class="barcount waiting"${(questionResponses.length != 0) ? ` style="width: calc(${questionResponses.filter(r => r.status.includes('Recorded')).length / (questionResponses.length || 1)} * 100%)"` : ''}>${questionResponses.filter(r => r.status.includes('Recorded')).length}</div>
+                ${(segmentResponses.filter(r => r.status === 'Correct').length != 0) ? `<div class="barcount correct" style="width: calc(${segmentResponses.filter(r => r.status === 'Correct').length / (segmentResponses.length || 1)} * 100%)">${segmentResponses.filter(r => r.status === 'Correct').length}</div>` : ''}
+                ${(segmentResponses.filter(r => ((r.status !== 'Correct') && (r.status !== 'Incorrect') && !r.status.includes('Recorded'))).length != 0) ? `<div class="barcount other" style="width: calc(${segmentResponses.filter(r => ((r.status !== 'Correct') && (r.status !== 'Incorrect') && !r.status.includes('Recorded'))).length / (segmentResponses.length || 1)} * 100%)">${segmentResponses.filter(r => ((r.status !== 'Correct') && (r.status !== 'Incorrect') && !r.status.includes('Recorded'))).length}</div>` : ''}
+                ${(segmentResponses.filter(r => r.status.includes('Recorded')).length != 0) ? `<div class="barcount waiting" style="width: calc(${segmentResponses.filter(r => r.status.includes('Recorded')).length / (segmentResponses.length || 1)} * 100%)">${segmentResponses.filter(r => r.status.includes('Recorded')).length}</div>` : ''}
+                ${(segmentResponses.filter(r => r.status === 'Incorrect').length != 0) ? `<div class="barcount incorrect" style="width: calc(${segmentResponses.filter(r => r.status === 'Incorrect').length / (segmentResponses.length || 1)} * 100%)">${segmentResponses.filter(r => r.status === 'Incorrect').length}</div>` : ''}
               </div>
             </div>
-            ${(questionResponses.length != 0) ? `<div class="section detailed-report" id="segment-question-${q.id}">
-              ${detailedReport1}
+            ${(JSON.parse(segment.question_ids).length != 0) ? `<div class="section detailed-report" id="segment-${segment.number}">
+              ${detailedReport}
             </div>` : ''}`;
-          });
-          document.querySelector('.segment-reports').innerHTML += `<div class="segment-report"${(JSON.parse(segment.question_ids) != 0) ? ` report="segment-${segment.number}"` : ''}>
-            <b>Segment ${segment.number} (${JSON.parse(segment.question_ids).length} Question${JSON.parse(segment.question_ids).length != 1 ? 's' : ''})</b>
-          </div>
-          ${(JSON.parse(segment.question_ids).length != 0) ? `<div class="section detailed-report" id="segment-${segment.number}">
-            ${detailedReport}
-          </div>` : ''}`;
+          }
         });
       }
     } else {
       if (document.querySelector('.segments .section')) document.querySelector('.segments .section').innerHTML = '<button data-add-segment-input>Add Segment</button>';
+    }
+    const segmentsArchiveTab = document.querySelector('[data-archive-type="segments"]');
+    if (segmentsArchiveTab) {
+      const segmentsArchives = segmentsArchiveTab.querySelector('.archives');
+      const segmentsArchivesList = segmentsArchives.querySelector('.section');
+      if (segments.length > 0) {
+        segmentsArchiveTab.querySelector('#no-archive').setAttribute('hidden', '');
+        segmentsArchives.removeAttribute('hidden');
+      } else {
+        segmentsArchiveTab.querySelector('#no-archive').removeAttribute('hidden');
+        segmentsArchives.setAttribute('hidden', '');
+      }
+      segmentsArchivesList.innerHTML = '';
+      segments.sort((a, b) => a.order - b.order).forEach(segment => {
+        var buttonGrid = document.createElement('div');
+        buttonGrid.className = "button-grid inputs";
+        buttonGrid.setAttribute('archive-type', 'segment');
+        buttonGrid.id = segment.number;
+        buttonGrid.innerHTML = `<button square data-select tooltip="Select Item"><i class="bi bi-circle"></i><i class="bi bi-circle-fill"></i></button>
+        <div class="input-group small">
+          <div class="space" id="question-container">
+            <input type="text" id="segment-number-input" value="${segment.number}" disabled />
+          </div>
+        </div>
+        <div class="input-group">
+          <div class="space" id="question-container">
+            <input type="text" id="segment-name-input" value="${segment.name || ''}" disabled />
+          </div>
+        </div>
+        <div class="input-group">
+          <div class="space" id="question-container">
+            <input type="text" id="segment-question-ids-input" value="${JSON.parse(segment.question_ids).map(q => q.id).join(', ')}" disabled />
+          </div>
+        </div>
+        <div class="input-group small">
+          <div class="space" id="question-container">
+            <input type="text" id="segment-course-input" value="${segment.course || ''}" disabled />
+          </div>
+        </div>
+        <div class="input-group smedium">
+          <div class="space" id="question-container">
+            <input type="text" id="segment-due-date-input" value="${segment.due || ''}" disabled />
+          </div>
+        </div>
+        <button square data-restore-item tooltip="Restore Item"><i class="bi bi-arrow-counterclockwise"></i></button>`;
+        buttonGrid.addEventListener('mouseenter', () => {
+          island(segments.sort((a, b) => a.order - b.order), 'segment', {
+            sourceId: String(segment.number),
+            id: `# ${segment.number}`,
+            title: `${segment.name}`,
+            subtitle: segment.due ? `Due ${new Date(`${segment.due}T00:00:00`).toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })}` : '',
+            lists: [
+              {
+                title: 'Questions',
+                items: JSON.parse(segment.question_ids)
+              },
+            ],
+          });
+        });
+        buttonGrid.addEventListener('mouseleave', () => {
+          island();
+        });
+        segmentsArchivesList.appendChild(buttonGrid);
+      });
+      segmentsArchivesList.querySelectorAll('[data-restore-item]').forEach(item => item.addEventListener('click', unarchiveModal));
     }
     expandedReports.forEach(er => {
       if (document.getElementById(er)) document.getElementById(er).classList.add('active');
@@ -455,7 +1019,10 @@ try {
     // document.querySelectorAll('[sort-segment-questions-decreasing]').forEach(a => a.addEventListener('click', sortSegmentQuestionsDecreasing));
     document.querySelectorAll('[report]').forEach(a => a.addEventListener('click', toggleDetailedReport));
     document.querySelectorAll('[data-edit-segment]').forEach(a => a.addEventListener('click', editSegment));
-    reloadUnsavedInputs();
+    document.querySelectorAll('[data-archive-segment]').forEach(a => a.addEventListener('click', () => {
+      if (a.parentElement.parentElement.id) archiveModal('segment', a.parentElement.parentElement.id.split('segment-')[1]);
+    }));
+    ui.reloadUnsavedInputs();
   }
 
   // function toggleSegment() {
@@ -493,20 +1060,36 @@ try {
         periods: JSON.stringify(coursePeriods)
       })
     });
-    unsavedChanges = true;
+    ui.setUnsavedChanges(true);
     fetch(domain + '/courses', {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(updatedCourses.sort((a, b) => a.id - b.id))
+      body: JSON.stringify({
+        usr: storage.get("usr"),
+        pwd: storage.get("pwd"),
+        courses: updatedCourses.sort((a, b) => a.id - b.id),
+      })
     })
       .then(async (r) => {
-        if (!r.ok) throw new Error(r.error || r.message || "API error");
+        if (!r.ok) {
+          try {
+            var re = await r.json();
+            if (re.error || re.message) {
+              ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+              throw new Error(re.error || re.message);
+            } else {
+              throw new Error("API error");
+            }
+          } catch (e) {
+            throw new Error(e.message || "API error");
+          }
+        }
         return await r.json();
       })
       .then(c => {
-        unsavedChanges = false;
+        ui.setUnsavedChanges(false);
         courses = c;
         if (document.querySelector(".course-reorder .reorder")) {
           document.querySelector(".course-reorder .reorder").innerHTML = "";
@@ -526,12 +1109,13 @@ try {
       })
       .catch((e) => {
         console.error(e);
-        ui.view("api-fail");
+        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
         pollingOff();
       });
     // Show submit confirmation
     ui.modeless(`<i class="bi bi-check-lg"></i>`, "Saved");
-    reloadUnsavedInputs();
+    ui.reloadUnsavedInputs();
   });
 
   // Save Segment Order
@@ -548,7 +1132,7 @@ try {
   //       due: segments.find(s => String(s.number) === String(segmentNumber)).due
   //     };
   //   }).sort((a, b) => a.order - b.order);
-  //   unsavedChanges = true;
+  //   ui.setUnsavedChanges(true);
   //   fetch(domain + '/segments', {
   //     method: "POST",
   //     headers: {
@@ -557,22 +1141,35 @@ try {
   //     body: JSON.stringify(updatedSegments)
   //   })
   //     .then(async (r) => {
-  //       if (!r.ok) throw new Error(r.error || r.message || "API error");
+  //       if (!r.ok) {
+  //         try {
+  //           var re = await r.json();
+  //           if (re.error || re.message) {
+  //             ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+  //             throw new Error(re.error || re.message);
+  //           } else {
+  //             throw new Error("API error");
+  //           }
+  //         } catch (e) {
+  //           throw new Error(e.message || "API error");
+  //         }
+  //       }
   //       return await r.json();
   //     })
   //     .then(c => {
-  //       unsavedChanges = false;
+  //       ui.setUnsavedChanges(false);
   //       segments = c;
   //       updateSegments();
   //     })
   //     .catch((e) => {
   //       console.error(e);
   //       ui.view("api-fail");
+  //       if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
   //       pollingOff();
   //     });
   //   // Show submit confirmation
   //   ui.modeless(`<i class="bi bi-check-lg"></i>`, "Saved");
-  //   reloadUnsavedInputs();
+  //   ui.reloadUnsavedInputs();
   // });
 
   // Save
@@ -622,6 +1219,7 @@ try {
             number: question.querySelector('#question-number-input').value,
             segment: question.querySelector('#question-segment-input').value,
             question: question.querySelector('#question-text-input').value,
+            description: JSON.stringify(renderedEditors[Number(question.id.split('-')[1])].getContents()),
             images: Array.from(question.querySelectorAll('.attachments img')).map(q => {
               return q.src;
             }),
@@ -643,25 +1241,40 @@ try {
         formData.append(key, JSON.stringify(updatedInfo[key]));
       }
     }
-    unsavedChanges = true;
+    formData.append('usr', storage.get("usr"));
+    formData.append('pwd', storage.get("pwd"));
+    ui.setUnsavedChanges(true);
     fetch(domain + '/save', {
       method: "POST",
       body: formData,
     })
-      .then(r => {
-        if (!r.ok) throw new Error(r.error || r.message || "API error");
+      .then(async r => {
+        if (!r.ok) {
+          try {
+            var re = await r.json();
+            if (re.error || re.message) {
+              ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+              throw new Error(re.error || re.message);
+            } else {
+              throw new Error("API error");
+            }
+          } catch (e) {
+            throw new Error(e.message || "API error");
+          }
+        }
       })
       .then(() => {
-        unsavedChanges = false;
+        ui.setUnsavedChanges(false);
       })
       .catch((e) => {
         console.error(e);
-        ui.view("api-fail");
+        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
         pollingOff();
       });
     document.querySelectorAll("#save-button").forEach(w => w.disabled = true);
     window.scroll(0, 0);
-    if ((typeof hideResult != 'boolean')) ui.modeless(`<i class="bi bi-check-lg"></i>`, "Saved");
+    if (typeof hideResult != 'boolean') ui.modeless(`<i class="bi bi-check-lg"></i>`, "Saved");
     await init();
     setTimeout(() => {
       document.querySelectorAll("#save-button").forEach(w => w.disabled = false);
@@ -771,7 +1384,7 @@ try {
     this.parentElement.parentElement.insertBefore(group, this.parentElement);
     this.parentElement.querySelector('[data-remove-segment-question-input]').disabled = false;
     this.parentElement.querySelector('[data-remove-segment-question-input]').addEventListener('click', removeSegmentQuestion);
-    reloadUnsavedInputs();
+    ui.reloadUnsavedInputs();
   }
 
   function removeSegmentQuestion() {
@@ -784,66 +1397,237 @@ try {
 
   function updateQuestions() {
     if (questions.length > 0) {
-      document.querySelector('.questions .section').innerHTML = '';
-      var filteredQuestions = questions;
-      if (document.getElementById("filter-segment-input")) {
-        var selectedSegment = segments.find(segment => String(segment.number) === document.getElementById("filter-segment-input").value);
-        if (selectedSegment) filteredQuestions = filteredQuestions.filter(q => JSON.parse(selectedSegment.question_ids).find(qId => String(qId.id) === String(q.id)));
+      if (document.querySelector('.questions .section')) {
+        document.querySelector('.questions .section').innerHTML = '';
+        var filteredQuestions = questions;
+        if (document.getElementById("filter-segment-input")) {
+          var selectedSegment = segments.find(segment => String(segment.number) === document.getElementById("filter-segment-input").value);
+          if (selectedSegment) filteredQuestions = filteredQuestions.filter(q => JSON.parse(selectedSegment.question_ids).find(qId => String(qId.id) === String(q.id)));
+        }
+        renderedEditors = {};
+        filteredQuestions.forEach(q => {
+          var question = document.createElement('div');
+          question.className = "section";
+          question.id = `question-${q.id}`;
+          var buttonGrid = document.createElement('div');
+          buttonGrid.className = "button-grid inputs";
+          var allSegmentsQuestionIsIn = segments.filter(e => JSON.parse(e.question_ids).find(qId => String(qId.id) === String(q.id)));
+          var segmentsString = "";
+          segments.forEach(s => {
+            segmentsString += `<option value="${s.number}"${(allSegmentsQuestionIsIn[0] && (allSegmentsQuestionIsIn[0].number === s.number)) ? ' selected' : ''}>${s.number}</option>`;
+          });
+          buttonGrid.innerHTML = `<button square data-select tooltip="Select Question"><i class="bi bi-circle"></i><i class="bi bi-circle-fill"></i></button><div class="input-group small"><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-id-input" value="${q.id}" disabled /></div></div><div class="input-group small"><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-number-input" value="${q.number}" placeholder="${q.number}" /></div></div><div class="input-group small"><div class="space" id="question-container"><select id="question-segment-input">${segmentsString}</select></div></div><div class="input-group"><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-text-input" value="${q.question}" placeholder="${q.question}" /></div></div><button square data-toggle-latex tooltip="Toggle LaTeX Title"><i class="bi bi-${q.latex ? 'calculator-fill' : 'cursor-text'}"></i></button><button square data-remove-question-input tooltip="Remove Question"><i class="bi bi-trash"></i></button><button square data-archive-question-input tooltip="Archive Question"><i class="bi bi-archive"></i></button><button square data-toggle-question tooltip="Expand Question"><i class="bi bi-caret-down-fill"></i><i class="bi bi-caret-up-fill"></i></button>`;
+          buttonGrid.addEventListener('mouseenter', () => {
+            var question = q;
+            island(filteredQuestions, 'question', {
+              sourceId: String(question.id),
+              id: `ID ${question.id}`,
+              title: `Question ${question.number}`,
+              subtitle: `${question.question}`,
+              subtitleLatex: question.latex,
+              lists: [
+                {
+                  title: 'Correct Answers',
+                  items: answers.find(a => a.id === question.id).correct_answers
+                },
+                {
+                  title: 'Incorrect Answers',
+                  items: answers.find(a => a.id === question.id).incorrect_answers
+                },
+              ],
+            }, answers);
+          });
+          buttonGrid.addEventListener('mouseleave', () => {
+            island();
+          });
+          question.appendChild(buttonGrid);
+          var textareaContainer = document.createElement('div');
+          textareaContainer.classList = "description";
+          var toolbar = document.createElement('div');
+          toolbar.innerHTML = `<div id="toolbar-container">
+            <span class="ql-formats">
+              <select class="ql-font" tooltip="Font"></select>
+              <select class="ql-size" tooltip="Text Size"></select>
+            </span>
+            <span class="ql-formats">
+              <button class="ql-bold" tooltip="Bold"></button>
+              <button class="ql-italic" tooltip="Italic"></button>
+              <button class="ql-underline" tooltip="Underline"></button>
+              <button class="ql-strike" tooltip="Strikethrough"></button>
+              <button class="ql-faz-emoji" tooltip="Emoji"></button>
+            </span>
+            <span class="ql-formats">
+              <select class="ql-color" tooltip="Text Color"></select>
+              <select class="ql-background" tooltip="Highlight"></select>
+            </span>
+            <span class="ql-formats">
+              <button class="ql-script" value="sub" tooltip="Subscript"></button>
+              <button class="ql-script" value="super" tooltip="Superscript"></button>
+            </span>
+            <span class="ql-formats">
+              <button class="ql-header" value="1" tooltip="Heading"></button>
+              <button class="ql-header" value="2" tooltip="Subheading"></button>
+              <button class="ql-blockquote" tooltip="Blockquote"></button>
+              <button class="ql-code-block" tooltip="Code Block"></button>
+            </span>
+            <span class="ql-formats">
+              <button class="ql-list" value="ordered" tooltip="Number List"></button>
+              <button class="ql-list" value="bullet" tooltip="Bullet List"></button>
+              <button class="ql-indent" value="-1" tooltip="Remove Indent"></button>
+              <button class="ql-indent" value="+1" tooltip="Indent"></button>
+            </span>
+            <span class="ql-formats">
+              <button class="ql-direction" value="rtl" tooltip="Text Direction"></button>
+              <select class="ql-align" tooltip="Alignment"></select>
+            </span>
+            <span class="ql-formats">
+              <button class="ql-link" tooltip="Link"></button>
+              <button class="ql-image" tooltip="Image"></button>
+              <button class="ql-video" tooltip="Video"></button>
+              <button class="ql-formula" tooltip="LaTeX"></button>
+            </span>
+            <span class="ql-formats">
+              <button class="ql-clean" tooltip="Clear Formatting"></button>
+              <button data-clear-rich-content tooltip="Clear Description"><i class="bi bi-x-lg"></i></button>
+            </span>
+            <span class="ql-formats">
+              <button data-export-rich-content tooltip="Export To Clipboard"><i class="bi bi-clipboard-fill"></i></button>
+              <button data-import-rich-content tooltip="Import From Clipboard"><i class="bi bi-clipboard-plus-fill"></i></button>
+            </span>
+            <span class="ql-formats">
+              <button data-undo-rich-content tooltip="Undo"><i class="bi bi-arrow-counterclockwise"></i></button>
+              <button data-redo-rich-content tooltip="Redo"><i class="bi bi-arrow-clockwise"></i></button>
+            </span>
+          </div>`;
+          textareaContainer.appendChild(toolbar);
+          var textarea = document.createElement('div');
+          textareaContainer.appendChild(textarea);
+          question.appendChild(textareaContainer);
+          var quill = new Quill(textarea, {
+            modules: {
+              syntax: true,
+              toolbar,
+              fazEmoji: {
+                collection: 'fluent-emoji',
+              },
+            },
+            placeholder: 'Add some written content to your question...',
+            theme: 'snow'
+          });
+          if (JSON.parse(q.description)) quill.setContents(JSON.parse(q.description));
+          renderedEditors[q.id] = quill;
+          var images = document.createElement('div');
+          images.classList = "attachments";
+          JSON.parse(q.images).forEach(q => {
+            var image = document.createElement('div');
+            image.classList = "image";
+            image.innerHTML = `<img src="${q}" />`;
+            image.addEventListener('click', removeImage);
+            images.appendChild(image);
+          });
+          var drop = document.createElement('div');
+          drop.classList = "drop";
+          drop.innerHTML = "+";
+          drop.id = q.id;
+          drop.addEventListener('click', renderPond);
+          images.appendChild(drop);
+          question.appendChild(images);
+          var correctAnswers = document.createElement('div');
+          correctAnswers.classList = "answers";
+          var correctAnswersString = "";
+          var questionAnswers = answers.find(a => a.id === q.id);
+          questionAnswers.correct_answers.forEach(a => {
+            correctAnswersString += `<div class="button-grid inputs"><input type="text" autocomplete="off" id="question-correct-answer-input" value="${a}" placeholder="${a}" /><button data-remove-correct-answer-input square><i class="bi bi-dash"></i></button></div>`;
+          });
+          correctAnswers.innerHTML = `<b>Correct Answers</b><div class="section correctAnswers">${correctAnswersString}<button data-add-correct-answer-input>Add Correct Answer</button></div>`;
+          question.appendChild(correctAnswers);
+          var incorrectAnswers = document.createElement('div');
+          incorrectAnswers.classList = "answers";
+          var incorrectAnswersString = "";
+          questionAnswers.incorrect_answers.forEach(a => {
+            incorrectAnswersString += `<div class="button-grid inputs"><input type="text" autocomplete="off" id="question-incorrect-answer-input" value="${a.answer}" placeholder="${a.answer || 'Answer'}" /><input type="text" autocomplete="off" id="question-incorrect-answer-reason-input" value="${a.reason}" placeholder="${a.reason || 'Reason'}" /><button data-remove-incorrect-answer-input square><i class="bi bi-dash"></i></button></div>`;
+          });
+          incorrectAnswers.innerHTML = `<b>Incorrect Answers</b><div class="section incorrectAnswers">${incorrectAnswersString}<button data-add-incorrect-answer-input>Add Incorrect Answer</button></div>`;
+          question.appendChild(incorrectAnswers);
+          document.querySelector('.questions .section').appendChild(question);
+        });
+        var addQuestionButton = document.createElement('button');
+        addQuestionButton.setAttribute('data-add-question-input', '');
+        addQuestionButton.innerText = "Add Question";
+        document.querySelector('.questions .section').appendChild(addQuestionButton);
       }
-      filteredQuestions.forEach(q => {
-        var question = document.createElement('div');
-        question.className = "section";
-        question.id = `question-${q.id}`;
+    } else {
+      if (document.querySelector('.questions .section')) document.querySelector('.questions .section').innerHTML = '<button data-add-question-input>Add Question</button>';
+    }
+    const questionsArchiveTab = document.querySelector('[data-archive-type="questions"]');
+    if (questionsArchiveTab) {
+      const questionsArchives = questionsArchiveTab.querySelector('.archives');
+      const questionsArchivesList = questionsArchives.querySelector('.section');
+      if (questions.length > 0) {
+        questionsArchiveTab.querySelector('#no-archive').setAttribute('hidden', '');
+        questionsArchives.removeAttribute('hidden');
+      } else {
+        questionsArchiveTab.querySelector('#no-archive').removeAttribute('hidden');
+        questionsArchives.setAttribute('hidden', '');
+      }
+      questionsArchivesList.innerHTML = '';
+      questions.sort((a, b) => a.order - b.order).forEach(question => {
         var buttonGrid = document.createElement('div');
         buttonGrid.className = "button-grid inputs";
-        var allSegmentsQuestionIsIn = segments.filter(e => JSON.parse(e.question_ids).find(qId => String(qId.id) === String(q.id)));
-        var segmentsString = "";
-        segments.forEach(s => {
-          segmentsString += `<option value="${s.number}"${(allSegmentsQuestionIsIn[0] && (allSegmentsQuestionIsIn[0].number === s.number)) ? ' selected' : ''}>${s.number}</option>`;
+        buttonGrid.setAttribute('archive-type', 'question');
+        buttonGrid.id = question.id;
+        buttonGrid.innerHTML = `<button square data-select tooltip="Select Item"><i class="bi bi-circle"></i><i class="bi bi-circle-fill"></i></button>
+        <div class="input-group rsmall">
+          <div class="space" id="question-container">
+            <input type="text" id="question-id-input" value="${question.id}" disabled />
+          </div>
+        </div>
+        <div class="input-group small">
+          <div class="space" id="question-container">
+            <input type="text" id="question-number-input" value="${question.number}" disabled />
+          </div>
+        </div>
+        <div class="input-group">
+          <div class="space" id="question-container">
+            <input type="text" id="question-question-input" value="${question.question || ''}" disabled />
+          </div>
+        </div>
+        <div class="input-group">
+          <div class="space" id="question-container">
+            <input type="text" id="question-images-input" value="${JSON.parse(question.images).join(', ')}" disabled />
+          </div>
+        </div>
+        <div class="input-group rsmall">
+          <div class="space" id="question-container">
+            <input type="text" id="question-latex-input" value="${question.latex || ''}" disabled />
+          </div>
+        </div>
+        <button square data-restore-item tooltip="Restore Item"><i class="bi bi-arrow-counterclockwise"></i></button>`;
+        buttonGrid.addEventListener('mouseenter', () => {
+          island(filteredQuestions, 'question', {
+            sourceId: String(question.id),
+            id: `ID ${question.id}`,
+            title: `Question ${question.number}`,
+            subtitle: `${question.question}`,
+            subtitleLatex: question.latex,
+            lists: [
+              {
+                title: 'Correct Answers',
+                items: answers.find(a => a.id === question.id)?.correct_answers
+              },
+              {
+                title: 'Incorrect Answers',
+                items: answers.find(a => a.id === question.id)?.incorrect_answers
+              },
+            ],
+          }, answers);
         });
-        buttonGrid.innerHTML = `<button square data-select tooltip="Select Question"><i class="bi bi-circle"></i><i class="bi bi-circle-fill"></i></button><div class="input-group small"><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-id-input" value="${q.id}" disabled /></div></div><div class="input-group small"><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-number-input" value="${q.number}" placeholder="${q.number}" /></div></div><div class="input-group small"><div class="space" id="question-container"><select id="question-segment-input">${segmentsString}</select></div></div><div class="input-group"><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-text-input" value="${q.question}" placeholder="${q.question}" /></div></div><button square data-toggle-latex tooltip="Toggle LaTeX Title"><i class="bi bi-${q.latex ? 'calculator-fill' : 'cursor-text'}"></i></button><button square data-remove-question-input tooltip="Remove Question"><i class="bi bi-trash"></i></button><button square data-toggle-question tooltip="Expand Question"><i class="bi bi-caret-down-fill"></i><i class="bi bi-caret-up-fill"></i></button>`;
-        question.appendChild(buttonGrid);
-        var images = document.createElement('div');
-        images.classList = "attachments";
-        JSON.parse(q.images).forEach(q => {
-          var image = document.createElement('div');
-          image.classList = "image";
-          image.innerHTML = `<img src="${q}" />`;
-          image.addEventListener('click', removeImage);
-          images.appendChild(image);
+        buttonGrid.addEventListener('mouseleave', () => {
+          island();
         });
-        var drop = document.createElement('div');
-        drop.classList = "drop";
-        drop.innerHTML = "+";
-        drop.id = q.id;
-        drop.addEventListener('click', renderPond);
-        images.appendChild(drop);
-        question.appendChild(images);
-        var correctAnswers = document.createElement('div');
-        correctAnswers.classList = "answers";
-        var correctAnswersString = "";
-        var questionAnswers = answers.find(a => a.id === q.id);
-        questionAnswers.correct_answers.forEach(a => {
-          correctAnswersString += `<div class="button-grid inputs"><input type="text" autocomplete="off" id="question-correct-answer-input" value="${a}" placeholder="${a}" /><button data-remove-correct-answer-input square><i class="bi bi-dash"></i></button></div>`;
-        });
-        correctAnswers.innerHTML = `<b>Correct Answers</b><div class="section correctAnswers">${correctAnswersString}<button data-add-correct-answer-input>Add Correct Answer</button></div>`;
-        question.appendChild(correctAnswers);
-        var incorrectAnswers = document.createElement('div');
-        incorrectAnswers.classList = "answers";
-        var incorrectAnswersString = "";
-        questionAnswers.incorrect_answers.forEach(a => {
-          incorrectAnswersString += `<div class="button-grid inputs"><input type="text" autocomplete="off" id="question-incorrect-answer-input" value="${a.answer}" placeholder="${a.answer || 'Answer'}" /><input type="text" autocomplete="off" id="question-incorrect-answer-reason-input" value="${a.reason}" placeholder="${a.reason || 'Reason'}" /><button data-remove-incorrect-answer-input square><i class="bi bi-dash"></i></button></div>`;
-        });
-        incorrectAnswers.innerHTML = `<b>Incorrect Answers</b><div class="section incorrectAnswers">${incorrectAnswersString}<button data-add-incorrect-answer-input>Add Incorrect Answer</button></div>`;
-        question.appendChild(incorrectAnswers);
-        document.querySelector('.questions .section').appendChild(question);
+        questionsArchivesList.appendChild(buttonGrid);
       });
-      var addQuestionButton = document.createElement('button');
-      addQuestionButton.setAttribute('data-add-question-input', '');
-      addQuestionButton.innerText = "Add Question";
-      document.querySelector('.questions .section').appendChild(addQuestionButton);
-    } else {
-      document.querySelector('.questions .section').innerHTML = '<button data-add-question-input>Add Question</button>';
+      questionsArchivesList.querySelectorAll('[data-restore-item]').forEach(item => item.addEventListener('click', unarchiveModal));
     }
     document.querySelectorAll('[data-add-question-input]').forEach(a => a.addEventListener('click', addQuestion));
     document.querySelectorAll('[data-remove-question-input]').forEach(a => a.addEventListener('click', removeQuestion));
@@ -854,7 +1638,48 @@ try {
     document.querySelectorAll('[data-remove-correct-answer-input]').forEach(a => a.addEventListener('click', removeCorrectAnswer));
     document.querySelectorAll('[data-remove-incorrect-answer-input]').forEach(a => a.addEventListener('click', removeIncorrectAnswer));
     document.querySelectorAll('[data-toggle-latex]').forEach(a => a.addEventListener('click', toggleQuestionLatex));
-    reloadUnsavedInputs();
+    document.querySelectorAll('[data-archive-question-input]').forEach(a => a.addEventListener('click', () => {
+      if (a.parentElement.parentElement.id) archiveModal('question', a.parentElement.parentElement.id.split('question-')[1]);
+    }));
+    document.querySelectorAll('[data-clear-rich-content]').forEach(a => a.addEventListener('click', () => {
+      if (!a.parentElement.parentElement.parentElement.parentElement.parentElement.id) return;
+      renderedEditors[Number(a.parentElement.parentElement.parentElement.parentElement.parentElement.id.split('question-')[1])].setContents();
+    }));
+    document.querySelectorAll('[data-undo-rich-content]').forEach(a => a.addEventListener('click', () => {
+      if (!a.parentElement.parentElement.parentElement.parentElement.parentElement.id) return;
+      renderedEditors[Number(a.parentElement.parentElement.parentElement.parentElement.parentElement.id.split('question-')[1])].history.undo();
+    }));
+    document.querySelectorAll('[data-redo-rich-content]').forEach(a => a.addEventListener('click', () => {
+      if (!a.parentElement.parentElement.parentElement.parentElement.parentElement.id) return;
+      renderedEditors[Number(a.parentElement.parentElement.parentElement.parentElement.parentElement.id.split('question-')[1])].history.redo();
+    }));
+    document.querySelectorAll('[data-export-rich-content]').forEach(a => a.addEventListener('click', () => {
+      if (!a.parentElement.parentElement.parentElement.parentElement.parentElement.id) return;
+      navigator.clipboard.writeText(JSON.stringify(renderedEditors[Number(a.parentElement.parentElement.parentElement.parentElement.parentElement.id.split('question-')[1])].getContents())).then(() => {
+        ui.toast("Content copied to clipboard.", 3000, "success", "bi bi-clipboard-check-fill");
+      }).catch((err) => {
+        console.error('Failed to copy content: ', err);
+        ui.toast("Failed to copy content to clipboard.", 5000, "error", "bi bi-exclamation-triangle-fill");
+      });
+    }));
+    document.querySelectorAll('[data-import-rich-content]').forEach(a => a.addEventListener('click', () => {
+      if (!a.parentElement.parentElement.parentElement.parentElement.parentElement.id) return;
+      navigator.clipboard.readText().then((text) => {
+        try {
+          const content = JSON.parse(text);
+          if (!text || !text.includes("ops") || !content) return ui.toast("Invalid clipboard content.", 5000, "error", "bi bi-exclamation-triangle-fill");
+          renderedEditors[Number(a.parentElement.parentElement.parentElement.parentElement.parentElement.id.split('question-')[1])].setContents(content);
+          ui.toast("Content imported from clipboard.", 3000, "success", "bi bi-clipboard-check-fill");
+        } catch (err) {
+          console.error('Failed to parse content: ', err);
+          ui.toast("Failed to parse content from clipboard.", 5000, "error", "bi bi-exclamation-triangle-fill");
+        }
+      }).catch((err) => {
+        console.error('Failed to read clipboard: ', err);
+        ui.toast("Failed to read content from clipboard.", 5000, "error", "bi bi-exclamation-triangle-fill");
+      });
+    }));
+    ui.reloadUnsavedInputs();
   }
 
   function addCorrectAnswer() {
@@ -865,7 +1690,7 @@ try {
     this.parentElement.insertBefore(input, this);
     document.querySelectorAll('[data-add-correct-answer-input]').forEach(a => a.addEventListener('click', addCorrectAnswer));
     document.querySelectorAll('[data-remove-correct-answer-input]').forEach(a => a.addEventListener('click', removeCorrectAnswer));
-    reloadUnsavedInputs();
+    ui.reloadUnsavedInputs();
   }
 
   function addIncorrectAnswer() {
@@ -876,7 +1701,7 @@ try {
     this.parentElement.insertBefore(input, this);
     document.querySelectorAll('[data-add-incorrect-answer-input]').forEach(a => a.addEventListener('click', addIncorrectAnswer));
     document.querySelectorAll('[data-remove-incorrect-answer-input]').forEach(a => a.addEventListener('click', removeIncorrectAnswer));
-    reloadUnsavedInputs();
+    ui.reloadUnsavedInputs();
   }
 
   function removeCorrectAnswer() {
@@ -896,22 +1721,36 @@ try {
     const question_id = this.parentElement.querySelector('#question-id-input').value;
     var isLatex = false;
     if (!icon.classList.contains('bi-cursor-text')) isLatex = true;
-    unsavedChanges = true;
+    ui.setUnsavedChanges(true);
     fetch(domain + `/question/${isLatex ? 'not_' : ''}latex`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
+        usr: storage.get("usr"),
+        pwd: storage.get("pwd"),
         question_id
       })
     })
       .then(async (r) => {
-        if (!r.ok) throw new Error(r.error || r.message || "API error");
+        if (!r.ok) {
+          try {
+            var re = await r.json();
+            if (re.error || re.message) {
+              ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+              throw new Error(re.error || re.message);
+            } else {
+              throw new Error("API error");
+            }
+          } catch (e) {
+            throw new Error(e.message || "API error");
+          }
+        }
         return await r.json();
       })
       .then(() => {
-        unsavedChanges = false;
+        ui.setUnsavedChanges(false);
         if (icon.classList.contains('bi-cursor-text')) {
           icon.classList.remove('bi-cursor-text');
           icon.classList.add('bi-calculator-fill');
@@ -925,7 +1764,8 @@ try {
       })
       .catch((e) => {
         console.error(e);
-        ui.view("api-fail");
+        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
         pollingOff();
       });
   }
@@ -965,7 +1805,7 @@ try {
     document.querySelectorAll('[data-remove-question-input]').forEach(a => a.addEventListener('click', removeQuestion));
     document.querySelectorAll('[data-toggle-question]').forEach(a => a.addEventListener('click', toggleQuestion));
     document.querySelectorAll('[data-select]').forEach(a => a.addEventListener('click', toggleSelected));
-    reloadUnsavedInputs();
+    ui.reloadUnsavedInputs();
   }
 
   function removeQuestion() {
@@ -977,7 +1817,8 @@ try {
   async function renderPond() {
     if (!active) return;
     await save(true);
-    const url = '/admin/upload.html?question=' + this.id;
+    document.querySelector(`#question-${this.id} [data-toggle-question]`).click();
+    const url = '/admin/upload?question=' + this.id;
     const width = 600;
     const height = 600;
     const left = (window.screen.width / 2) - (width / 2);
@@ -1010,29 +1851,44 @@ try {
     const clickYRelativeToElement = event.clientY - rect.top;
     const distanceFromBottom = rect.height - clickYRelativeToElement;
     if (distanceFromBottom <= 26) {
-      unsavedChanges = true;
+      ui.setUnsavedChanges(true);
       await fetch(domain + '/upload', {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
+          usr: storage.get("usr"),
+          pwd: storage.get("pwd"),
           question_id: event.target.parentElement.parentElement.querySelector('#question-id-input').value,
           file_url: event.target.querySelector('img').src
         }),
       })
         .then(async (r) => {
-          if (!r.ok) throw new Error(r.error || r.message || "API error");
+          if (!r.ok) {
+            try {
+              var re = await r.json();
+              if (re.error || re.message) {
+                ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+                throw new Error(re.error || re.message);
+              } else {
+                throw new Error("API error");
+              }
+            } catch (e) {
+              throw new Error(e.message || "API error");
+            }
+          }
           return await r.json();
         })
         .then(() => {
-          unsavedChanges = false;
+          ui.setUnsavedChanges(false);
           ui.modeless(`<i class="bi bi-file-earmark-x"></i>`, "Removed");
           init();
         })
         .catch((e) => {
           console.error(e);
           ui.view("api-fail");
+          if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
           pollingOff();
         });
     } else {
@@ -1050,8 +1906,8 @@ try {
     var trendingResponses = [];
     var timedResponses = [];
     var responses1 = responses
-      .filter(r => JSON.parse(courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value).periods).includes(Number(String(r.seatCode)[0])))
-      .filter(r => String(r.segment).startsWith(document.getElementById("sort-segment-input")?.value))
+      .filter(r => courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value) ? JSON.parse(courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value)?.periods).includes(Number(String(r.seatCode)[0])) : false)
+      .filter(r => document.getElementById("filter-segment-input")?.value ? (String(r.segment) === document.getElementById("filter-segment-input").value) : true)
       .filter(r => questions.find(q => q.id == r.question_id).number.startsWith(document.getElementById("sort-question-input")?.value))
       .filter(r => String(r.seatCode).startsWith(document.getElementById("sort-seat-input")?.value))
       .sort((a, b) => {
@@ -1063,7 +1919,11 @@ try {
     responses1.forEach(r => {
       if (document.querySelector('.responses .section') || document.querySelector('.awaitingResponses .section')) {
         var responseString = r.response;
-        if (responseString.includes('[')) {
+        var isMatrix = null;
+        if (responseString.includes('[[')) {
+          isMatrix = responseString;
+          responseString = JSON.stringify(JSON.parse(r.response).map(innerArray => innerArray.map(numString => String(numString)))).replaceAll('["', '[').replaceAll('","', ', ').replaceAll('"]', ']');
+        } else if (responseString.includes('[')) {
           var parsedResponse = JSON.parse(r.response);
           responseString = parsedResponse.join(', ');
         }
@@ -1106,15 +1966,45 @@ try {
         var buttonGrid = document.createElement('div');
         buttonGrid.className = "button-grid inputs";
         buttonGrid.id = `response-${r.id}`;
-        buttonGrid.innerHTML = `<input type="text" autocomplete="off" class="small" id="response-id-input" value="${r.id}" disabled hidden />${(r.flagged == '1') ? `<button square data-unflag-response tooltip="Unflag Response"><i class="bi bi-flag-fill"></i></button>` : `<button square data-flag-response tooltip="Flag Response"><i class="bi bi-flag"></i></button>`}<input type="text" autocomplete="off" class="small" id="response-segment-input" value="${r.segment}" disabled data-segment /><input type="text" autocomplete="off" class="small" id="response-question-input" value="${questions.find(q => q.id == r.question_id).number}" disabled data-question /><input type="text" autocomplete="off" class="small${(((r.status === 'Invalid Format') || (r.status === 'Unknown, Recorded')) && document.querySelector('.awaitingResponses .section') && (answers.find(a => a.id === questions.find(q => q.id == r.question_id).id).correct_answers.length > 0)) ? ' hideonhover' : ''}" id="response-seat-code-input" value="${r.seatCode}" disabled data-seat-code /><input type="text" autocomplete="off" class="small" id="response-time-taken-input" value="${timeTaken}" disabled data-time-taken${(typeof timeDifference != 'undefined') ? ` time="${timeDifference}"` : ''} /><input type="text" autocomplete="off" class="small" id="response-time-taken-input" value="${timeTakenToRevise}" disabled data-time-taken${(typeof timeDifference != 'undefined') ? ` time="${timeDifference}"` : ''} /><!--<input type="text" autocomplete="off" class="small" id="response-time-taken-input" value="${result}" disabled data-time-taken />--><input type="text" autocomplete="off" id="response-response-input" value="${responseString}" disabled />${(r.status === 'Incorrect') ? `<button square data-edit-reason tooltip="Edit Reason"><i class="bi bi-reply${(r.reason) ? '-fill' : ''}"></i></button>` : ''}<input type="text" autocomplete="off" class="smedium${(((r.status === 'Invalid Format') || (r.status === 'Unknown, Recorded')) && document.querySelector('.awaitingResponses .section') && (answers.find(a => a.id === questions.find(q => q.id == r.question_id).id).correct_answers.length > 0)) ? ' hideonhover' : ''}" id="response-timestamp-input" value="${date.getMonth() + 1}/${date.getDate()} ${hours % 12 || 12}:${minutes < 10 ? '0' + minutes : minutes} ${hours >= 12 ? 'PM' : 'AM'}" disabled />${(((r.status === 'Invalid Format') || (r.status === 'Unknown, Recorded')) && document.querySelector('.awaitingResponses .section') && (answers.find(a => a.id === questions.find(q => q.id == r.question_id).id).correct_answers.length > 0)) ? `<input type="text" autocomplete="off" class="showonhover" id="response-correct-responses-input" value="${correctResponsesString}" disabled />` : ''}<button square id="mark-correct-button"${(r.status === 'Correct') ? ' disabled' : ''} tooltip="Mark Correct"><i class="bi bi-check-circle${(r.status === 'Correct') ? '-fill' : ''}"></i></button><button square id="mark-incorrect-button"${(r.status === 'Incorrect') ? ' disabled' : ''} tooltip="Mark Incorrect"><i class="bi bi-x-circle${(r.status === 'Incorrect') ? '-fill' : ''}"></i></button>`;
-        if (document.querySelector('.responses .section')) document.querySelector('.responses .section').appendChild(buttonGrid);
-        if (((r.status === 'Invalid Format') || (r.status === 'Unknown, Recorded')) && document.querySelector('.awaitingResponses .section')) document.querySelector('.awaitingResponses .section').appendChild(buttonGrid);
+        buttonGrid.innerHTML = `<button square data-select tooltip="Select Item"><i class="bi bi-circle"></i><i class="bi bi-circle-fill"></i></button><input type="text" autocomplete="off" class="small" id="response-id-input" value="${r.id}" disabled hidden />${(r.flagged == '1') ? `<button square data-unflag-response tooltip="Unflag Response"><i class="bi bi-flag-fill"></i></button>` : `<button square data-flag-response tooltip="Flag Response"><i class="bi bi-flag"></i></button>`}<input type="text" autocomplete="off" class="small" id="response-segment-input" value="${r.segment}" disabled data-segment /><input type="text" autocomplete="off" class="small" id="response-question-input" value="${questions.find(q => q.id == r.question_id).number}" disabled data-question /><input type="text" autocomplete="off" class="small" id="response-question-id-input" value="${questions.find(q => q.id == r.question_id).id}" disabled hidden /><input type="text" autocomplete="off" class="small${(((r.status === 'Invalid Format') || (r.status === 'Unknown, Recorded')) && document.querySelector('.awaitingResponses .section') && (answers.find(a => a.id === questions.find(q => q.id == r.question_id).id).correct_answers.length > 0)) ? ' hideonhover' : ''}" id="response-seat-code-input" value="${r.seatCode}" disabled data-seat-code /><input type="text" autocomplete="off" class="small" id="response-time-taken-input" value="${timeTaken}" disabled data-time-taken${(typeof timeDifference != 'undefined') ? ` time="${timeDifference}"` : ''} /><input type="text" autocomplete="off" class="small" id="response-time-taken-input" value="${timeTakenToRevise}" disabled data-time-taken${(typeof timeDifference != 'undefined') ? ` time="${timeDifference}"` : ''} /><!--<input type="text" autocomplete="off" class="small" id="response-time-taken-input" value="${result}" disabled data-time-taken />--><input type="text" autocomplete="off" id="response-response-input" value="${responseString}" ${isMatrix ? 'mockDisabled' : 'disabled'} />${(r.status === 'Incorrect') ? `<button square data-edit-reason tooltip="Edit Reason"><i class="bi bi-reply${(r.reason) ? '-fill' : ''}"></i></button>` : ''}<input type="text" autocomplete="off" class="smedium${(((r.status === 'Invalid Format') || (r.status === 'Unknown, Recorded')) && document.querySelector('.awaitingResponses .section') && (answers.find(a => a.id === questions.find(q => q.id == r.question_id).id).correct_answers.length > 0)) ? ' hideonhover' : ''}" id="response-timestamp-input" value="${date.getMonth() + 1}/${date.getDate()} ${hours % 12 || 12}:${minutes < 10 ? '0' + minutes : minutes} ${hours >= 12 ? 'PM' : 'AM'}" disabled />${(((r.status === 'Invalid Format') || (r.status === 'Unknown, Recorded')) && document.querySelector('.awaitingResponses .section') && (answers.find(a => a.id === questions.find(q => q.id == r.question_id).id).correct_answers.length > 0)) ? `<input type="text" autocomplete="off" class="showonhover" id="response-correct-responses-input" value="${correctResponsesString}" disabled />` : ''}<button square id="mark-correct-button"${(r.status === 'Correct') ? ' disabled' : ''} tooltip="Mark Correct"><i class="bi bi-check-circle${(r.status === 'Correct') ? '-fill' : ''}"></i></button><button square id="mark-incorrect-button"${(r.status === 'Incorrect') ? ' disabled' : ''} tooltip="Mark Incorrect"><i class="bi bi-x-circle${(r.status === 'Incorrect') ? '-fill' : ''}"></i></button>`;
+        buttonGrid.addEventListener('mouseenter', () => {
+          var question = questions.find(q => String(q.id) === String(r.question_id));
+          island(questions, 'question', {
+            sourceId: String(question.id),
+            id: `ID ${question.id}`,
+            title: `Question ${question.number}`,
+            subtitle: `${question.question}`,
+            subtitleLatex: question.latex,
+            lists: [
+              {
+                title: 'Correct Answers',
+                items: answers.find(a => a.id === question.id).correct_answers
+              },
+              {
+                title: 'Incorrect Answers',
+                items: answers.find(a => a.id === question.id).incorrect_answers
+              },
+            ],
+          }, answers);
+        });
+        buttonGrid.addEventListener('mouseleave', () => {
+          island();
+        });
+        if (document.querySelector('.responses .section')) {
+          document.querySelector('.responses .section').appendChild(buttonGrid);
+          if (isMatrix) document.querySelector('.responses .section .button-grid:last-child #response-response-input').addEventListener('click', () => ui.expandMatrix(isMatrix));
+        }
+        if (((r.status === 'Invalid Format') || (r.status === 'Unknown, Recorded')) && document.querySelector('.awaitingResponses .section')) {
+          document.querySelector('.awaitingResponses .section').appendChild(buttonGrid);
+          if (isMatrix) document.querySelector('.awaitingResponses .section .button-grid:last-child #response-response-input').addEventListener('click', () => ui.expandMatrix(isMatrix));
+        }
       }
       var trend = trendingResponses.find(t => (t.segment === r.segment) && (t.question_id === r.question_id) && (t.response === responseString) && (t.status === r.status));
       if (trend) {
         trend.count++;
       } else {
         trendingResponses.push({
+          single_response: r.id,
           segment: r.segment,
           question_id: r.question_id,
           response: r.response,
@@ -1169,10 +2059,10 @@ try {
         document.querySelector('.seat-code-reports').innerHTML += `<div class="seat-code-report" report="seat-code-${seatCode.code}">
           <b>${seatCode.code} (${seatCodeResponses.length} Response${(seatCodeResponses.length != 1) ? 's' : ''})</b>
           <div class="barcount-wrapper">
-            <div class="barcount correct"${(seatCodeResponses.length != 0) ? ` style="width: calc(${seatCodeResponses.filter(r => r.status === 'Correct').length / (seatCodeResponses.length || 1)} * 100%)"` : ''}>${seatCodeResponses.filter(r => r.status === 'Correct').length}</div>
-            <div class="barcount incorrect"${(seatCodeResponses.length != 0) ? ` style="width: calc(${seatCodeResponses.filter(r => r.status === 'Incorrect').length / (seatCodeResponses.length || 1)} * 100%)"` : ''}>${seatCodeResponses.filter(r => r.status === 'Incorrect').length}</div>
-            <div class="barcount other"${(seatCodeResponses.length != 0) ? ` style="width: calc(${seatCodeResponses.filter(r => (r.status != 'Correct') && (r.status != 'Incorrect') && !r.status.includes('Recorded')).length / (seatCodeResponses.length || 1)} * 100%)"` : ''}>${seatCodeResponses.filter(r => (r.status != 'Correct') && (r.status != 'Incorrect') && !r.status.includes('Recorded')).length}</div>
-            <div class="barcount waiting"${(seatCodeResponses.length != 0) ? ` style="width: calc(${seatCodeResponses.filter(r => r.status.includes('Recorded')).length / (seatCodeResponses.length || 1)} * 100%)"` : ''}>${seatCodeResponses.filter(r => r.status.includes('Recorded')).length}</div>
+            ${(seatCodeResponses.filter(r => r.status === 'Correct').length != 0) ? `<div class="barcount correct" style="width: calc(${seatCodeResponses.filter(r => r.status === 'Correct').length / (seatCodeResponses.length || 1)} * 100%)">${seatCodeResponses.filter(r => r.status === 'Correct').length}</div>` : ''}
+            ${(seatCodeResponses.filter(r => (r.status != 'Correct') && (r.status != 'Incorrect') && !r.status.includes('Recorded')).length != 0) ? `<div class="barcount other" style="width: calc(${seatCodeResponses.filter(r => (r.status != 'Correct') && (r.status != 'Incorrect') && !r.status.includes('Recorded')).length / (seatCodeResponses.length || 1)} * 100%)">${seatCodeResponses.filter(r => (r.status != 'Correct') && (r.status != 'Incorrect') && !r.status.includes('Recorded')).length}</div>` : ''}
+            ${(seatCodeResponses.filter(r => r.status.includes('Recorded')).length != 0) ? `<div class="barcount waiting" style="width: calc(${seatCodeResponses.filter(r => r.status.includes('Recorded')).length / (seatCodeResponses.length || 1)} * 100%)">${seatCodeResponses.filter(r => r.status.includes('Recorded')).length}</div>` : ''}
+            ${(seatCodeResponses.filter(r => r.status === 'Incorrect').length != 0) ? `<div class="barcount incorrect" style="width: calc(${seatCodeResponses.filter(r => r.status === 'Incorrect').length / (seatCodeResponses.length || 1)} * 100%)">${seatCodeResponses.filter(r => r.status === 'Incorrect').length}</div>` : ''}
           </div>
         </div>
         <div class="section detailed-report" id="seat-code-${seatCode.code}">
@@ -1186,11 +2076,102 @@ try {
       if (d.hasAttribute('time') && (Number(d.getAttribute('time')) > stdDev)) d.classList.add('disabled');
     });
     trendingResponses.filter(t => t.count > 1).forEach(r => {
+      var responseString = r.response;
+      var isMatrix = null;
+      if (responseString.includes('[[')) {
+        isMatrix = responseString;
+        responseString = JSON.stringify(JSON.parse(r.response).map(innerArray => innerArray.map(numString => String(numString)))).replaceAll('["', '[').replaceAll('","', ', ').replaceAll('"]', ']');
+      } else if (responseString.includes('[')) {
+        var parsedResponse = JSON.parse(r.response);
+        responseString = parsedResponse.join(', ');
+      }
       var buttonGrid = document.createElement('div');
       buttonGrid.className = "button-grid inputs";
-      buttonGrid.innerHTML = `<input type="text" autocomplete="off" class="small" id="response-id-input" value="${r.id}" disabled hidden /><input type="text" autocomplete="off" class="small" id="response-segment-input" value="${r.segment}" disabled data-segment /><input type="text" autocomplete="off" class="small" id="response-question-input" value="${questions.find(q => q.id == r.question_id).number}" disabled data-question /><input type="text" autocomplete="off" id="response-response-input" value="${r.response}" disabled /><input type="text" autocomplete="off" class="small" id="response-count-input" value="${r.count}" disabled /><button square id="mark-correct-button"${(r.status === 'Correct') ? ' disabled' : ''} tooltip="Mark Correct"><i class="bi bi-check-circle${(r.status === 'Correct') ? '-fill' : ''}"></i></button><button square id="mark-incorrect-button"${(r.status === 'Incorrect') ? ' disabled' : ''} tooltip="Mark Incorrect"><i class="bi bi-x-circle${(r.status === 'Incorrect') ? '-fill' : ''}"></i></button>`;
+      buttonGrid.innerHTML = `<input type="text" autocomplete="off" class="small" id="response-id-input" value="${r.single_response}" disabled hidden /><input type="text" autocomplete="off" class="small" id="response-segment-input" value="${r.segment}" disabled data-segment /><input type="text" autocomplete="off" class="small" id="response-question-input" value="${questions.find(q => q.id == r.question_id).number}" disabled data-question /><input type="text" autocomplete="off" class="small" id="response-question-id-input" value="${questions.find(q => q.id == r.question_id).id}" disabled hidden /><input type="text" autocomplete="off" id="response-response-input" value="${responseString}" ${isMatrix ? 'mockDisabled' : 'disabled'} /><input type="text" autocomplete="off" class="small" id="response-count-input" value="${r.count}" disabled /><button square id="mark-correct-button"${(r.status === 'Correct') ? ' disabled' : ''} tooltip="Mark Correct"><i class="bi bi-check-circle${(r.status === 'Correct') ? '-fill' : ''}"></i></button><button square id="mark-incorrect-button"${(r.status === 'Incorrect') ? ' disabled' : ''} tooltip="Mark Incorrect"><i class="bi bi-x-circle${(r.status === 'Incorrect') ? '-fill' : ''}"></i></button>`;
+      buttonGrid.addEventListener('mouseenter', () => {
+        var question = questions.find(q => String(q.id) === String(r.question_id));
+        island(questions, 'question', {
+          sourceId: String(question.id),
+          id: `ID ${question.id}`,
+          title: `Question ${question.number}`,
+          subtitle: `${question.question}`,
+          subtitleLatex: question.latex,
+          lists: [
+            {
+              title: 'Correct Answers',
+              items: answers.find(a => a.id === question.id).correct_answers
+            },
+            {
+              title: 'Incorrect Answers',
+              items: answers.find(a => a.id === question.id).incorrect_answers
+            },
+          ],
+        }, answers);
+      });
+      buttonGrid.addEventListener('mouseleave', () => {
+        island();
+      });
       document.querySelector('.trendingResponses .section').appendChild(buttonGrid);
+      if (isMatrix) document.querySelector('.trendingResponses .section .button-grid:last-child #response-response-input').addEventListener('click', () => ui.expandMatrix(isMatrix));
     });
+    const responsesArchiveTab = document.querySelector('[data-archive-type="responses"]');
+    if (responsesArchiveTab) {
+      const responsesArchives = responsesArchiveTab.querySelector('.archives');
+      const responsesArchivesList = responsesArchives.querySelector('.section');
+      if (responses.length > 0) {
+        responsesArchiveTab.querySelector('#no-archive').setAttribute('hidden', '');
+        responsesArchives.removeAttribute('hidden');
+      } else {
+        responsesArchiveTab.querySelector('#no-archive').removeAttribute('hidden');
+        responsesArchives.setAttribute('hidden', '');
+      }
+      responsesArchivesList.innerHTML = '';
+      responses.sort((a, b) => a.order - b.order).forEach(response => {
+        var buttonGrid = document.createElement('div');
+        buttonGrid.className = "button-grid inputs";
+        buttonGrid.setAttribute('archive-type', 'response');
+        buttonGrid.id = response.id;
+        buttonGrid.innerHTML = `<button square data-select tooltip="Select Item"><i class="bi bi-circle"></i><i class="bi bi-circle-fill"></i></button>
+        <div class="input-group rsmall">
+          <div class="space" id="response-container">
+            <input type="text" id="response-id-input" value="${response.id}" disabled />
+          </div>
+        </div>
+        <div class="input-group rsmall">
+          <div class="space" id="response-container">
+            <input type="text" id="response-seat-code-input" value="${response.seatCode}" disabled />
+          </div>
+        </div>
+        <div class="input-group small">
+          <div class="space" id="response-container">
+            <input type="text" id="response-segment-question-input" value="${response.segment} / ${response.question_id}" disabled />
+          </div>
+        </div>
+        <div class="input-group">
+          <div class="space" id="response-container">
+            <input type="text" id="response-response-input" value="${response.response || ''}" disabled />
+          </div>
+        </div>
+        <div class="input-group vsmedium">
+          <div class="space" id="response-container">
+            <input type="text" id="response-status-input" value="${response.status || ''}" disabled />
+          </div>
+        </div>
+        <div class="input-group rsmall">
+          <div class="space" id="response-container">
+            <input type="text" id="response-flagged-input" value="${response.flagged || ''}" disabled />
+          </div>
+        </div>
+        <div class="input-group medium">
+          <div class="space" id="response-container">
+            <input type="text" id="response-timestamp-input" value="${response.timestamp ? time.unixToString(response.timestamp) : ''}" disabled />
+          </div>
+        </div>
+        <button square data-restore-item tooltip="Restore Item"><i class="bi bi-arrow-counterclockwise"></i></button>`;
+        responsesArchivesList.appendChild(buttonGrid);
+      });
+      responsesArchivesList.querySelectorAll('[data-restore-item]').forEach(item => item.addEventListener('click', unarchiveModal));
+    }
     expandedReports.forEach(er => {
       if (document.getElementById(er)) document.getElementById(er).classList.add('active');
     });
@@ -1200,6 +2181,7 @@ try {
     document.querySelectorAll('[data-unflag-response]').forEach(a => a.addEventListener('click', unflagResponse));
     document.querySelectorAll('[data-edit-reason]').forEach(a => a.addEventListener('click', editReason));
     document.querySelectorAll('[report]').forEach(a => a.addEventListener('click', toggleDetailedReport));
+    document.querySelectorAll('[data-select]').forEach(a => a.addEventListener('click', toggleSelected));
   }
 
   function calculateTimeDifference(currentDate, previousTimestamp) {
@@ -1233,86 +2215,131 @@ try {
 
   function flagResponse() {
     if (!active) return;
-    unsavedChanges = true;
+    ui.setUnsavedChanges(true);
     fetch(domain + '/flag', {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
+        usr: storage.get("usr"),
+        pwd: storage.get("pwd"),
         question_id: this.parentElement.querySelector('#response-id-input').value,
         seatCode: this.parentElement.querySelector('#response-seat-code-input').value,
       }),
     })
       .then(async (r) => {
-        if (!r.ok) throw new Error(r.error || r.message || "API error");
+        if (!r.ok) {
+          try {
+            var re = await r.json();
+            if (re.error || re.message) {
+              ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+              throw new Error(re.error || re.message);
+            } else {
+              throw new Error("API error");
+            }
+          } catch (e) {
+            throw new Error(e.message || "API error");
+          }
+        }
         return await r.json();
       })
       .then(() => {
-        unsavedChanges = false;
+        ui.setUnsavedChanges(false);
         ui.toast("Flagged response for review.", 3000, "success", "bi bi-flag-fill");
         init();
       })
       .catch((e) => {
         console.error(e);
-        ui.view("api-fail");
+        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
       });
   }
 
   function unflagResponse() {
     if (!active) return;
-    unsavedChanges = true;
+    ui.setUnsavedChanges(true);
     fetch(domain + '/unflag', {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
+        usr: storage.get("usr"),
+        pwd: storage.get("pwd"),
         question_id: this.parentElement.querySelector('#response-id-input').value,
         seatCode: this.parentElement.querySelector('#response-seat-code-input').value,
       }),
     })
       .then(async (r) => {
-        if (!r.ok) throw new Error(r.error || r.message || "API error");
+        if (!r.ok) {
+          try {
+            var re = await r.json();
+            if (re.error || re.message) {
+              ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+              throw new Error(re.error || re.message);
+            } else {
+              throw new Error("API error");
+            }
+          } catch (e) {
+            throw new Error(e.message || "API error");
+          }
+        }
         return await r.json();
       })
       .then(() => {
-        unsavedChanges = false;
+        ui.setUnsavedChanges(false);
         ui.toast("Unflagged response.", 3000, "success", "bi bi-flag-fill");
         init();
       })
       .catch((e) => {
         console.error(e);
-        ui.view("api-fail");
+        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
       });
   }
 
   function markCorrect() {
     if (!active) return;
-    unsavedChanges = true;
+    ui.setUnsavedChanges(true);
     fetch(domain + '/mark_correct', {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        question_id: questions.find(q => q.number == this.parentElement.querySelector('#response-question-input').value).id,
-        answer: responses.find(q => q.id == this.parentElement.querySelector('#response-id-input').value).response
+        usr: storage.get("usr"),
+        pwd: storage.get("pwd"),
+        question_id: this.parentElement.querySelector('#response-question-id-input').value,
+        single_response: this.parentElement.querySelector('#response-id-input').value,
       }),
     })
       .then(async (r) => {
-        if (!r.ok) throw new Error(r.error || r.message || "API error");
+        if (!r.ok) {
+          try {
+            var re = await r.json();
+            if (re.error || re.message) {
+              ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+              throw new Error(re.error || re.message);
+            } else {
+              throw new Error("API error");
+            }
+          } catch (e) {
+            throw new Error(e.message || "API error");
+          }
+        }
         return await r.json();
       })
       .then(() => {
-        unsavedChanges = false;
+        ui.setUnsavedChanges(false);
         ui.toast("Successfully updated status.", 3000, "success", "bi bi-check-lg");
         noReloadCourse = true;
         init();
       })
       .catch((e) => {
         console.error(e);
-        ui.view("api-fail");
+        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
         pollingOff();
       });
   }
@@ -1347,31 +2374,46 @@ try {
 
   function markIncorrectConfirm(reason, e) {
     if (!active) return;
-    unsavedChanges = true;
+    ui.setUnsavedChanges(true);
     fetch(domain + '/mark_incorrect', {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        question_id: questions.find(q => q.number == e.parentElement.querySelector('#response-question-input').value).id,
-        answer: responses.find(q => q.id == e.parentElement.querySelector('#response-id-input').value).response,
+        usr: storage.get("usr"),
+        pwd: storage.get("pwd"),
+        question_id: e.parentElement.querySelector('#response-question-id-input').value,
+        single_response: e.parentElement.querySelector('#response-id-input').value,
         reason: reason
       }),
     })
       .then(async (r) => {
-        if (!r.ok) throw new Error(r.error || r.message || "API error");
+        if (!r.ok) {
+          try {
+            var re = await r.json();
+            if (re.error || re.message) {
+              ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+              throw new Error(re.error || re.message);
+            } else {
+              throw new Error("API error");
+            }
+          } catch (e) {
+            throw new Error(e.message || "API error");
+          }
+        }
         return await r.json();
       })
       .then(() => {
-        unsavedChanges = false;
+        ui.setUnsavedChanges(false);
         ui.toast("Successfully updated status.", 3000, "success", "bi bi-check-lg");
         noReloadCourse = true;
         init();
       })
       .catch((e) => {
         console.error(e);
-        ui.view("api-fail");
+        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
         pollingOff();
       });
   }
@@ -1409,6 +2451,7 @@ try {
     if (!speed) {
       ui.view("speed");
       document.getElementById("speed-mode-starting-question")?.focus();
+      document.getElementById("speed-mode-starting-question")?.setSelectionRange(0, document.getElementById("speed-mode-starting-question")?.value.length);
       return;
     }
     speed = false;
@@ -1422,6 +2465,7 @@ try {
       var option = document.createElement('option');
       option.value = segment.number;
       option.innerHTML = segment.name;
+      if (document.location.search.split('?segment=')[1] && (document.location.search.split('?segment=')[1] === String(segment.number))) option.selected = true;
       document.getElementById("speed-mode-segments").appendChild(option);
     });
   }
@@ -1443,13 +2487,11 @@ try {
     var segmentId = 0;
     var startingQuestionId = null;
     var startingQuestion = null;
-    if (document.getElementById("speed-mode-segments")) {
-      segmentId = document.getElementById("speed-mode-segments").value;
-    } else if (document.getElementById("speed-mode-starting-question-id")) {
+    if (!document.getElementById("speed-mode-segments") && !document.getElementById("speed-mode-starting-question-id")) return;
+    if (document.getElementById("speed-mode-segments")) segmentId = document.getElementById("speed-mode-segments").value;
+    if (document.getElementById("speed-mode-starting-question-id")) {
       startingQuestionId = document.getElementById("speed-mode-starting-question-id").value;
       startingQuestion = document.getElementById("speed-mode-starting-question").value;
-    } else {
-      return;
     }
     renderSpeedPond(segmentId, startingQuestionId, startingQuestion);
   }
@@ -1464,7 +2506,7 @@ try {
 
   async function renderSpeedPond(segment = 0, startingQuestionId, startingQuestion) {
     if (!active) return;
-    const url = `/admin/upload.html?segment=${segment}${(startingQuestionId && startingQuestion) ? `&startingQuestionId=${startingQuestionId}&startingQuestion=${startingQuestion}` : ''}`;
+    const url = `/admin/upload?segment=${segment}${(startingQuestionId && startingQuestion) ? `&startingQuestionId=${startingQuestionId}&startingQuestion=${startingQuestion}` : ''}`;
     const width = 600;
     const height = 600;
     const left = (window.screen.width / 2) - (width / 2);
@@ -1500,7 +2542,7 @@ try {
 
   async function renderSyllabusPond() {
     if (!active) return;
-    const url = '/admin/upload.html?syllabus=' + document.getElementById("course-period-input").value;
+    const url = '/admin/upload?syllabus=' + document.getElementById("course-period-input").value;
     const width = 600;
     const height = 150;
     const left = (window.screen.width / 2) - (width / 2);
@@ -1655,21 +2697,37 @@ try {
     for (let i = 0; i < updatedSegments.length; i++) {
       updatedSegments[i].order = i;
     }
-    unsavedChanges = true;
+    ui.setUnsavedChanges(true);
     if (sortAs) return updatedSegments;
     fetch(domain + '/segments', {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(updatedSegments)
+      body: JSON.stringify({
+        usr: storage.get("usr"),
+        pwd: storage.get("pwd"),
+        segments: updatedSegments,
+      })
     })
       .then(async (r) => {
-        if (!r.ok) throw new Error(r.error || r.message || "API error");
+        if (!r.ok) {
+          try {
+            var re = await r.json();
+            if (re.error || re.message) {
+              ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+              throw new Error(re.error || re.message);
+            } else {
+              throw new Error("API error");
+            }
+          } catch (e) {
+            throw new Error(e.message || "API error");
+          }
+        }
         return await r.json();
       })
       .then(c => {
-        unsavedChanges = false;
+        ui.setUnsavedChanges(false);
         segments = c;
         updateSegments();
         ui.view();
@@ -1677,7 +2735,8 @@ try {
       })
       .catch((e) => {
         console.error(e);
-        ui.view("api-fail");
+        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
         pollingOff();
       });
   }
@@ -1753,7 +2812,7 @@ try {
     draggableQuestionList = createSwapy(document.getElementById("question-list"), {
       animation: 'none'
     });
-    reloadUnsavedInputs();
+    ui.reloadUnsavedInputs();
   }
 
   function toggleDetailedReport() {
@@ -1810,10 +2869,10 @@ try {
       document.querySelector('.question-reports').innerHTML += `<div class="detailed-report-question"${(questionResponses.length != 0) ? ` report="question-${question.id}"` : ''}>
         <b>Question ${question.number} (${questionResponses.length} Response${(questionResponses.length != 1) ? 's' : ''})</b>
         <div class="barcount-wrapper">
-          <div class="barcount correct"${(questionResponses.length != 0) ? ` style="width: calc(${questionResponses.filter(r => r.status === 'Correct').length / (questionResponses.length || 1)} * 100%)"` : ''}>${questionResponses.filter(r => r.status === 'Correct').length}</div>
-          <div class="barcount incorrect"${(questionResponses.length != 0) ? ` style="width: calc(${questionResponses.filter(r => r.status === 'Incorrect').length / (questionResponses.length || 1)} * 100%)"` : ''}>${questionResponses.filter(r => r.status === 'Incorrect').length}</div>
-          <div class="barcount other"${(questionResponses.length != 0) ? ` style="width: calc(${questionResponses.filter(r => ((r.status !== 'Correct') && (r.status !== 'Incorrect') && !r.status.includes('Recorded'))).length / (questionResponses.length || 1)} * 100%)"` : ''}>${questionResponses.filter(r => ((r.status !== 'Correct') && (r.status !== 'Incorrect') && !r.status.includes('Recorded'))).length}</div>
-          <div class="barcount waiting"${(questionResponses.length != 0) ? ` style="width: calc(${questionResponses.filter(r => r.status.includes('Recorded')).length / (questionResponses.length || 1)} * 100%)"` : ''}>${questionResponses.filter(r => r.status.includes('Recorded')).length}</div>
+          ${(questionResponses.filter(r => r.status === 'Correct').length != 0) ? `<div class="barcount correct" style="width: calc(${questionResponses.filter(r => r.status === 'Correct').length / (questionResponses.length || 1)} * 100%)">${questionResponses.filter(r => r.status === 'Correct').length}</div>` : ''}
+          ${(questionResponses.filter(r => ((r.status !== 'Correct') && (r.status !== 'Incorrect') && !r.status.includes('Recorded'))).length != 0) ? `<div class="barcount other" style="width: calc(${questionResponses.filter(r => ((r.status !== 'Correct') && (r.status !== 'Incorrect') && !r.status.includes('Recorded'))).length / (questionResponses.length || 1)} * 100%)">${questionResponses.filter(r => ((r.status !== 'Correct') && (r.status !== 'Incorrect') && !r.status.includes('Recorded'))).length}</div>` : ''}
+          ${(questionResponses.filter(r => r.status.includes('Recorded')).length != 0) ? `<div class="barcount waiting" style="width: calc(${questionResponses.filter(r => r.status.includes('Recorded')).length / (questionResponses.length || 1)} * 100%)">${questionResponses.filter(r => r.status.includes('Recorded')).length}</div>` : ''}
+          ${(questionResponses.filter(r => r.status === 'Incorrect').length != 0) ? `<div class="barcount incorrect" style="width: calc(${questionResponses.filter(r => r.status === 'Incorrect').length / (questionResponses.length || 1)} * 100%)">${questionResponses.filter(r => r.status === 'Incorrect').length}</div>` : ''}
         </div>
       </div>
       ${(questionResponses.length != 0) ? `<div class="section detailed-report" id="question-${question.id}">
@@ -1824,7 +2883,7 @@ try {
       if (document.getElementById(er)) document.getElementById(er).classList.add('active');
     });
     document.querySelectorAll('[report]').forEach(a => a.addEventListener('click', toggleDetailedReport));
-    reloadUnsavedInputs();
+    ui.reloadUnsavedInputs();
   }
 
   function addExistingQuestion(question) {
@@ -1850,7 +2909,30 @@ try {
           <input type="text" value="${JSON.parse(loadedSegment.question_ids).find(q => String(q.id) === String(question)).name}">
         </div>
       </div>
-      <button class="space" id="remove-existing-question-button" square><i class="bi bi-trash"></i></button>`;
+      <button class="space" id="remove-existing-question-button" square tooltip="Remove Question"><i class="bi bi-trash"></i></button>`;
+      inner.addEventListener('mouseenter', () => {
+        var question = addingQuestion;
+        island(null, 'question', {
+          sourceId: String(question.id),
+          id: `ID ${question.id}`,
+          title: `Question ${question.number}`,
+          subtitle: `${question.question}`,
+          subtitleLatex: question.latex,
+          lists: [
+            {
+              title: 'Correct Answers',
+              items: answers.find(a => a.id === question.id).correct_answers
+            },
+            {
+              title: 'Incorrect Answers',
+              items: answers.find(a => a.id === question.id).incorrect_answers
+            },
+          ],
+        }, answers);
+      });
+      inner.addEventListener('mouseleave', () => {
+        island();
+      });
     } else if (loadedSegmentCreator && (typeof question === 'string')) {
       if (!addingQuestion) return;
       document.getElementById("add-question-input").value = addingQuestion.id;
@@ -1867,15 +2949,39 @@ try {
           <input type="text" value="${addingQuestion.number}">
         </div>
       </div>
-      <button class="space" id="remove-existing-question-button" square><i class="bi bi-trash"></i></button>`;
+      <button class="space" id="remove-existing-question-button" square tooltip="Remove Question"><i class="bi bi-trash"></i></button>`;
+      inner.addEventListener('mouseenter', () => {
+        var question = addingQuestion;
+        island(null, 'question', {
+          sourceId: String(question.id),
+          id: `ID ${question.id}`,
+          title: `Question ${question.number}`,
+          subtitle: `${question.question}`,
+          subtitleLatex: question.latex,
+          lists: [
+            {
+              title: 'Correct Answers',
+              items: answers.find(a => a.id === question.id).correct_answers
+            },
+            {
+              title: 'Incorrect Answers',
+              items: answers.find(a => a.id === question.id).incorrect_answers
+            },
+          ],
+        }, answers);
+      });
+      inner.addEventListener('mouseleave', () => {
+        island();
+      });
     } else if (this) {
       if (!document.getElementById("add-question-input").selectedOptions[0]) return;
-      div.setAttribute("data-swapy-slot", `questionList-${document.getElementById("add-question-input").value}`);
-      inner.setAttribute("data-swapy-item", `questionList-${document.getElementById("add-question-input").value}`);
+      var questionId = document.getElementById("add-question-input").value;
+      div.setAttribute("data-swapy-slot", `questionList-${questionId}`);
+      inner.setAttribute("data-swapy-item", `questionList-${questionId}`);
       inner.innerHTML = `<div class="drag" data-swapy-handle><i class="bi bi-grip-vertical"></i></div>
       <div class="input-group">
         <div class="space" id="question-container">
-          <input type="text" id="${document.getElementById("add-question-input").value}" value="${document.getElementById("add-question-input").selectedOptions[0].innerHTML}" disabled>
+          <input type="text" id="${questionId}" value="${document.getElementById("add-question-input").selectedOptions[0].innerHTML}" disabled>
         </div>
       </div>
       <div class="input-group small">
@@ -1883,7 +2989,30 @@ try {
           <input type="text" value="${document.getElementById("add-question-input").selectedOptions[0].innerHTML.split('#')[1].split(' ')[0]}">
         </div>
       </div>
-      <button class="space" id="remove-existing-question-button" square><i class="bi bi-trash"></i></button>`;
+      <button class="space" id="remove-existing-question-button" square tooltip="Remove Question"><i class="bi bi-trash"></i></button>`;
+      inner.addEventListener('mouseenter', () => {
+        var question = questions.find(q => String(q.id) === String(questionId));
+        island(null, 'question', {
+          sourceId: String(question.id),
+          id: `ID ${question.id}`,
+          title: `Question ${question.number}`,
+          subtitle: `${question.question}`,
+          subtitleLatex: question.latex,
+          lists: [
+            {
+              title: 'Correct Answers',
+              items: answers.find(a => a.id === question.id).correct_answers
+            },
+            {
+              title: 'Incorrect Answers',
+              items: answers.find(a => a.id === question.id).incorrect_answers
+            },
+          ],
+        }, answers);
+      });
+      inner.addEventListener('mouseleave', () => {
+        island();
+      });
       document.getElementById("add-question-input").removeChild(document.getElementById("add-question-input").selectedOptions[0]);
     } else {
       var newQuestion = document.getElementById("add-question-input").children[document.getElementById("add-question-input").children.length - 1];
@@ -1900,7 +3029,7 @@ try {
           <input type="text" value="${newQuestion.innerHTML.split('#')[1].split(' ')[0]}">
         </div>
       </div>
-      <button class="space" id="remove-existing-question-button" square><i class="bi bi-trash"></i></button>`;
+      <button class="space" id="remove-existing-question-button" square tooltip="Remove Question"><i class="bi bi-trash"></i></button>`;
       document.getElementById("add-question-input").removeChild(document.getElementById("add-question-input").children[document.getElementById("add-question-input").children.length - 1]);
     }
     div.appendChild(inner);
@@ -1911,7 +3040,7 @@ try {
     draggableQuestionList = createSwapy(document.getElementById("question-list"), {
       animation: 'none'
     });
-    reloadUnsavedInputs();
+    ui.reloadUnsavedInputs();
   }
 
   function removeExistingQuestion() {
@@ -1959,34 +3088,51 @@ try {
         id: q.querySelectorAll('input')[0].id
       };
     }));
-    ui.toast(loadedSegmentEditor ? "Updating segment..." : "Creating segment...", 3000, "info", "bi bi-plus-circle-fill");
-    unsavedChanges = true;
+    ui.toast(loadedSegmentEditor ? "Updating segment..." : "Creating segment...", 3000, "info", loadedSegmentEditor ? "bi bi-floppy-fill" : "bi bi-plus-circle-fill");
+    ui.setUnsavedChanges(true);
     fetch(domain + '/segment', {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        course: course.value,
-        number: number.value,
-        name: name.value,
-        due,
-        question_ids,
-        editing_segment: loadedSegmentEditor ? new URLSearchParams(window.location.search).get('segment') : null,
+        usr: storage.get("usr"),
+        pwd: storage.get("pwd"),
+        segment: {
+          course: course.value,
+          number: number.value,
+          name: name.value,
+          due,
+          question_ids,
+          editing_segment: loadedSegmentEditor ? new URLSearchParams(window.location.search).get('segment') : null,
+        },
       })
     })
       .then(async (r) => {
-        if (!r.ok) throw new Error(r.error || r.message || "API error");
+        if (!r.ok) {
+          try {
+            var re = await r.json();
+            if (re.error || re.message) {
+              ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+              throw new Error(re.error || re.message);
+            } else {
+              throw new Error("API error");
+            }
+          } catch (e) {
+            throw new Error(e.message || "API error");
+          }
+        }
         return await r.json();
       })
       .then(() => {
-        unsavedChanges = false;
+        ui.setUnsavedChanges(false);
         ui.toast(loadedSegmentEditor ? "Segment updated successfully." : "Segment created successfully.", 3000, "success", "bi bi-check-circle-fill");
         editSegment(null, number.value);
       })
       .catch((e) => {
         console.error(e);
-        ui.view("api-fail");
+        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
       });
   }
 
@@ -1995,13 +3141,19 @@ try {
     var segment = new URLSearchParams(window.location.search).get('segment');
     if (!segment) {
       loadedSegmentCreator = true;
-      return document.querySelector('[data-delete-segment]')?.remove();
+      document.querySelector('[data-delete-segment]')?.remove();
+      document.querySelector('[data-archive-segment]')?.remove();
+      document.querySelector('[edit-segment-questions]')?.remove();
+      return;
     }
     loadedSegment = segments.find(s => String(s.number) === String(segment));
     if (!loadedSegment) {
       loadedSegmentCreator = true;
       ui.toast(`Segment ${String(segment)} not found.`, 3000, "error", "bi bi-exclamation-triangle-fill");
-      return document.querySelector('[data-delete-segment]')?.remove();
+      document.querySelector('[data-delete-segment]')?.remove();
+      document.querySelector('[data-archive-segment]')?.remove();
+      document.querySelector('[edit-segment-questions]')?.remove();
+      return;
     }
     loadedSegmentEditor = true;
     active = true;
@@ -2012,6 +3164,25 @@ try {
     JSON.parse(loadedSegment.question_ids).forEach(q => addExistingQuestion(q.id));
     document.getElementById("create-button").innerText = "Save";
     document.querySelector('[data-delete-segment]')?.addEventListener('click', deleteSegmentConfirm);
+    document.querySelector('[edit-segment-questions]')?.addEventListener('click', () => {
+      if (ui.unsavedChanges) return ui.toast("You have unsaved changes. Please save or discard them before editing questions.", 3000, "error", "bi bi-exclamation-triangle-fill");
+      const url = `/admin/questions?segment=${loadedSegment.number}`;
+      const width = window.outerWidth;
+      const height = window.outerHeight;
+      const left = window.screenLeft;
+      const top = window.screenTop;
+      const windowFeatures = `width=${width},height=${height},resizable=no,scrollbars=no,status=yes,left=${left},top=${top}`;
+      const newWindow = window.open(url, '_blank', windowFeatures);
+      window.addEventListener('message', (event) => {
+        if (event.origin !== (window.location.protocol + '//' + window.location.hostname + (window.location.port ? ':' + window.location.port : ''))) return;
+      }, false);
+      const checkWindowClosed = setInterval(async function () {
+        if (newWindow && newWindow.closed) {
+          clearInterval(checkWindowClosed);
+          window.location.reload();
+        }
+      }, 1000);
+    });
   }
 
   function deleteSegmentConfirm() {
@@ -2037,28 +3208,43 @@ try {
   }
 
   function deleteSegment() {
-    unsavedChanges = true;
+    ui.setUnsavedChanges(true);
     fetch(domain + '/segment', {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
+        usr: storage.get("usr"),
+        pwd: storage.get("pwd"),
         segment: loadedSegment.number,
       })
     })
       .then(async (r) => {
-        if (!r.ok) throw new Error(r.error || r.message || "API error");
+        if (!r.ok) {
+          try {
+            var re = await r.json();
+            if (re.error || re.message) {
+              ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+              throw new Error(re.error || re.message);
+            } else {
+              throw new Error("API error");
+            }
+          } catch (e) {
+            throw new Error(e.message || "API error");
+          }
+        }
         return await r.json();
       })
       .then(() => {
-        unsavedChanges = false;
+        ui.setUnsavedChanges(false);
         ui.toast("Segment deleted successfully.", 3000, "success", "bi bi-trash-fill");
         window.location.href = '/admin/';
       })
       .catch((e) => {
         console.error(e);
-        ui.view("api-fail");
+        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
       });
   }
 
@@ -2113,29 +3299,46 @@ try {
       return newCourseModal(inputValues);
     }
     ui.toast("Creating course...", 3000, "info", "bi bi-plus-circle-fill");
-    unsavedChanges = true;
+    ui.setUnsavedChanges(true);
     fetch(domain + '/course', {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        name: inputValues[0],
-        period: inputValues[1],
+        usr: storage.get("usr"),
+        pwd: storage.get("pwd"),
+        course: {
+          name: inputValues[0],
+          period: inputValues[1],
+        },
       })
     })
       .then(async (r) => {
-        if (!r.ok) throw new Error(r.error || r.message || "API error");
+        if (!r.ok) {
+          try {
+            var re = await r.json();
+            if (re.error || re.message) {
+              ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+              throw new Error(re.error || re.message);
+            } else {
+              throw new Error("API error");
+            }
+          } catch (e) {
+            throw new Error(e.message || "API error");
+          }
+        }
         return await r.json();
       })
       .then(() => {
-        unsavedChanges = false;
+        ui.setUnsavedChanges(false);
         ui.toast("Course created successfully.", 3000, "success", "bi bi-check-circle-fill");
         return window.location.href = '/admin/';
       })
       .catch((e) => {
         console.error(e);
-        ui.view("api-fail");
+        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
       });
   }
 
@@ -2143,28 +3346,43 @@ try {
     if (!active) return;
     const course = courses.find(c => document.getElementById("course-period-input") ? (String(c.id) === document.getElementById("course-period-input").value) : null);
     if (!course) return;
-    unsavedChanges = true;
+    ui.setUnsavedChanges(true);
     fetch(domain + '/due_dates', {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
+        usr: storage.get("usr"),
+        pwd: storage.get("pwd"),
         course_id: course.id
       })
     })
       .then(async (r) => {
-        if (!r.ok) throw new Error(r.error || r.message || "API error");
+        if (!r.ok) {
+          try {
+            var re = await r.json();
+            if (re.error || re.message) {
+              ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+              throw new Error(re.error || re.message);
+            } else {
+              throw new Error("API error");
+            }
+          } catch (e) {
+            throw new Error(e.message || "API error");
+          }
+        }
         return await r.json();
       })
       .then(() => {
-        unsavedChanges = false;
+        ui.setUnsavedChanges(false);
         ui.toast("Segments due dates removed successfully.", 3000, "success", "bi bi-calendar-minus");
         return window.location.href = '/admin/';
       })
       .catch((e) => {
         console.error(e);
-        ui.view("api-fail");
+        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
       });
   }
 
@@ -2241,28 +3459,43 @@ try {
     if (!active) return;
     const course = courses.find(c => document.getElementById("course-period-input") ? (String(c.id) === document.getElementById("course-period-input").value) : null);
     if (!course) return;
-    unsavedChanges = true;
+    ui.setUnsavedChanges(true);
     fetch(domain + '/responses', {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
+        usr: storage.get("usr"),
+        pwd: storage.get("pwd"),
         course_id: course.id
       })
     })
       .then(async (r) => {
-        if (!r.ok) throw new Error(r.error || r.message || "API error");
+        if (!r.ok) {
+          try {
+            var re = await r.json();
+            if (re.error || re.message) {
+              ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+              throw new Error(re.error || re.message);
+            } else {
+              throw new Error("API error");
+            }
+          } catch (e) {
+            throw new Error(e.message || "API error");
+          }
+        }
         return await r.json();
       })
       .then(() => {
-        unsavedChanges = false;
+        ui.setUnsavedChanges(false);
         ui.toast("Course responses cleared successfully.", 3000, "success", "bi bi-check-circle-fill");
         return window.location.href = '/admin/responses';
       })
       .catch((e) => {
         console.error(e);
-        ui.view("api-fail");
+        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
       });
   }
 
@@ -2275,12 +3508,25 @@ try {
           "Content-Type": "application/json",
         },
       });
-      if (!r.ok) throw new Error(r.error || r.message || "API error");
+      if (!r.ok) {
+        try {
+          var re = await r.json();
+          if (re.error || re.message) {
+            ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+            throw new Error(re.error || re.message);
+          } else {
+            throw new Error("API error");
+          }
+        } catch (e) {
+          throw new Error(e.message || "API error");
+        }
+      }
       const data = await r.json();
       return key ? data[key] : data;
     } catch (e) {
       console.error(e);
       ui.view("api-fail");
+      if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
     }
   }
 
@@ -2292,12 +3538,26 @@ try {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
+        usr: storage.get("usr"),
+        pwd: storage.get("pwd"),
         key: key,
         value: value
       })
     })
       .then(async (r) => {
-        if (!r.ok) throw new Error(r.error || r.message || "API error");
+        if (!r.ok) {
+          try {
+            var re = await r.json();
+            if (re.error || re.message) {
+              ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+              throw new Error(re.error || re.message);
+            } else {
+              throw new Error("API error");
+            }
+          } catch (e) {
+            throw new Error(e.message || "API error");
+          }
+        }
         return await r.json();
       })
       .then(r => {
@@ -2305,7 +3565,8 @@ try {
       })
       .catch((e) => {
         console.error(e);
-        ui.view("api-fail");
+        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
       });
   }
 
@@ -2332,7 +3593,7 @@ try {
     if (document.getElementById("export-report-period").value) exportReportOptions['period'] = document.getElementById("export-report-period").value;
     if (document.getElementById("export-report-start-date").value) exportReportOptions['start'] = document.getElementById("export-report-start-date").value;
     if (document.getElementById("export-report-end-date").value) exportReportOptions['end'] = document.getElementById("export-report-end-date").value;
-    unsavedChanges = true;
+    ui.setUnsavedChanges(true);
     await fetch(domain + '/report', {
       method: "POST",
       headers: {
@@ -2341,7 +3602,19 @@ try {
       body: JSON.stringify(exportReportOptions)
     })
       .then(async (r) => {
-        if (!r.ok) throw new Error(r.error || r.message || "API error");
+        if (!r.ok) {
+          try {
+            var re = await r.json();
+            if (re.error || re.message) {
+              ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+              throw new Error(re.error || re.message);
+            } else {
+              throw new Error("API error");
+            }
+          } catch (e) {
+            throw new Error(e.message || "API error");
+          }
+        }
         return await r.json();
       })
       .then(r => {
@@ -2352,10 +3625,10 @@ try {
           document.getElementById("export-report-period").disabled = false;
           document.getElementById("export-report-start-date").disabled = false;
           document.getElementById("export-report-end-date").disabled = false;
-          unsavedChanges = true;
+          ui.setUnsavedChanges(true);
           return;
         }
-        unsavedChanges = false;
+        ui.setUnsavedChanges(false);
         ui.toast("Report generated successfully.", 3000, "success", "bi bi-check-circle-fill");
         ui.toast(`Downloading ${r.filename.split('/')[r.filename.split('/').length - 1]}...`, 3000, "info", "bi bi-download");
         const link = document.createElement('a');
@@ -2374,7 +3647,1269 @@ try {
       })
       .catch((e) => {
         console.error(e);
-        ui.view("api-fail");
+        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
+      });
+  }
+
+  function editUserModal() {
+    if (!active) return;
+    const user = this.parentElement.parentElement.id;
+    const role = this.parentElement.parentElement.querySelector('.role').innerText;
+    const partialAccessCourses = JSON.parse(this.parentElement.parentElement.querySelector('.partialAccessCourses').innerText);
+    const fullAccessCourses = JSON.parse(this.parentElement.parentElement.querySelector('.fullAccessCourses').innerText);
+    ui.modal({
+      title: 'Edit User',
+      body: `<p>Edit <code>${role}</code> user <code>${user}</code>. This action is not reversible.${(user === storage.get("usr")) ? '<br><br>Changing your own password will result in system logoff.' : ''}</p>`,
+      inputs: [
+        {
+          label: 'Role',
+          type: 'select',
+          options: [
+            {
+              value: 'admin',
+              text: 'Admin'
+            },
+            {
+              value: 'ta',
+              text: 'TA'
+            }
+          ],
+          defaultValue: role,
+          required: true,
+        },
+        {
+          label: 'New Password',
+          type: 'password',
+        },
+        {
+          label: 'Partial Access Courses',
+          type: 'select',
+          options: courses.map(course => ({
+            value: String(course.id),
+            text: course.name,
+            selected: partialAccessCourses ? partialAccessCourses.includes(course.id) : false,
+          })),
+          multiple: true,
+        },
+        {
+          label: 'Full Access Courses',
+          type: 'select',
+          options: courses.map(course => ({
+            value: String(course.id),
+            text: course.name,
+            selected: fullAccessCourses ? fullAccessCourses.includes(course.id) : false,
+          })),
+          multiple: true,
+        },
+        {
+          label: 'Admin Password',
+          type: 'password',
+          required: true,
+        }
+      ],
+      buttons: [
+        {
+          text: 'Cancel',
+          class: 'cancel-button',
+          close: true,
+        },
+        {
+          text: 'Continue',
+          class: 'submit-button',
+          onclick: (inputValues) => {
+            editUser(inputValues, user);
+          },
+          close: true,
+        },
+      ],
+    });
+  }
+
+  function editUser(inputValues, user) {
+    if (!active) return;
+    ui.setUnsavedChanges(true);
+    fetch(domain + '/user', {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        usr: storage.get("usr"),
+        pwd: storage.get("pwd"),
+        username: user,
+        password: inputValues[1],
+        role: inputValues[0],
+        partialAccessCourses: inputValues[2] || [],
+        fullAccessCourses: inputValues[3] || [],
+        admin_password: inputValues[4],
+      }),
+    })
+      .then(async (r) => {
+        if (!r.ok) {
+          try {
+            var re = await r.json();
+            if (re.error || re.message) {
+              ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+              throw new Error(re.error || re.message);
+            } else {
+              throw new Error("API error");
+            }
+          } catch (e) {
+            throw new Error(e.message || "API error");
+          }
+        }
+        return await r.json();
+      })
+      .then(() => {
+        ui.setUnsavedChanges(false);
+        ui.toast("Successfully edited user.", 3000, "success", "bi bi-check-lg");
+        init();
+      })
+      .catch((e) => {
+        console.error(e);
+        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
+        pollingOff();
+      });
+  }
+
+  function addUserModal() {
+    if (!active) return;
+    ui.modal({
+      title: 'Add User',
+      body: `<p>Grant a new user access to the administration-side.</p>`,
+      inputs: [
+        {
+          label: 'Role',
+          type: 'select',
+          options: [
+            {
+              value: 'admin',
+              text: 'Admin'
+            },
+            {
+              value: 'ta',
+              text: 'TA'
+            }
+          ],
+          defaultValue: 'ta',
+          required: true,
+        },
+        {
+          label: 'Username / Seat Code',
+          type: 'text',
+          required: true,
+        },
+        {
+          label: 'Password',
+          type: 'password',
+          required: true,
+        },
+        {
+          label: 'Partial Access Courses',
+          type: 'select',
+          options: courses.map(course => ({
+            value: String(course.id),
+            text: course.name
+          })),
+          multiple: true,
+        },
+        {
+          label: 'Full Access Courses',
+          type: 'select',
+          options: courses.map(course => ({
+            value: String(course.id),
+            text: course.name
+          })),
+          multiple: true,
+        },
+        {
+          label: 'Admin Password',
+          type: 'password',
+          required: true,
+        }
+      ],
+      buttons: [
+        {
+          text: 'Cancel',
+          class: 'cancel-button',
+          close: true,
+        },
+        {
+          text: 'Continue',
+          class: 'submit-button',
+          onclick: (inputValues) => {
+            addUser(inputValues);
+          },
+          close: true,
+        },
+      ],
+    });
+  }
+
+  function addUser(inputValues) {
+    if (!active) return;
+    ui.setUnsavedChanges(true);
+    fetch(domain + '/users', {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        usr: storage.get("usr"),
+        pwd: storage.get("pwd"),
+        username: inputValues[1],
+        password: inputValues[2],
+        role: inputValues[0],
+        partialAccessCourses: inputValues[3] || [],
+        fullAccessCourses: inputValues[4] || [],
+        admin_password: inputValues[5],
+      }),
+    })
+      .then(async (r) => {
+        if (!r.ok) {
+          try {
+            var re = await r.json();
+            if (re.error || re.message) {
+              ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+              throw new Error(re.error || re.message);
+            } else {
+              throw new Error("API error");
+            }
+          } catch (e) {
+            throw new Error(e.message || "API error");
+          }
+        }
+        return await r.json();
+      })
+      .then(() => {
+        ui.setUnsavedChanges(false);
+        ui.toast("Successfully added user.", 3000, "success", "bi bi-check-lg");
+        init();
+      })
+      .catch((e) => {
+        console.error(e);
+        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
+        pollingOff();
+      });
+  }
+
+  function deleteUserModal() {
+    if (!active) return;
+    const user = this.parentElement.parentElement.id;
+    const role = this.parentElement.parentElement.querySelector('.role').innerText;
+    ui.modal({
+      title: 'Delete User',
+      body: `<p>Are you sure you would like to delete the <code>${role}</code> user <code>${user}</code>? This action is not reversible.${(user === storage.get("usr")) ? '<br><br>Deleting your own user will result in system logoff.' : ''}${(role === 'admin') ? '<br><br>Warning: You are deleting an admin user. Proceed with caution.' : ''}</p>`,
+      inputs: [
+        {
+          label: 'Admin Password',
+          type: 'password',
+          required: true,
+        }
+      ],
+      buttons: [
+        {
+          text: 'Cancel',
+          class: 'cancel-button',
+          close: true,
+        },
+        {
+          text: 'Continue',
+          class: 'submit-button',
+          onclick: (inputValues) => {
+            deleteUser(inputValues, user);
+          },
+          close: true,
+        },
+      ],
+    });
+  }
+
+  function deleteUser(inputValues, user) {
+    if (!active) return;
+    ui.setUnsavedChanges(true);
+    fetch(domain + '/users', {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        usr: storage.get("usr"),
+        pwd: storage.get("pwd"),
+        username: user,
+        admin_password: inputValues[0],
+      }),
+    })
+      .then(async (r) => {
+        if (!r.ok) {
+          try {
+            var re = await r.json();
+            if (re.error || re.message) {
+              ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+              throw new Error(re.error || re.message);
+            } else {
+              throw new Error("API error");
+            }
+          } catch (e) {
+            throw new Error(e.message || "API error");
+          }
+        }
+        return await r.json();
+      })
+      .then(() => {
+        ui.setUnsavedChanges(false);
+        ui.toast("Successfully deleted user.", 3000, "success", "bi bi-check-lg");
+        init();
+      })
+      .catch((e) => {
+        console.error(e);
+        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
+        pollingOff();
+      });
+  }
+
+  function updateLogs() {
+    document.querySelector('.logs').innerHTML = '<div class="row header"><span hidden>Action</span><span>Details</span><span class="smedium">Timestamp</span></div>';
+    var filteredLogs = logs.filter(l => l.user.startsWith(document.getElementById("filter-logs-by-username-input").value)).filter(l => document.getElementById("filter-logs-by-action-input").value ? (l.action === document.getElementById("filter-logs-by-action-input").value) : true);
+    if (filteredLogs.length > 0) {
+      document.getElementById('no-logs').setAttribute('hidden', '');
+      document.querySelector('.logs').removeAttribute('hidden');
+    } else {
+      document.getElementById('no-logs').removeAttribute('hidden');
+      document.querySelector('.logs').setAttribute('hidden', '');
+    }
+    filteredLogs.forEach(log => {
+      document.querySelector('.logs').innerHTML += `<div class="enhanced-item${log.undid ? ' disabled' : ''}" id="${log.id}">
+        <span class="action" hidden>${log.action}</span>
+        <span class="details">${log.details}</span>
+        <span class="timestamp fit">${time.unixToString(log.timestamp)}</span>
+        <span class="actions fit showonhover">
+          <button class="icon" data-undo-action tooltip="Undo Action">
+            <i class="bi bi-arrow-counterclockwise"></i>
+          </button>
+          <button class="icon" data-clear-log tooltip="Clear Entry">
+            <i class="bi bi-trash"></i>
+          </button>
+        </span>
+      </div>`;
+    });
+    document.querySelectorAll('[data-undo-action]').forEach(button => button.addEventListener('click', undoActionModal));
+    document.querySelectorAll('[data-clear-log]').forEach(button => button.addEventListener('click', clearLogModal));
+  }
+
+  function clearLogsModal() {
+    if (!active) return;
+    ui.modal({
+      title: 'Clear Logs',
+      body: '<p>Are you sure you would like to clear all logs from the database? This action is not reversible.</p>',
+      buttons: [
+        {
+          text: 'Cancel',
+          class: 'cancel-button',
+          close: true,
+        },
+        {
+          text: 'Clear',
+          class: 'submit-button',
+          onclick: () => {
+            clearLogs();
+          },
+          close: true,
+        },
+      ],
+    });
+  }
+
+  function clearLogs() {
+    if (!active) return;
+    ui.setUnsavedChanges(true);
+    fetch(domain + '/logs', {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        usr: storage.get("usr"),
+        pwd: storage.get("pwd"),
+      }),
+    })
+      .then(async (r) => {
+        if (!r.ok) {
+          try {
+            var re = await r.json();
+            if (re.error || re.message) {
+              ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+              throw new Error(re.error || re.message);
+            } else {
+              throw new Error("API error");
+            }
+          } catch (e) {
+            throw new Error(e.message || "API error");
+          }
+        }
+        return await r.json();
+      })
+      .then(() => {
+        ui.setUnsavedChanges(false);
+        ui.toast("Successfully cleared logs.", 3000, "success", "bi bi-check-lg");
+        init();
+      })
+      .catch((e) => {
+        console.error(e);
+        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
+        pollingOff();
+      });
+  }
+
+  function clearLogModal() {
+    if (!active) return;
+    const id = this.parentElement.parentElement.id;
+    const details = this.parentElement.parentElement.querySelector('.details').innerText;
+    const timestamp = this.parentElement.parentElement.querySelector('.timestamp').innerText;
+    ui.modal({
+      title: 'Clear Log',
+      body: `<p>Are you sure you would like to clear this log from the database? This action is not reversible.<br><br>Details: ${details}<br>Timestamp: ${timestamp}</p>`,
+      buttons: [
+        {
+          text: 'Cancel',
+          class: 'cancel-button',
+          close: true,
+        },
+        {
+          text: 'Clear',
+          class: 'submit-button',
+          onclick: () => {
+            clearLog(id);
+          },
+          close: true,
+        },
+      ],
+    });
+  }
+
+  function clearLog(id) {
+    if (!active) return;
+    ui.setUnsavedChanges(true);
+    fetch(domain + '/logs', {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        usr: storage.get("usr"),
+        pwd: storage.get("pwd"),
+        id,
+      }),
+    })
+      .then(async (r) => {
+        if (!r.ok) {
+          try {
+            var re = await r.json();
+            if (re.error || re.message) {
+              ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+              throw new Error(re.error || re.message);
+            } else {
+              throw new Error("API error");
+            }
+          } catch (e) {
+            throw new Error(e.message || "API error");
+          }
+        }
+        return await r.json();
+      })
+      .then(() => {
+        ui.setUnsavedChanges(false);
+        ui.toast("Successfully cleared log.", 3000, "success", "bi bi-check-lg");
+        init();
+      })
+      .catch((e) => {
+        console.error(e);
+        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
+        pollingOff();
+      });
+  }
+
+  function undoActionModal() {
+    if (!active) return;
+    const id = this.parentElement.parentElement.id;
+    const details = this.parentElement.parentElement.querySelector('.details').innerText;
+    const timestamp = this.parentElement.parentElement.querySelector('.timestamp').innerText;
+    const action = this.parentElement.parentElement.querySelector('.action').innerText;
+    ui.modal({
+      title: 'Undo Action',
+      body: `<p>Are you sure you would like to undo this action? This action is not reversible.<br><br>Action: ${action}<br>Details: ${details}<br>Timestamp: ${timestamp}</p>`,
+      buttons: [
+        {
+          text: 'Cancel',
+          class: 'cancel-button',
+          close: true,
+        },
+        {
+          text: 'Undo',
+          class: 'submit-button',
+          onclick: () => {
+            undoAction(id);
+          },
+          close: true,
+        },
+      ],
+    });
+  }
+
+  function undoAction(id) {
+    if (!active) return;
+    ui.setUnsavedChanges(true);
+    fetch(domain + '/log', {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        usr: storage.get("usr"),
+        pwd: storage.get("pwd"),
+        id,
+      }),
+    })
+      .then(async (r) => {
+        if (!r.ok) {
+          try {
+            var re = await r.json();
+            if (re.error || re.message) {
+              ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+              throw new Error(re.error || re.message);
+            } else {
+              throw new Error("API error");
+            }
+          } catch (e) {
+            throw new Error(e.message || "API error");
+          }
+        }
+        return await r.json();
+      })
+      .then(() => {
+        ui.setUnsavedChanges(false);
+        ui.toast("Successfully undid action.", 3000, "success", "bi bi-check-lg");
+        init();
+      })
+      .catch((e) => {
+        console.error(e);
+        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
+        pollingOff();
+      });
+  }
+
+  function removeOTPsModal() {
+    if (!active) return;
+    ui.modal({
+      title: 'Remove OTPs',
+      body: '<p>Are you sure you would like to remove OTPs from all seat codes? All seat codes will lose their saved settings and history. This action is not reversible.</p>',
+      buttons: [
+        {
+          text: 'Cancel',
+          class: 'cancel-button',
+          close: true,
+        },
+        {
+          text: 'Remove',
+          class: 'submit-button',
+          onclick: () => {
+            removeOTPs();
+          },
+          close: true,
+        },
+      ],
+    });
+  }
+
+  function removeOTPs() {
+    if (!active) return;
+    ui.setUnsavedChanges(true);
+    fetch(domain + '/otps', {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        usr: storage.get("usr"),
+        pwd: storage.get("pwd"),
+      }),
+    })
+      .then(async (r) => {
+        if (!r.ok) {
+          try {
+            var re = await r.json();
+            if (re.error || re.message) {
+              ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+              throw new Error(re.error || re.message);
+            } else {
+              throw new Error("API error");
+            }
+          } catch (e) {
+            throw new Error(e.message || "API error");
+          }
+        }
+        return await r.json();
+      })
+      .then(() => {
+        ui.setUnsavedChanges(false);
+        ui.toast("Successfully removed OTPs.", 3000, "success", "bi bi-check-lg");
+        init();
+      })
+      .catch((e) => {
+        console.error(e);
+        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
+        pollingOff();
+      });
+  }
+
+  function removeOTPModal() {
+    if (!active) return;
+    const seatCode = this.parentElement.parentElement.id;
+    ui.modal({
+      title: 'Remove OTP',
+      body: `<p>Are you sure you would like to remove the OTP from seat code <code>${seatCode}</code>? This seat code will lose all their saved settings and history. This action is not reversible.</p>`,
+      buttons: [
+        {
+          text: 'Cancel',
+          class: 'cancel-button',
+          close: true,
+        },
+        {
+          text: 'Remove',
+          class: 'submit-button',
+          onclick: () => {
+            removeOTP(seatCode);
+          },
+          close: true,
+        },
+      ],
+    });
+  }
+
+  function removeOTP(seatCode) {
+    if (!active) return;
+    ui.setUnsavedChanges(true);
+    fetch(domain + '/otps', {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        usr: storage.get("usr"),
+        pwd: storage.get("pwd"),
+        seatCode,
+      }),
+    })
+      .then(async (r) => {
+        if (!r.ok) {
+          try {
+            var re = await r.json();
+            if (re.error || re.message) {
+              ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+              throw new Error(re.error || re.message);
+            } else {
+              throw new Error("API error");
+            }
+          } catch (e) {
+            throw new Error(e.message || "API error");
+          }
+        }
+        return await r.json();
+      })
+      .then(() => {
+        ui.setUnsavedChanges(false);
+        ui.toast("Successfully removed OTP.", 3000, "success", "bi bi-check-lg");
+        init();
+      })
+      .catch((e) => {
+        console.error(e);
+        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
+        pollingOff();
+      });
+  }
+
+  function createBackupModal() {
+    if (!active) return;
+    if ([...document.querySelectorAll('.backups .modified')].find(b => b.innerText === time.unixToString(new Date()))) return ui.toast("Wait 1 minute before requesting another backup.", 5000, "error", "bi bi-exclamation-triangle-fill");
+    ui.modal({
+      title: 'Create Backup',
+      body: '<p>Create a downloadable ZIP file backup of server contents. The backup will include all site pages, scripts, stylesheets, other assets, frontend files, frontend beta files, API files, necessary scripts, uploaded files (question images and syllabus), recently exported reports and backups, databases, templates, and server management files. Files containing hashed user passwords will not be included in the backup. Contact your hosting provider to access these private files, or log in to your hosting panel.</p>',
+      inputs: [
+        {
+          label: 'Include Previous Backups',
+          type: 'select',
+          options: [
+            {
+              value: 'true',
+              text: 'Yes'
+            },
+            {
+              value: 'false',
+              text: 'No'
+            }
+          ],
+          defaultValue: 'false',
+        },
+      ],
+      buttons: [
+        {
+          text: 'Cancel',
+          class: 'cancel-button',
+          close: true,
+        },
+        {
+          text: 'Create',
+          class: 'submit-button',
+          onclick: (inputValue) => {
+            createBackup(inputValue);
+          },
+          close: true,
+        },
+      ],
+    });
+  }
+
+  function createBackup(inputValue) {
+    if (!active) return;
+    ui.toast("Generating backup...", 3000, "info", "bi bi-download");
+    ui.setUnsavedChanges(true);
+    fetch(domain + '/backup', {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        usr: storage.get("usr"),
+        pwd: storage.get("pwd"),
+        include_previous_backups: inputValue || false,
+      }),
+    })
+      .then(async (r) => {
+        if (!r.ok) {
+          try {
+            var re = await r.json();
+            if (re.error || re.message) {
+              ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+              throw new Error(re.error || re.message);
+            } else {
+              throw new Error("API error");
+            }
+          } catch (e) {
+            throw new Error(e.message || "API error");
+          }
+        }
+        return await r.json();
+      })
+      .then(r => {
+        ui.setUnsavedChanges(false);
+        if (!r || !r.filename) {
+          ui.toast("Error generating backup.", 3000, "error", "bi bi-exclamation-triangle-fill");
+          return;
+        }
+        ui.toast("Backup generated successfully.", 3000, "success", "bi bi-check-circle-fill");
+        ui.view();
+        init();
+      })
+      .catch((e) => {
+        console.error(e);
+        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
+      });
+  }
+
+  function downloadBackupModal() {
+    if (!active) return;
+    const filename = this.parentElement.parentElement.id;
+    const file_name = this.parentElement.parentElement.querySelector('.file_name').innerText;
+    const type = this.parentElement.parentElement.querySelector('.type').innerText;
+    const modified = this.parentElement.parentElement.querySelector('.modified').innerText;
+    const size = this.parentElement.parentElement.querySelector('.size').innerText;
+    ui.modal({
+      title: 'Download Backup',
+      body: `<p>Downloading this <code>${type}</code> backup will take up ${size} of disk space on your hard drive.<br><br>Name: ${file_name}<br>Type: ${type}<br>Modified: ${modified}<br>Size: ${size}</p>`,
+      buttons: [
+        {
+          text: 'Cancel',
+          class: 'cancel-button',
+          close: true,
+        },
+        {
+          text: 'Download',
+          class: 'submit-button',
+          onclick: () => {
+            this.disabled = true;
+            ui.toast(`Downloading ${file_name}.${type.toLowerCase()}...`, 3000, "info", "bi bi-download");
+            const link = document.createElement('a');
+            link.href = filename;
+            link.download = filename.split('/')[filename.split('/').length - 1];
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            this.disabled = false;
+            ui.toast("Backup downloaded successfully.", 3000, "success", "bi bi-check-circle-fill");
+          },
+          close: true,
+        },
+      ],
+    });
+  }
+
+  function deleteBackupsModal() {
+    if (!active) return;
+    ui.modal({
+      title: 'Delete All Backups',
+      body: '<p>Are you sure you would like to delete all backups? This action is not reversible.</p>',
+      buttons: [
+        {
+          text: 'Cancel',
+          class: 'cancel-button',
+          close: true,
+        },
+        {
+          text: 'Delete',
+          class: 'submit-button',
+          onclick: () => {
+            deleteBackups();
+          },
+          close: true,
+        },
+      ],
+    });
+  }
+
+  function deleteBackups() {
+    if (!active) return;
+    ui.setUnsavedChanges(true);
+    fetch(domain + '/backups', {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        usr: storage.get("usr"),
+        pwd: storage.get("pwd"),
+      }),
+    })
+      .then(async (r) => {
+        if (!r.ok) {
+          try {
+            var re = await r.json();
+            if (re.error || re.message) {
+              ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+              throw new Error(re.error || re.message);
+            } else {
+              throw new Error("API error");
+            }
+          } catch (e) {
+            throw new Error(e.message || "API error");
+          }
+        }
+        return await r.json();
+      })
+      .then(() => {
+        ui.setUnsavedChanges(false);
+        ui.toast("Successfully deleted all backups.", 3000, "success", "bi bi-check-lg");
+        init();
+      })
+      .catch((e) => {
+        console.error(e);
+        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
+        pollingOff();
+      });
+  }
+
+  function deleteBackupModal() {
+    if (!active) return;
+    const file_name = this.parentElement.parentElement.querySelector('.file_name').innerText;
+    const type = this.parentElement.parentElement.querySelector('.type').innerText;
+    const modified = this.parentElement.parentElement.querySelector('.modified').innerText;
+    const size = this.parentElement.parentElement.querySelector('.size').innerText;
+    ui.modal({
+      title: 'Delete Backup',
+      body: `<p>Are you sure you would like to delete backup? This action is not reversible.<br><br>Name: ${file_name}<br>Type: ${type}<br>Modified: ${modified}<br>Size: ${size}</p>`,
+      buttons: [
+        {
+          text: 'Cancel',
+          class: 'cancel-button',
+          close: true,
+        },
+        {
+          text: 'Delete',
+          class: 'submit-button',
+          onclick: () => {
+            deleteBackup(file_name, type);
+          },
+          close: true,
+        },
+      ],
+    });
+  }
+
+  function deleteBackup(file_name, type) {
+    if (!active) return;
+    ui.setUnsavedChanges(true);
+    fetch(domain + '/backup', {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        usr: storage.get("usr"),
+        pwd: storage.get("pwd"),
+        file_name: `${file_name}.${type.toLowerCase()}`,
+      }),
+    })
+      .then(async (r) => {
+        if (!r.ok) {
+          try {
+            var re = await r.json();
+            if (re.error || re.message) {
+              ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+              throw new Error(re.error || re.message);
+            } else {
+              throw new Error("API error");
+            }
+          } catch (e) {
+            throw new Error(e.message || "API error");
+          }
+        }
+        return await r.json();
+      })
+      .then(() => {
+        ui.setUnsavedChanges(false);
+        ui.toast("Successfully deleted backup.", 3000, "success", "bi bi-check-lg");
+        init();
+      })
+      .catch((e) => {
+        console.error(e);
+        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
+        pollingOff();
+      });
+  }
+
+  function archiveType(mode) {
+    const current = document.querySelector(`[data-archive-type="${archiveTypeSelected}"]`);
+    const fromHeight = current?.getBoundingClientRect().height;
+    if (archiveTypeSelected == mode) return;
+    document.querySelectorAll("[data-archive-type]").forEach((item) => {
+      if (item.getAttribute("data-archive-type") == mode) {
+        item.style.removeProperty("display");
+      } else {
+        item.style.display = "none";
+      }
+    });
+    const container = document.getElementById("answer-container");
+    const target = document.querySelector(`[data-archive-type="${mode}"]`);
+    const toHeight = target.getBoundingClientRect().height;
+    ui.animate(
+      container,
+      fromHeight
+        ? {
+          height: fromHeight + "px",
+        }
+        : undefined,
+      {
+        height: toHeight + "px",
+      },
+      500,
+      false,
+    );
+    archiveTypeSelected = mode;
+  }
+
+  function archiveModal(itemType, itemId = null) {
+    if (!active) return;
+    var itemName = null;
+    switch (itemType) {
+      case 'course':
+        if (!itemId) itemId = document.getElementById("course-period-input") ? courses.find(c => (String(c.id) === document.getElementById("course-period-input").value))?.id : null;
+        itemName = document.getElementById("course-period-input") ? courses.find(c => (String(c.id) === document.getElementById("course-period-input").value))?.name : null;
+        break;
+      case 'segment':
+        if (!itemId) itemId = loadedSegment ? loadedSegment.number : null;
+        itemName = loadedSegment ? loadedSegment.name : null;
+        break;
+      case 'question':
+        itemName = questions.find(q => String(q.id) === itemId)?.number;
+        break;
+      default:
+        return ui.toast("Item to archive not found.", 5000, "error", "bi bi-exclamation-triangle-fill");
+    }
+    if ((typeof itemId === 'object') || (typeof itemId === 'undefined')) return ui.toast("Item to archive not found.", 5000, "error", "bi bi-exclamation-triangle-fill");
+    ui.modal({
+      title: 'Archive Item',
+      body: `<p>Archiving this ${itemType} will hide it from student view and admin-side management, and will only be accessible from the Archive page. After archiving this ${itemType}, editing it will be disabled.</p>`,
+      buttons: [
+        {
+          text: 'Cancel',
+          class: 'cancel-button',
+          close: true,
+        },
+        {
+          text: 'Archive',
+          class: 'submit-button',
+          onclick: () => {
+            archive(itemType, String(itemId), itemName);
+          },
+          close: true,
+        },
+      ],
+    });
+  }
+
+  function archiveMultipleModal() {
+    if (!active) return;
+    var archivingList = [];
+    var archivingListString = "";
+    document.querySelectorAll('.selected').forEach(e => {
+      if (!e.id) return;
+      var itemType = e.id.split('-')[0];
+      var itemId = e.id.split('-')[1];
+      var itemName = null;
+      switch (itemType) {
+        case 'segment':
+          itemName = segments.find(s => String(s.number) === itemId).name;
+          break;
+        case 'question':
+          itemName = questions.find(q => String(q.id) === itemId).number;
+          break;
+        case 'response':
+          itemName = responses.find(r => String(r.id) === itemId).id;
+          break;
+        default:
+          return ui.toast("Item to archive not found.", 5000, "error", "bi bi-exclamation-triangle-fill");
+      }
+      if ((typeof itemId === 'object') || (typeof itemId === 'undefined')) return ui.toast("Item to archive not found.", 5000, "error", "bi bi-exclamation-triangle-fill");
+      archivingList.push({
+        type: itemType,
+        id: itemId,
+        name: itemName,
+      });
+      archivingListString += `<br>${itemType[0].toUpperCase()}${itemType.slice(1)}: ${itemName || itemId}`;
+    });
+    if (archivingList.length === 0) return ui.toast("No items selected.", 5000, "error", "bi bi-exclamation-triangle-fill");
+    ui.modal({
+      title: 'Archive Selected',
+      body: `<p>Archiving these ${archivingList[0].type}s will hide them from student view and admin-side management, and will only be accessible from the Archive page. After archiving these ${archivingList[0].type}s, editing them will be disabled.<br>${archivingListString}</p>`,
+      buttons: [
+        {
+          text: 'Cancel',
+          class: 'cancel-button',
+          close: true,
+        },
+        {
+          text: 'Archive Selected',
+          class: 'submit-button',
+          onclick: async () => {
+            for (var i = 0; i < archivingList.length; i++) {
+              await archive(archivingList[i].type, String(archivingList[i].id), archivingList[i].name);
+            }
+          },
+          close: true,
+        },
+      ],
+    });
+  }
+
+  async function archive(itemType, itemId, itemName = null) {
+    if (!active || !itemType || !itemId) return;
+    ui.toast(`Archiving ${itemType} ${itemName || itemId}...`, 3000, "info", "bi bi-archive");
+    ui.setUnsavedChanges(true);
+    await fetch(domain + '/archive', {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        usr: storage.get("usr"),
+        pwd: storage.get("pwd"),
+        item_type: itemType,
+        item_id: itemId,
+      }),
+    })
+      .then(async (r) => {
+        if (!r.ok) {
+          try {
+            var re = await r.json();
+            if (re.error || re.message) {
+              ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+              throw new Error(re.error || re.message);
+            } else {
+              throw new Error("API error");
+            }
+          } catch (e) {
+            throw new Error(e.message || "API error");
+          }
+        }
+        return await r.json();
+      })
+      .then(() => {
+        ui.setUnsavedChanges(false);
+        ui.toast(`Successfully archived ${itemType} ${itemName || itemId}.`, 3000, "success", "bi bi-check-lg");
+        if (loadedSegmentEditor) return window.location.href = '/admin/';
+        init();
+      })
+      .catch((e) => {
+        console.error(e);
+        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
+      });
+  }
+
+  function unarchiveModal() {
+    if (!active) return;
+    if (!this || !this.parentElement) return;
+    var itemType = this.parentElement.getAttribute('archive-type');
+    var itemId = this.parentElement.id;
+    if (!itemType || !itemId) return;
+    var itemName = null;
+    switch (itemType) {
+      case 'course':
+        itemName = courses.find(c => String(c.id) === itemId)?.name;
+        break;
+      case 'segment':
+        itemName = segments.find(s => String(s.number) === itemId)?.name;
+        break;
+      case 'question':
+        itemName = questions.find(q => String(q.id) === itemId)?.number;
+        break;
+      case 'response':
+        itemName = itemId;
+        break;
+      default:
+        return ui.toast("Item to archive not found.", 5000, "error", "bi bi-exclamation-triangle-fill");
+    }
+    if ((typeof itemId === 'object') || (typeof itemId === 'undefined')) return ui.toast("Item to archive not found.", 5000, "error", "bi bi-exclamation-triangle-fill");
+    ui.modal({
+      title: 'Unarchive Item',
+      body: `<p>Unarchiving this ${itemType} will restore it to how it was before archiving, given that all dependents still have the ${itemType} linked.</p>`,
+      buttons: [
+        {
+          text: 'Cancel',
+          class: 'cancel-button',
+          close: true,
+        },
+        {
+          text: 'Unarchive',
+          class: 'submit-button',
+          onclick: () => {
+            unarchive(itemType, String(itemId), itemName);
+          },
+          close: true,
+        },
+      ],
+    });
+  }
+
+  function unarchiveMultipleModal() {
+    if (!active) return;
+    var unarchivingList = [];
+    var unarchivingListString = "";
+    document.querySelectorAll('.selected').forEach(e => {
+      if (!e.getAttribute('archive-type') || !e.id) return;
+      var itemType = e.getAttribute('archive-type');
+      var itemId = e.id;
+      var itemName = null;
+      switch (itemType) {
+        case 'course':
+          itemName = courses.find(c => String(c.id) === itemId)?.name;
+          break;
+        case 'segment':
+          itemName = segments.find(s => String(s.number) === itemId)?.name;
+          break;
+        case 'question':
+          itemName = questions.find(q => String(q.id) === itemId)?.number;
+          break;
+        case 'response':
+          itemName = itemId;
+          break;
+        default:
+          return ui.toast("Item to archive not found.", 5000, "error", "bi bi-exclamation-triangle-fill");
+      }
+      if ((typeof itemId === 'object') || (typeof itemId === 'undefined')) return ui.toast("Item to archive not found.", 5000, "error", "bi bi-exclamation-triangle-fill");
+      unarchivingList.push({
+        type: itemType,
+        id: itemId,
+        name: itemName,
+      });
+      unarchivingListString += `<br>${itemType[0].toUpperCase()}${itemType.slice(1)}: ${itemName || itemId}`;
+    });
+    if (unarchivingList.length === 0) return ui.toast("No items selected.", 5000, "error", "bi bi-exclamation-triangle-fill");
+    ui.modal({
+      title: 'Unarchive Selected',
+      body: `<p>Unarchiving these items will restore them to how they were before archiving, given that all dependents still have the item linked.<br>${unarchivingListString}</p>`,
+      buttons: [
+        {
+          text: 'Cancel',
+          class: 'cancel-button',
+          close: true,
+        },
+        {
+          text: 'Unarchive Selected',
+          class: 'submit-button',
+          onclick: async () => {
+            for (var i = 0; i < unarchivingList.length; i++) {
+              await unarchive(unarchivingList[i].type, String(unarchivingList[i].id), unarchivingList[i].name);
+            }
+          },
+          close: true,
+        },
+      ],
+    });
+  }
+
+  async function unarchive(itemType, itemId, itemName = null) {
+    if (!active || !itemType || !itemId) return;
+    ui.toast(`Unarchiving ${itemType} ${itemName || itemId}...`, 3000, "info", "bi bi-archive");
+    ui.setUnsavedChanges(true);
+    await fetch(domain + '/unarchive', {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        usr: storage.get("usr"),
+        pwd: storage.get("pwd"),
+        item_type: itemType,
+        item_id: itemId,
+      }),
+    })
+      .then(async (r) => {
+        if (!r.ok) {
+          try {
+            var re = await r.json();
+            if (re.error || re.message) {
+              ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+              throw new Error(re.error || re.message);
+            } else {
+              throw new Error("API error");
+            }
+          } catch (e) {
+            throw new Error(e.message || "API error");
+          }
+        }
+        return await r.json();
+      })
+      .then(() => {
+        ui.setUnsavedChanges(false);
+        ui.toast(`Successfully unarchived ${itemType} ${itemName || itemId}.`, 3000, "success", "bi bi-check-lg");
+        init();
+      })
+      .catch((e) => {
+        console.error(e);
+        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
       });
   }
 } catch (error) {
