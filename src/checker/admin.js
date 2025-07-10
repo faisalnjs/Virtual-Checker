@@ -30,6 +30,7 @@ var loadedSegmentCreator = false;
 var noReloadCourse = false;
 var logs = [];
 var renderedEditors = {};
+var rosters = [];
 
 var draggableQuestionList = null;
 var draggableSegmentReorder = null;
@@ -397,21 +398,6 @@ try {
             option.innerHTML = document.getElementById("course-input") ? course.name : `${course.name}${(coursePeriods.length > 0) ? ` (Period${(coursePeriods.length > 1) ? 's' : ''} ${coursePeriods.join(', ')})` : ''}`;
             document.getElementById("course-period-input").appendChild(option);
           });
-          if (document.querySelector(".course-reorder .reorder")) {
-            document.querySelector(".course-reorder .reorder").innerHTML = "";
-            for (let i = 1; i < 10; i++) {
-              const elem = document.createElement("div");
-              elem.classList = "button-grid inputs";
-              elem.style = "flex-wrap: nowrap !important;";
-              var periodCourse = c.find(course => JSON.parse(course.periods).includes(i))?.id;
-              var coursesSelectorString = "";
-              c.sort((a, b) => a.id - b.id).forEach(course => {
-                coursesSelectorString += `<option value="${course.id}" ${(periodCourse === course.id) ? 'selected' : ''}>${course.name}</option>`;
-              });
-              elem.innerHTML = `<input type="text" autocomplete="off" id="period-${i}" value="Period ${i}" disabled /><select id="periodCourseSelector" value="${(periodCourse === undefined) ? '' : periodCourse}"><option value="" ${(periodCourse === undefined) ? 'selected' : ''}></option>${coursesSelectorString}</select>`;
-              document.querySelector(".course-reorder .reorder").appendChild(elem);
-            }
-          }
           const course = courses.find(c => String(c.id) === document.getElementById("course-period-input").value);
           if (document.getElementById("course-input") && course) document.getElementById("course-input").value = course.name;
         }
@@ -430,11 +416,15 @@ try {
         if (document.getElementById("sort-seat-input")) document.getElementById("sort-seat-input").addEventListener("input", updateQuestionReports);
         if (document.getElementById("filter-segment-input")) document.getElementById("filter-segment-input").addEventListener("change", updateQuestions);
         if (document.getElementById("course-period-input")) document.getElementById("course-period-input").addEventListener("input", updateCourses);
-        await fetch(domain + '/segments', {
-          method: "GET",
+        await fetch(domain + '/rosters', {
+          method: "POST",
           headers: {
             "Content-Type": "application/json",
-          }
+          },
+          body: JSON.stringify({
+            usr: storage.get("usr"),
+            pwd: storage.get("pwd"),
+          }),
         })
           .then(async (r) => {
             if (!r.ok) {
@@ -452,12 +442,26 @@ try {
             }
             return await r.json();
           })
-          .then(async c => {
-            segments = c;
-            if (document.getElementById("course-period-input") && !loadedSegmentEditor && !loadedSegmentCreator && !noReloadCourse) updateSegments();
-            if (document.getElementById("filter-segment-input")) updateCourses();
-            if (document.getElementById("speed-mode-segments")) updateSpeedModeSegments();
-            await fetch(domain + '/questions', {
+          .then(async r => {
+            rosters = r;
+            if (document.querySelector(".course-reorder .reorder") && !loadedSegmentEditor && !loadedSegmentCreator && !noReloadCourse) {
+              document.querySelector(".course-reorder .reorder").innerHTML = "";
+              for (let i = 1; i < 10; i++) {
+                const elem = document.createElement("div");
+                elem.classList = "button-grid inputs";
+                elem.style = "flex-wrap: nowrap !important;";
+                var periodCourse = c.find(course => JSON.parse(course.periods).includes(i))?.id;
+                var coursesSelectorString = "";
+                c.sort((a, b) => a.id - b.id).forEach(course => {
+                  coursesSelectorString += `<option value="${course.id}" ${(periodCourse === course.id) ? 'selected' : ''}>${course.name}</option>`;
+                });
+                elem.innerHTML = `<input type="text" autocomplete="off" id="period-${i}" value="Period ${i}" disabled /><select id="periodCourseSelector" value="${(periodCourse === undefined) ? '' : periodCourse}"><option value="" ${(periodCourse === undefined) ? 'selected' : ''}></option>${coursesSelectorString}</select>${rosters.find(roster => String(roster.period) === String(i)) ? '<button class="fit" style="min-width: 126px !important;" data-view-roster>View Roster</button>' : '<button class="fit" style="min-width: 126px !important;" data-upload-roster>Upload Roster</button>'}`;
+                document.querySelector(".course-reorder .reorder").appendChild(elem);
+              }
+              document.querySelectorAll("[data-view-roster]").forEach(a => a.addEventListener("click", viewRoster));
+              document.querySelectorAll("[data-upload-roster]").forEach(a => a.addEventListener("click", uploadRoster));
+            }
+            await fetch(domain + '/segments', {
               method: "GET",
               headers: {
                 "Content-Type": "application/json",
@@ -479,29 +483,16 @@ try {
                 }
                 return await r.json();
               })
-              .then(async q => {
-                questions = q;
-                if (document.getElementById("add-question-input")) {
-                  document.getElementById("add-question-input").innerHTML = '';
-                  questions.sort((a, b) => a.number - b.number).forEach(question => {
-                    if (document.querySelector(`#question-list .question:has(input[id="${question.id}"])`)) return;
-                    const option = document.createElement("option");
-                    option.value = question.id;
-                    option.innerHTML = `ID ${question.id} #${question.number} - ${question.question}`;
-                    document.getElementById("add-question-input").appendChild(option);
-                  });
-                  if (questions.length === 0) document.getElementById("add-existing-question-button").disabled = true;
-                }
-                if (document.getElementById("speed-mode-starting-question")) updateSpeedModeStartingQuestion();
-                await fetch(domain + '/answers', {
-                  method: "POST",
+              .then(async c => {
+                segments = c;
+                if (document.getElementById("course-period-input") && !loadedSegmentEditor && !loadedSegmentCreator && !noReloadCourse) updateSegments();
+                if (document.getElementById("filter-segment-input")) updateCourses();
+                if (document.getElementById("speed-mode-segments")) updateSpeedModeSegments();
+                await fetch(domain + '/questions', {
+                  method: "GET",
                   headers: {
                     "Content-Type": "application/json",
-                  },
-                  body: JSON.stringify({
-                    usr: storage.get("usr"),
-                    pwd: storage.get("pwd"),
-                  }),
+                  }
                 })
                   .then(async (r) => {
                     if (!r.ok) {
@@ -519,10 +510,21 @@ try {
                     }
                     return await r.json();
                   })
-                  .then(async a => {
-                    answers = a;
-                    if (document.querySelector('.questions.section')) updateQuestions();
-                    await fetch(domain + '/responses', {
+                  .then(async q => {
+                    questions = q;
+                    if (document.getElementById("add-question-input")) {
+                      document.getElementById("add-question-input").innerHTML = '';
+                      questions.sort((a, b) => a.number - b.number).forEach(question => {
+                        if (document.querySelector(`#question-list .question:has(input[id="${question.id}"])`)) return;
+                        const option = document.createElement("option");
+                        option.value = question.id;
+                        option.innerHTML = `ID ${question.id} #${question.number} - ${question.question}`;
+                        document.getElementById("add-question-input").appendChild(option);
+                      });
+                      if (questions.length === 0) document.getElementById("add-existing-question-button").disabled = true;
+                    }
+                    if (document.getElementById("speed-mode-starting-question")) updateSpeedModeStartingQuestion();
+                    await fetch(domain + '/answers', {
                       method: "POST",
                       headers: {
                         "Content-Type": "application/json",
@@ -548,24 +550,62 @@ try {
                         }
                         return await r.json();
                       })
-                      .then(async r => {
-                        responses = r;
-                        if (document.getElementById("course-period-input") && !loadedSegmentEditor && !loadedSegmentCreator && !noReloadCourse) {
-                          document.getElementById("course-period-input").value = courses.find(c => JSON.parse(c.periods).includes(Number(String(responses.sort((a, b) => String(a.seatCode)[0] - String(b.seatCode)[0])[0]?.seatCode)[0]))) ? courses.find(c => JSON.parse(c.periods).includes(Number(String(responses.sort((a, b) => String(a.seatCode)[0] - String(b.seatCode)[0])[0]?.seatCode)[0]))).id : courses.sort((a, b) => a.id - b.id)[0]?.id;
-                          await updateResponses();
-                        }
-                        if (noReloadCourse) await updateResponses();
-                        if (document.querySelector('.segment-reports')) updateSegments();
-                        if (document.querySelector('.question-reports')) updateQuestionReports();
-                        if (window.location.pathname.split('/admin/')[1] === 'editor') loadSegmentEditor();
-                        active = true;
-                        ui.stopLoader();
-                        if (!polling) ui.toast("Data restored.", 1000, "info", "bi bi-cloud-arrow-down");
-                        if (polling && (expandedReports.length > 0)) {
-                          expandedReports.forEach(er => {
-                            if (document.getElementById(er)) document.getElementById(er).classList.add('active');
+                      .then(async a => {
+                        answers = a;
+                        if (document.querySelector('.questions.section')) updateQuestions();
+                        await fetch(domain + '/responses', {
+                          method: "POST",
+                          headers: {
+                            "Content-Type": "application/json",
+                          },
+                          body: JSON.stringify({
+                            usr: storage.get("usr"),
+                            pwd: storage.get("pwd"),
+                          }),
+                        })
+                          .then(async (r) => {
+                            if (!r.ok) {
+                              try {
+                                var re = await r.json();
+                                if (re.error || re.message) {
+                                  ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+                                  throw new Error(re.error || re.message);
+                                } else {
+                                  throw new Error("API error");
+                                }
+                              } catch (e) {
+                                throw new Error(e.message || "API error");
+                              }
+                            }
+                            return await r.json();
+                          })
+                          .then(async r => {
+                            responses = r;
+                            if (document.getElementById("course-period-input") && !loadedSegmentEditor && !loadedSegmentCreator && !noReloadCourse) {
+                              document.getElementById("course-period-input").value = courses.find(c => JSON.parse(c.periods).includes(Number(String(responses.sort((a, b) => String(a.seatCode)[0] - String(b.seatCode)[0])[0]?.seatCode)[0]))) ? courses.find(c => JSON.parse(c.periods).includes(Number(String(responses.sort((a, b) => String(a.seatCode)[0] - String(b.seatCode)[0])[0]?.seatCode)[0]))).id : courses.sort((a, b) => a.id - b.id)[0]?.id;
+                              await updateResponses();
+                            }
+                            if (noReloadCourse) await updateResponses();
+                            if (document.querySelector('.segment-reports')) updateSegments();
+                            if (document.querySelector('.question-reports')) updateQuestionReports();
+                            if (window.location.pathname.split('/admin/')[1] === 'editor') loadSegmentEditor();
+                            reorder = reorder ? false : true;
+                            toggleReorder();
+                            active = true;
+                            ui.stopLoader();
+                            if (!polling) ui.toast("Data restored.", 1000, "info", "bi bi-cloud-arrow-down");
+                            if (polling && (expandedReports.length > 0)) {
+                              expandedReports.forEach(er => {
+                                if (document.getElementById(er)) document.getElementById(er).classList.add('active');
+                              });
+                            }
+                          })
+                          .catch((e) => {
+                            console.error(e);
+                            ui.view("api-fail");
+                            if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
+                            pollingOff();
                           });
-                        }
                       })
                       .catch((e) => {
                         console.error(e);
@@ -590,7 +630,7 @@ try {
           })
           .catch((e) => {
             console.error(e);
-            ui.view("api-fail");
+            if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
             if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
             pollingOff();
           });
@@ -602,7 +642,6 @@ try {
         pollingOff();
       });
     if (document.getElementById("course-period-input") && !loadedSegmentEditor && !loadedSegmentCreator && !noReloadCourse) {
-      if (document.querySelector('.course-reorder')) document.querySelector('.course-reorder').style.display = 'none';
       document.querySelectorAll('[data-remove-segment-input]').forEach(a => a.removeEventListener('click', removeSegment));
       document.querySelectorAll('[data-remove-segment-input]').forEach(a => a.addEventListener('click', removeSegment));
       if (document.getElementById("course-input")) document.getElementById("course-input").value = courses.find(c => String(c.id) === document.getElementById("course-period-input").value).name;
@@ -1036,7 +1075,6 @@ try {
   }
 
   function calculateButtonHeights(container) {
-    if (!active) return;
     let totalHeight = 0;
     const buttons = container.querySelectorAll('button');
     buttons.forEach(button => {
@@ -1102,9 +1140,11 @@ try {
             c.sort((a, b) => a.id - b.id).forEach(course => {
               coursesSelectorString += `<option value="${course.id}" ${(periodCourse === course.id) ? 'selected' : ''}>${course.name}</option>`;
             });
-            elem.innerHTML = `<input type="text" autocomplete="off" id="period-${i}" value="Period ${i}" disabled /><select id="periodCourseSelector" value="${(periodCourse === undefined) ? '' : periodCourse}"><option value="" ${(periodCourse === undefined) ? 'selected' : ''}></option>${coursesSelectorString}</select>`;
+            elem.innerHTML = `<input type="text" autocomplete="off" id="period-${i}" value="Period ${i}" disabled /><select id="periodCourseSelector" value="${(periodCourse === undefined) ? '' : periodCourse}"><option value="" ${(periodCourse === undefined) ? 'selected' : ''}></option>${coursesSelectorString}</select>${rosters.find(r => String(r.period) === String(i)) ? '<button class="fit" style="min-width: 126px !important;" data-view-roster>View Roster</button>' : '<button class="fit" style="min-width: 126px !important;" data-upload-roster>Upload Roster</button>'}`;
             document.querySelector(".course-reorder .reorder").appendChild(elem);
           }
+          document.querySelectorAll("[data-view-roster]").forEach(a => a.addEventListener("click", viewRoster));
+          document.querySelectorAll("[data-upload-roster]").forEach(a => a.addEventListener("click", uploadRoster));
         }
       })
       .catch((e) => {
@@ -2549,15 +2589,15 @@ try {
     const top = (window.screen.height / 2) - (height / 2);
     const windowFeatures = `width=${width},height=${height},resizable=no,scrollbars=no,status=yes,left=${left},top=${top}`;
     const newWindow = window.open(url, '_blank', windowFeatures);
-    let uploadSSuccessful = false;
+    let uploadSuccessful = false;
     window.addEventListener('message', (event) => {
       if (event.origin !== (window.location.protocol + '//' + window.location.hostname + (window.location.port ? ':' + window.location.port : ''))) return;
-      if (event.data === 'uploadSuccess') uploadSSuccessful = true;
+      if (event.data === 'uploadSuccess') uploadSuccessful = true;
     }, false);
     const checkWindowClosed = setInterval(function () {
       if (newWindow && newWindow.closed) {
         clearInterval(checkWindowClosed);
-        if (uploadSSuccessful) {
+        if (uploadSuccessful) {
           ui.modeless(`<i class="bi bi-cloud-upload"></i>`, "Uploaded");
         } else {
           ui.modeless(`<i class="bi bi-exclamation-triangle"></i>`, "Upload Cancelled");
@@ -2568,7 +2608,6 @@ try {
   }
 
   function toggleReorder() {
-    if (!active) return;
     if (reorder) {
       reorder = false;
       document.querySelector('[data-reorder] .bi-arrows-move').style.display = "block";
@@ -4911,6 +4950,62 @@ try {
         if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
         if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
       });
+  }
+
+  function viewRoster() {
+    if (!this || !this.parentElement || !this.parentElement.querySelector('input').id) return;
+    const roster = rosters.find(roster => String(roster.period) === this.parentElement.querySelector('input').id.split('period-')[1]);
+    var rosterDataString = '';
+    JSON.parse(roster.data).forEach(row => {
+      rosterDataString += `<br>${row.seatCode}: ${row.last}, ${row.first}`;
+    });
+    ui.modal({
+      title: `Period ${roster.period} Roster`,
+      body: `<p>${JSON.parse(roster.data).length} students<br>Last updated ${time.unixToString(roster.last_updated)}<br>${rosterDataString}</p>`,
+      buttons: [
+        {
+          text: 'Replace Roster',
+          class: 'submit-button',
+          onclick: async () => {
+            renderRosterPond(roster.period);
+          },
+          close: true,
+        },
+      ],
+    });
+  }
+
+  function uploadRoster() {
+    if (!this || !this.parentElement || !this.parentElement.querySelector('input').id) return;
+    renderRosterPond(this.parentElement.querySelector('input').id.split('period-')[1]);
+  }
+
+  async function renderRosterPond(period) {
+    if (!active) return;
+    if (!period) return;
+    const url = '/admin/upload?period=' + period;
+    const width = 600;
+    const height = 150;
+    const left = (window.screen.width / 2) - (width / 2);
+    const top = (window.screen.height / 2) - (height / 2);
+    const windowFeatures = `width=${width},height=${height},resizable=no,scrollbars=no,status=yes,left=${left},top=${top}`;
+    const newWindow = window.open(url, '_blank', windowFeatures);
+    let uploadSuccessful = false;
+    window.addEventListener('message', (event) => {
+      if (event.origin !== (window.location.protocol + '//' + window.location.hostname + (window.location.port ? ':' + window.location.port : ''))) return;
+      if (event.data === 'uploadSuccess') uploadSuccessful = true;
+    }, false);
+    const checkWindowClosed = setInterval(function () {
+      if (newWindow && newWindow.closed) {
+        clearInterval(checkWindowClosed);
+        if (uploadSuccessful) {
+          ui.modeless(`<i class="bi bi-cloud-upload"></i>`, "Uploaded");
+        } else {
+          ui.modeless(`<i class="bi bi-exclamation-triangle"></i>`, "Upload Cancelled");
+        }
+        init();
+      }
+    }, 1000);
   }
 } catch (error) {
   if (storage.get("developer")) {

@@ -93,6 +93,7 @@ button.icon {
 
 button.fit {
   width: fit-content !important;
+  min-width: fit-content !important;
 }
 
 button:disabled {
@@ -586,6 +587,7 @@ div.ML__keyboard {
 
 .fit {
   width: fit-content !important;
+  min-width: fit-content !important;
 }
 
 #checker:not(:has(input)):not(:has(select)) {
