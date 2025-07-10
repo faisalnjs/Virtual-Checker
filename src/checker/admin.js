@@ -582,7 +582,7 @@ try {
                           .then(async r => {
                             responses = r;
                             if (document.getElementById("course-period-input") && !loadedSegmentEditor && !loadedSegmentCreator && !noReloadCourse) {
-                              document.getElementById("course-period-input").value = courses.find(c => JSON.parse(c.periods).includes(Number(String(responses.sort((a, b) => String(a.seatCode)[0] - String(b.seatCode)[0])[0]?.seatCode)[0]))) ? courses.find(c => JSON.parse(c.periods).includes(Number(String(responses.sort((a, b) => String(a.seatCode)[0] - String(b.seatCode)[0])[0]?.seatCode)[0]))).id : courses.sort((a, b) => a.id - b.id)[0]?.id;
+                              document.getElementById("course-period-input").value = courses.find(c => responses.some(r => JSON.parse(c.periods).includes(Number(String(r.seatCode)[0])))) ? courses.find(c => responses.some(r => JSON.parse(c.periods).includes(Number(String(r.seatCode)[0])))).id : courses.sort((a, b) => a.id - b.id)[0]?.id;
                               await updateResponses();
                             }
                             if (noReloadCourse) await updateResponses();
@@ -2608,6 +2608,7 @@ try {
   }
 
   function toggleReorder() {
+    if (!document.querySelector('[data-reorder]')) return;
     if (reorder) {
       reorder = false;
       document.querySelector('[data-reorder] .bi-arrows-move').style.display = "block";
@@ -2889,7 +2890,15 @@ try {
     document.querySelectorAll('.detailed-report.active').forEach(dr => expandedReports.push(dr.id));
     if (!document.querySelector('.question-reports') || (questions.length === 0)) return;
     document.querySelector('.question-reports').innerHTML = '';
-    questions.filter(q => q.number.startsWith(document.getElementById("sort-question-input")?.value)).sort((a, b) => a.id - b.id).forEach(question => {
+    const course = courses.find(c => document.getElementById("course-period-input") ? (String(c.id) === document.getElementById("course-period-input").value) : null);
+    var courseQuestions = [];
+    segments.filter(s => String(s.course) === String(course?.id)).filter(s => document.getElementById("filter-segment-input")?.value ? (String(s.number) === document.getElementById("filter-segment-input").value) : true).forEach(segment => {
+      JSON.parse(segment.question_ids).filter(q => questions.find(q1 => q1.id == q.id)?.number.startsWith(document.getElementById("sort-question-input")?.value)).forEach(questionId => {
+        const question = questions.find(q => String(q.id) === String(questionId.id));
+        if (question) courseQuestions.push(question);
+      });
+    });
+    courseQuestions.filter(q => q.number.startsWith(document.getElementById("sort-question-input")?.value)).sort((a, b) => a.id - b.id).forEach(question => {
       var questionResponses = responses.filter(r => r.question_id === question.id).filter(r => JSON.parse(courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value).periods).includes(Number(String(r.seatCode)[0]))).filter(r => String(r.seatCode).startsWith(document.getElementById("sort-seat-input")?.value));
       if (document.getElementById('hideIncorrectAttempts').checked) questionResponses = questionResponses.filter((r, index, self) => r.status === 'Correct' || !self.some(other => other.question_id === r.question_id && other.status === 'Correct'));
       var detailedReport = '';
