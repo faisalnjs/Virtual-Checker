@@ -2911,7 +2911,7 @@ try {
         if (question) courseQuestions.push(question);
       });
     });
-    courseQuestions.filter(q => q.number.startsWith(document.getElementById("sort-question-input")?.value)).sort((a, b) => a.id - b.id).forEach(question => {
+    courseQuestions.filter(q => q.number.startsWith(document.getElementById("sort-question-input")?.value)).sort((a, b) => document.getElementById("filter-segment-input")?.value ? 0 : (a.id - b.id)).forEach(question => {
       var questionResponses = responses.filter(r => r.question_id === question.id).filter(r => JSON.parse(courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value).periods).includes(Number(String(r.seatCode)[0]))).filter(r => String(r.seatCode).startsWith(document.getElementById("sort-seat-input")?.value));
       if (document.getElementById('hideIncorrectAttempts').checked) questionResponses = questionResponses.filter((r, index, self) => r.status === 'Correct' || !self.some(other => other.question_id === r.question_id && other.status === 'Correct'));
       if (document.querySelector('#filter-report-responses [aria-selected="true"]').getAttribute('data-value') === 'first') {
