@@ -4964,7 +4964,32 @@ try {
       body: `<p>${JSON.parse(roster.data).length} students<br>Last updated ${time.unixToString(roster.last_updated)}<br>${rosterDataString}</p>`,
       buttons: [
         {
-          text: 'Replace Roster',
+          text: 'Download',
+          class: 'submit-button',
+          onclick: async () => {
+            this.disabled = true;
+            ui.toast(`Downloading ${roster.url.split('/')[roster.url.split('/').length - 1]}...`, 3000, "info", "bi bi-download");
+            const link = document.createElement('a');
+            link.href = roster.url;
+            link.download = roster.url.split('/')[roster.url.split('/').length - 1];
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            this.disabled = false;
+            ui.toast("Roster downloaded successfully.", 3000, "success", "bi bi-check-circle-fill");
+          },
+          close: true,
+        },
+        {
+          text: 'Remove',
+          class: 'submit-button',
+          onclick: async () => {
+            removeRoster(roster.period);
+          },
+          close: true,
+        },
+        {
+          text: 'Replace',
           class: 'submit-button',
           onclick: async () => {
             renderRosterPond(roster.period);
@@ -5007,6 +5032,61 @@ try {
       }
     }, 1000);
   }
+
+  function removeRoster(period) {
+    if (!active) return;
+    ui.setUnsavedChanges(true);
+    fetch(domain + '/roster', {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        usr: storage.get("usr"),
+        pwd: storage.get("pwd"),
+        period,
+      }),
+    })
+      .then(async (r) => {
+        if (!r.ok) {
+          try {
+            var re = await r.json();
+            if (re.error || re.message) {
+              ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+              throw new Error(re.error || re.message);
+            } else {
+              throw new Error("API error");
+            }
+          } catch (e) {
+            throw new Error(e.message || "API error");
+          }
+        }
+        return await r.json();
+      })
+      .then(() => {
+        ui.setUnsavedChanges(false);
+        ui.toast("Successfully removed roster.", 3000, "success", "bi bi-check-lg");
+        init();
+      })
+      .catch((e) => {
+        console.error(e);
+        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
+        pollingOff();
+      });
+  }
+
+  document.getElementById("download-roster-template-button")?.addEventListener("click", () => {
+    const templateUrl = `${domain}/uploads/rosters/template.csv`;
+    ui.toast(`Downloading ${templateUrl.split('/')[templateUrl.split('/').length - 1]}...`, 3000, "info", "bi bi-download");
+    const link = document.createElement('a');
+    link.href = templateUrl;
+    link.download = templateUrl.split('/')[templateUrl.split('/').length - 1];
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    ui.toast("Roster template downloaded successfully.", 3000, "success", "bi bi-check-circle-fill");
+  });
 } catch (error) {
   if (storage.get("developer")) {
     alert(`Error @ admin.js: ${error.message}`);
