@@ -687,6 +687,9 @@ try {
   if (document.querySelector('[data-archive-segment]')) document.querySelector('[data-archive-segment]').addEventListener("click", () => archiveModal('segment'));
   if (document.querySelector('[data-archive-multiple]')) document.querySelector('[data-archive-multiple]').addEventListener("click", archiveMultipleModal);
   if (document.querySelector('[data-unarchive-multiple]')) document.querySelector('[data-unarchive-multiple]').addEventListener("click", unarchiveMultipleModal);
+  if (document.getElementById('filter-responses')) document.getElementById('filter-responses').addEventListener("input", updateSegments);
+  if (document.getElementById('filter-responses')) document.getElementById('filter-responses').addEventListener("input", updateResponses);
+  if (document.getElementById('filter-responses')) document.getElementById('filter-responses').addEventListener("input", updateQuestionReports);
 
   function toggleSelecting() {
     if (!active) return;
@@ -935,6 +938,11 @@ try {
               if (!question) return;
               var questionResponses = responses.filter(seatCode => JSON.parse(courses.find(course => String(course.id) === document.getElementById("course-period-input").value).periods).includes(Number(String(seatCode.seatCode)[0]))).filter(r => String(r.segment) === String(segment.number)).filter(r => r.question_id === question.id).filter(r => String(r.seatCode).startsWith(document.getElementById("sort-seat-input")?.value));
               if (document.getElementById('hideIncorrectAttempts').checked) questionResponses = questionResponses.filter((r, index, self) => r.status === 'Correct' || !self.some(other => other.question_id === r.question_id && other.status === 'Correct'));
+              if (document.querySelector('#filter-responses [aria-selected="true"]').getAttribute('data-value') === 'first') {
+                questionResponses = questionResponses.filter(r => questionResponses.sort((a, b) => a.id - b.id).find(r1 => (r1.seatCode === r.seatCode) && (r1.question_id === r.question_id)) === r);
+              } else if (document.querySelector('#filter-responses [aria-selected="true"]').getAttribute('data-value') === 'last') {
+                questionResponses = questionResponses.filter(r => r.id === Math.max(...questionResponses.filter(r1 => r1.seatCode === r.seatCode && r1.question_id === r.question_id).map(r1 => r1.id)));;
+              }
               var detailedReport1 = '';
               questionResponses.forEach(r => {
                 detailedReport1 += `<div class="detailed-report-question">
@@ -2084,6 +2092,11 @@ try {
         var detailedReport = '';
         var seatCodeResponses = seatCode.responses.sort((a, b) => a.timestamp - b.timestamp);
         if (document.getElementById('hideIncorrectAttempts').checked) seatCodeResponses = seatCodeResponses.filter((r, index, self) => r.status === 'Correct' || !self.some(other => other.question_id === r.question_id && other.status === 'Correct'));
+        if (document.querySelector('#filter-responses [aria-selected="true"]').getAttribute('data-value') === 'first') {
+          seatCodeResponses = seatCodeResponses.filter(r => seatCodeResponses.sort((a, b) => a.id - b.id).find(r1 => (r1.seatCode === r.seatCode) && (r1.question_id === r.question_id)) === r);
+        } else if (document.querySelector('#filter-responses [aria-selected="true"]').getAttribute('data-value') === 'last') {
+          seatCodeResponses = seatCodeResponses.filter(r => r.id === Math.max(...seatCodeResponses.filter(r1 => r1.seatCode === r.seatCode && r1.question_id === r.question_id).map(r1 => r1.id)));;
+        }
         seatCodeResponses.forEach(r => {
           detailedReport += questions.find(q => q.id == r.question_id).number ? `<div class="detailed-report-question">
             <div class="color">
@@ -2901,6 +2914,11 @@ try {
     courseQuestions.filter(q => q.number.startsWith(document.getElementById("sort-question-input")?.value)).sort((a, b) => a.id - b.id).forEach(question => {
       var questionResponses = responses.filter(r => r.question_id === question.id).filter(r => JSON.parse(courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value).periods).includes(Number(String(r.seatCode)[0]))).filter(r => String(r.seatCode).startsWith(document.getElementById("sort-seat-input")?.value));
       if (document.getElementById('hideIncorrectAttempts').checked) questionResponses = questionResponses.filter((r, index, self) => r.status === 'Correct' || !self.some(other => other.question_id === r.question_id && other.status === 'Correct'));
+      if (document.querySelector('#filter-responses [aria-selected="true"]').getAttribute('data-value') === 'first') {
+        questionResponses = questionResponses.filter(r => questionResponses.sort((a, b) => a.id - b.id).find(r1 => (r1.seatCode === r.seatCode) && (r1.question_id === r.question_id)) === r);
+      } else if (document.querySelector('#filter-responses [aria-selected="true"]').getAttribute('data-value') === 'last') {
+        questionResponses = questionResponses.filter(r => r.id === Math.max(...questionResponses.filter(r1 => r1.seatCode === r.seatCode && r1.question_id === r.question_id).map(r1 => r1.id)));;
+      }
       var detailedReport = '';
       questionResponses.forEach(r => {
         detailedReport += `<div class="detailed-report-question">

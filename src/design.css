@@ -1342,6 +1342,10 @@ hidden,
   padding-left: 5px;
 }
 
+.color-name:has(> .showonhover):hover .showonhover {
+  display: inline-block !important;
+}
+
 *:has(> .hideonhover):hover .hideonhover {
   display: none !important;
 }
