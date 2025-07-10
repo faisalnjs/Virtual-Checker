@@ -76,6 +76,8 @@ try {
         filterLogsByActionInput.value = "";
         filterLogsByActionInput.dispatchEvent(new Event("change"));
       }
+      const filterReportResponses = document.getElementById("filter-report-responses");
+      if (filterReportResponses) filterReportResponses.children[0].click();
     }
   });
 } catch (error) {
