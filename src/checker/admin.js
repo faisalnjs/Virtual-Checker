@@ -939,7 +939,7 @@ try {
               var questionResponses = responses.filter(seatCode => JSON.parse(courses.find(course => String(course.id) === document.getElementById("course-period-input").value).periods).includes(Number(String(seatCode.seatCode)[0]))).filter(r => String(r.segment) === String(segment.number)).filter(r => r.question_id === question.id).filter(r => String(r.seatCode).startsWith(document.getElementById("sort-seat-input")?.value));
               if (document.getElementById('hideIncorrectAttempts').checked) questionResponses = questionResponses.filter((r, index, self) => r.status === 'Correct' || !self.some(other => other.question_id === r.question_id && other.status === 'Correct'));
               if (document.querySelector('#filter-report-responses [aria-selected="true"]').getAttribute('data-value') === 'first') {
-                questionResponses = questionResponses.filter(r => questionResponses.sort((a, b) => a.id - b.id).find(r1 => (r1.seatCode === r.seatCode) && (r1.question_id === r.question_id)) === r);
+                questionResponses = questionResponses.filter(r => r.id === Math.min(...questionResponses.filter(r1 => r1.seatCode === r.seatCode && r1.question_id === r.question_id).map(r1 => r1.id)));
               } else if (document.querySelector('#filter-report-responses [aria-selected="true"]').getAttribute('data-value') === 'last') {
                 questionResponses = questionResponses.filter(r => r.id === Math.max(...questionResponses.filter(r1 => r1.seatCode === r.seatCode && r1.question_id === r.question_id).map(r1 => r1.id)));
               }
@@ -2093,7 +2093,7 @@ try {
         var seatCodeResponses = seatCode.responses.sort((a, b) => a.timestamp - b.timestamp);
         if (document.getElementById('hideIncorrectAttempts').checked) seatCodeResponses = seatCodeResponses.filter((r, index, self) => r.status === 'Correct' || !self.some(other => other.question_id === r.question_id && other.status === 'Correct'));
         if (document.querySelector('#filter-report-responses [aria-selected="true"]').getAttribute('data-value') === 'first') {
-          seatCodeResponses = seatCodeResponses.filter(r => seatCodeResponses.sort((a, b) => a.id - b.id).find(r1 => (r1.seatCode === r.seatCode) && (r1.question_id === r.question_id)) === r);
+          seatCodeResponses = seatCodeResponses.filter(r => r.id === Math.min(...seatCodeResponses.filter(r1 => r1.seatCode === r.seatCode && r1.question_id === r.question_id).map(r1 => r1.id)));
         } else if (document.querySelector('#filter-report-responses [aria-selected="true"]').getAttribute('data-value') === 'last') {
           seatCodeResponses = seatCodeResponses.filter(r => r.id === Math.max(...seatCodeResponses.filter(r1 => r1.seatCode === r.seatCode && r1.question_id === r.question_id).map(r1 => r1.id)));
         }
@@ -2915,7 +2915,7 @@ try {
       var questionResponses = responses.filter(r => r.question_id === question.id).filter(r => JSON.parse(courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value).periods).includes(Number(String(r.seatCode)[0]))).filter(r => String(r.seatCode).startsWith(document.getElementById("sort-seat-input")?.value));
       if (document.getElementById('hideIncorrectAttempts').checked) questionResponses = questionResponses.filter((r, index, self) => r.status === 'Correct' || !self.some(other => other.question_id === r.question_id && other.status === 'Correct'));
       if (document.querySelector('#filter-report-responses [aria-selected="true"]').getAttribute('data-value') === 'first') {
-        questionResponses = questionResponses.filter(r => questionResponses.sort((a, b) => a.id - b.id).find(r1 => (r1.seatCode === r.seatCode) && (r1.question_id === r.question_id)) === r);
+        questionResponses = questionResponses.filter(r => r.id === Math.min(...questionResponses.filter(r1 => r1.seatCode === r.seatCode && r1.question_id === r.question_id).map(r1 => r1.id)));
       } else if (document.querySelector('#filter-report-responses [aria-selected="true"]').getAttribute('data-value') === 'last') {
         questionResponses = questionResponses.filter(r => r.id === Math.max(...questionResponses.filter(r1 => r1.seatCode === r.seatCode && r1.question_id === r.question_id).map(r1 => r1.id)));
       }
