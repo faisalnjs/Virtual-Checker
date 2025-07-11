@@ -78,7 +78,7 @@ try {
           return await r.json();
         })
         .then(users => {
-          document.querySelector('.users').innerHTML = '<div class="row header"><span>Username / Seat Code</span><span>Role</span><span>Partial Access Courses</span><span>Full Access Courses</span><span>Actions</span></div>';
+          document.querySelector('.users').innerHTML = '<div class="row header"><span>User</span><span>Role</span><span>Partial Access</span><span>Full Access</span><span>Anonymous</span><span>Actions</span></div>';
           if (users.length > 0) {
             document.getElementById('no-users').setAttribute('hidden', '');
             document.querySelector('.users').removeAttribute('hidden');
@@ -99,6 +99,7 @@ try {
               <span class="role">${user.role}</span>
               <span class="partialAccessCourses">${JSON.stringify(user.main_courses)}</span>
               <span class="fullAccessCourses">${JSON.stringify(user.access_courses)}</span>
+              <span class="anonymousResponses">${user.anonymous_responses ? '<i class="bi bi-check-lg"></i>' : ''}</span>
               <span class="actions">
                 <button class="icon" data-edit-user tooltip="Edit User">
                   <i class="bi bi-pencil"></i>
@@ -2278,7 +2279,6 @@ try {
         usr: storage.get("usr"),
         pwd: storage.get("pwd"),
         question_id: this.parentElement.querySelector('#response-id-input').value,
-        seatCode: this.parentElement.querySelector('#response-seat-code-input').value,
       }),
     })
       .then(async (r) => {
@@ -2321,7 +2321,6 @@ try {
         usr: storage.get("usr"),
         pwd: storage.get("pwd"),
         question_id: this.parentElement.querySelector('#response-id-input').value,
-        seatCode: this.parentElement.querySelector('#response-seat-code-input').value,
       }),
     })
       .then(async (r) => {
@@ -3724,6 +3723,7 @@ try {
     const role = this.parentElement.parentElement.querySelector('.role').innerText;
     const partialAccessCourses = JSON.parse(this.parentElement.parentElement.querySelector('.partialAccessCourses').innerText);
     const fullAccessCourses = JSON.parse(this.parentElement.parentElement.querySelector('.fullAccessCourses').innerText);
+    const anonymousResponses = this.parentElement.parentElement.querySelector('.anonymousResponses').innerHTML.includes('check');
     ui.modal({
       title: 'Edit User',
       body: `<p>Edit <code>${role}</code> user <code>${user}</code>. This action is not reversible.${(user === storage.get("usr")) ? '<br><br>Changing your own password will result in system logoff.' : ''}</p>`,
@@ -3769,6 +3769,22 @@ try {
           multiple: true,
         },
         {
+          label: 'Anonymized Responses',
+          type: 'select',
+          options: [
+            {
+              value: 0,
+              text: 'Off',
+              selected: !anonymousResponses,
+            },
+            {
+              value: 1,
+              text: 'On',
+              selected: anonymousResponses,
+            },
+          ]
+        },
+        {
           label: 'Admin Password',
           type: 'password',
           required: true,
@@ -3808,7 +3824,8 @@ try {
         role: inputValues[0],
         partialAccessCourses: inputValues[2] || [],
         fullAccessCourses: inputValues[3] || [],
-        admin_password: inputValues[4],
+        anonymousResponses: inputValues[4],
+        admin_password: inputValues[5],
       }),
     })
       .then(async (r) => {
@@ -3891,6 +3908,20 @@ try {
           multiple: true,
         },
         {
+          label: 'Anonymized Responses',
+          type: 'select',
+          options: [
+            {
+              value: 0,
+              text: 'Off',
+            },
+            {
+              value: 1,
+              text: 'On',
+            },
+          ]
+        },
+        {
           label: 'Admin Password',
           type: 'password',
           required: true,
@@ -3930,7 +3961,8 @@ try {
         role: inputValues[0],
         partialAccessCourses: inputValues[3] || [],
         fullAccessCourses: inputValues[4] || [],
-        admin_password: inputValues[5],
+        anonymousResponses: inputValues[5],
+        admin_password: inputValues[6],
       }),
     })
       .then(async (r) => {

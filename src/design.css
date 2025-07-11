@@ -1391,3 +1391,8 @@ body > canvas {
   opacity: 0.75;
   cursor: not-allowed;
 }
+
+#checker.anonymous .input-group:has(#sort-seat-input),
+#checker.anonymous [data-seat-code] {
+  display: none !important;
+}
