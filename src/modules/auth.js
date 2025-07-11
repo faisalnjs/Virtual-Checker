@@ -418,3 +418,107 @@ function prompt(backingUp = true, type = 'settings', func = () => { }, domain, o
         ],
     });
 }
+
+export async function loadAdminSettings(domain, courses) {
+    await fetch(domain + '/user/settings', {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+            "usr": (window.location.pathname === '/ta/') ? storage.get("code") : storage.get("usr"),
+            "pwd": storage.get("pwd"),
+        })
+    })
+        .then(async (r) => {
+            if (!r.ok) {
+                try {
+                    var re = await r.json();
+                    if (re.error || re.message) {
+                        ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+                        throw new Error(re.error || re.message);
+                    } else {
+                        throw new Error("API error");
+                    }
+                } catch (e) {
+                    throw new Error(e.message || "API error");
+                }
+            }
+            return await r.json();
+        })
+        .then(r => {
+            if ((window.location.pathname !== '/ta/') && (r.default_page !== null) && document.referrer && (document.referrer.split(window.location.origin)[1] === '/') && (r.default_page !== window.location.pathname)) window.location.href = r.default_page;
+            if (r.default_course !== null) ui.setDefaultCourse(r.default_course);
+            const pagesList = document.getElementById("default-page");
+            const coursesList = document.getElementById("default-course");
+            if (!pagesList || !coursesList) return;
+            pagesList.innerHTML = '';
+            if (window.location.pathname === '/ta/') {
+                const option = document.createElement("option");
+                option.value = '/ta/';
+                option.textContent = 'Responses';
+                pagesList.appendChild(option);
+                pagesList.disabled = true;
+            } else {
+                [...document.querySelector('.menu-icons').children].forEach(item => {
+                    if (!item.getAttribute('href').includes('/admin')) return;
+                    const option = document.createElement("option");
+                    option.value = item.getAttribute('href');
+                    option.textContent = item.getAttribute('tooltip');
+                    if (r.default_page && (option.value === r.default_page)) option.selected = true;
+                    pagesList.appendChild(option);
+                });
+            }
+            coursesList.innerHTML = '<option value="">Select Course</option>';
+            courses.forEach(course => {
+                const option = document.createElement("option");
+                option.value = course.id;
+                option.textContent = course.name;
+                if (r.default_course && (String(option.value) === String(r.default_course))) option.selected = true;
+                coursesList.appendChild(option);
+            });
+            ui.reloadUnsavedInputs();
+            document.getElementById("save-admin-settings").addEventListener("click", async () => {
+                await fetch(domain + '/user/settings', {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        "usr": (window.location.pathname === '/ta/') ? storage.get("code") : storage.get("usr"),
+                        "pwd": storage.get("pwd"),
+                        "page": pagesList.value,
+                        "course": coursesList.value,
+                    })
+                })
+                    .then(async (r) => {
+                        if (!r.ok) {
+                            try {
+                                var re = await r.json();
+                                if (re.error || re.message) {
+                                    ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+                                    throw new Error(re.error || re.message);
+                                } else {
+                                    throw new Error("API error");
+                                }
+                            } catch (e) {
+                                throw new Error(e.message || "API error");
+                            }
+                        }
+                        return await r.json();
+                    })
+                    .then(() => {
+                        ui.setUnsavedChanges(false);
+                        ui.toast("Successfully saved settings.", 3000, "success", "bi bi-check-lg");
+                    })
+                    .catch((e) => {
+                        console.error(e);
+                        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+                    });
+            });
+        })
+        .catch((e) => {
+            console.error(e);
+            if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        });
+}

@@ -809,3 +809,9 @@ export function expandMatrix(matrixString) {
 
   return dialog;
 }
+
+export var defaultCourse = null;
+
+export function setDefaultCourse(value) {
+  defaultCourse = value;
+}

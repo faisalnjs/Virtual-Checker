@@ -358,7 +358,6 @@ try {
           if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
           pollingOff();
         });
-      return;
     }
 
     await fetch(domain + '/courses', {
@@ -385,6 +384,7 @@ try {
       })
       .then(async c => {
         courses = c;
+        await auth.loadAdminSettings(domain, courses);
         if (document.querySelector('.users')) {
           ui.reloadUnsavedInputs();
           return;
@@ -582,7 +582,7 @@ try {
                           .then(async r => {
                             responses = r;
                             if (document.getElementById("course-period-input") && !loadedSegmentEditor && !loadedSegmentCreator && !noReloadCourse) {
-                              document.getElementById("course-period-input").value = courses.find(c => responses.some(r => JSON.parse(c.periods).includes(Number(String(r.seatCode)[0])))) ? courses.find(c => responses.some(r => JSON.parse(c.periods).includes(Number(String(r.seatCode)[0])))).id : courses.sort((a, b) => a.id - b.id)[0]?.id;
+                              document.getElementById("course-period-input").value = ((ui.defaultCourse !== null) && courses.find(c => String(c.id) === String(ui.defaultCourse))) ? ui.defaultCourse : courses.find(c => responses.some(r => JSON.parse(c.periods).includes(Number(String(r.seatCode)[0])))) ? courses.find(c => responses.some(r => JSON.parse(c.periods).includes(Number(String(r.seatCode)[0])))).id : courses.sort((a, b) => a.id - b.id)[0]?.id;
                               await updateResponses();
                             }
                             if (noReloadCourse) await updateResponses();
