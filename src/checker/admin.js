@@ -515,7 +515,7 @@ try {
                     questions = q;
                     if (document.getElementById("add-question-input")) {
                       document.getElementById("add-question-input").innerHTML = '';
-                      questions.sort((a, b) => a.number - b.number).forEach(question => {
+                      questions.sort((a, b) => a.id - b.id).forEach(question => {
                         if (document.querySelector(`#question-list .question:has(input[id="${question.id}"])`)) return;
                         const option = document.createElement("option");
                         option.value = question.id;
