@@ -1071,6 +1071,7 @@ try {
     document.querySelectorAll('[data-archive-segment]').forEach(a => a.addEventListener('click', () => {
       if (a.parentElement.parentElement.id) archiveModal('segment', a.parentElement.parentElement.id.split('segment-')[1]);
     }));
+    if (!loadedSegmentEditor && !loadedSegmentCreator) ui.setUnsavedChanges(false);
     ui.reloadUnsavedInputs();
   }
 
@@ -1738,6 +1739,7 @@ try {
         ui.toast("Failed to read content from clipboard.", 5000, "error", "bi bi-exclamation-triangle-fill");
       });
     }));
+    if (!loadedSegmentEditor && !loadedSegmentCreator) ui.setUnsavedChanges(false);
     ui.reloadUnsavedInputs();
   }
 
@@ -2253,6 +2255,8 @@ try {
     document.querySelectorAll('[data-edit-reason]').forEach(a => a.addEventListener('click', editReason));
     document.querySelectorAll('[report]').forEach(a => a.addEventListener('click', toggleDetailedReport));
     document.querySelectorAll('[data-select]').forEach(a => a.addEventListener('click', toggleSelected));
+    if (!loadedSegmentEditor && !loadedSegmentCreator) ui.setUnsavedChanges(false);
+    ui.reloadUnsavedInputs();
   }
 
   function calculateTimeDifference(currentDate, previousTimestamp) {
@@ -2881,6 +2885,7 @@ try {
     draggableQuestionList = createSwapy(document.getElementById("question-list"), {
       animation: 'none'
     });
+    ui.setUnsavedChanges(true);
     ui.reloadUnsavedInputs();
   }
 
@@ -2965,6 +2970,7 @@ try {
       if (document.getElementById(er)) document.getElementById(er).classList.add('active');
     });
     document.querySelectorAll('[report]').forEach(a => a.addEventListener('click', toggleDetailedReport));
+    if (!loadedSegmentEditor && !loadedSegmentCreator) ui.setUnsavedChanges(false);
     ui.reloadUnsavedInputs();
   }
 
@@ -3122,6 +3128,7 @@ try {
     draggableQuestionList = createSwapy(document.getElementById("question-list"), {
       animation: 'none'
     });
+    ui.setUnsavedChanges(true);
     ui.reloadUnsavedInputs();
   }
 
@@ -3138,6 +3145,8 @@ try {
     select.innerHTML = "";
     options.forEach(option => select.add(option));
     document.getElementById("add-existing-question-button").disabled = (document.getElementById("add-question-input").children.length === 0) ? true : false;
+    ui.setUnsavedChanges(true);
+    ui.reloadUnsavedInputs();
   }
 
   function createSegment() {
@@ -3226,6 +3235,7 @@ try {
       document.querySelector('[data-delete-segment]')?.remove();
       document.querySelector('[data-archive-segment]')?.remove();
       document.querySelector('[edit-segment-questions]')?.remove();
+      ui.reloadUnsavedInputs();
       return;
     }
     loadedSegment = segments.find(s => String(s.number) === String(segment));
@@ -3235,6 +3245,7 @@ try {
       document.querySelector('[data-delete-segment]')?.remove();
       document.querySelector('[data-archive-segment]')?.remove();
       document.querySelector('[edit-segment-questions]')?.remove();
+      ui.reloadUnsavedInputs();
       return;
     }
     loadedSegmentEditor = true;
@@ -3265,6 +3276,7 @@ try {
         }
       }, 1000);
     });
+    ui.reloadUnsavedInputs();
   }
 
   function deleteSegmentConfirm() {
