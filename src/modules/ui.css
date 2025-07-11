@@ -27,7 +27,7 @@ dialog img {
 }
 
 dialog #version-string {
-  margin: -55px auto 20px auto;
+  margin: -45px 10px 10px auto;
   width: fit-content;
   z-index: 1;
   background: var(--background-color);
@@ -39,8 +39,9 @@ dialog #version-string {
 }
 
 dialog #version-string p {
-  font-size: 25px;
+  font-size: 20px;
   font-weight: 600;
+  line-height: 30px;
   background: linear-gradient(0, var(--text-color) 50%, transparent);
   background-clip: text;
   -webkit-background-clip: text;
