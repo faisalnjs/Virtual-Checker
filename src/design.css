@@ -866,6 +866,7 @@ div.ML__keyboard {
 }
 
 .segments .section .questions,
+.questions .section .renderedMath,
 .questions .section .description,
 .questions .section .EasyMDEContainer,
 .questions .section .attachments,
@@ -885,12 +886,17 @@ div.ML__keyboard {
 }
 
 .segments .section.expanded .questions,
+.questions .section.expanded .renderedMath.show,
 .questions .section.expanded .description,
 .questions .section.expanded .EasyMDEContainer,
 .questions .section.expanded .attachments,
 .questions .section.expanded .answers {
   max-height: 10000px;
   transition: 0.25s var(--easing);
+}
+
+.questions .section.expanded .renderedMath:not(.show) {
+  margin-bottom: -7.5px;
 }
 
 .questions .section.expanded .description {

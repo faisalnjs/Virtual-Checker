@@ -4,6 +4,7 @@ import storage from "/src/modules/storage.js";
 import * as time from "/src/modules/time.js";
 import * as auth from "/src/modules/auth.js";
 import island from "/src/modules/island.js";
+import { convertLatexToMarkup, renderMathInElement } from "mathlive";
 import { createSwapy } from "swapy";
 import Quill from "quill";
 import "faz-quill-emoji/autoregister";
@@ -1490,6 +1491,15 @@ try {
             island();
           });
           question.appendChild(buttonGrid);
+          var questionMathRendering = document.createElement('div');
+          questionMathRendering.classList = `renderedMath${q.latex ? ' show' : ''}`;
+          questionMathRendering.innerHTML = convertLatexToMarkup(q.question);
+          renderMathInElement(questionMathRendering);
+          question.appendChild(questionMathRendering);
+          buttonGrid.querySelector("#question-text-input").addEventListener('input', (e) => {
+            questionMathRendering.innerHTML = convertLatexToMarkup(e.target.value);
+            renderMathInElement(questionMathRendering);
+          });
           var textareaContainer = document.createElement('div');
           textareaContainer.classList = "description";
           var toolbar = document.createElement('div');
