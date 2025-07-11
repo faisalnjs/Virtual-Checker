@@ -590,11 +590,11 @@ div.ML__keyboard {
   min-width: fit-content !important;
 }
 
-#checker:not(:has(.section)) {
+#checker:not(:has(.section)):not(:has(#submit-button)) {
   align-items: center;
 }
 
-#checker:not(:has(.section)) *:not(ul):not(ol):not(li) {
+#checker:not(:has(.section)):not(:has(#submit-button)) *:not(ul):not(ol):not(li) {
   text-align: center;
 }
 
