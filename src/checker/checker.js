@@ -663,6 +663,7 @@ try {
         });
       }, 100);
     }
+    ui.setUnsavedChanges(false);
     ui.reloadUnsavedInputs();
   }
 

@@ -424,6 +424,8 @@ try {
     document.querySelectorAll('[data-flag-response]').forEach(a => a.addEventListener('click', flagResponse));
     document.querySelectorAll('[data-unflag-response]').forEach(a => a.addEventListener('click', unflagResponse));
     document.querySelectorAll('[data-edit-reason]').forEach(a => a.addEventListener('click', editReason));
+    ui.setUnsavedChanges(false);
+    ui.reloadUnsavedInputs();
   }
 
   function calculateTimeDifference(currentDate, previousTimestamp) {

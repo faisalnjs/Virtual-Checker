@@ -1270,7 +1270,7 @@ try {
             number: question.querySelector('#question-number-input').value,
             segment: question.querySelector('#question-segment-input').value,
             question: question.querySelector('#question-text-input').value,
-            description: JSON.stringify(renderedEditors[Number(question.id.split('-')[1])].getContents()),
+            description: renderedEditors[Number(question.id.split('-')[1])] ? JSON.stringify(renderedEditors[Number(question.id.split('-')[1])].getContents()) : null,
             images: Array.from(question.querySelectorAll('.attachments img')).map(q => {
               return q.src;
             }),
@@ -1865,7 +1865,7 @@ try {
     var buttonGrid = document.createElement('div');
     buttonGrid.className = "button-grid inputs";
     var segmentsString = "";
-    segments.forEach(s => segmentsString += `<option value="${s.number}">${s.number}</option>`);
+    segments.forEach(s => segmentsString += `<option value="${s.number}"${(document.location.search.split('?segment=')[1] && (document.location.search.split('?segment=')[1] === String(s.number))) ? ' selected': ''}>${s.number}</option>`);
     buttonGrid.innerHTML = `<button square data-select tooltip="Select Question"><i class="bi bi-circle"></i><i class="bi bi-circle-fill"></i></button><div class="input-group small"><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-id-input" value="" disabled /></div></div><div class="input-group small"><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-number-input" value="" /></div></div><div class="input-group small"><div class="space" id="question-container"><select id="question-segment-input">${segmentsString}</select></div></div><div class="input-group"><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-text-input" value="" /></div></div><button square data-toggle-latex disabled tooltip="Toggle LaTeX Title"><i class="bi bi-cursor-text"></i></button><button square data-remove-question-input tooltip="Remove Question"><i class="bi bi-trash"></i></button><button square data-toggle-question tooltip="Expand Question"><i class="bi bi-caret-down-fill"></i><i class="bi bi-caret-up-fill"></i></button>`;
     group.appendChild(buttonGrid);
     this.parentElement.insertBefore(group, this.parentElement.children[this.parentElement.children.length - 1]);
@@ -1873,6 +1873,7 @@ try {
     document.querySelectorAll('[data-remove-question-input]').forEach(a => a.addEventListener('click', removeQuestion));
     document.querySelectorAll('[data-toggle-question]').forEach(a => a.addEventListener('click', toggleQuestion));
     document.querySelectorAll('[data-select]').forEach(a => a.addEventListener('click', toggleSelected));
+    buttonGrid.querySelector("#question-number-input").focus();
     ui.reloadUnsavedInputs();
   }
 
@@ -3235,6 +3236,7 @@ try {
       document.querySelector('[data-delete-segment]')?.remove();
       document.querySelector('[data-archive-segment]')?.remove();
       document.querySelector('[edit-segment-questions]')?.remove();
+      ui.setUnsavedChanges(false);
       ui.reloadUnsavedInputs();
       return;
     }
@@ -3245,6 +3247,7 @@ try {
       document.querySelector('[data-delete-segment]')?.remove();
       document.querySelector('[data-archive-segment]')?.remove();
       document.querySelector('[edit-segment-questions]')?.remove();
+      ui.setUnsavedChanges(false);
       ui.reloadUnsavedInputs();
       return;
     }
@@ -3276,6 +3279,7 @@ try {
         }
       }, 1000);
     });
+    ui.setUnsavedChanges(false);
     ui.reloadUnsavedInputs();
   }
 
