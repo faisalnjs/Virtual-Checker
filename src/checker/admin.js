@@ -1819,6 +1819,13 @@ try {
           icon.classList.add('bi-cursor-text');
           ui.toast("Question name marked as plain text.", 3000, "success", "bi bi-cursor-text");
         }
+        if (isLatex) {
+          this.parentElement.parentElement.querySelector(".renderedMath").classList.remove('show');
+        } else {
+          this.parentElement.parentElement.querySelector(".renderedMath").innerHTML = convertLatexToMarkup(this.parentElement.querySelector("#question-text-input").value);
+          renderMathInElement(this.parentElement.parentElement.querySelector(".renderedMath"));
+          this.parentElement.parentElement.querySelector(".renderedMath").classList.add('show');
+        }
         this.disabled = false;
       })
       .catch((e) => {
