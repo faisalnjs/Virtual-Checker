@@ -50,6 +50,14 @@ div.spacer {
   align-items: flex-end;
 }
 
+.button-grid.wrap {
+  flex-wrap: wrap;
+}
+
+.button-grid.wrap > * {
+  margin-top: 0;
+}
+
 #header {
   align-self: center;
   display: flex;

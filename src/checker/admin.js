@@ -2817,13 +2817,25 @@ try {
 
   document.querySelectorAll('[sort-segment-questions-increasing]').forEach(a => a.addEventListener('click', sortSegmentQuestionsIncreasing));
   document.querySelectorAll('[sort-segment-questions-decreasing]').forEach(a => a.addEventListener('click', sortSegmentQuestionsDecreasing));
+  document.querySelectorAll('[sort-segment-questions-number-increasing]').forEach(a => a.addEventListener('click', sortSegmentQuestionsNumberIncreasing));
+  document.querySelectorAll('[sort-segment-questions-number-decreasing]').forEach(a => a.addEventListener('click', sortSegmentQuestionsNumberDecreasing));
 
   function sortSegmentQuestionsIncreasing() {
+    if (!active) return;
+    sortSegmentQuestions('19');
+  }
+
+  function sortSegmentQuestionsDecreasing() {
+    if (!active) return;
+    sortSegmentQuestions('91');
+  }
+
+  function sortSegmentQuestionsNumberIncreasing() {
     if (!active) return;
     sortSegmentQuestions('az');
   }
 
-  function sortSegmentQuestionsDecreasing() {
+  function sortSegmentQuestionsNumberDecreasing() {
     if (!active) return;
     sortSegmentQuestions('za');
   }
@@ -2832,6 +2844,12 @@ try {
     if (!active) return;
     var updatedQuestions = [...document.getElementById("question-list").children].filter(q => q.classList.contains('question'));
     switch (type) {
+      case '19':
+        updatedQuestions.sort((a, b) => Number(a.id.split('questionList-')[1]) - Number(b.id.split('questionList-')[1]));
+        break;
+      case '91':
+        updatedQuestions.sort((a, b) => Number(b.id.split('questionList-')[1]) - Number(a.id.split('questionList-')[1]));
+        break;
       case 'az':
         updatedQuestions.sort((a, b) => {
           const nameA = a.querySelector('.small input').value;
@@ -2985,6 +3003,7 @@ try {
     if (loadedSegment && (typeof question === 'string') && JSON.parse(loadedSegment.question_ids).find(q => String(q.id) === String(question))) {
       if (!addingQuestion) return;
       document.getElementById("add-question-input").value = addingQuestion.id;
+      div.id = `questionList-${addingQuestion.id}`;
       div.setAttribute("data-swapy-slot", `questionList-${addingQuestion.id}`);
       inner.setAttribute("data-swapy-item", `questionList-${addingQuestion.id}`);
       inner.innerHTML = `<div class="drag" data-swapy-handle><i class="bi bi-grip-vertical"></i></div>
@@ -3025,6 +3044,7 @@ try {
     } else if (loadedSegmentCreator && (typeof question === 'string')) {
       if (!addingQuestion) return;
       document.getElementById("add-question-input").value = addingQuestion.id;
+      div.id = `questionList-${addingQuestion.id}`;
       div.setAttribute("data-swapy-slot", `questionList-${addingQuestion.id}`);
       inner.setAttribute("data-swapy-item", `questionList-${addingQuestion.id}`);
       inner.innerHTML = `<div class="drag" data-swapy-handle><i class="bi bi-grip-vertical"></i></div>
@@ -3065,6 +3085,7 @@ try {
     } else if (this) {
       if (!document.getElementById("add-question-input").selectedOptions[0]) return;
       var questionId = document.getElementById("add-question-input").value;
+      div.id = `questionList-${questionId}`;
       div.setAttribute("data-swapy-slot", `questionList-${questionId}`);
       inner.setAttribute("data-swapy-item", `questionList-${questionId}`);
       inner.innerHTML = `<div class="drag" data-swapy-handle><i class="bi bi-grip-vertical"></i></div>
@@ -3105,6 +3126,7 @@ try {
       document.getElementById("add-question-input").removeChild(document.getElementById("add-question-input").selectedOptions[0]);
     } else {
       var newQuestion = document.getElementById("add-question-input").children[document.getElementById("add-question-input").children.length - 1];
+      div.id = `questionList-${newQuestion.value}`;
       div.setAttribute("data-swapy-slot", `questionList-${newQuestion.value}`);
       inner.setAttribute("data-swapy-item", `questionList-${newQuestion.value}`);
       inner.innerHTML = `<div class="drag" data-swapy-handle><i class="bi bi-grip-vertical"></i></div>
