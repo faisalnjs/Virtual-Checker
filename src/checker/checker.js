@@ -309,8 +309,8 @@ try {
   // Check answer
   async function submitClick(code, segment, question, answer, mode, part) {
     var qA = storage.get("questionsAnswered") || [];
-    var alreadyAnswered = qA.find(q => q.segment == segment && q.question == question)
-    if (alreadyAnswered && alreadyAnswered.status == 'Correct') {
+    var alreadyAnswered = qA.find(q => (String(q.segment) === String(segment)) && (String(q.question) === String(question)))
+    if (alreadyAnswered && alreadyAnswered.status === 'Correct') {
       window.scroll(0, 0);
       ui.setUnsavedChanges(false);
       setTimeout(() => {
@@ -514,7 +514,7 @@ try {
           const option = document.createElement('option');
           option.value = segment.number;
           const allQuestionsCorrect = (JSON.parse(segment.question_ids).length > 0) && JSON.parse(segment.question_ids).every(questionId => {
-            const questionStatus = storage.get("questionsAnswered")?.find(q => q.segment == segment.number && q.question == questionId.id)?.status;
+            const questionStatus = storage.get("questionsAnswered")?.find(q => (String(q.segment) === String(segment.number)) && (String(q.question) === String(questionId.id)))?.status;
             return questionStatus === 'Correct';
           });
           option.innerHTML = `${segment.number} - ${segment.name}${segment.due ? ` (Due ${new Date(`${segment.due}T00:00:00`).toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })})` : ''}${allQuestionsCorrect ? ' [MASTERY]' : ''}`;
@@ -545,11 +545,11 @@ try {
   }
 
   async function updateSegment() {
-    const selectedSegment = segmentsArray.find(s => s.number == segments.value);
+    const selectedSegment = segmentsArray.find(s => String(s.number) === String(segments.value));
     questions.innerHTML = '';
     if (!selectedSegment) return updateQuestion();
     JSON.parse(selectedSegment.question_ids).forEach(questionId => {
-      if (questionsArray.find(q => q.id == questionId.id)) {
+      if (questionsArray.find(q => String(q.id) === String(questionId.id))) {
         const questionOption = document.createElement('option');
         questionOption.value = questionId.id;
         questionOption.innerHTML = questionId.name;
@@ -575,12 +575,12 @@ try {
     document.getElementById("segment-completed").classList.remove('mastery');
     if ((questions.querySelectorAll('option').length > 0) && Array.from(questions.querySelectorAll('option')).every(option => {
       const questionId = option.value;
-      const questionStatus = qA.find(q => q.segment == segments.value && q.question == questionId)?.status;
+      const questionStatus = qA.find(q => (String(q.segment) === String(segments.value)) && (String(q.question) === String(questionId)))?.status;
       return questionStatus === 'Correct' || questionStatus === 'In Progress' || questionStatus === 'Pending';
     })) {
       document.getElementById("segment-completed").removeAttribute('hidden');
       questions.querySelectorAll('option').forEach(option => {
-        const questionStatus = qA.find(q => q.segment == segments.value && q.question == option.value)?.status;
+        const questionStatus = qA.find(q => (String(q.segment) === String(segments.value)) && (String(q.question) === String(option.value)))?.status;
         const li = document.createElement('li');
         if (questionStatus === 'Correct') {
           li.innerHTML = `<i class="bi bi-check-lg"></i> ${option.innerHTML}`;
@@ -594,7 +594,7 @@ try {
     }
     if ((questions.querySelectorAll('option').length > 0) && Array.from(questions.querySelectorAll('option')).every(option => {
       const questionId = option.value;
-      const questionStatus = qA.find(q => q.segment == segments.value && q.question == questionId)?.status;
+      const questionStatus = qA.find(q => (String(q.segment) === String(segments.value)) && (String(q.question) === String(questionId)))?.status;
       return questionStatus === 'Correct';
     })) {
       document.getElementById("segment-completed").classList.add('mastery');
@@ -774,8 +774,8 @@ try {
           const frq = item.type === "frq";
           button.id = r.id;
           button.classList = (r.status === "Incorrect") ? 'incorrect' : (r.status === "Correct") ? 'correct' : '';
-          if (r.flagged == '1') button.classList.add('flagged');
-          var response = `<b>Status:</b> ${r.status.includes('Unknown') ? r.status.split('Unknown, ')[1] : r.status} at ${unixToString(item.timestamp)}${(r.reason) ? `</p>\n<p><b>Response:</b> ${r.reason}<br>` : ''}</p><button data-flag-response><i class="bi bi-flag-fill"></i> ${(r.flagged == '1') ? 'Unflag Response' : 'Flag for Review'}</button>`;
+          if (String(r.flagged) === '1') button.classList.add('flagged');
+          var response = `<b>Status:</b> ${r.status.includes('Unknown') ? r.status.split('Unknown, ')[1] : r.status} at ${unixToString(item.timestamp)}${(r.reason) ? `</p>\n<p><b>Response:</b> ${r.reason}<br>` : ''}</p><button data-flag-response><i class="bi bi-flag-fill"></i> ${(String(r.flagged) === '1') ? 'Unflag Response' : 'Flag for Review'}</button>`;
           item.number = questionsArray.find(question => question.id === Number(item.question)).number;
           if (!latex) {
             if (!array) {
@@ -798,7 +798,7 @@ try {
           renderMathInElement(button);
           // Resubmit check
           button.addEventListener("click", (event) => {
-            if (event.target.hasAttribute('data-flag-response')) return (r.flagged == '1') ? unflagResponse(event, true) : flagResponse(event, true);
+            if (event.target.hasAttribute('data-flag-response')) return (String(r.flagged) === '1') ? unflagResponse(event, true) : flagResponse(event, true);
             questionInput.value = item.question;
             if (latex) {
               answerMode("math");
@@ -1050,7 +1050,7 @@ try {
       updateQuestion();
     } else if ((questionOptions.length > 0) && Array.from(questionOptions).every(option => {
       const questionId = option.value;
-      const questionStatus = storage.get("questionsAnswered")?.find(q => q.segment == segments.value && q.question == questionId)?.status;
+      const questionStatus = storage.get("questionsAnswered")?.find(q => (String(q.segment) === String(segments.value)) && (String(q.question) === String(questionId)))?.status;
       return questionStatus === 'Correct' || questionStatus === 'In Progress' || questionStatus === 'Pending';
     })) {
       updateSegment();
@@ -1256,8 +1256,8 @@ try {
         const frq = item.type === "frq";
         button.id = r.id;
         button.classList = (r.status === "Incorrect") ? 'incorrect' : (r.status === "Correct") ? 'correct' : '';
-        if (r.flagged == '1') button.classList.add('flagged');
-        var response = `<b>Status:</b> ${r.status.includes('Unknown') ? r.status.split('Unknown, ')[1] : r.status}${(r.reason) ? `</p>\n<p><b>Response:</b> ${r.reason}<br>` : ''}</p><button data-flag-response><i class="bi bi-flag-fill"></i> ${(r.flagged == '1') ? 'Unflag Response' : 'Flag for Review'}</button>`;
+        if (String(r.flagged) === '1') button.classList.add('flagged');
+        var response = `<b>Status:</b> ${r.status.includes('Unknown') ? r.status.split('Unknown, ')[1] : r.status}${(r.reason) ? `</p>\n<p><b>Response:</b> ${r.reason}<br>` : ''}</p><button data-flag-response><i class="bi bi-flag-fill"></i> ${(String(r.flagged) === '1') ? 'Unflag Response' : 'Flag for Review'}</button>`;
         item.number = questionsArray.find(question => question.id === Number(item.question)).number;
         if (!latex) {
           if (!array) {
@@ -1280,7 +1280,7 @@ try {
         renderMathInElement(button);
         // Resubmit check
         button.addEventListener("click", (event) => {
-          if (event.target.hasAttribute('data-flag-response')) return (r.flagged == '1') ? unflagResponse(event) : flagResponse(event);
+          if (event.target.hasAttribute('data-flag-response')) return (String(r.flagged) === '1') ? unflagResponse(event) : flagResponse(event);
           questionInput.value = item.question;
           ui.view("");
           if (latex) {
@@ -1381,7 +1381,7 @@ try {
         });
         if (qA.find(q => (q.segment === item.segment) && (q.question === item.question))) qA.find(q => (q.segment === item.segment) && (q.question === item.question)).status = (r.status.includes("Recorded")) ? "Pending" : r.status;
       });
-      if (results.find(({ item, ...r }) => r.flagged == '1')) {
+      if (results.find(({ item, ...r }) => String(r.flagged) === '1')) {
         var p = document.createElement("p");
         p.classList = "flagged-response-alert";
         p.innerText = "You have flagged responses to review.";
