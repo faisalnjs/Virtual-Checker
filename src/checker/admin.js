@@ -695,6 +695,9 @@ try {
   if (document.getElementById('useRoster')) document.getElementById('useRoster').addEventListener("change", updateSegments);
   if (document.getElementById('useRoster')) document.getElementById('useRoster').addEventListener("change", updateResponses);
   if (document.getElementById('useRoster')) document.getElementById('useRoster').addEventListener("change", updateQuestionReports);
+  if (document.getElementById('sort-report-responses')) document.getElementById('sort-report-responses').addEventListener("input", updateSegments);
+  if (document.getElementById('sort-report-responses')) document.getElementById('sort-report-responses').addEventListener("input", updateResponses);
+  if (document.getElementById('sort-report-responses')) document.getElementById('sort-report-responses').addEventListener("input", updateQuestionReports);
 
   function toggleSelecting() {
     if (!active) return;
@@ -949,6 +952,27 @@ try {
                 questionResponses = questionResponses.filter(r => r.id === Math.max(...questionResponses.filter(r1 => r1.seatCode === r.seatCode && r1.question_id === r.question_id).map(r1 => r1.id)));
               }
               var detailedReport1 = '';
+              switch(document.querySelector('#sort-report-responses [aria-selected="true"]').getAttribute('data-value')) {
+                case 'seatCode':
+                  questionResponses = questionResponses.sort((a, b) => a.seatCode - b.seatCode);
+                  break;
+                case 'studentName':
+                  questionResponses = questionResponses.sort((a, b) => {
+                    var nameA = "Unknown";
+                    var nameB = "Unknown";
+                    if (document.getElementById('useRoster').checked) {
+                      var roster = rosters.find(roster => roster.period === Number(String(a.seatCode)[0]));
+                      if (roster) {
+                        var studentA = JSON.parse(roster.data).find(student => String(student.seatCode) === String(a.seatCode));
+                        if (studentA) nameA = `${studentA.last}, ${studentA.first}`;
+                        var studentB = JSON.parse(roster.data).find(student => String(student.seatCode) === String(b.seatCode));
+                        if (studentB) nameB = `${studentB.last}, ${studentB.first}`;
+                      }
+                    }
+                    return nameA.localeCompare(nameB);
+                  });
+                  break;
+              }
               questionResponses.forEach(r => {
                 var name = "Unknown";
                 if (document.getElementById('useRoster').checked) {
@@ -2135,7 +2159,29 @@ try {
       }
     });
     if (document.querySelector('.seat-code-reports')) {
-      seatCodes.filter(seatCode => JSON.parse(courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value).periods).includes(Number(String(seatCode.code)[0]))).sort((a, b) => Number(a.code) - Number(b.code)).forEach(seatCode => {
+      var sortedSeatCodes = seatCodes.filter(seatCode => JSON.parse(courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value).periods).includes(Number(String(seatCode.code)[0])));
+      switch(document.querySelector('#sort-report-responses [aria-selected="true"]').getAttribute('data-value')) {
+        case 'seatCode':
+          sortedSeatCodes = sortedSeatCodes.sort((a, b) => Number(a.code) - Number(b.code));
+          break;
+        case 'studentName':
+          sortedSeatCodes = sortedSeatCodes.sort((a, b) => {
+            var nameA = "Unknown";
+            var nameB = "Unknown";
+            if (document.getElementById('useRoster').checked) {
+              var roster = rosters.find(roster => roster.period === Number(String(a.code)[0]));
+              if (roster) {
+                var studentA = JSON.parse(roster.data).find(student => String(student.seatCode) === String(a.code));
+                if (studentA) nameA = `${studentA.last}, ${studentA.first}`;
+                var studentB = JSON.parse(roster.data).find(student => String(student.seatCode) === String(b.code));
+                if (studentB) nameB = `${studentB.last}, ${studentB.first}`;
+              }
+            }
+            return nameA.localeCompare(nameB);
+          });
+          break;
+      }
+      sortedSeatCodes.forEach(seatCode => {
         var detailedReport = '';
         var seatCodeResponses = seatCode.responses.sort((a, b) => a.timestamp - b.timestamp);
         if (document.getElementById('hideIncorrectAttempts').checked) seatCodeResponses = seatCodeResponses.filter((r, index, self) => r.status === 'Correct' || !self.some(other => other.question_id === r.question_id && other.status === 'Correct'));
@@ -2994,6 +3040,27 @@ try {
         questionResponses = questionResponses.filter(r => r.id === Math.max(...questionResponses.filter(r1 => r1.seatCode === r.seatCode && r1.question_id === r.question_id).map(r1 => r1.id)));
       }
       var detailedReport = '';
+      switch(document.querySelector('#sort-report-responses [aria-selected="true"]').getAttribute('data-value')) {
+        case 'seatCode':
+          questionResponses = questionResponses.sort((a, b) => a.seatCode - b.seatCode);
+          break;
+        case 'studentName':
+          questionResponses = questionResponses.sort((a, b) => {
+            var nameA = "Unknown";
+            var nameB = "Unknown";
+            if (document.getElementById('useRoster').checked) {
+              var roster = rosters.find(roster => roster.period === Number(String(a.seatCode)[0]));
+              if (roster) {
+                var studentA = JSON.parse(roster.data).find(student => String(student.seatCode) === String(a.seatCode));
+                if (studentA) nameA = `${studentA.last}, ${studentA.first}`;
+                var studentB = JSON.parse(roster.data).find(student => String(student.seatCode) === String(b.seatCode));
+                if (studentB) nameB = `${studentB.last}, ${studentB.first}`;
+              }
+            }
+            return nameA.localeCompare(nameB);
+          });
+          break;
+      }
       questionResponses.forEach(r => {
         var name = "Unknown";
         if (document.getElementById('useRoster').checked) {
