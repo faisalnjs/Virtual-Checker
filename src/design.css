@@ -121,6 +121,7 @@ i.bi {
 input,
 select {
   height: 2.25em;
+  min-height: 2.25em;
   padding: 0 0.5em;
   border: none;
   border-radius: 0.5rem;
