@@ -11,7 +11,7 @@ try {
     );
     const island = document.querySelector('.island');
     const islandOpen = island ? island.classList.contains('visible') : false;
-    const isTyping = document.activeElement.matches("input, textarea");
+    const isTyping = document.activeElement.matches("input, textarea, [contenteditable]");
     if (e.ctrlKey) {
       if (e.key == "Enter" && !anyDialogOpen) {
         document.getElementById("submit-button")?.click();
