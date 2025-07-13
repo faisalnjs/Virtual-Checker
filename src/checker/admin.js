@@ -1578,7 +1578,7 @@ try {
           quill.on('text-change', (delta) => {
             var pastedLatex = delta.ops.find(op => Object.keys(op).includes('insert'))?.insert;
             if (pastedLatex && (typeof pastedLatex === 'string')) {
-              const latexMatches = [...pastedLatex.matchAll(/(\$\$(.+?)\$\$)|(?<!\\)\$(.+?)(?<!\\)\$/g)];
+              const latexMatches = [...pastedLatex.matchAll(/(\$\$(.+?)\$\$)|(?<!\\)\$(.+?)(?<!\\)\$/gs)];
               latexMatches.forEach(match => {
                 const fullMatch = match[0];
                 const innerLatex = match[2] || match[3];

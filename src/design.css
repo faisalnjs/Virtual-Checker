@@ -1407,3 +1407,7 @@ body > canvas {
 #checker.anonymous [data-seat-code] {
   display: none !important;
 }
+
+.katex .vlist {
+  height: unset !important;
+}
