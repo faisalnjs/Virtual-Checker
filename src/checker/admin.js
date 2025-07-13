@@ -952,7 +952,7 @@ try {
                 questionResponses = questionResponses.filter(r => r.id === Math.max(...questionResponses.filter(r1 => r1.seatCode === r.seatCode && r1.question_id === r.question_id).map(r1 => r1.id)));
               }
               var detailedReport1 = '';
-              switch(document.querySelector('#sort-report-responses [aria-selected="true"]').getAttribute('data-value')) {
+              switch (document.querySelector('#sort-report-responses [aria-selected="true"]').getAttribute('data-value')) {
                 case 'seatCode':
                   questionResponses = questionResponses.sort((a, b) => a.seatCode - b.seatCode);
                   break;
@@ -982,13 +982,34 @@ try {
                     if (student) name = `${student.last}, ${student.first}`;
                   }
                 }
+                const currentDate = new Date(r.timestamp);
+                var timeTaken = "N/A";
+                const sameSeatCodeResponses = responses
+                  .filter(r => courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value) ? JSON.parse(courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value)?.periods).includes(Number(String(r.seatCode)[0])) : false)
+                  .filter(r => document.getElementById("filter-segment-input")?.value ? (String(r.segment) === document.getElementById("filter-segment-input").value) : true)
+                  .filter(r => questions.find(q => String(q.id) === String(r.question_id)).number.startsWith(document.getElementById("sort-question-input")?.value))
+                  .filter(r => String(r.seatCode).startsWith(document.getElementById("sort-seat-input")?.value))
+                  .sort((a, b) => {
+                    if (a.flagged && !b.flagged) return -1;
+                    if (!a.flagged && b.flagged) return 1;
+                    return b.id - a.id;
+                  })
+                  .filter(a => a.seatCode === r.seatCode)
+                  .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+                const lastResponseIndex = sameSeatCodeResponses.findIndex(a => new Date(a.timestamp) >= currentDate) - 1;
+                const lastResponse = lastResponseIndex >= 0 ? sameSeatCodeResponses[lastResponseIndex] : null;
+                let timeDifference;
+                if (lastResponse) {
+                  timeDifference = calculateTimeDifference(currentDate, lastResponse.timestamp);
+                  timeTaken = formatTimeDifference(timeDifference);
+                }
                 detailedReport1 += `<div class="detailed-report-question">
                   <div class="color">
                     <span class="color-box ${(r.status === 'Correct') ? 'correct' : (r.status === 'Incorrect') ? 'incorrect' : r.status.includes('Recorded') ? 'waiting' : 'other'}"></span>
                     <span class="color-name">${document.getElementById('useRoster').checked ? `${name} (${r.seatCode})` : r.seatCode}<p class="showonhover"> (${time.unixToString(r.timestamp)})</p>: ${r.response}</span>
                   </div>
                   <div class="color">
-                    <span class="color-name">${r.status}</span>
+                    <span class="color-name">${timeTaken}</span>
                     <span class="color-box ${(r.status === 'Correct') ? 'correct' : (r.status === 'Incorrect') ? 'incorrect' : r.status.includes('Recorded') ? 'waiting' : 'other'}"></span>
                   </div>
                 </div>`;
@@ -2160,7 +2181,7 @@ try {
     });
     if (document.querySelector('.seat-code-reports')) {
       var sortedSeatCodes = seatCodes.filter(seatCode => JSON.parse(courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value).periods).includes(Number(String(seatCode.code)[0])));
-      switch(document.querySelector('#sort-report-responses [aria-selected="true"]').getAttribute('data-value')) {
+      switch (document.querySelector('#sort-report-responses [aria-selected="true"]').getAttribute('data-value')) {
         case 'seatCode':
           sortedSeatCodes = sortedSeatCodes.sort((a, b) => Number(a.code) - Number(b.code));
           break;
@@ -2191,13 +2212,34 @@ try {
           seatCodeResponses = seatCodeResponses.filter(r => r.id === Math.max(...seatCodeResponses.filter(r1 => r1.seatCode === r.seatCode && r1.question_id === r.question_id).map(r1 => r1.id)));
         }
         seatCodeResponses.forEach(r => {
+          const currentDate = new Date(r.timestamp);
+          var timeTaken = "N/A";
+          const sameSeatCodeResponses = responses
+            .filter(r => courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value) ? JSON.parse(courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value)?.periods).includes(Number(String(r.seatCode)[0])) : false)
+            .filter(r => document.getElementById("filter-segment-input")?.value ? (String(r.segment) === document.getElementById("filter-segment-input").value) : true)
+            .filter(r => questions.find(q => String(q.id) === String(r.question_id)).number.startsWith(document.getElementById("sort-question-input")?.value))
+            .filter(r => String(r.seatCode).startsWith(document.getElementById("sort-seat-input")?.value))
+            .sort((a, b) => {
+              if (a.flagged && !b.flagged) return -1;
+              if (!a.flagged && b.flagged) return 1;
+              return b.id - a.id;
+            })
+            .filter(a => a.seatCode === r.seatCode)
+            .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+          const lastResponseIndex = sameSeatCodeResponses.findIndex(a => new Date(a.timestamp) >= currentDate) - 1;
+          const lastResponse = lastResponseIndex >= 0 ? sameSeatCodeResponses[lastResponseIndex] : null;
+          let timeDifference;
+          if (lastResponse) {
+            timeDifference = calculateTimeDifference(currentDate, lastResponse.timestamp);
+            timeTaken = formatTimeDifference(timeDifference);
+          }
           detailedReport += questions.find(q => String(q.id) === String(r.question_id)).number ? `<div class="detailed-report-question">
             <div class="color">
               <span class="color-box ${(r.status === 'Correct') ? 'correct' : (r.status === 'Incorrect') ? 'incorrect' : r.status.includes('Recorded') ? 'waiting' : 'other'}"></span>
               <span class="color-name">Segment ${r.segment} #${questions.find(q => String(q.id) === String(r.question_id)).number}<p class="showonhover"> (${time.unixToString(r.timestamp)})</p>: ${r.response}</span>
             </div>
             <div class="color">
-              <span class="color-name">${r.status}</span>
+              <span class="color-name">${timeTaken}</span>
               <span class="color-box ${(r.status === 'Correct') ? 'correct' : (r.status === 'Incorrect') ? 'incorrect' : r.status.includes('Recorded') ? 'waiting' : 'other'}"></span>
             </div>
           </div>` : '';
@@ -3040,7 +3082,7 @@ try {
         questionResponses = questionResponses.filter(r => r.id === Math.max(...questionResponses.filter(r1 => r1.seatCode === r.seatCode && r1.question_id === r.question_id).map(r1 => r1.id)));
       }
       var detailedReport = '';
-      switch(document.querySelector('#sort-report-responses [aria-selected="true"]').getAttribute('data-value')) {
+      switch (document.querySelector('#sort-report-responses [aria-selected="true"]').getAttribute('data-value')) {
         case 'seatCode':
           questionResponses = questionResponses.sort((a, b) => a.seatCode - b.seatCode);
           break;
@@ -3070,13 +3112,34 @@ try {
             if (student) name = `${student.last}, ${student.first}`;
           }
         }
+        const currentDate = new Date(r.timestamp);
+        var timeTaken = "N/A";
+        const sameSeatCodeResponses = responses
+          .filter(r => courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value) ? JSON.parse(courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value)?.periods).includes(Number(String(r.seatCode)[0])) : false)
+          .filter(r => document.getElementById("filter-segment-input")?.value ? (String(r.segment) === document.getElementById("filter-segment-input").value) : true)
+          .filter(r => questions.find(q => String(q.id) === String(r.question_id)).number.startsWith(document.getElementById("sort-question-input")?.value))
+          .filter(r => String(r.seatCode).startsWith(document.getElementById("sort-seat-input")?.value))
+          .sort((a, b) => {
+            if (a.flagged && !b.flagged) return -1;
+            if (!a.flagged && b.flagged) return 1;
+            return b.id - a.id;
+          })
+          .filter(a => a.seatCode === r.seatCode)
+          .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+        const lastResponseIndex = sameSeatCodeResponses.findIndex(a => new Date(a.timestamp) >= currentDate) - 1;
+        const lastResponse = lastResponseIndex >= 0 ? sameSeatCodeResponses[lastResponseIndex] : null;
+        let timeDifference;
+        if (lastResponse) {
+          timeDifference = calculateTimeDifference(currentDate, lastResponse.timestamp);
+          timeTaken = formatTimeDifference(timeDifference);
+        }
         detailedReport += `<div class="detailed-report-question">
           <div class="color">
             <span class="color-box ${(r.status === 'Correct') ? 'correct' : (r.status === 'Incorrect') ? 'incorrect' : r.status.includes('Recorded') ? 'waiting' : 'other'}"></span>
             <span class="color-name">${document.getElementById('useRoster').checked ? `${name} (${r.seatCode})` : r.seatCode}<p class="showonhover"> (${time.unixToString(r.timestamp)})</p>: ${r.response}</span>
           </div>
           <div class="color">
-            <span class="color-name">${r.status}</span>
+            <span class="color-name">${timeTaken}</span>
             <span class="color-box ${(r.status === 'Correct') ? 'correct' : (r.status === 'Incorrect') ? 'incorrect' : r.status.includes('Recorded') ? 'waiting' : 'other'}"></span>
           </div>
         </div>`
