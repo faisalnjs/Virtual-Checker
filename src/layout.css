@@ -58,6 +58,10 @@ div.spacer {
   margin-top: 0;
 }
 
+.button-grid.gap {
+  gap: 0.75rem;
+}
+
 #header {
   align-self: center;
   display: flex;

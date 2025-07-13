@@ -692,6 +692,9 @@ try {
   if (document.getElementById('filter-report-responses')) document.getElementById('filter-report-responses').addEventListener("input", updateSegments);
   if (document.getElementById('filter-report-responses')) document.getElementById('filter-report-responses').addEventListener("input", updateResponses);
   if (document.getElementById('filter-report-responses')) document.getElementById('filter-report-responses').addEventListener("input", updateQuestionReports);
+  if (document.getElementById('useRoster')) document.getElementById('useRoster').addEventListener("change", updateSegments);
+  if (document.getElementById('useRoster')) document.getElementById('useRoster').addEventListener("change", updateResponses);
+  if (document.getElementById('useRoster')) document.getElementById('useRoster').addEventListener("change", updateQuestionReports);
 
   function toggleSelecting() {
     if (!active) return;
@@ -947,10 +950,18 @@ try {
               }
               var detailedReport1 = '';
               questionResponses.forEach(r => {
+                var name = "Unknown";
+                if (document.getElementById('useRoster').checked) {
+                  var roster = rosters.find(roster => roster.period === Number(String(r.seatCode)[0]));
+                  if (roster) {
+                    var student = JSON.parse(roster.data).find(student => String(student.seatCode) === String(r.seatCode));
+                    if (student) name = `${student.last}, ${student.first}`;
+                  }
+                }
                 detailedReport1 += `<div class="detailed-report-question">
                   <div class="color">
                     <span class="color-box ${(r.status === 'Correct') ? 'correct' : (r.status === 'Incorrect') ? 'incorrect' : r.status.includes('Recorded') ? 'waiting' : 'other'}"></span>
-                    <span class="color-name">${r.seatCode}<p class="showonhover"> (${time.unixToString(r.timestamp)})</p>: ${r.response}</span>
+                    <span class="color-name">${document.getElementById('useRoster').checked ? `${name} (${r.seatCode})` : r.seatCode}<p class="showonhover"> (${time.unixToString(r.timestamp)})</p>: ${r.response}</span>
                   </div>
                   <div class="color">
                     <span class="color-name">${r.status}</span>
@@ -2145,8 +2156,16 @@ try {
             </div>
           </div>` : '';
         });
+        var name = "Unknown";
+        if (document.getElementById('useRoster').checked) {
+          var roster = rosters.find(roster => roster.period === Number(String(seatCode.code)[0]));
+          if (roster) {
+            var student = JSON.parse(roster.data).find(student => String(student.seatCode) === String(seatCode.code));
+            if (student) name = `${student.last}, ${student.first}`;
+          }
+        }
         document.querySelector('.seat-code-reports').innerHTML += `<div class="seat-code-report" report="seat-code-${seatCode.code}">
-          <b>${seatCode.code} (${seatCodeResponses.length} Response${(seatCodeResponses.length != 1) ? 's' : ''})</b>
+          <b>${document.getElementById('useRoster').checked ? `${name} (${seatCode.code})` : seatCode.code} (${seatCodeResponses.length} Response${(seatCodeResponses.length != 1) ? 's' : ''})</b>
           <div class="barcount-wrapper">
             ${(seatCodeResponses.filter(r => r.status === 'Correct').length != 0) ? `<div class="barcount correct" style="width: calc(${seatCodeResponses.filter(r => r.status === 'Correct').length / (seatCodeResponses.length || 1)} * 100%)">${seatCodeResponses.filter(r => r.status === 'Correct').length}</div>` : ''}
             ${(seatCodeResponses.filter(r => (r.status != 'Correct') && (r.status != 'Incorrect') && !r.status.includes('Recorded')).length != 0) ? `<div class="barcount other" style="width: calc(${seatCodeResponses.filter(r => (r.status != 'Correct') && (r.status != 'Incorrect') && !r.status.includes('Recorded')).length / (seatCodeResponses.length || 1)} * 100%)">${seatCodeResponses.filter(r => (r.status != 'Correct') && (r.status != 'Incorrect') && !r.status.includes('Recorded')).length}</div>` : ''}
@@ -2976,10 +2995,18 @@ try {
       }
       var detailedReport = '';
       questionResponses.forEach(r => {
+        var name = "Unknown";
+        if (document.getElementById('useRoster').checked) {
+          var roster = rosters.find(roster => roster.period === Number(String(r.seatCode)[0]));
+          if (roster) {
+            var student = JSON.parse(roster.data).find(student => String(student.seatCode) === String(r.seatCode));
+            if (student) name = `${student.last}, ${student.first}`;
+          }
+        }
         detailedReport += `<div class="detailed-report-question">
           <div class="color">
             <span class="color-box ${(r.status === 'Correct') ? 'correct' : (r.status === 'Incorrect') ? 'incorrect' : r.status.includes('Recorded') ? 'waiting' : 'other'}"></span>
-            <span class="color-name">${r.seatCode}<p class="showonhover"> (${time.unixToString(r.timestamp)})</p>: ${r.response}</span>
+            <span class="color-name">${document.getElementById('useRoster').checked ? `${name} (${r.seatCode})` : r.seatCode}<p class="showonhover"> (${time.unixToString(r.timestamp)})</p>: ${r.response}</span>
           </div>
           <div class="color">
             <span class="color-name">${r.status}</span>
