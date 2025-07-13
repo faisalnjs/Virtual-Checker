@@ -763,6 +763,7 @@ div.ML__keyboard {
   border: none !important;
   border-radius: 0.5rem !important;
   box-shadow: none !important;
+  z-index: 1;
 }
 
 .description .ql-tooltip input[type="text"] {
