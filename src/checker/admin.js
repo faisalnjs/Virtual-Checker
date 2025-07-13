@@ -1578,16 +1578,16 @@ try {
           quill.on('text-change', (delta) => {
             var pastedLatex = delta.ops.find(op => Object.keys(op).includes('insert'))?.insert;
             if (pastedLatex && (typeof pastedLatex === 'string')) {
-              const latexMatches = [...pastedLatex.matchAll(/\$\$(.*?)\$\$/g)];
+              const latexMatches = [...pastedLatex.matchAll(/(\$\$(.+?)\$\$)|(?<!\\)\$(.+?)(?<!\\)\$/g)];
               latexMatches.forEach(match => {
                 const fullMatch = match[0];
-                const innerLatex = match[1];
+                const innerLatex = match[2] || match[3];
                 const index = pastedLatex.indexOf(fullMatch);
-                // console.log('Pasted LaTeX:', innerLatex, 'at index', quill.getSelection(true)?.index + index);
                 quill.deleteText(quill.getSelection(true)?.index + index, fullMatch.length);
                 quill.insertEmbed(quill.getSelection(true)?.index + index, 'formula', innerLatex);
-                pastedLatex = pastedLatex.replace('$$', '').replace('$$', '');
+                pastedLatex = pastedLatex.replace(fullMatch, ' ');
               });
+              pastedLatex = pastedLatex.replace(/(?<!\\)\$/g, '');
             }
           });
           renderedEditors[q.id] = quill;
