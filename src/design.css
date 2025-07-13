@@ -660,6 +660,10 @@ div.ML__keyboard {
   padding: 0 !important;
 }
 
+.description {
+  max-width: min(100%, 800px);
+}
+
 .description a {
   color: var(--accent-color) !important;
 }

@@ -1575,6 +1575,21 @@ try {
             theme: 'snow'
           });
           if (JSON.parse(q.description)) quill.setContents(JSON.parse(q.description));
+          quill.on('text-change', (delta) => {
+            var pastedLatex = delta.ops.find(op => Object.keys(op).includes('insert'))?.insert;
+            if (pastedLatex && (typeof pastedLatex === 'string')) {
+              const latexMatches = [...pastedLatex.matchAll(/\$\$(.*?)\$\$/g)];
+              latexMatches.forEach(match => {
+                const fullMatch = match[0];
+                const innerLatex = match[1];
+                const index = pastedLatex.indexOf(fullMatch);
+                // console.log('Pasted LaTeX:', innerLatex, 'at index', quill.getSelection(true)?.index + index);
+                quill.deleteText(quill.getSelection(true)?.index + index, fullMatch.length);
+                quill.insertEmbed(quill.getSelection(true)?.index + index, 'formula', innerLatex);
+                pastedLatex = pastedLatex.replace('$$', '').replace('$$', '');
+              });
+            }
+          });
           renderedEditors[q.id] = quill;
           var images = document.createElement('div');
           images.classList = "attachments";
@@ -1865,7 +1880,7 @@ try {
     var buttonGrid = document.createElement('div');
     buttonGrid.className = "button-grid inputs";
     var segmentsString = "";
-    segments.forEach(s => segmentsString += `<option value="${s.number}"${(document.location.search.split('?segment=')[1] && (document.location.search.split('?segment=')[1] === String(s.number))) ? ' selected': ''}>${s.number}</option>`);
+    segments.forEach(s => segmentsString += `<option value="${s.number}"${(document.location.search.split('?segment=')[1] && (document.location.search.split('?segment=')[1] === String(s.number))) ? ' selected' : ''}>${s.number}</option>`);
     buttonGrid.innerHTML = `<button square data-select tooltip="Select Question"><i class="bi bi-circle"></i><i class="bi bi-circle-fill"></i></button><div class="input-group small"><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-id-input" value="" disabled /></div></div><div class="input-group small"><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-number-input" value="" /></div></div><div class="input-group small"><div class="space" id="question-container"><select id="question-segment-input">${segmentsString}</select></div></div><div class="input-group"><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-text-input" value="" /></div></div><button square data-toggle-latex disabled tooltip="Toggle LaTeX Title"><i class="bi bi-cursor-text"></i></button><button square data-remove-question-input tooltip="Remove Question"><i class="bi bi-trash"></i></button><button square data-toggle-question tooltip="Expand Question"><i class="bi bi-caret-down-fill"></i><i class="bi bi-caret-up-fill"></i></button>`;
     group.appendChild(buttonGrid);
     this.parentElement.insertBefore(group, this.parentElement.children[this.parentElement.children.length - 1]);
