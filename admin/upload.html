@@ -355,6 +355,8 @@
         if (!startingQuestionId || !startingQuestion) {
             document.querySelectorAll('input[type="text"]').forEach(e => e.remove());
             document.querySelector('.description').remove();
+            document.getElementById('submit').remove();
+            document.getElementById('exit').remove();
         } else {
             var textareaContainer = document.querySelector('.description')
             var toolbar = document.createElement('div');

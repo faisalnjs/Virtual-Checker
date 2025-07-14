@@ -698,6 +698,9 @@ try {
   if (document.getElementById('sort-report-responses')) document.getElementById('sort-report-responses').addEventListener("input", updateSegments);
   if (document.getElementById('sort-report-responses')) document.getElementById('sort-report-responses').addEventListener("input", updateResponses);
   if (document.getElementById('sort-report-responses')) document.getElementById('sort-report-responses').addEventListener("input", updateQuestionReports);
+  if (document.getElementById('hideUnanswered')) document.getElementById('hideUnanswered').addEventListener("input", updateSegments);
+  if (document.getElementById('hideUnanswered')) document.getElementById('hideUnanswered').addEventListener("input", updateResponses);
+  if (document.getElementById('hideUnanswered')) document.getElementById('hideUnanswered').addEventListener("input", updateQuestionReports);
 
   function toggleSelecting() {
     if (!active) return;
@@ -1015,26 +1018,48 @@ try {
                 </div>`;
                 segmentResponses.push(r);
               });
+              var total = questionResponses.length || 1;
+              var unansweredStudentsCount = 0;
+              if (document.getElementById('useRoster').checked && (document.querySelector('#filter-report-responses [aria-selected="true"]').getAttribute('data-value') !== 'all') && !document.getElementById('hideUnanswered').checked) {
+                var courseRosters = rosters.filter(roster => JSON.parse(courses.find(course => String(course.id) === document.getElementById("course-period-input").value)?.periods).includes(Number(String(roster.period))));
+                var totalRosterStudents = [...new Set(courseRosters.flatMap(a => JSON.parse(a.data).map(b => Number(b.seatCode))))];
+                if (totalRosterStudents.length) {
+                  var answeredStudentsCount = [...new Set(questionResponses.flatMap(a => a.seatCode).filter(x => totalRosterStudents.includes(x)))].length;
+                  unansweredStudentsCount = totalRosterStudents.length - answeredStudentsCount;
+                  total = questionResponses.length + unansweredStudentsCount;
+                }
+              }
               detailedReport += `<div class="detailed-report-question"${(questionResponses.length != 0) ? ` report="segment-question-${q.id}"` : ''}>
                 <b>Question ${question.number} (${questionResponses.length} Response${(questionResponses.length != 1) ? 's' : ''})</b>
                 <div class="barcount-wrapper">
-                  ${(questionResponses.filter(r => r.status === 'Correct').length != 0) ? `<div class="barcount correct" style="width: calc(${questionResponses.filter(r => r.status === 'Correct').length / (questionResponses.length || 1)} * 100%)">${questionResponses.filter(r => r.status === 'Correct').length}</div>` : ''}
-                  ${(questionResponses.filter(r => ((r.status !== 'Correct') && (r.status !== 'Incorrect') && !r.status.includes('Recorded'))).length != 0) ? `<div class="barcount other" style="width: calc(${questionResponses.filter(r => ((r.status !== 'Correct') && (r.status !== 'Incorrect') && !r.status.includes('Recorded'))).length / (questionResponses.length || 1)} * 100%)">${questionResponses.filter(r => ((r.status !== 'Correct') && (r.status !== 'Incorrect') && !r.status.includes('Recorded'))).length}</div>` : ''}
-                  ${(questionResponses.filter(r => r.status.includes('Recorded')).length != 0) ? `<div class="barcount waiting" style="width: calc(${questionResponses.filter(r => r.status.includes('Recorded')).length / (questionResponses.length || 1)} * 100%)">${questionResponses.filter(r => r.status.includes('Recorded')).length}</div>` : ''}
-                  ${(questionResponses.filter(r => r.status === 'Incorrect').length != 0) ? `<div class="barcount incorrect" style="width: calc(${questionResponses.filter(r => r.status === 'Incorrect').length / (questionResponses.length || 1)} * 100%)">${questionResponses.filter(r => r.status === 'Incorrect').length}</div>` : ''}
+                  ${(questionResponses.filter(r => r.status === 'Correct').length != 0) ? `<div class="barcount correct" style="width: calc(${questionResponses.filter(r => r.status === 'Correct').length / total} * 100%)">${questionResponses.filter(r => r.status === 'Correct').length}</div>` : ''}
+                  ${((questionResponses.filter(r => ((r.status !== 'Correct') && (r.status !== 'Incorrect') && !r.status.includes('Recorded'))).length + unansweredStudentsCount) != 0) ? `<div class="barcount other" style="width: calc(${(questionResponses.filter(r => ((r.status !== 'Correct') && (r.status !== 'Incorrect') && !r.status.includes('Recorded'))).length + unansweredStudentsCount) / total} * 100%)">${questionResponses.filter(r => ((r.status !== 'Correct') && (r.status !== 'Incorrect') && !r.status.includes('Recorded'))).length + unansweredStudentsCount}</div>` : ''}
+                  ${(questionResponses.filter(r => r.status.includes('Recorded')).length != 0) ? `<div class="barcount waiting" style="width: calc(${questionResponses.filter(r => r.status.includes('Recorded')).length / total} * 100%)">${questionResponses.filter(r => r.status.includes('Recorded')).length}</div>` : ''}
+                  ${(questionResponses.filter(r => r.status === 'Incorrect').length != 0) ? `<div class="barcount incorrect" style="width: calc(${questionResponses.filter(r => r.status === 'Incorrect').length / total} * 100%)">${questionResponses.filter(r => r.status === 'Incorrect').length}</div>` : ''}
                 </div>
               </div>
               ${(questionResponses.length != 0) ? `<div class="section detailed-report" id="segment-question-${q.id}">
                 ${detailedReport1}
               </div>` : ''}`;
             });
+            var total = segmentResponses.length || 1;
+            var unansweredStudentsCount = 0;
+            if (document.getElementById('useRoster').checked && (document.querySelector('#filter-report-responses [aria-selected="true"]').getAttribute('data-value') !== 'all') && !document.getElementById('hideUnanswered').checked) {
+              var courseRosters = rosters.filter(roster => JSON.parse(courses.find(course => String(course.id) === document.getElementById("course-period-input").value)?.periods).includes(Number(String(roster.period))));
+              var totalRosterStudents = [...new Set(courseRosters.flatMap(a => JSON.parse(a.data).map(b => Number(b.seatCode))))];
+              if (totalRosterStudents.length) {
+                var answeredStudentsCount = [...new Set(segmentResponses.flatMap(a => a.seatCode).filter(x => totalRosterStudents.includes(x)))].length;
+                unansweredStudentsCount = totalRosterStudents.length - answeredStudentsCount;
+                total = segmentResponses.length + unansweredStudentsCount;
+              }
+            }
             document.querySelector('.segment-reports').innerHTML += `<div class="segment-report"${(JSON.parse(segment.question_ids) != 0) ? ` report="segment-${segment.number}"` : ''}>
               <b>Segment ${segment.number} (${JSON.parse(segment.question_ids).length} Question${JSON.parse(segment.question_ids).length != 1 ? 's' : ''})</b>
               <div class="barcount-wrapper">
-                ${(segmentResponses.filter(r => r.status === 'Correct').length != 0) ? `<div class="barcount correct" style="width: calc(${segmentResponses.filter(r => r.status === 'Correct').length / (segmentResponses.length || 1)} * 100%)">${segmentResponses.filter(r => r.status === 'Correct').length}</div>` : ''}
-                ${(segmentResponses.filter(r => ((r.status !== 'Correct') && (r.status !== 'Incorrect') && !r.status.includes('Recorded'))).length != 0) ? `<div class="barcount other" style="width: calc(${segmentResponses.filter(r => ((r.status !== 'Correct') && (r.status !== 'Incorrect') && !r.status.includes('Recorded'))).length / (segmentResponses.length || 1)} * 100%)">${segmentResponses.filter(r => ((r.status !== 'Correct') && (r.status !== 'Incorrect') && !r.status.includes('Recorded'))).length}</div>` : ''}
-                ${(segmentResponses.filter(r => r.status.includes('Recorded')).length != 0) ? `<div class="barcount waiting" style="width: calc(${segmentResponses.filter(r => r.status.includes('Recorded')).length / (segmentResponses.length || 1)} * 100%)">${segmentResponses.filter(r => r.status.includes('Recorded')).length}</div>` : ''}
-                ${(segmentResponses.filter(r => r.status === 'Incorrect').length != 0) ? `<div class="barcount incorrect" style="width: calc(${segmentResponses.filter(r => r.status === 'Incorrect').length / (segmentResponses.length || 1)} * 100%)">${segmentResponses.filter(r => r.status === 'Incorrect').length}</div>` : ''}
+                ${(segmentResponses.filter(r => r.status === 'Correct').length != 0) ? `<div class="barcount correct" style="width: calc(${segmentResponses.filter(r => r.status === 'Correct').length / total} * 100%)">${segmentResponses.filter(r => r.status === 'Correct').length}</div>` : ''}
+                ${((segmentResponses.filter(r => ((r.status !== 'Correct') && (r.status !== 'Incorrect') && !r.status.includes('Recorded'))).length + unansweredStudentsCount) != 0) ? `<div class="barcount other" style="width: calc(${(segmentResponses.filter(r => ((r.status !== 'Correct') && (r.status !== 'Incorrect') && !r.status.includes('Recorded'))).length + unansweredStudentsCount) / total} * 100%)">${segmentResponses.filter(r => ((r.status !== 'Correct') && (r.status !== 'Incorrect') && !r.status.includes('Recorded'))).length + unansweredStudentsCount}</div>` : ''}
+                ${(segmentResponses.filter(r => r.status.includes('Recorded')).length != 0) ? `<div class="barcount waiting" style="width: calc(${segmentResponses.filter(r => r.status.includes('Recorded')).length / total} * 100%)">${segmentResponses.filter(r => r.status.includes('Recorded')).length}</div>` : ''}
+                ${(segmentResponses.filter(r => r.status === 'Incorrect').length != 0) ? `<div class="barcount incorrect" style="width: calc(${segmentResponses.filter(r => r.status === 'Incorrect').length / total} * 100%)">${segmentResponses.filter(r => r.status === 'Incorrect').length}</div>` : ''}
               </div>
             </div>
             ${(JSON.parse(segment.question_ids).length != 0) ? `<div class="section detailed-report" id="segment-${segment.number}">
@@ -3144,13 +3169,24 @@ try {
           </div>
         </div>`
       });
+      var total = questionResponses.length || 1;
+      var unansweredStudentsCount = 0;
+      if (document.getElementById('useRoster').checked && (document.querySelector('#filter-report-responses [aria-selected="true"]').getAttribute('data-value') !== 'all') && !document.getElementById('hideUnanswered').checked) {
+        var courseRosters = rosters.filter(roster => JSON.parse(courses.find(course => String(course.id) === document.getElementById("course-period-input").value)?.periods).includes(Number(String(roster.period))));
+        var totalRosterStudents = [...new Set(courseRosters.flatMap(a => JSON.parse(a.data).map(b => Number(b.seatCode))))];
+        if (totalRosterStudents.length) {
+          var answeredStudentsCount = [...new Set(questionResponses.flatMap(a => a.seatCode).filter(x => totalRosterStudents.includes(x)))].length;
+          unansweredStudentsCount = totalRosterStudents.length - answeredStudentsCount;
+          total = questionResponses.length + unansweredStudentsCount;
+        }
+      }
       document.querySelector('.question-reports').innerHTML += `<div class="detailed-report-question"${(questionResponses.length != 0) ? ` report="question-${question.id}"` : ''}>
         <b>Question ${question.number} (${questionResponses.length} Response${(questionResponses.length != 1) ? 's' : ''})</b>
         <div class="barcount-wrapper">
-          ${(questionResponses.filter(r => r.status === 'Correct').length != 0) ? `<div class="barcount correct" style="width: calc(${questionResponses.filter(r => r.status === 'Correct').length / (questionResponses.length || 1)} * 100%)">${questionResponses.filter(r => r.status === 'Correct').length}</div>` : ''}
-          ${(questionResponses.filter(r => ((r.status !== 'Correct') && (r.status !== 'Incorrect') && !r.status.includes('Recorded'))).length != 0) ? `<div class="barcount other" style="width: calc(${questionResponses.filter(r => ((r.status !== 'Correct') && (r.status !== 'Incorrect') && !r.status.includes('Recorded'))).length / (questionResponses.length || 1)} * 100%)">${questionResponses.filter(r => ((r.status !== 'Correct') && (r.status !== 'Incorrect') && !r.status.includes('Recorded'))).length}</div>` : ''}
-          ${(questionResponses.filter(r => r.status.includes('Recorded')).length != 0) ? `<div class="barcount waiting" style="width: calc(${questionResponses.filter(r => r.status.includes('Recorded')).length / (questionResponses.length || 1)} * 100%)">${questionResponses.filter(r => r.status.includes('Recorded')).length}</div>` : ''}
-          ${(questionResponses.filter(r => r.status === 'Incorrect').length != 0) ? `<div class="barcount incorrect" style="width: calc(${questionResponses.filter(r => r.status === 'Incorrect').length / (questionResponses.length || 1)} * 100%)">${questionResponses.filter(r => r.status === 'Incorrect').length}</div>` : ''}
+          ${(questionResponses.filter(r => r.status === 'Correct').length != 0) ? `<div class="barcount correct" style="width: calc(${questionResponses.filter(r => r.status === 'Correct').length / total} * 100%)">${questionResponses.filter(r => r.status === 'Correct').length}</div>` : ''}
+          ${((questionResponses.filter(r => ((r.status !== 'Correct') && (r.status !== 'Incorrect') && !r.status.includes('Recorded'))).length + unansweredStudentsCount) != 0) ? `<div class="barcount other" style="width: calc(${(questionResponses.filter(r => ((r.status !== 'Correct') && (r.status !== 'Incorrect') && !r.status.includes('Recorded'))).length + unansweredStudentsCount) / total} * 100%)">${questionResponses.filter(r => ((r.status !== 'Correct') && (r.status !== 'Incorrect') && !r.status.includes('Recorded'))).length + unansweredStudentsCount}</div>` : ''}
+          ${(questionResponses.filter(r => r.status.includes('Recorded')).length != 0) ? `<div class="barcount waiting" style="width: calc(${questionResponses.filter(r => r.status.includes('Recorded')).length / total} * 100%)">${questionResponses.filter(r => r.status.includes('Recorded')).length}</div>` : ''}
+          ${(questionResponses.filter(r => r.status === 'Incorrect').length != 0) ? `<div class="barcount incorrect" style="width: calc(${questionResponses.filter(r => r.status === 'Incorrect').length / total} * 100%)">${questionResponses.filter(r => r.status === 'Incorrect').length}</div>` : ''}
         </div>
       </div>
       ${(questionResponses.length != 0) ? `<div class="section detailed-report" id="question-${question.id}">
