@@ -4,6 +4,7 @@ import storage from "/src/modules/storage.js";
 import * as time from "/src/modules/time.js";
 import * as auth from "/src/modules/auth.js";
 import island from "/src/modules/island.js";
+import { convertLatexToMarkup, renderMathInElement } from "mathlive";
 import { createSwapy } from "swapy";
 import Quill from "quill";
 import "faz-quill-emoji/autoregister";
@@ -30,6 +31,7 @@ var loadedSegmentCreator = false;
 var noReloadCourse = false;
 var logs = [];
 var renderedEditors = {};
+var rosters = [];
 
 var draggableQuestionList = null;
 var draggableSegmentReorder = null;
@@ -77,7 +79,7 @@ try {
           return await r.json();
         })
         .then(users => {
-          document.querySelector('.users').innerHTML = '<div class="row header"><span>Username / Seat Code</span><span>Role</span><span>Partial Access Courses</span><span>Full Access Courses</span><span>Actions</span></div>';
+          document.querySelector('.users').innerHTML = '<div class="row header"><span>User</span><span>Role</span><span>Partial Access</span><span>Full Access</span><span>Anonymous</span><span>Actions</span></div>';
           if (users.length > 0) {
             document.getElementById('no-users').setAttribute('hidden', '');
             document.querySelector('.users').removeAttribute('hidden');
@@ -98,6 +100,7 @@ try {
               <span class="role">${user.role}</span>
               <span class="partialAccessCourses">${JSON.stringify(user.main_courses)}</span>
               <span class="fullAccessCourses">${JSON.stringify(user.access_courses)}</span>
+              <span class="anonymousResponses">${user.anonymous_responses ? '<i class="bi bi-check-lg"></i>' : ''}</span>
               <span class="actions">
                 <button class="icon" data-edit-user tooltip="Edit User">
                   <i class="bi bi-pencil"></i>
@@ -357,7 +360,6 @@ try {
           if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
           pollingOff();
         });
-      return;
     }
 
     await fetch(domain + '/courses', {
@@ -384,6 +386,7 @@ try {
       })
       .then(async c => {
         courses = c;
+        await auth.loadAdminSettings(domain, courses);
         if (document.querySelector('.users')) {
           ui.reloadUnsavedInputs();
           return;
@@ -397,21 +400,6 @@ try {
             option.innerHTML = document.getElementById("course-input") ? course.name : `${course.name}${(coursePeriods.length > 0) ? ` (Period${(coursePeriods.length > 1) ? 's' : ''} ${coursePeriods.join(', ')})` : ''}`;
             document.getElementById("course-period-input").appendChild(option);
           });
-          if (document.querySelector(".course-reorder .reorder")) {
-            document.querySelector(".course-reorder .reorder").innerHTML = "";
-            for (let i = 1; i < 10; i++) {
-              const elem = document.createElement("div");
-              elem.classList = "button-grid inputs";
-              elem.style = "flex-wrap: nowrap !important;";
-              var periodCourse = c.find(course => JSON.parse(course.periods).includes(i))?.id;
-              var coursesSelectorString = "";
-              c.sort((a, b) => a.id - b.id).forEach(course => {
-                coursesSelectorString += `<option value="${course.id}" ${(periodCourse === course.id) ? 'selected' : ''}>${course.name}</option>`;
-              });
-              elem.innerHTML = `<input type="text" autocomplete="off" id="period-${i}" value="Period ${i}" disabled /><select id="periodCourseSelector" value="${(periodCourse === undefined) ? '' : periodCourse}"><option value="" ${(periodCourse === undefined) ? 'selected' : ''}></option>${coursesSelectorString}</select>`;
-              document.querySelector(".course-reorder .reorder").appendChild(elem);
-            }
-          }
           const course = courses.find(c => String(c.id) === document.getElementById("course-period-input").value);
           if (document.getElementById("course-input") && course) document.getElementById("course-input").value = course.name;
         }
@@ -430,11 +418,15 @@ try {
         if (document.getElementById("sort-seat-input")) document.getElementById("sort-seat-input").addEventListener("input", updateQuestionReports);
         if (document.getElementById("filter-segment-input")) document.getElementById("filter-segment-input").addEventListener("change", updateQuestions);
         if (document.getElementById("course-period-input")) document.getElementById("course-period-input").addEventListener("input", updateCourses);
-        await fetch(domain + '/segments', {
-          method: "GET",
+        await fetch(domain + '/rosters', {
+          method: "POST",
           headers: {
             "Content-Type": "application/json",
-          }
+          },
+          body: JSON.stringify({
+            usr: storage.get("usr"),
+            pwd: storage.get("pwd"),
+          }),
         })
           .then(async (r) => {
             if (!r.ok) {
@@ -452,12 +444,26 @@ try {
             }
             return await r.json();
           })
-          .then(async c => {
-            segments = c;
-            if (document.getElementById("course-period-input") && !loadedSegmentEditor && !loadedSegmentCreator && !noReloadCourse) updateSegments();
-            if (document.getElementById("filter-segment-input")) updateCourses();
-            if (document.getElementById("speed-mode-segments")) updateSpeedModeSegments();
-            await fetch(domain + '/questions', {
+          .then(async r => {
+            rosters = r;
+            if (document.querySelector(".course-reorder .reorder") && !loadedSegmentEditor && !loadedSegmentCreator && !noReloadCourse) {
+              document.querySelector(".course-reorder .reorder").innerHTML = "";
+              for (let i = 1; i < 10; i++) {
+                const elem = document.createElement("div");
+                elem.classList = "button-grid inputs";
+                elem.style = "flex-wrap: nowrap !important;";
+                var periodCourse = c.find(course => JSON.parse(course.periods).includes(i))?.id;
+                var coursesSelectorString = "";
+                c.sort((a, b) => a.id - b.id).forEach(course => {
+                  coursesSelectorString += `<option value="${course.id}" ${(periodCourse === course.id) ? 'selected' : ''}>${course.name}</option>`;
+                });
+                elem.innerHTML = `<input type="text" autocomplete="off" id="period-${i}" value="Period ${i}" disabled /><select id="periodCourseSelector" value="${(periodCourse === undefined) ? '' : periodCourse}"><option value="" ${(periodCourse === undefined) ? 'selected' : ''}></option>${coursesSelectorString}</select>${rosters.find(roster => String(roster.period) === String(i)) ? '<button class="fit" style="min-width: 126px !important;" data-view-roster>View Roster</button>' : '<button class="fit" style="min-width: 126px !important;" data-upload-roster>Upload Roster</button>'}`;
+                document.querySelector(".course-reorder .reorder").appendChild(elem);
+              }
+              document.querySelectorAll("[data-view-roster]").forEach(a => a.addEventListener("click", viewRoster));
+              document.querySelectorAll("[data-upload-roster]").forEach(a => a.addEventListener("click", uploadRoster));
+            }
+            await fetch(domain + '/segments', {
               method: "GET",
               headers: {
                 "Content-Type": "application/json",
@@ -479,29 +485,16 @@ try {
                 }
                 return await r.json();
               })
-              .then(async q => {
-                questions = q;
-                if (document.getElementById("add-question-input")) {
-                  document.getElementById("add-question-input").innerHTML = '';
-                  questions.sort((a, b) => a.number - b.number).forEach(question => {
-                    if (document.querySelector(`#question-list .question:has(input[id="${question.id}"])`)) return;
-                    const option = document.createElement("option");
-                    option.value = question.id;
-                    option.innerHTML = `ID ${question.id} #${question.number} - ${question.question}`;
-                    document.getElementById("add-question-input").appendChild(option);
-                  });
-                  if (questions.length === 0) document.getElementById("add-existing-question-button").disabled = true;
-                }
-                if (document.getElementById("speed-mode-starting-question")) updateSpeedModeStartingQuestion();
-                await fetch(domain + '/answers', {
-                  method: "POST",
+              .then(async c => {
+                segments = c;
+                if (document.getElementById("course-period-input") && !loadedSegmentEditor && !loadedSegmentCreator && !noReloadCourse) updateSegments();
+                if (document.getElementById("filter-segment-input")) updateCourses();
+                if (document.getElementById("speed-mode-segments")) updateSpeedModeSegments();
+                await fetch(domain + '/questions', {
+                  method: "GET",
                   headers: {
                     "Content-Type": "application/json",
-                  },
-                  body: JSON.stringify({
-                    usr: storage.get("usr"),
-                    pwd: storage.get("pwd"),
-                  }),
+                  }
                 })
                   .then(async (r) => {
                     if (!r.ok) {
@@ -519,10 +512,21 @@ try {
                     }
                     return await r.json();
                   })
-                  .then(async a => {
-                    answers = a;
-                    if (document.querySelector('.questions.section')) updateQuestions();
-                    await fetch(domain + '/responses', {
+                  .then(async q => {
+                    questions = q;
+                    if (document.getElementById("add-question-input")) {
+                      document.getElementById("add-question-input").innerHTML = '';
+                      questions.sort((a, b) => a.id - b.id).forEach(question => {
+                        if (document.querySelector(`#question-list .question:has(input[id="${question.id}"])`)) return;
+                        const option = document.createElement("option");
+                        option.value = question.id;
+                        option.innerHTML = `ID ${question.id} #${question.number} - ${question.question}`;
+                        document.getElementById("add-question-input").appendChild(option);
+                      });
+                      if (questions.length === 0) document.getElementById("add-existing-question-button").disabled = true;
+                    }
+                    if (document.getElementById("speed-mode-starting-question")) updateSpeedModeStartingQuestion();
+                    await fetch(domain + '/answers', {
                       method: "POST",
                       headers: {
                         "Content-Type": "application/json",
@@ -548,24 +552,62 @@ try {
                         }
                         return await r.json();
                       })
-                      .then(async r => {
-                        responses = r;
-                        if (document.getElementById("course-period-input") && !loadedSegmentEditor && !loadedSegmentCreator && !noReloadCourse) {
-                          document.getElementById("course-period-input").value = courses.find(c => JSON.parse(c.periods).includes(Number(String(responses.sort((a, b) => String(a.seatCode)[0] - String(b.seatCode)[0])[0]?.seatCode)[0]))) ? courses.find(c => JSON.parse(c.periods).includes(Number(String(responses.sort((a, b) => String(a.seatCode)[0] - String(b.seatCode)[0])[0]?.seatCode)[0]))).id : courses.sort((a, b) => a.id - b.id)[0]?.id;
-                          await updateResponses();
-                        }
-                        if (noReloadCourse) await updateResponses();
-                        if (document.querySelector('.segment-reports')) updateSegments();
-                        if (document.querySelector('.question-reports')) updateQuestionReports();
-                        if (window.location.pathname.split('/admin/')[1] === 'editor') loadSegmentEditor();
-                        active = true;
-                        ui.stopLoader();
-                        if (!polling) ui.toast("Data restored.", 1000, "info", "bi bi-cloud-arrow-down");
-                        if (polling && (expandedReports.length > 0)) {
-                          expandedReports.forEach(er => {
-                            if (document.getElementById(er)) document.getElementById(er).classList.add('active');
+                      .then(async a => {
+                        answers = a;
+                        if (document.querySelector('.questions.section')) updateQuestions();
+                        await fetch(domain + '/responses', {
+                          method: "POST",
+                          headers: {
+                            "Content-Type": "application/json",
+                          },
+                          body: JSON.stringify({
+                            usr: storage.get("usr"),
+                            pwd: storage.get("pwd"),
+                          }),
+                        })
+                          .then(async (r) => {
+                            if (!r.ok) {
+                              try {
+                                var re = await r.json();
+                                if (re.error || re.message) {
+                                  ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+                                  throw new Error(re.error || re.message);
+                                } else {
+                                  throw new Error("API error");
+                                }
+                              } catch (e) {
+                                throw new Error(e.message || "API error");
+                              }
+                            }
+                            return await r.json();
+                          })
+                          .then(async r => {
+                            responses = r;
+                            if (document.getElementById("course-period-input") && !loadedSegmentEditor && !loadedSegmentCreator && !noReloadCourse) {
+                              document.getElementById("course-period-input").value = ((ui.defaultCourse !== null) && courses.find(c => String(c.id) === String(ui.defaultCourse))) ? ui.defaultCourse : courses.find(c => responses.some(r => JSON.parse(c.periods).includes(Number(String(r.seatCode)[0])))) ? courses.find(c => responses.some(r => JSON.parse(c.periods).includes(Number(String(r.seatCode)[0])))).id : courses.sort((a, b) => a.id - b.id)[0]?.id;
+                              await updateResponses();
+                            }
+                            if (noReloadCourse) await updateResponses();
+                            if (document.querySelector('.segment-reports')) updateSegments();
+                            if (document.querySelector('.question-reports')) updateQuestionReports();
+                            if (window.location.pathname.split('/admin/')[1] === 'editor') loadSegmentEditor();
+                            reorder = reorder ? false : true;
+                            toggleReorder();
+                            active = true;
+                            ui.stopLoader();
+                            if (!polling) ui.toast("Data restored.", 1000, "info", "bi bi-cloud-arrow-down");
+                            if (polling && (expandedReports.length > 0)) {
+                              expandedReports.forEach(er => {
+                                if (document.getElementById(er)) document.getElementById(er).classList.add('active');
+                              });
+                            }
+                          })
+                          .catch((e) => {
+                            console.error(e);
+                            ui.view("api-fail");
+                            if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
+                            pollingOff();
                           });
-                        }
                       })
                       .catch((e) => {
                         console.error(e);
@@ -590,7 +632,7 @@ try {
           })
           .catch((e) => {
             console.error(e);
-            ui.view("api-fail");
+            if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
             if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
             pollingOff();
           });
@@ -602,7 +644,6 @@ try {
         pollingOff();
       });
     if (document.getElementById("course-period-input") && !loadedSegmentEditor && !loadedSegmentCreator && !noReloadCourse) {
-      if (document.querySelector('.course-reorder')) document.querySelector('.course-reorder').style.display = 'none';
       document.querySelectorAll('[data-remove-segment-input]').forEach(a => a.removeEventListener('click', removeSegment));
       document.querySelectorAll('[data-remove-segment-input]').forEach(a => a.addEventListener('click', removeSegment));
       if (document.getElementById("course-input")) document.getElementById("course-input").value = courses.find(c => String(c.id) === document.getElementById("course-period-input").value).name;
@@ -648,6 +689,18 @@ try {
   if (document.querySelector('[data-archive-segment]')) document.querySelector('[data-archive-segment]').addEventListener("click", () => archiveModal('segment'));
   if (document.querySelector('[data-archive-multiple]')) document.querySelector('[data-archive-multiple]').addEventListener("click", archiveMultipleModal);
   if (document.querySelector('[data-unarchive-multiple]')) document.querySelector('[data-unarchive-multiple]').addEventListener("click", unarchiveMultipleModal);
+  if (document.getElementById('filter-report-responses')) document.getElementById('filter-report-responses').addEventListener("input", updateSegments);
+  if (document.getElementById('filter-report-responses')) document.getElementById('filter-report-responses').addEventListener("input", updateResponses);
+  if (document.getElementById('filter-report-responses')) document.getElementById('filter-report-responses').addEventListener("input", updateQuestionReports);
+  if (document.getElementById('useRoster')) document.getElementById('useRoster').addEventListener("change", updateSegments);
+  if (document.getElementById('useRoster')) document.getElementById('useRoster').addEventListener("change", updateResponses);
+  if (document.getElementById('useRoster')) document.getElementById('useRoster').addEventListener("change", updateQuestionReports);
+  if (document.getElementById('sort-report-responses')) document.getElementById('sort-report-responses').addEventListener("input", updateSegments);
+  if (document.getElementById('sort-report-responses')) document.getElementById('sort-report-responses').addEventListener("input", updateResponses);
+  if (document.getElementById('sort-report-responses')) document.getElementById('sort-report-responses').addEventListener("input", updateQuestionReports);
+  if (document.getElementById('hideUnanswered')) document.getElementById('hideUnanswered').addEventListener("input", updateSegments);
+  if (document.getElementById('hideUnanswered')) document.getElementById('hideUnanswered').addEventListener("input", updateResponses);
+  if (document.getElementById('hideUnanswered')) document.getElementById('hideUnanswered').addEventListener("input", updateQuestionReports);
 
   function toggleSelecting() {
     if (!active) return;
@@ -891,45 +944,122 @@ try {
             document.querySelector('.section:has(> .segment-reports)').removeAttribute('hidden');
             var segmentResponses = [];
             var detailedReport = '';
-            JSON.parse(segment.question_ids).filter(q => questions.find(q1 => q1.id == q.id)?.number.startsWith(document.getElementById("sort-question-input")?.value)).forEach(q => {
+            JSON.parse(segment.question_ids).filter(q => questions.find(q1 => String(q1.id) === String(q.id))?.number.startsWith(document.getElementById("sort-question-input")?.value)).forEach(q => {
               var question = questions.find(q1 => String(q1.id) === String(q.id));
               if (!question) return;
               var questionResponses = responses.filter(seatCode => JSON.parse(courses.find(course => String(course.id) === document.getElementById("course-period-input").value).periods).includes(Number(String(seatCode.seatCode)[0]))).filter(r => String(r.segment) === String(segment.number)).filter(r => r.question_id === question.id).filter(r => String(r.seatCode).startsWith(document.getElementById("sort-seat-input")?.value));
               if (document.getElementById('hideIncorrectAttempts').checked) questionResponses = questionResponses.filter((r, index, self) => r.status === 'Correct' || !self.some(other => other.question_id === r.question_id && other.status === 'Correct'));
+              if (document.querySelector('#filter-report-responses [aria-selected="true"]').getAttribute('data-value') === 'first') {
+                questionResponses = questionResponses.filter(r => r.id === Math.min(...questionResponses.filter(r1 => r1.seatCode === r.seatCode && r1.question_id === r.question_id).map(r1 => r1.id)));
+              } else if (document.querySelector('#filter-report-responses [aria-selected="true"]').getAttribute('data-value') === 'last') {
+                questionResponses = questionResponses.filter(r => r.id === Math.max(...questionResponses.filter(r1 => r1.seatCode === r.seatCode && r1.question_id === r.question_id).map(r1 => r1.id)));
+              }
               var detailedReport1 = '';
+              switch (document.querySelector('#sort-report-responses [aria-selected="true"]').getAttribute('data-value')) {
+                case 'seatCode':
+                  questionResponses = questionResponses.sort((a, b) => a.seatCode - b.seatCode);
+                  break;
+                case 'studentName':
+                  questionResponses = questionResponses.sort((a, b) => {
+                    var nameA = "Unknown";
+                    var nameB = "Unknown";
+                    if (document.getElementById('useRoster').checked) {
+                      var roster = rosters.find(roster => roster.period === Number(String(a.seatCode)[0]));
+                      if (roster) {
+                        var studentA = JSON.parse(roster.data).find(student => String(student.seatCode) === String(a.seatCode));
+                        if (studentA) nameA = `${studentA.last}, ${studentA.first}`;
+                        var studentB = JSON.parse(roster.data).find(student => String(student.seatCode) === String(b.seatCode));
+                        if (studentB) nameB = `${studentB.last}, ${studentB.first}`;
+                      }
+                    }
+                    return nameA.localeCompare(nameB);
+                  });
+                  break;
+              }
               questionResponses.forEach(r => {
+                var name = "Unknown";
+                if (document.getElementById('useRoster').checked) {
+                  var roster = rosters.find(roster => roster.period === Number(String(r.seatCode)[0]));
+                  if (roster) {
+                    var student = JSON.parse(roster.data).find(student => String(student.seatCode) === String(r.seatCode));
+                    if (student) name = `${student.last}, ${student.first}`;
+                  }
+                }
+                const currentDate = new Date(r.timestamp);
+                var timeTaken = "N/A";
+                const sameSeatCodeResponses = responses
+                  .filter(r => courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value) ? JSON.parse(courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value)?.periods).includes(Number(String(r.seatCode)[0])) : false)
+                  .filter(r => document.getElementById("filter-segment-input")?.value ? (String(r.segment) === document.getElementById("filter-segment-input").value) : true)
+                  .filter(r => questions.find(q => String(q.id) === String(r.question_id)).number.startsWith(document.getElementById("sort-question-input")?.value))
+                  .filter(r => String(r.seatCode).startsWith(document.getElementById("sort-seat-input")?.value))
+                  .sort((a, b) => {
+                    if (a.flagged && !b.flagged) return -1;
+                    if (!a.flagged && b.flagged) return 1;
+                    return b.id - a.id;
+                  })
+                  .filter(a => a.seatCode === r.seatCode)
+                  .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+                const lastResponseIndex = sameSeatCodeResponses.findIndex(a => new Date(a.timestamp) >= currentDate) - 1;
+                const lastResponse = lastResponseIndex >= 0 ? sameSeatCodeResponses[lastResponseIndex] : null;
+                let timeDifference;
+                if (lastResponse) {
+                  timeDifference = calculateTimeDifference(currentDate, lastResponse.timestamp);
+                  timeTaken = formatTimeDifference(timeDifference);
+                }
                 detailedReport1 += `<div class="detailed-report-question">
                   <div class="color">
                     <span class="color-box ${(r.status === 'Correct') ? 'correct' : (r.status === 'Incorrect') ? 'incorrect' : r.status.includes('Recorded') ? 'waiting' : 'other'}"></span>
-                    <span class="color-name">${r.seatCode}<p class="showonhover"> (${time.unixToString(r.timestamp)})</p>: ${r.response}</span>
+                    <span class="color-name">${document.getElementById('useRoster').checked ? `${name} (${r.seatCode})` : r.seatCode}<p class="showonhover"> (${time.unixToString(r.timestamp)})</p>: ${r.response}</span>
                   </div>
                   <div class="color">
-                    <span class="color-name">${r.status}</span>
+                    <span class="color-name">${timeTaken}</span>
                     <span class="color-box ${(r.status === 'Correct') ? 'correct' : (r.status === 'Incorrect') ? 'incorrect' : r.status.includes('Recorded') ? 'waiting' : 'other'}"></span>
                   </div>
                 </div>`;
                 segmentResponses.push(r);
               });
+              var total = questionResponses.length || 1;
+              var unansweredStudentsCount = 0;
+              if (document.getElementById('useRoster').checked && (document.querySelector('#filter-report-responses [aria-selected="true"]').getAttribute('data-value') !== 'all') && !document.getElementById('hideUnanswered').checked) {
+                var courseRosters = rosters.filter(roster => JSON.parse(courses.find(course => String(course.id) === document.getElementById("course-period-input").value)?.periods).includes(Number(String(roster.period))));
+                var totalRosterStudents = [...new Set(courseRosters.flatMap(a => JSON.parse(a.data).map(b => Number(b.seatCode))))];
+                if (totalRosterStudents.length) {
+                  var answeredStudentsCount = [...new Set(questionResponses.flatMap(a => a.seatCode).filter(x => totalRosterStudents.includes(x)))].length;
+                  unansweredStudentsCount = totalRosterStudents.length - answeredStudentsCount;
+                  total = questionResponses.length + unansweredStudentsCount;
+                }
+              }
               detailedReport += `<div class="detailed-report-question"${(questionResponses.length != 0) ? ` report="segment-question-${q.id}"` : ''}>
                 <b>Question ${question.number} (${questionResponses.length} Response${(questionResponses.length != 1) ? 's' : ''})</b>
                 <div class="barcount-wrapper">
-                  ${(questionResponses.filter(r => r.status === 'Correct').length != 0) ? `<div class="barcount correct" style="width: calc(${questionResponses.filter(r => r.status === 'Correct').length / (questionResponses.length || 1)} * 100%)">${questionResponses.filter(r => r.status === 'Correct').length}</div>` : ''}
-                  ${(questionResponses.filter(r => ((r.status !== 'Correct') && (r.status !== 'Incorrect') && !r.status.includes('Recorded'))).length != 0) ? `<div class="barcount other" style="width: calc(${questionResponses.filter(r => ((r.status !== 'Correct') && (r.status !== 'Incorrect') && !r.status.includes('Recorded'))).length / (questionResponses.length || 1)} * 100%)">${questionResponses.filter(r => ((r.status !== 'Correct') && (r.status !== 'Incorrect') && !r.status.includes('Recorded'))).length}</div>` : ''}
-                  ${(questionResponses.filter(r => r.status.includes('Recorded')).length != 0) ? `<div class="barcount waiting" style="width: calc(${questionResponses.filter(r => r.status.includes('Recorded')).length / (questionResponses.length || 1)} * 100%)">${questionResponses.filter(r => r.status.includes('Recorded')).length}</div>` : ''}
-                  ${(questionResponses.filter(r => r.status === 'Incorrect').length != 0) ? `<div class="barcount incorrect" style="width: calc(${questionResponses.filter(r => r.status === 'Incorrect').length / (questionResponses.length || 1)} * 100%)">${questionResponses.filter(r => r.status === 'Incorrect').length}</div>` : ''}
+                  ${(questionResponses.filter(r => r.status === 'Correct').length != 0) ? `<div class="barcount correct" style="width: calc(${questionResponses.filter(r => r.status === 'Correct').length / total} * 100%)">${questionResponses.filter(r => r.status === 'Correct').length}</div>` : ''}
+                  ${((questionResponses.filter(r => ((r.status !== 'Correct') && (r.status !== 'Incorrect') && !r.status.includes('Recorded'))).length + unansweredStudentsCount) != 0) ? `<div class="barcount other" style="width: calc(${(questionResponses.filter(r => ((r.status !== 'Correct') && (r.status !== 'Incorrect') && !r.status.includes('Recorded'))).length + unansweredStudentsCount) / total} * 100%)">${questionResponses.filter(r => ((r.status !== 'Correct') && (r.status !== 'Incorrect') && !r.status.includes('Recorded'))).length + unansweredStudentsCount}</div>` : ''}
+                  ${(questionResponses.filter(r => r.status.includes('Recorded')).length != 0) ? `<div class="barcount waiting" style="width: calc(${questionResponses.filter(r => r.status.includes('Recorded')).length / total} * 100%)">${questionResponses.filter(r => r.status.includes('Recorded')).length}</div>` : ''}
+                  ${(questionResponses.filter(r => r.status === 'Incorrect').length != 0) ? `<div class="barcount incorrect" style="width: calc(${questionResponses.filter(r => r.status === 'Incorrect').length / total} * 100%)">${questionResponses.filter(r => r.status === 'Incorrect').length}</div>` : ''}
                 </div>
               </div>
               ${(questionResponses.length != 0) ? `<div class="section detailed-report" id="segment-question-${q.id}">
                 ${detailedReport1}
               </div>` : ''}`;
             });
+            var total = segmentResponses.length || 1;
+            var unansweredStudentsCount = 0;
+            if (document.getElementById('useRoster').checked && (document.querySelector('#filter-report-responses [aria-selected="true"]').getAttribute('data-value') !== 'all') && !document.getElementById('hideUnanswered').checked) {
+              var courseRosters = rosters.filter(roster => JSON.parse(courses.find(course => String(course.id) === document.getElementById("course-period-input").value)?.periods).includes(Number(String(roster.period))));
+              var totalRosterStudents = [...new Set(courseRosters.flatMap(a => JSON.parse(a.data).map(b => Number(b.seatCode))))];
+              if (totalRosterStudents.length) {
+                var answeredStudentsCount = [...new Set(segmentResponses.flatMap(a => a.seatCode).filter(x => totalRosterStudents.includes(x)))].length;
+                unansweredStudentsCount = totalRosterStudents.length - answeredStudentsCount;
+                total = segmentResponses.length + unansweredStudentsCount;
+              }
+            }
             document.querySelector('.segment-reports').innerHTML += `<div class="segment-report"${(JSON.parse(segment.question_ids) != 0) ? ` report="segment-${segment.number}"` : ''}>
               <b>Segment ${segment.number} (${JSON.parse(segment.question_ids).length} Question${JSON.parse(segment.question_ids).length != 1 ? 's' : ''})</b>
               <div class="barcount-wrapper">
-                ${(segmentResponses.filter(r => r.status === 'Correct').length != 0) ? `<div class="barcount correct" style="width: calc(${segmentResponses.filter(r => r.status === 'Correct').length / (segmentResponses.length || 1)} * 100%)">${segmentResponses.filter(r => r.status === 'Correct').length}</div>` : ''}
-                ${(segmentResponses.filter(r => ((r.status !== 'Correct') && (r.status !== 'Incorrect') && !r.status.includes('Recorded'))).length != 0) ? `<div class="barcount other" style="width: calc(${segmentResponses.filter(r => ((r.status !== 'Correct') && (r.status !== 'Incorrect') && !r.status.includes('Recorded'))).length / (segmentResponses.length || 1)} * 100%)">${segmentResponses.filter(r => ((r.status !== 'Correct') && (r.status !== 'Incorrect') && !r.status.includes('Recorded'))).length}</div>` : ''}
-                ${(segmentResponses.filter(r => r.status.includes('Recorded')).length != 0) ? `<div class="barcount waiting" style="width: calc(${segmentResponses.filter(r => r.status.includes('Recorded')).length / (segmentResponses.length || 1)} * 100%)">${segmentResponses.filter(r => r.status.includes('Recorded')).length}</div>` : ''}
-                ${(segmentResponses.filter(r => r.status === 'Incorrect').length != 0) ? `<div class="barcount incorrect" style="width: calc(${segmentResponses.filter(r => r.status === 'Incorrect').length / (segmentResponses.length || 1)} * 100%)">${segmentResponses.filter(r => r.status === 'Incorrect').length}</div>` : ''}
+                ${(segmentResponses.filter(r => r.status === 'Correct').length != 0) ? `<div class="barcount correct" style="width: calc(${segmentResponses.filter(r => r.status === 'Correct').length / total} * 100%)">${segmentResponses.filter(r => r.status === 'Correct').length}</div>` : ''}
+                ${((segmentResponses.filter(r => ((r.status !== 'Correct') && (r.status !== 'Incorrect') && !r.status.includes('Recorded'))).length + unansweredStudentsCount) != 0) ? `<div class="barcount other" style="width: calc(${(segmentResponses.filter(r => ((r.status !== 'Correct') && (r.status !== 'Incorrect') && !r.status.includes('Recorded'))).length + unansweredStudentsCount) / total} * 100%)">${segmentResponses.filter(r => ((r.status !== 'Correct') && (r.status !== 'Incorrect') && !r.status.includes('Recorded'))).length + unansweredStudentsCount}</div>` : ''}
+                ${(segmentResponses.filter(r => r.status.includes('Recorded')).length != 0) ? `<div class="barcount waiting" style="width: calc(${segmentResponses.filter(r => r.status.includes('Recorded')).length / total} * 100%)">${segmentResponses.filter(r => r.status.includes('Recorded')).length}</div>` : ''}
+                ${(segmentResponses.filter(r => r.status === 'Incorrect').length != 0) ? `<div class="barcount incorrect" style="width: calc(${segmentResponses.filter(r => r.status === 'Incorrect').length / total} * 100%)">${segmentResponses.filter(r => r.status === 'Incorrect').length}</div>` : ''}
               </div>
             </div>
             ${(JSON.parse(segment.question_ids).length != 0) ? `<div class="section detailed-report" id="segment-${segment.number}">
@@ -1022,6 +1152,7 @@ try {
     document.querySelectorAll('[data-archive-segment]').forEach(a => a.addEventListener('click', () => {
       if (a.parentElement.parentElement.id) archiveModal('segment', a.parentElement.parentElement.id.split('segment-')[1]);
     }));
+    if (!loadedSegmentEditor && !loadedSegmentCreator) ui.setUnsavedChanges(false);
     ui.reloadUnsavedInputs();
   }
 
@@ -1036,7 +1167,6 @@ try {
   }
 
   function calculateButtonHeights(container) {
-    if (!active) return;
     let totalHeight = 0;
     const buttons = container.querySelectorAll('button');
     buttons.forEach(button => {
@@ -1102,9 +1232,11 @@ try {
             c.sort((a, b) => a.id - b.id).forEach(course => {
               coursesSelectorString += `<option value="${course.id}" ${(periodCourse === course.id) ? 'selected' : ''}>${course.name}</option>`;
             });
-            elem.innerHTML = `<input type="text" autocomplete="off" id="period-${i}" value="Period ${i}" disabled /><select id="periodCourseSelector" value="${(periodCourse === undefined) ? '' : periodCourse}"><option value="" ${(periodCourse === undefined) ? 'selected' : ''}></option>${coursesSelectorString}</select>`;
+            elem.innerHTML = `<input type="text" autocomplete="off" id="period-${i}" value="Period ${i}" disabled /><select id="periodCourseSelector" value="${(periodCourse === undefined) ? '' : periodCourse}"><option value="" ${(periodCourse === undefined) ? 'selected' : ''}></option>${coursesSelectorString}</select>${rosters.find(r => String(r.period) === String(i)) ? '<button class="fit" style="min-width: 126px !important;" data-view-roster>View Roster</button>' : '<button class="fit" style="min-width: 126px !important;" data-upload-roster>Upload Roster</button>'}`;
             document.querySelector(".course-reorder .reorder").appendChild(elem);
           }
+          document.querySelectorAll("[data-view-roster]").forEach(a => a.addEventListener("click", viewRoster));
+          document.querySelectorAll("[data-upload-roster]").forEach(a => a.addEventListener("click", uploadRoster));
         }
       })
       .catch((e) => {
@@ -1219,7 +1351,7 @@ try {
             number: question.querySelector('#question-number-input').value,
             segment: question.querySelector('#question-segment-input').value,
             question: question.querySelector('#question-text-input').value,
-            description: JSON.stringify(renderedEditors[Number(question.id.split('-')[1])].getContents()),
+            description: renderedEditors[Number(question.id.split('-')[1])] ? JSON.stringify(renderedEditors[Number(question.id.split('-')[1])].getContents()) : null,
             images: Array.from(question.querySelectorAll('.attachments img')).map(q => {
               return q.src;
             }),
@@ -1441,6 +1573,15 @@ try {
             island();
           });
           question.appendChild(buttonGrid);
+          var questionMathRendering = document.createElement('div');
+          questionMathRendering.classList = `renderedMath${q.latex ? ' show' : ''}`;
+          questionMathRendering.innerHTML = convertLatexToMarkup(q.question);
+          renderMathInElement(questionMathRendering);
+          question.appendChild(questionMathRendering);
+          buttonGrid.querySelector("#question-text-input").addEventListener('input', (e) => {
+            questionMathRendering.innerHTML = convertLatexToMarkup(e.target.value);
+            renderMathInElement(questionMathRendering);
+          });
           var textareaContainer = document.createElement('div');
           textareaContainer.classList = "description";
           var toolbar = document.createElement('div');
@@ -1515,6 +1656,21 @@ try {
             theme: 'snow'
           });
           if (JSON.parse(q.description)) quill.setContents(JSON.parse(q.description));
+          quill.on('text-change', (delta) => {
+            var pastedLatex = delta.ops.find(op => Object.keys(op).includes('insert'))?.insert;
+            if (pastedLatex && (typeof pastedLatex === 'string')) {
+              const latexMatches = [...pastedLatex.matchAll(/(\$\$(.+?)\$\$)|(?<!\\)\$(.+?)(?<!\\)\$/gs)];
+              latexMatches.forEach(match => {
+                const fullMatch = match[0];
+                const innerLatex = match[2] || match[3];
+                const index = pastedLatex.indexOf(fullMatch);
+                quill.deleteText(quill.getSelection(true)?.index + index, fullMatch.length);
+                quill.insertEmbed(quill.getSelection(true)?.index + index, 'formula', innerLatex);
+                pastedLatex = pastedLatex.replace(fullMatch, ' ');
+              });
+              pastedLatex = pastedLatex.replace(/(?<!\\)\$/g, '');
+            }
+          });
           renderedEditors[q.id] = quill;
           var images = document.createElement('div');
           images.classList = "attachments";
@@ -1679,6 +1835,7 @@ try {
         ui.toast("Failed to read content from clipboard.", 5000, "error", "bi bi-exclamation-triangle-fill");
       });
     }));
+    if (!loadedSegmentEditor && !loadedSegmentCreator) ui.setUnsavedChanges(false);
     ui.reloadUnsavedInputs();
   }
 
@@ -1760,6 +1917,13 @@ try {
           icon.classList.add('bi-cursor-text');
           ui.toast("Question name marked as plain text.", 3000, "success", "bi bi-cursor-text");
         }
+        if (isLatex) {
+          this.parentElement.parentElement.querySelector(".renderedMath").classList.remove('show');
+        } else {
+          this.parentElement.parentElement.querySelector(".renderedMath").innerHTML = convertLatexToMarkup(this.parentElement.querySelector("#question-text-input").value);
+          renderMathInElement(this.parentElement.parentElement.querySelector(".renderedMath"));
+          this.parentElement.parentElement.querySelector(".renderedMath").classList.add('show');
+        }
         this.disabled = false;
       })
       .catch((e) => {
@@ -1797,7 +1961,7 @@ try {
     var buttonGrid = document.createElement('div');
     buttonGrid.className = "button-grid inputs";
     var segmentsString = "";
-    segments.forEach(s => segmentsString += `<option value="${s.number}">${s.number}</option>`);
+    segments.forEach(s => segmentsString += `<option value="${s.number}"${(document.location.search.split('?segment=')[1] && (document.location.search.split('?segment=')[1] === String(s.number))) ? ' selected' : ''}>${s.number}</option>`);
     buttonGrid.innerHTML = `<button square data-select tooltip="Select Question"><i class="bi bi-circle"></i><i class="bi bi-circle-fill"></i></button><div class="input-group small"><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-id-input" value="" disabled /></div></div><div class="input-group small"><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-number-input" value="" /></div></div><div class="input-group small"><div class="space" id="question-container"><select id="question-segment-input">${segmentsString}</select></div></div><div class="input-group"><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-text-input" value="" /></div></div><button square data-toggle-latex disabled tooltip="Toggle LaTeX Title"><i class="bi bi-cursor-text"></i></button><button square data-remove-question-input tooltip="Remove Question"><i class="bi bi-trash"></i></button><button square data-toggle-question tooltip="Expand Question"><i class="bi bi-caret-down-fill"></i><i class="bi bi-caret-up-fill"></i></button>`;
     group.appendChild(buttonGrid);
     this.parentElement.insertBefore(group, this.parentElement.children[this.parentElement.children.length - 1]);
@@ -1805,6 +1969,7 @@ try {
     document.querySelectorAll('[data-remove-question-input]').forEach(a => a.addEventListener('click', removeQuestion));
     document.querySelectorAll('[data-toggle-question]').forEach(a => a.addEventListener('click', toggleQuestion));
     document.querySelectorAll('[data-select]').forEach(a => a.addEventListener('click', toggleSelected));
+    buttonGrid.querySelector("#question-number-input").focus();
     ui.reloadUnsavedInputs();
   }
 
@@ -1908,7 +2073,7 @@ try {
     var responses1 = responses
       .filter(r => courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value) ? JSON.parse(courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value)?.periods).includes(Number(String(r.seatCode)[0])) : false)
       .filter(r => document.getElementById("filter-segment-input")?.value ? (String(r.segment) === document.getElementById("filter-segment-input").value) : true)
-      .filter(r => questions.find(q => q.id == r.question_id).number.startsWith(document.getElementById("sort-question-input")?.value))
+      .filter(r => questions.find(q => String(q.id) === String(r.question_id)).number.startsWith(document.getElementById("sort-question-input")?.value))
       .filter(r => String(r.seatCode).startsWith(document.getElementById("sort-seat-input")?.value))
       .sort((a, b) => {
         if (a.flagged && !b.flagged) return -1;
@@ -1927,7 +2092,7 @@ try {
           var parsedResponse = JSON.parse(r.response);
           responseString = parsedResponse.join(', ');
         }
-        var correctResponsesString = `Accepted: ${answers.find(a => a.id === questions.find(q => q.id == r.question_id).id).correct_answers.join(', ')}`;
+        var correctResponsesString = `Accepted: ${answers.find(a => a.id === questions.find(q => String(q.id) === String(r.question_id)).id).correct_answers.join(', ')}`;
         const date = new Date(r.timestamp);
         let hours = date.getHours();
         const minutes = date.getMinutes();
@@ -1966,7 +2131,7 @@ try {
         var buttonGrid = document.createElement('div');
         buttonGrid.className = "button-grid inputs";
         buttonGrid.id = `response-${r.id}`;
-        buttonGrid.innerHTML = `<button square data-select tooltip="Select Item"><i class="bi bi-circle"></i><i class="bi bi-circle-fill"></i></button><input type="text" autocomplete="off" class="small" id="response-id-input" value="${r.id}" disabled hidden />${(r.flagged == '1') ? `<button square data-unflag-response tooltip="Unflag Response"><i class="bi bi-flag-fill"></i></button>` : `<button square data-flag-response tooltip="Flag Response"><i class="bi bi-flag"></i></button>`}<input type="text" autocomplete="off" class="small" id="response-segment-input" value="${r.segment}" disabled data-segment /><input type="text" autocomplete="off" class="small" id="response-question-input" value="${questions.find(q => q.id == r.question_id).number}" disabled data-question /><input type="text" autocomplete="off" class="small" id="response-question-id-input" value="${questions.find(q => q.id == r.question_id).id}" disabled hidden /><input type="text" autocomplete="off" class="small${(((r.status === 'Invalid Format') || (r.status === 'Unknown, Recorded')) && document.querySelector('.awaitingResponses .section') && (answers.find(a => a.id === questions.find(q => q.id == r.question_id).id).correct_answers.length > 0)) ? ' hideonhover' : ''}" id="response-seat-code-input" value="${r.seatCode}" disabled data-seat-code /><input type="text" autocomplete="off" class="small" id="response-time-taken-input" value="${timeTaken}" disabled data-time-taken${(typeof timeDifference != 'undefined') ? ` time="${timeDifference}"` : ''} /><input type="text" autocomplete="off" class="small" id="response-time-taken-input" value="${timeTakenToRevise}" disabled data-time-taken${(typeof timeDifference != 'undefined') ? ` time="${timeDifference}"` : ''} /><!--<input type="text" autocomplete="off" class="small" id="response-time-taken-input" value="${result}" disabled data-time-taken />--><input type="text" autocomplete="off" id="response-response-input" value="${responseString}" ${isMatrix ? 'mockDisabled' : 'disabled'} />${(r.status === 'Incorrect') ? `<button square data-edit-reason tooltip="Edit Reason"><i class="bi bi-reply${(r.reason) ? '-fill' : ''}"></i></button>` : ''}<input type="text" autocomplete="off" class="smedium${(((r.status === 'Invalid Format') || (r.status === 'Unknown, Recorded')) && document.querySelector('.awaitingResponses .section') && (answers.find(a => a.id === questions.find(q => q.id == r.question_id).id).correct_answers.length > 0)) ? ' hideonhover' : ''}" id="response-timestamp-input" value="${date.getMonth() + 1}/${date.getDate()} ${hours % 12 || 12}:${minutes < 10 ? '0' + minutes : minutes} ${hours >= 12 ? 'PM' : 'AM'}" disabled />${(((r.status === 'Invalid Format') || (r.status === 'Unknown, Recorded')) && document.querySelector('.awaitingResponses .section') && (answers.find(a => a.id === questions.find(q => q.id == r.question_id).id).correct_answers.length > 0)) ? `<input type="text" autocomplete="off" class="showonhover" id="response-correct-responses-input" value="${correctResponsesString}" disabled />` : ''}<button square id="mark-correct-button"${(r.status === 'Correct') ? ' disabled' : ''} tooltip="Mark Correct"><i class="bi bi-check-circle${(r.status === 'Correct') ? '-fill' : ''}"></i></button><button square id="mark-incorrect-button"${(r.status === 'Incorrect') ? ' disabled' : ''} tooltip="Mark Incorrect"><i class="bi bi-x-circle${(r.status === 'Incorrect') ? '-fill' : ''}"></i></button>`;
+        buttonGrid.innerHTML = `<button square data-select tooltip="Select Item"><i class="bi bi-circle"></i><i class="bi bi-circle-fill"></i></button><input type="text" autocomplete="off" class="small" id="response-id-input" value="${r.id}" disabled hidden />${(String(r.flagged) === '1') ? `<button square data-unflag-response tooltip="Unflag Response"><i class="bi bi-flag-fill"></i></button>` : `<button square data-flag-response tooltip="Flag Response"><i class="bi bi-flag"></i></button>`}<input type="text" autocomplete="off" class="small" id="response-segment-input" value="${r.segment}" disabled data-segment /><input type="text" autocomplete="off" class="small" id="response-question-input" value="${questions.find(q => String(q.id) === String(r.question_id)).number}" disabled data-question /><input type="text" autocomplete="off" class="small" id="response-question-id-input" value="${questions.find(q => String(q.id) === String(r.question_id)).id}" disabled hidden /><input type="text" autocomplete="off" class="small${(((r.status === 'Invalid Format') || (r.status === 'Unknown, Recorded')) && document.querySelector('.awaitingResponses .section') && (answers.find(a => a.id === questions.find(q => String(q.id) === String(r.question_id)).id).correct_answers.length > 0)) ? ' hideonhover' : ''}" id="response-seat-code-input" value="${r.seatCode}" disabled data-seat-code /><input type="text" autocomplete="off" class="small" id="response-time-taken-input" value="${timeTaken}" disabled data-time-taken${(typeof timeDifference != 'undefined') ? ` time="${timeDifference}"` : ''} /><input type="text" autocomplete="off" class="small" id="response-time-taken-input" value="${timeTakenToRevise}" disabled data-time-taken${(typeof timeDifference != 'undefined') ? ` time="${timeDifference}"` : ''} /><!--<input type="text" autocomplete="off" class="small" id="response-time-taken-input" value="${result}" disabled data-time-taken />--><input type="text" autocomplete="off" id="response-response-input" value="${responseString}" ${isMatrix ? 'mockDisabled' : 'disabled'} />${(r.status === 'Incorrect') ? `<button square data-edit-reason tooltip="Edit Reason"><i class="bi bi-reply${(r.reason) ? '-fill' : ''}"></i></button>` : ''}<input type="text" autocomplete="off" class="smedium${(((r.status === 'Invalid Format') || (r.status === 'Unknown, Recorded')) && document.querySelector('.awaitingResponses .section') && (answers.find(a => a.id === questions.find(q => String(q.id) === String(r.question_id)).id).correct_answers.length > 0)) ? ' hideonhover' : ''}" id="response-timestamp-input" value="${date.getMonth() + 1}/${date.getDate()} ${hours % 12 || 12}:${minutes < 10 ? '0' + minutes : minutes} ${hours >= 12 ? 'PM' : 'AM'}" disabled />${(((r.status === 'Invalid Format') || (r.status === 'Unknown, Recorded')) && document.querySelector('.awaitingResponses .section') && (answers.find(a => a.id === questions.find(q => String(q.id) === String(r.question_id)).id).correct_answers.length > 0)) ? `<input type="text" autocomplete="off" class="showonhover" id="response-correct-responses-input" value="${correctResponsesString}" disabled />` : ''}<button square id="mark-correct-button"${(r.status === 'Correct') ? ' disabled' : ''} tooltip="Mark Correct"><i class="bi bi-check-circle${(r.status === 'Correct') ? '-fill' : ''}"></i></button><button square id="mark-incorrect-button"${(r.status === 'Incorrect') ? ' disabled' : ''} tooltip="Mark Incorrect"><i class="bi bi-x-circle${(r.status === 'Incorrect') ? '-fill' : ''}"></i></button>`;
         buttonGrid.addEventListener('mouseenter', () => {
           var question = questions.find(q => String(q.id) === String(r.question_id));
           island(questions, 'question', {
@@ -2040,34 +2205,132 @@ try {
       }
     });
     if (document.querySelector('.seat-code-reports')) {
-      seatCodes.filter(seatCode => JSON.parse(courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value).periods).includes(Number(String(seatCode.code)[0]))).sort((a, b) => Number(a.code) - Number(b.code)).forEach(seatCode => {
+      var sortedSeatCodes = seatCodes.filter(seatCode => JSON.parse(courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value).periods).includes(Number(String(seatCode.code)[0])));
+      if (document.getElementById('useRoster').checked) {
+        var currentCourseRosters = rosters.filter(roster => JSON.parse(courses.find(course => String(course.id) === document.getElementById("course-period-input").value)?.periods).includes(Number(String(roster.period))));
+        if (currentCourseRosters.length) document.querySelector('.seat-code-reports').appendChild(document.createElement('div'));
+        currentCourseRosters.forEach(currentCourseRoster => {
+          var total = [...new Set(JSON.parse(currentCourseRoster.data).flatMap(a => Number(a.seatCode)))];
+          var registered = [...new Set(sortedSeatCodes.flatMap(a => a.code).filter(x => total.includes(x)))];
+          var courseRosterProgress = document.createElement('div');
+          courseRosterProgress.classList = (currentCourseRosters.length > 1) ? 'seat-code-report' : 'barcount-wrapper fill';
+          courseRosterProgress.innerHTML = `${(currentCourseRosters.length > 1) ? `<b>Period ${currentCourseRoster.period}</b><div class="barcount-wrapper fill">` : ''}
+              ${registered.length ? `<div class="barcount correct" style="width: calc(${registered.length / total.length} * 100%)">${registered.length} Registered Student${(registered.length > 1) ? 's' : ''}</div>` : ''}
+              ${(total.length - registered.length) ? `<div class="barcount other" style="width: calc(${(total.length - registered.length) / total.length} * 100%)">${total.length - registered.length} Unregistered Student${((total.length - registered.length) > 1) ? 's' : ''}</div>` : ''}
+          ${(currentCourseRosters.length > 1) ? `</div>` : ''}`;
+          document.querySelector('.seat-code-reports').appendChild(courseRosterProgress);
+          courseRosterProgress.addEventListener('mouseenter', () => {
+            island(currentCourseRosters, 'roster', {
+              sourceId: String(currentCourseRoster.period),
+              title: `Period ${currentCourseRoster.period}`,
+              subtitle: `${registered.length}/${total.length} Registered Students`,
+              lists: [
+                {
+                  title: 'Unregistered Students',
+                  items: total.filter(a => !registered.includes(a)).map(a => { var student = JSON.parse(currentCourseRoster.data).find(b => String(b.seatCode) === String(a)); return `${student.last}, ${student.first} (${a})`; })
+                },
+                {
+                  title: 'Registered Students',
+                  items: total.filter(a => registered.includes(a)).map(a => { var student = JSON.parse(currentCourseRoster.data).find(b => String(b.seatCode) === String(a)); return `${student.last}, ${student.first} (${a})`; })
+                },
+              ],
+            }, sortedSeatCodes);
+          });
+          courseRosterProgress.addEventListener('mouseleave', () => {
+            island();
+          });
+        });
+        if (currentCourseRosters.length) document.querySelector('.seat-code-reports').appendChild(document.createElement('div'));
+      }
+      switch (document.querySelector('#sort-report-responses [aria-selected="true"]').getAttribute('data-value')) {
+        case 'seatCode':
+          sortedSeatCodes = sortedSeatCodes.sort((a, b) => Number(a.code) - Number(b.code));
+          break;
+        case 'studentName':
+          sortedSeatCodes = sortedSeatCodes.sort((a, b) => {
+            var nameA = "Unknown";
+            var nameB = "Unknown";
+            if (document.getElementById('useRoster').checked) {
+              var roster = rosters.find(roster => roster.period === Number(String(a.code)[0]));
+              if (roster) {
+                var studentA = JSON.parse(roster.data).find(student => String(student.seatCode) === String(a.code));
+                if (studentA) nameA = `${studentA.last}, ${studentA.first}`;
+                var studentB = JSON.parse(roster.data).find(student => String(student.seatCode) === String(b.code));
+                if (studentB) nameB = `${studentB.last}, ${studentB.first}`;
+              }
+            }
+            return nameA.localeCompare(nameB);
+          });
+          break;
+      }
+      sortedSeatCodes.forEach(seatCode => {
         var detailedReport = '';
         var seatCodeResponses = seatCode.responses.sort((a, b) => a.timestamp - b.timestamp);
         if (document.getElementById('hideIncorrectAttempts').checked) seatCodeResponses = seatCodeResponses.filter((r, index, self) => r.status === 'Correct' || !self.some(other => other.question_id === r.question_id && other.status === 'Correct'));
+        if (document.querySelector('#filter-report-responses [aria-selected="true"]').getAttribute('data-value') === 'first') {
+          seatCodeResponses = seatCodeResponses.filter(r => r.id === Math.min(...seatCodeResponses.filter(r1 => r1.seatCode === r.seatCode && r1.question_id === r.question_id).map(r1 => r1.id)));
+        } else if (document.querySelector('#filter-report-responses [aria-selected="true"]').getAttribute('data-value') === 'last') {
+          seatCodeResponses = seatCodeResponses.filter(r => r.id === Math.max(...seatCodeResponses.filter(r1 => r1.seatCode === r.seatCode && r1.question_id === r.question_id).map(r1 => r1.id)));
+        }
         seatCodeResponses.forEach(r => {
-          detailedReport += questions.find(q => q.id == r.question_id).number ? `<div class="detailed-report-question">
+          const currentDate = new Date(r.timestamp);
+          var timeTaken = "N/A";
+          const sameSeatCodeResponses = responses
+            .filter(r => courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value) ? JSON.parse(courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value)?.periods).includes(Number(String(r.seatCode)[0])) : false)
+            .filter(r => document.getElementById("filter-segment-input")?.value ? (String(r.segment) === document.getElementById("filter-segment-input").value) : true)
+            .filter(r => questions.find(q => String(q.id) === String(r.question_id)).number.startsWith(document.getElementById("sort-question-input")?.value))
+            .filter(r => String(r.seatCode).startsWith(document.getElementById("sort-seat-input")?.value))
+            .sort((a, b) => {
+              if (a.flagged && !b.flagged) return -1;
+              if (!a.flagged && b.flagged) return 1;
+              return b.id - a.id;
+            })
+            .filter(a => a.seatCode === r.seatCode)
+            .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+          const lastResponseIndex = sameSeatCodeResponses.findIndex(a => new Date(a.timestamp) >= currentDate) - 1;
+          const lastResponse = lastResponseIndex >= 0 ? sameSeatCodeResponses[lastResponseIndex] : null;
+          let timeDifference;
+          if (lastResponse) {
+            timeDifference = calculateTimeDifference(currentDate, lastResponse.timestamp);
+            timeTaken = formatTimeDifference(timeDifference);
+          }
+          detailedReport += questions.find(q => String(q.id) === String(r.question_id)).number ? `<div class="detailed-report-question">
             <div class="color">
               <span class="color-box ${(r.status === 'Correct') ? 'correct' : (r.status === 'Incorrect') ? 'incorrect' : r.status.includes('Recorded') ? 'waiting' : 'other'}"></span>
-              <span class="color-name">Segment ${r.segment} #${questions.find(q => q.id == r.question_id).number}<p class="showonhover"> (${time.unixToString(r.timestamp)})</p>: ${r.response}</span>
+              <span class="color-name">Segment ${r.segment} #${questions.find(q => String(q.id) === String(r.question_id)).number}<p class="showonhover"> (${time.unixToString(r.timestamp)})</p>: ${r.response}</span>
             </div>
             <div class="color">
-              <span class="color-name">${r.status}</span>
+              <span class="color-name">${timeTaken}</span>
               <span class="color-box ${(r.status === 'Correct') ? 'correct' : (r.status === 'Incorrect') ? 'incorrect' : r.status.includes('Recorded') ? 'waiting' : 'other'}"></span>
             </div>
           </div>` : '';
         });
-        document.querySelector('.seat-code-reports').innerHTML += `<div class="seat-code-report" report="seat-code-${seatCode.code}">
-          <b>${seatCode.code} (${seatCodeResponses.length} Response${(seatCodeResponses.length != 1) ? 's' : ''})</b>
-          <div class="barcount-wrapper">
-            ${(seatCodeResponses.filter(r => r.status === 'Correct').length != 0) ? `<div class="barcount correct" style="width: calc(${seatCodeResponses.filter(r => r.status === 'Correct').length / (seatCodeResponses.length || 1)} * 100%)">${seatCodeResponses.filter(r => r.status === 'Correct').length}</div>` : ''}
-            ${(seatCodeResponses.filter(r => (r.status != 'Correct') && (r.status != 'Incorrect') && !r.status.includes('Recorded')).length != 0) ? `<div class="barcount other" style="width: calc(${seatCodeResponses.filter(r => (r.status != 'Correct') && (r.status != 'Incorrect') && !r.status.includes('Recorded')).length / (seatCodeResponses.length || 1)} * 100%)">${seatCodeResponses.filter(r => (r.status != 'Correct') && (r.status != 'Incorrect') && !r.status.includes('Recorded')).length}</div>` : ''}
-            ${(seatCodeResponses.filter(r => r.status.includes('Recorded')).length != 0) ? `<div class="barcount waiting" style="width: calc(${seatCodeResponses.filter(r => r.status.includes('Recorded')).length / (seatCodeResponses.length || 1)} * 100%)">${seatCodeResponses.filter(r => r.status.includes('Recorded')).length}</div>` : ''}
-            ${(seatCodeResponses.filter(r => r.status === 'Incorrect').length != 0) ? `<div class="barcount incorrect" style="width: calc(${seatCodeResponses.filter(r => r.status === 'Incorrect').length / (seatCodeResponses.length || 1)} * 100%)">${seatCodeResponses.filter(r => r.status === 'Incorrect').length}</div>` : ''}
-          </div>
-        </div>
-        <div class="section detailed-report" id="seat-code-${seatCode.code}">
+        var name = "Unknown";
+        if (document.getElementById('useRoster').checked) {
+          var roster = rosters.find(roster => roster.period === Number(String(seatCode.code)[0]));
+          if (roster) {
+            var student = JSON.parse(roster.data).find(student => String(student.seatCode) === String(seatCode.code));
+            if (student) name = `${student.last}, ${student.first}`;
+          }
+        }
+        var seatCodeReport = document.createElement('div');
+        seatCodeReport.classList = 'seat-code-report';
+        seatCodeReport.setAttribute('report', `seat-code-${seatCode.code}`);
+        seatCodeReport.innerHTML = `<b>${document.getElementById('useRoster').checked ? `${name} (${seatCode.code})` : seatCode.code} (${seatCodeResponses.length} Response${(seatCodeResponses.length != 1) ? 's' : ''})</b>
+        <div class="barcount-wrapper">
+          ${(seatCodeResponses.filter(r => r.status === 'Correct').length != 0) ? `<div class="barcount correct" style="width: calc(${seatCodeResponses.filter(r => r.status === 'Correct').length / (seatCodeResponses.length || 1)} * 100%)">${seatCodeResponses.filter(r => r.status === 'Correct').length}</div>` : ''}
+          ${(seatCodeResponses.filter(r => (r.status != 'Correct') && (r.status != 'Incorrect') && !r.status.includes('Recorded')).length != 0) ? `<div class="barcount other" style="width: calc(${seatCodeResponses.filter(r => (r.status != 'Correct') && (r.status != 'Incorrect') && !r.status.includes('Recorded')).length / (seatCodeResponses.length || 1)} * 100%)">${seatCodeResponses.filter(r => (r.status != 'Correct') && (r.status != 'Incorrect') && !r.status.includes('Recorded')).length}</div>` : ''}
+          ${(seatCodeResponses.filter(r => r.status.includes('Recorded')).length != 0) ? `<div class="barcount waiting" style="width: calc(${seatCodeResponses.filter(r => r.status.includes('Recorded')).length / (seatCodeResponses.length || 1)} * 100%)">${seatCodeResponses.filter(r => r.status.includes('Recorded')).length}</div>` : ''}
+          ${(seatCodeResponses.filter(r => r.status === 'Incorrect').length != 0) ? `<div class="barcount incorrect" style="width: calc(${seatCodeResponses.filter(r => r.status === 'Incorrect').length / (seatCodeResponses.length || 1)} * 100%)">${seatCodeResponses.filter(r => r.status === 'Incorrect').length}</div>` : ''}
+        </div>`;
+        document.querySelector('.seat-code-reports').appendChild(seatCodeReport);
+        var seatCodeDetailedReport = document.createElement('div');
+        seatCodeDetailedReport.classList = 'seat-code-report';
+        seatCodeDetailedReport.setAttribute('report', `seat-code-${seatCode.code}`);
+        seatCodeDetailedReport.innerHTML = `<div class="section detailed-report" id="seat-code-${seatCode.code}">
           ${detailedReport}
         </div>`;
+        document.querySelector('.seat-code-reports').appendChild(seatCodeDetailedReport);
       });
     }
     const stdDev = calculateStandardDeviation(timedResponses);
@@ -2087,7 +2350,7 @@ try {
       }
       var buttonGrid = document.createElement('div');
       buttonGrid.className = "button-grid inputs";
-      buttonGrid.innerHTML = `<input type="text" autocomplete="off" class="small" id="response-id-input" value="${r.single_response}" disabled hidden /><input type="text" autocomplete="off" class="small" id="response-segment-input" value="${r.segment}" disabled data-segment /><input type="text" autocomplete="off" class="small" id="response-question-input" value="${questions.find(q => q.id == r.question_id).number}" disabled data-question /><input type="text" autocomplete="off" class="small" id="response-question-id-input" value="${questions.find(q => q.id == r.question_id).id}" disabled hidden /><input type="text" autocomplete="off" id="response-response-input" value="${responseString}" ${isMatrix ? 'mockDisabled' : 'disabled'} /><input type="text" autocomplete="off" class="small" id="response-count-input" value="${r.count}" disabled /><button square id="mark-correct-button"${(r.status === 'Correct') ? ' disabled' : ''} tooltip="Mark Correct"><i class="bi bi-check-circle${(r.status === 'Correct') ? '-fill' : ''}"></i></button><button square id="mark-incorrect-button"${(r.status === 'Incorrect') ? ' disabled' : ''} tooltip="Mark Incorrect"><i class="bi bi-x-circle${(r.status === 'Incorrect') ? '-fill' : ''}"></i></button>`;
+      buttonGrid.innerHTML = `<input type="text" autocomplete="off" class="small" id="response-id-input" value="${r.single_response}" disabled hidden /><input type="text" autocomplete="off" class="small" id="response-segment-input" value="${r.segment}" disabled data-segment /><input type="text" autocomplete="off" class="small" id="response-question-input" value="${questions.find(q => String(q.id) === String(r.question_id)).number}" disabled data-question /><input type="text" autocomplete="off" class="small" id="response-question-id-input" value="${questions.find(q => String(q.id) === String(r.question_id)).id}" disabled hidden /><input type="text" autocomplete="off" id="response-response-input" value="${responseString}" ${isMatrix ? 'mockDisabled' : 'disabled'} /><input type="text" autocomplete="off" class="small" id="response-count-input" value="${r.count}" disabled /><button square id="mark-correct-button"${(r.status === 'Correct') ? ' disabled' : ''} tooltip="Mark Correct"><i class="bi bi-check-circle${(r.status === 'Correct') ? '-fill' : ''}"></i></button><button square id="mark-incorrect-button"${(r.status === 'Incorrect') ? ' disabled' : ''} tooltip="Mark Incorrect"><i class="bi bi-x-circle${(r.status === 'Incorrect') ? '-fill' : ''}"></i></button>`;
       buttonGrid.addEventListener('mouseenter', () => {
         var question = questions.find(q => String(q.id) === String(r.question_id));
         island(questions, 'question', {
@@ -2182,6 +2445,8 @@ try {
     document.querySelectorAll('[data-edit-reason]').forEach(a => a.addEventListener('click', editReason));
     document.querySelectorAll('[report]').forEach(a => a.addEventListener('click', toggleDetailedReport));
     document.querySelectorAll('[data-select]').forEach(a => a.addEventListener('click', toggleSelected));
+    if (!loadedSegmentEditor && !loadedSegmentCreator) ui.setUnsavedChanges(false);
+    ui.reloadUnsavedInputs();
   }
 
   function calculateTimeDifference(currentDate, previousTimestamp) {
@@ -2225,7 +2490,6 @@ try {
         usr: storage.get("usr"),
         pwd: storage.get("pwd"),
         question_id: this.parentElement.querySelector('#response-id-input').value,
-        seatCode: this.parentElement.querySelector('#response-seat-code-input').value,
       }),
     })
       .then(async (r) => {
@@ -2268,7 +2532,6 @@ try {
         usr: storage.get("usr"),
         pwd: storage.get("pwd"),
         question_id: this.parentElement.querySelector('#response-id-input').value,
-        seatCode: this.parentElement.querySelector('#response-seat-code-input').value,
       }),
     })
       .then(async (r) => {
@@ -2425,8 +2688,8 @@ try {
       body: '<p>Edit your reason that this response is incorrect.</p>',
       input: {
         type: 'text',
-        placeholder: responses.find(r => r.id == this.parentElement.querySelector('#response-id-input').value).reason || '',
-        defaultValue: responses.find(r => r.id == this.parentElement.querySelector('#response-id-input').value).reason || '',
+        placeholder: responses.find(r => String(r.id) === this.parentElement.querySelector('#response-id-input').value).reason || '',
+        defaultValue: responses.find(r => String(r.id) === this.parentElement.querySelector('#response-id-input').value).reason || '',
       },
       buttons: [
         {
@@ -2549,15 +2812,15 @@ try {
     const top = (window.screen.height / 2) - (height / 2);
     const windowFeatures = `width=${width},height=${height},resizable=no,scrollbars=no,status=yes,left=${left},top=${top}`;
     const newWindow = window.open(url, '_blank', windowFeatures);
-    let uploadSSuccessful = false;
+    let uploadSuccessful = false;
     window.addEventListener('message', (event) => {
       if (event.origin !== (window.location.protocol + '//' + window.location.hostname + (window.location.port ? ':' + window.location.port : ''))) return;
-      if (event.data === 'uploadSuccess') uploadSSuccessful = true;
+      if (event.data === 'uploadSuccess') uploadSuccessful = true;
     }, false);
     const checkWindowClosed = setInterval(function () {
       if (newWindow && newWindow.closed) {
         clearInterval(checkWindowClosed);
-        if (uploadSSuccessful) {
+        if (uploadSuccessful) {
           ui.modeless(`<i class="bi bi-cloud-upload"></i>`, "Uploaded");
         } else {
           ui.modeless(`<i class="bi bi-exclamation-triangle"></i>`, "Upload Cancelled");
@@ -2568,7 +2831,7 @@ try {
   }
 
   function toggleReorder() {
-    if (!active) return;
+    if (!document.querySelector('[data-reorder]')) return;
     if (reorder) {
       reorder = false;
       document.querySelector('[data-reorder] .bi-arrows-move').style.display = "block";
@@ -2743,13 +3006,25 @@ try {
 
   document.querySelectorAll('[sort-segment-questions-increasing]').forEach(a => a.addEventListener('click', sortSegmentQuestionsIncreasing));
   document.querySelectorAll('[sort-segment-questions-decreasing]').forEach(a => a.addEventListener('click', sortSegmentQuestionsDecreasing));
+  document.querySelectorAll('[sort-segment-questions-number-increasing]').forEach(a => a.addEventListener('click', sortSegmentQuestionsNumberIncreasing));
+  document.querySelectorAll('[sort-segment-questions-number-decreasing]').forEach(a => a.addEventListener('click', sortSegmentQuestionsNumberDecreasing));
 
   function sortSegmentQuestionsIncreasing() {
+    if (!active) return;
+    sortSegmentQuestions('19');
+  }
+
+  function sortSegmentQuestionsDecreasing() {
+    if (!active) return;
+    sortSegmentQuestions('91');
+  }
+
+  function sortSegmentQuestionsNumberIncreasing() {
     if (!active) return;
     sortSegmentQuestions('az');
   }
 
-  function sortSegmentQuestionsDecreasing() {
+  function sortSegmentQuestionsNumberDecreasing() {
     if (!active) return;
     sortSegmentQuestions('za');
   }
@@ -2758,6 +3033,12 @@ try {
     if (!active) return;
     var updatedQuestions = [...document.getElementById("question-list").children].filter(q => q.classList.contains('question'));
     switch (type) {
+      case '19':
+        updatedQuestions.sort((a, b) => Number(a.id.split('questionList-')[1]) - Number(b.id.split('questionList-')[1]));
+        break;
+      case '91':
+        updatedQuestions.sort((a, b) => Number(b.id.split('questionList-')[1]) - Number(a.id.split('questionList-')[1]));
+        break;
       case 'az':
         updatedQuestions.sort((a, b) => {
           const nameA = a.querySelector('.small input').value;
@@ -2812,6 +3093,7 @@ try {
     draggableQuestionList = createSwapy(document.getElementById("question-list"), {
       animation: 'none'
     });
+    ui.setUnsavedChanges(true);
     ui.reloadUnsavedInputs();
   }
 
@@ -2850,29 +3132,103 @@ try {
     document.querySelectorAll('.detailed-report.active').forEach(dr => expandedReports.push(dr.id));
     if (!document.querySelector('.question-reports') || (questions.length === 0)) return;
     document.querySelector('.question-reports').innerHTML = '';
-    questions.filter(q => q.number.startsWith(document.getElementById("sort-question-input")?.value)).sort((a, b) => a.id - b.id).forEach(question => {
+    const course = courses.find(c => document.getElementById("course-period-input") ? (String(c.id) === document.getElementById("course-period-input").value) : null);
+    var courseQuestions = [];
+    segments.filter(s => String(s.course) === String(course?.id)).filter(s => document.getElementById("filter-segment-input")?.value ? (String(s.number) === document.getElementById("filter-segment-input").value) : true).forEach(segment => {
+      JSON.parse(segment.question_ids).filter(q => questions.find(q1 => String(q1.id) === String(q.id))?.number.startsWith(document.getElementById("sort-question-input")?.value)).forEach(questionId => {
+        const question = questions.find(q => String(q.id) === String(questionId.id));
+        if (question) courseQuestions.push(question);
+      });
+    });
+    courseQuestions.filter(q => q.number.startsWith(document.getElementById("sort-question-input")?.value)).sort((a, b) => document.getElementById("filter-segment-input")?.value ? 0 : (a.id - b.id)).forEach(question => {
       var questionResponses = responses.filter(r => r.question_id === question.id).filter(r => JSON.parse(courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value).periods).includes(Number(String(r.seatCode)[0]))).filter(r => String(r.seatCode).startsWith(document.getElementById("sort-seat-input")?.value));
       if (document.getElementById('hideIncorrectAttempts').checked) questionResponses = questionResponses.filter((r, index, self) => r.status === 'Correct' || !self.some(other => other.question_id === r.question_id && other.status === 'Correct'));
+      if (document.querySelector('#filter-report-responses [aria-selected="true"]').getAttribute('data-value') === 'first') {
+        questionResponses = questionResponses.filter(r => r.id === Math.min(...questionResponses.filter(r1 => r1.seatCode === r.seatCode && r1.question_id === r.question_id).map(r1 => r1.id)));
+      } else if (document.querySelector('#filter-report-responses [aria-selected="true"]').getAttribute('data-value') === 'last') {
+        questionResponses = questionResponses.filter(r => r.id === Math.max(...questionResponses.filter(r1 => r1.seatCode === r.seatCode && r1.question_id === r.question_id).map(r1 => r1.id)));
+      }
       var detailedReport = '';
+      switch (document.querySelector('#sort-report-responses [aria-selected="true"]').getAttribute('data-value')) {
+        case 'seatCode':
+          questionResponses = questionResponses.sort((a, b) => a.seatCode - b.seatCode);
+          break;
+        case 'studentName':
+          questionResponses = questionResponses.sort((a, b) => {
+            var nameA = "Unknown";
+            var nameB = "Unknown";
+            if (document.getElementById('useRoster').checked) {
+              var roster = rosters.find(roster => roster.period === Number(String(a.seatCode)[0]));
+              if (roster) {
+                var studentA = JSON.parse(roster.data).find(student => String(student.seatCode) === String(a.seatCode));
+                if (studentA) nameA = `${studentA.last}, ${studentA.first}`;
+                var studentB = JSON.parse(roster.data).find(student => String(student.seatCode) === String(b.seatCode));
+                if (studentB) nameB = `${studentB.last}, ${studentB.first}`;
+              }
+            }
+            return nameA.localeCompare(nameB);
+          });
+          break;
+      }
       questionResponses.forEach(r => {
+        var name = "Unknown";
+        if (document.getElementById('useRoster').checked) {
+          var roster = rosters.find(roster => roster.period === Number(String(r.seatCode)[0]));
+          if (roster) {
+            var student = JSON.parse(roster.data).find(student => String(student.seatCode) === String(r.seatCode));
+            if (student) name = `${student.last}, ${student.first}`;
+          }
+        }
+        const currentDate = new Date(r.timestamp);
+        var timeTaken = "N/A";
+        const sameSeatCodeResponses = responses
+          .filter(r => courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value) ? JSON.parse(courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value)?.periods).includes(Number(String(r.seatCode)[0])) : false)
+          .filter(r => document.getElementById("filter-segment-input")?.value ? (String(r.segment) === document.getElementById("filter-segment-input").value) : true)
+          .filter(r => questions.find(q => String(q.id) === String(r.question_id)).number.startsWith(document.getElementById("sort-question-input")?.value))
+          .filter(r => String(r.seatCode).startsWith(document.getElementById("sort-seat-input")?.value))
+          .sort((a, b) => {
+            if (a.flagged && !b.flagged) return -1;
+            if (!a.flagged && b.flagged) return 1;
+            return b.id - a.id;
+          })
+          .filter(a => a.seatCode === r.seatCode)
+          .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+        const lastResponseIndex = sameSeatCodeResponses.findIndex(a => new Date(a.timestamp) >= currentDate) - 1;
+        const lastResponse = lastResponseIndex >= 0 ? sameSeatCodeResponses[lastResponseIndex] : null;
+        let timeDifference;
+        if (lastResponse) {
+          timeDifference = calculateTimeDifference(currentDate, lastResponse.timestamp);
+          timeTaken = formatTimeDifference(timeDifference);
+        }
         detailedReport += `<div class="detailed-report-question">
           <div class="color">
             <span class="color-box ${(r.status === 'Correct') ? 'correct' : (r.status === 'Incorrect') ? 'incorrect' : r.status.includes('Recorded') ? 'waiting' : 'other'}"></span>
-            <span class="color-name">${r.seatCode}<p class="showonhover"> (${time.unixToString(r.timestamp)})</p>: ${r.response}</span>
+            <span class="color-name">${document.getElementById('useRoster').checked ? `${name} (${r.seatCode})` : r.seatCode}<p class="showonhover"> (${time.unixToString(r.timestamp)})</p>: ${r.response}</span>
           </div>
           <div class="color">
-            <span class="color-name">${r.status}</span>
+            <span class="color-name">${timeTaken}</span>
             <span class="color-box ${(r.status === 'Correct') ? 'correct' : (r.status === 'Incorrect') ? 'incorrect' : r.status.includes('Recorded') ? 'waiting' : 'other'}"></span>
           </div>
         </div>`
       });
+      var total = questionResponses.length || 1;
+      var unansweredStudentsCount = 0;
+      if (document.getElementById('useRoster').checked && (document.querySelector('#filter-report-responses [aria-selected="true"]').getAttribute('data-value') !== 'all') && !document.getElementById('hideUnanswered').checked) {
+        var courseRosters = rosters.filter(roster => JSON.parse(courses.find(course => String(course.id) === document.getElementById("course-period-input").value)?.periods).includes(Number(String(roster.period))));
+        var totalRosterStudents = [...new Set(courseRosters.flatMap(a => JSON.parse(a.data).map(b => Number(b.seatCode))))];
+        if (totalRosterStudents.length) {
+          var answeredStudentsCount = [...new Set(questionResponses.flatMap(a => a.seatCode).filter(x => totalRosterStudents.includes(x)))].length;
+          unansweredStudentsCount = totalRosterStudents.length - answeredStudentsCount;
+          total = questionResponses.length + unansweredStudentsCount;
+        }
+      }
       document.querySelector('.question-reports').innerHTML += `<div class="detailed-report-question"${(questionResponses.length != 0) ? ` report="question-${question.id}"` : ''}>
         <b>Question ${question.number} (${questionResponses.length} Response${(questionResponses.length != 1) ? 's' : ''})</b>
         <div class="barcount-wrapper">
-          ${(questionResponses.filter(r => r.status === 'Correct').length != 0) ? `<div class="barcount correct" style="width: calc(${questionResponses.filter(r => r.status === 'Correct').length / (questionResponses.length || 1)} * 100%)">${questionResponses.filter(r => r.status === 'Correct').length}</div>` : ''}
-          ${(questionResponses.filter(r => ((r.status !== 'Correct') && (r.status !== 'Incorrect') && !r.status.includes('Recorded'))).length != 0) ? `<div class="barcount other" style="width: calc(${questionResponses.filter(r => ((r.status !== 'Correct') && (r.status !== 'Incorrect') && !r.status.includes('Recorded'))).length / (questionResponses.length || 1)} * 100%)">${questionResponses.filter(r => ((r.status !== 'Correct') && (r.status !== 'Incorrect') && !r.status.includes('Recorded'))).length}</div>` : ''}
-          ${(questionResponses.filter(r => r.status.includes('Recorded')).length != 0) ? `<div class="barcount waiting" style="width: calc(${questionResponses.filter(r => r.status.includes('Recorded')).length / (questionResponses.length || 1)} * 100%)">${questionResponses.filter(r => r.status.includes('Recorded')).length}</div>` : ''}
-          ${(questionResponses.filter(r => r.status === 'Incorrect').length != 0) ? `<div class="barcount incorrect" style="width: calc(${questionResponses.filter(r => r.status === 'Incorrect').length / (questionResponses.length || 1)} * 100%)">${questionResponses.filter(r => r.status === 'Incorrect').length}</div>` : ''}
+          ${(questionResponses.filter(r => r.status === 'Correct').length != 0) ? `<div class="barcount correct" style="width: calc(${questionResponses.filter(r => r.status === 'Correct').length / total} * 100%)">${questionResponses.filter(r => r.status === 'Correct').length}</div>` : ''}
+          ${((questionResponses.filter(r => ((r.status !== 'Correct') && (r.status !== 'Incorrect') && !r.status.includes('Recorded'))).length + unansweredStudentsCount) != 0) ? `<div class="barcount other" style="width: calc(${(questionResponses.filter(r => ((r.status !== 'Correct') && (r.status !== 'Incorrect') && !r.status.includes('Recorded'))).length + unansweredStudentsCount) / total} * 100%)">${questionResponses.filter(r => ((r.status !== 'Correct') && (r.status !== 'Incorrect') && !r.status.includes('Recorded'))).length + unansweredStudentsCount}</div>` : ''}
+          ${(questionResponses.filter(r => r.status.includes('Recorded')).length != 0) ? `<div class="barcount waiting" style="width: calc(${questionResponses.filter(r => r.status.includes('Recorded')).length / total} * 100%)">${questionResponses.filter(r => r.status.includes('Recorded')).length}</div>` : ''}
+          ${(questionResponses.filter(r => r.status === 'Incorrect').length != 0) ? `<div class="barcount incorrect" style="width: calc(${questionResponses.filter(r => r.status === 'Incorrect').length / total} * 100%)">${questionResponses.filter(r => r.status === 'Incorrect').length}</div>` : ''}
         </div>
       </div>
       ${(questionResponses.length != 0) ? `<div class="section detailed-report" id="question-${question.id}">
@@ -2883,6 +3239,7 @@ try {
       if (document.getElementById(er)) document.getElementById(er).classList.add('active');
     });
     document.querySelectorAll('[report]').forEach(a => a.addEventListener('click', toggleDetailedReport));
+    if (!loadedSegmentEditor && !loadedSegmentCreator) ui.setUnsavedChanges(false);
     ui.reloadUnsavedInputs();
   }
 
@@ -2896,6 +3253,7 @@ try {
     if (loadedSegment && (typeof question === 'string') && JSON.parse(loadedSegment.question_ids).find(q => String(q.id) === String(question))) {
       if (!addingQuestion) return;
       document.getElementById("add-question-input").value = addingQuestion.id;
+      div.id = `questionList-${addingQuestion.id}`;
       div.setAttribute("data-swapy-slot", `questionList-${addingQuestion.id}`);
       inner.setAttribute("data-swapy-item", `questionList-${addingQuestion.id}`);
       inner.innerHTML = `<div class="drag" data-swapy-handle><i class="bi bi-grip-vertical"></i></div>
@@ -2936,6 +3294,7 @@ try {
     } else if (loadedSegmentCreator && (typeof question === 'string')) {
       if (!addingQuestion) return;
       document.getElementById("add-question-input").value = addingQuestion.id;
+      div.id = `questionList-${addingQuestion.id}`;
       div.setAttribute("data-swapy-slot", `questionList-${addingQuestion.id}`);
       inner.setAttribute("data-swapy-item", `questionList-${addingQuestion.id}`);
       inner.innerHTML = `<div class="drag" data-swapy-handle><i class="bi bi-grip-vertical"></i></div>
@@ -2976,6 +3335,7 @@ try {
     } else if (this) {
       if (!document.getElementById("add-question-input").selectedOptions[0]) return;
       var questionId = document.getElementById("add-question-input").value;
+      div.id = `questionList-${questionId}`;
       div.setAttribute("data-swapy-slot", `questionList-${questionId}`);
       inner.setAttribute("data-swapy-item", `questionList-${questionId}`);
       inner.innerHTML = `<div class="drag" data-swapy-handle><i class="bi bi-grip-vertical"></i></div>
@@ -3016,6 +3376,7 @@ try {
       document.getElementById("add-question-input").removeChild(document.getElementById("add-question-input").selectedOptions[0]);
     } else {
       var newQuestion = document.getElementById("add-question-input").children[document.getElementById("add-question-input").children.length - 1];
+      div.id = `questionList-${newQuestion.value}`;
       div.setAttribute("data-swapy-slot", `questionList-${newQuestion.value}`);
       inner.setAttribute("data-swapy-item", `questionList-${newQuestion.value}`);
       inner.innerHTML = `<div class="drag" data-swapy-handle><i class="bi bi-grip-vertical"></i></div>
@@ -3040,6 +3401,7 @@ try {
     draggableQuestionList = createSwapy(document.getElementById("question-list"), {
       animation: 'none'
     });
+    ui.setUnsavedChanges(true);
     ui.reloadUnsavedInputs();
   }
 
@@ -3056,6 +3418,8 @@ try {
     select.innerHTML = "";
     options.forEach(option => select.add(option));
     document.getElementById("add-existing-question-button").disabled = (document.getElementById("add-question-input").children.length === 0) ? true : false;
+    ui.setUnsavedChanges(true);
+    ui.reloadUnsavedInputs();
   }
 
   function createSegment() {
@@ -3144,6 +3508,8 @@ try {
       document.querySelector('[data-delete-segment]')?.remove();
       document.querySelector('[data-archive-segment]')?.remove();
       document.querySelector('[edit-segment-questions]')?.remove();
+      ui.setUnsavedChanges(false);
+      ui.reloadUnsavedInputs();
       return;
     }
     loadedSegment = segments.find(s => String(s.number) === String(segment));
@@ -3153,6 +3519,8 @@ try {
       document.querySelector('[data-delete-segment]')?.remove();
       document.querySelector('[data-archive-segment]')?.remove();
       document.querySelector('[edit-segment-questions]')?.remove();
+      ui.setUnsavedChanges(false);
+      ui.reloadUnsavedInputs();
       return;
     }
     loadedSegmentEditor = true;
@@ -3183,6 +3551,8 @@ try {
         }
       }, 1000);
     });
+    ui.setUnsavedChanges(false);
+    ui.reloadUnsavedInputs();
   }
 
   function deleteSegmentConfirm() {
@@ -3658,6 +4028,7 @@ try {
     const role = this.parentElement.parentElement.querySelector('.role').innerText;
     const partialAccessCourses = JSON.parse(this.parentElement.parentElement.querySelector('.partialAccessCourses').innerText);
     const fullAccessCourses = JSON.parse(this.parentElement.parentElement.querySelector('.fullAccessCourses').innerText);
+    const anonymousResponses = this.parentElement.parentElement.querySelector('.anonymousResponses').innerHTML.includes('check');
     ui.modal({
       title: 'Edit User',
       body: `<p>Edit <code>${role}</code> user <code>${user}</code>. This action is not reversible.${(user === storage.get("usr")) ? '<br><br>Changing your own password will result in system logoff.' : ''}</p>`,
@@ -3703,6 +4074,22 @@ try {
           multiple: true,
         },
         {
+          label: 'Anonymized Responses',
+          type: 'select',
+          options: [
+            {
+              value: 0,
+              text: 'Off',
+              selected: !anonymousResponses,
+            },
+            {
+              value: 1,
+              text: 'On',
+              selected: anonymousResponses,
+            },
+          ]
+        },
+        {
           label: 'Admin Password',
           type: 'password',
           required: true,
@@ -3742,7 +4129,8 @@ try {
         role: inputValues[0],
         partialAccessCourses: inputValues[2] || [],
         fullAccessCourses: inputValues[3] || [],
-        admin_password: inputValues[4],
+        anonymousResponses: inputValues[4],
+        admin_password: inputValues[5],
       }),
     })
       .then(async (r) => {
@@ -3825,6 +4213,20 @@ try {
           multiple: true,
         },
         {
+          label: 'Anonymized Responses',
+          type: 'select',
+          options: [
+            {
+              value: 0,
+              text: 'Off',
+            },
+            {
+              value: 1,
+              text: 'On',
+            },
+          ]
+        },
+        {
           label: 'Admin Password',
           type: 'password',
           required: true,
@@ -3864,7 +4266,8 @@ try {
         role: inputValues[0],
         partialAccessCourses: inputValues[3] || [],
         fullAccessCourses: inputValues[4] || [],
-        admin_password: inputValues[5],
+        anonymousResponses: inputValues[5],
+        admin_password: inputValues[6],
       }),
     })
       .then(async (r) => {
@@ -4912,6 +5315,142 @@ try {
         if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
       });
   }
+
+  function viewRoster() {
+    if (!this || !this.parentElement || !this.parentElement.querySelector('input').id) return;
+    const roster = rosters.find(roster => String(roster.period) === this.parentElement.querySelector('input').id.split('period-')[1]);
+    var rosterDataString = '';
+    JSON.parse(roster.data).forEach(row => {
+      rosterDataString += `<br>${row.seatCode}: ${row.last}, ${row.first}`;
+    });
+    ui.modal({
+      title: `Period ${roster.period} Roster`,
+      body: `<p>${JSON.parse(roster.data).length} students<br>Last updated ${time.unixToString(roster.last_updated)}<br>${rosterDataString}</p>`,
+      buttons: [
+        {
+          text: 'Download',
+          class: 'submit-button',
+          onclick: async () => {
+            this.disabled = true;
+            ui.toast(`Downloading ${roster.url.split('/')[roster.url.split('/').length - 1]}...`, 3000, "info", "bi bi-download");
+            const link = document.createElement('a');
+            link.href = roster.url;
+            link.download = roster.url.split('/')[roster.url.split('/').length - 1];
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            this.disabled = false;
+            ui.toast("Roster downloaded successfully.", 3000, "success", "bi bi-check-circle-fill");
+          },
+          close: true,
+        },
+        {
+          text: 'Remove',
+          class: 'submit-button',
+          onclick: async () => {
+            removeRoster(roster.period);
+          },
+          close: true,
+        },
+        {
+          text: 'Replace',
+          class: 'submit-button',
+          onclick: async () => {
+            renderRosterPond(roster.period);
+          },
+          close: true,
+        },
+      ],
+    });
+  }
+
+  function uploadRoster() {
+    if (!this || !this.parentElement || !this.parentElement.querySelector('input').id) return;
+    renderRosterPond(this.parentElement.querySelector('input').id.split('period-')[1]);
+  }
+
+  async function renderRosterPond(period) {
+    if (!active) return;
+    if (!period) return;
+    const url = '/admin/upload?period=' + period;
+    const width = 600;
+    const height = 150;
+    const left = (window.screen.width / 2) - (width / 2);
+    const top = (window.screen.height / 2) - (height / 2);
+    const windowFeatures = `width=${width},height=${height},resizable=no,scrollbars=no,status=yes,left=${left},top=${top}`;
+    const newWindow = window.open(url, '_blank', windowFeatures);
+    let uploadSuccessful = false;
+    window.addEventListener('message', (event) => {
+      if (event.origin !== (window.location.protocol + '//' + window.location.hostname + (window.location.port ? ':' + window.location.port : ''))) return;
+      if (event.data === 'uploadSuccess') uploadSuccessful = true;
+    }, false);
+    const checkWindowClosed = setInterval(function () {
+      if (newWindow && newWindow.closed) {
+        clearInterval(checkWindowClosed);
+        if (uploadSuccessful) {
+          ui.modeless(`<i class="bi bi-cloud-upload"></i>`, "Uploaded");
+        } else {
+          ui.modeless(`<i class="bi bi-exclamation-triangle"></i>`, "Upload Cancelled");
+        }
+        init();
+      }
+    }, 1000);
+  }
+
+  function removeRoster(period) {
+    if (!active) return;
+    ui.setUnsavedChanges(true);
+    fetch(domain + '/roster', {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        usr: storage.get("usr"),
+        pwd: storage.get("pwd"),
+        period,
+      }),
+    })
+      .then(async (r) => {
+        if (!r.ok) {
+          try {
+            var re = await r.json();
+            if (re.error || re.message) {
+              ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+              throw new Error(re.error || re.message);
+            } else {
+              throw new Error("API error");
+            }
+          } catch (e) {
+            throw new Error(e.message || "API error");
+          }
+        }
+        return await r.json();
+      })
+      .then(() => {
+        ui.setUnsavedChanges(false);
+        ui.toast("Successfully removed roster.", 3000, "success", "bi bi-check-lg");
+        init();
+      })
+      .catch((e) => {
+        console.error(e);
+        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
+        pollingOff();
+      });
+  }
+
+  document.getElementById("download-roster-template-button")?.addEventListener("click", () => {
+    const templateUrl = `${domain}/uploads/rosters/template.csv`;
+    ui.toast(`Downloading ${templateUrl.split('/')[templateUrl.split('/').length - 1]}...`, 3000, "info", "bi bi-download");
+    const link = document.createElement('a');
+    link.href = templateUrl;
+    link.download = templateUrl.split('/')[templateUrl.split('/').length - 1];
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    ui.toast("Roster template downloaded successfully.", 3000, "success", "bi bi-check-circle-fill");
+  });
 } catch (error) {
   if (storage.get("developer")) {
     alert(`Error @ admin.js: ${error.message}`);

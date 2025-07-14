@@ -84,6 +84,7 @@
         <button id="new-course-button">New Course</button>
       </div>
       <div class="section course-reorder">
+        <button class="space" id="download-roster-template-button">Download Roster Template</button>
         <div class="button-grid reorder"></div>
         <button class="space" id="save-course-order-button">Save Periods</button>
       </div>
@@ -91,7 +92,7 @@
     <div class="section">
       <h1>Segments</h1>
       <div class="section segments selector">
-        <div class="button-grid">
+        <div class="button-grid wrap">
           <button class="space fit" id="sort-segments-due"><i class="bi bi-sort-down"></i> Sort by Due Date
             (Default)</button>
           <button class="space fit" id="sort-segments-increasing"><i class="bi bi-sort-numeric-up"></i> Sort Increasing
@@ -153,7 +154,7 @@
       <i class="bi bi-lightning-charge"></i>
       <i class="bi bi-lightning-charge-fill" style="display: none;"></i>
     </button>
-    <button class="icon" data-reorder tooltip="Reorder Courses">
+    <button class="icon" data-reorder tooltip="Manage Courses">
       <i class="bi bi-arrows-move"></i>
       <i class="bi bi-x"></i>
     </button>
@@ -208,6 +209,7 @@
     <button data-modal-view="settings/keybinds">Keyboard Shortcuts</button>
     <button data-modal-view="settings/reset">Reset</button>
     <button data-modal-view="settings/credits">Credits</button>
+    <button data-modal-view="settings/admin">Admin Settings</button>
     <button data-logout>Log Out</button>
     <!-- <div class="row center" style="gap: 7.5px; margin-top: 5px;">
       <a href="https://github.com/faisalnjs/virtual-checker" class="icon" tooltip="GitHub Repository"><i class="bi bi-github"></i></a>
@@ -331,6 +333,16 @@
       <p><a href="https://github.com/khui0">khui0</a> - Base Virtual Clicker commits before 5/21/2024</p>
       <p><a href="https://github.com/faisalnjs">faisalnjs</a> - Virtual Checker, base Virtual Clicker commits after
         5/21/2024</p>
+    </div>
+    <div data-modal-page="admin" data-page-title="Admin Settings">
+      <p>Customize default settings for your account.</p>
+      <label for="default-page">Default Page</label>
+      <select id="default-page"></select>
+      <label for="default-course">Default Course</label>
+      <select id="default-course"></select>
+      <div data-modal-actions>
+        <button class="submit-button" id="save-admin-settings">Save</button>
+      </div>
     </div>
   </dialog>
   <dialog data-modal-page="clear-data-fix" data-page-title="Settings May Not Save">

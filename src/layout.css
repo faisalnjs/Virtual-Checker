@@ -50,6 +50,18 @@ div.spacer {
   align-items: flex-end;
 }
 
+.button-grid.wrap {
+  flex-wrap: wrap;
+}
+
+.button-grid.wrap > * {
+  margin-top: 0;
+}
+
+.button-grid.gap {
+  gap: 0.75rem;
+}
+
 #header {
   align-self: center;
   display: flex;
@@ -369,7 +381,7 @@ label:has(i) {
   justify-content: space-between;
   padding: 7.5px 15px;
   background: var(--surface-color);
-  border: 1px solid var(--accent-text-color);
+  border: 1px dotted var(--accent-color);
   border-radius: 10px;
   line-height: 25px;
   position: sticky;
@@ -384,7 +396,7 @@ label:has(i) {
   align-self: center;
   padding: 7.5px 15px;
   background: var(--surface-color);
-  border: 1px solid var(--accent-text-color);
+  border: 1px dotted var(--accent-color);
   border-radius: 10px;
   line-height: 25px;
   width: 99%;

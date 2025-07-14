@@ -16,7 +16,9 @@
             font-family: "Figtree", sans-serif;
         }
 
-        button#paste {
+        button#paste,
+        button#submit,
+        button#exit {
             background: dodgerblue;
             width: -webkit-fill-available;
             border: 1px solid aliceblue;
@@ -28,8 +30,27 @@
             cursor: pointer;
         }
 
-        button#paste:hover {
+        button#paste:hover,
+        button#submit:hover,
+        button#exit:hover {
             opacity: 0.75;
+        }
+
+        button#submit {
+            margin-top: 1em;
+        }
+
+        button#exit {
+            display: none;
+            margin-top: 0.5em;
+        }
+
+        button.success {
+            background: mediumseagreen !important;
+        }
+
+        button.error {
+            background: indianred !important;
         }
 
         input[type="text"] {
@@ -50,6 +71,7 @@
     </style>
     <style>
         .description {
+            max-width: min(100%, 800px);
             margin-top: 1em;
         }
 
@@ -122,7 +144,6 @@
             color: black !important;
         }
 
-        .description .ql-toolbar button:focus,
         .description .ql-toolbar .ql-picker-item,
         .description .ql-toolbar .ql-picker-item.ql-selected {
             color: white !important;
@@ -265,6 +286,8 @@
     <input type="file" />
     <button id="paste" onclick="paste()">Paste</button>
     <div class="description"></div>
+    <button id="submit" onclick="submit()">Create</button>
+    <button id="exit" onclick="exit()">Close & Next Question</button>
     <script
         src="https://unpkg.com/filepond-plugin-file-validate-type/dist/filepond-plugin-file-validate-type.js"></script>
     <script src="https://unpkg.com/filepond-plugin-image-preview/dist/filepond-plugin-image-preview.js"></script>
@@ -281,22 +304,25 @@
         const segment = urlParams.get('segment');
         const startingQuestionId = urlParams.get('startingQuestionId');
         const startingQuestion = urlParams.get('startingQuestion');
-        if (!question && !syllabus && !segment) window.location.href = '/admin';
+        const period = urlParams.get('period');
+        if (!question && !syllabus && !segment && !period) window.location.href = '/admin';
         const inputElement = document.querySelector('input[type="file"]');
         const questionElement = document.querySelector('input[type="file"]');
         const domain = ((window.location.hostname.search('check') != -1) || (window.location.hostname.search('127') != -1)) ? 'https://api.check.vssfalcons.com' : `http://${document.domain}:5000`;
+        const server = domain + (question ? '/upload' : segment ? '/speedModeUpload' : syllabus ? '/syllabus' : '/roster');
         FilePond.registerPlugin(FilePondPluginFileValidateType, FilePondPluginImagePreview);
         const pond = FilePond.create(inputElement, {
-            server: domain + (question ? '/upload' : segment ? '/speedModeUpload' : '/syllabus'),
+            server,
             credits: false,
             allowMultiple: (question || segment) ? true : false,
             instantUpload: (question || segment) ? false : true,
-            acceptedFileTypes: (question || segment) ? ['image/*'] : ['image/*', 'application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
+            acceptedFileTypes: (question || segment) ? ['image/*'] : syllabus ? ['image/*', 'application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'] : ['text/csv'],
         });
         pond.on('initfile', (item) => {
             if (question) item.setMetadata('question', question);
             if (segment) item.setMetadata('segment', segment);
             if (syllabus) item.setMetadata('course', syllabus);
+            if (period) item.setMetadata('period', period);
             if (startingQuestionId && startingQuestion) item.setMetadata('startingQuestionId', startingQuestionId);
             if (startingQuestionId && startingQuestion) item.setMetadata('startingQuestion', startingQuestion);
         });
@@ -329,6 +355,8 @@
         if (!startingQuestionId || !startingQuestion) {
             document.querySelectorAll('input[type="text"]').forEach(e => e.remove());
             document.querySelector('.description').remove();
+            document.getElementById('submit').remove();
+            document.getElementById('exit').remove();
         } else {
             var textareaContainer = document.querySelector('.description')
             var toolbar = document.createElement('div');
@@ -401,6 +429,57 @@
                 placeholder: 'Add some written content to your question...',
                 theme: 'snow'
             });
+        };
+        var submitSuccess = false;
+        async function submit() {
+            if (pond.getFiles().length != 0) {
+                pond.processFiles();
+            } else {
+                await fetch(server, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        question: question || null,
+                        segment: segment || null,
+                        course: syllabus || null,
+                        period: period || null,
+                        startingQuestionId: startingQuestionId || null,
+                        startingQuestion: startingQuestion || null,
+                        description: JSON.stringify(quill.getContents()) || '{"ops":[{"insert":"\n"}]}',
+                        title: document.querySelectorAll('input[type="text"]')[0].value || startingQuestion,
+                        correctAnswer1: document.querySelectorAll('input[type="text"]')[1].value || null,
+                        correctAnswer2: document.querySelectorAll('input[type="text"]')[2].value || null,
+                    }),
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.error) {
+                            submitSuccess = false;
+                            document.getElementById('exit').classList.add('error');
+                            setTimeout(() => {
+                                document.getElementById('exit').classList.remove('error');
+                            }, 2000);
+                            alert(data.error);
+                        } else {
+                            submitSuccess = true;
+                            document.getElementById('submit').innerText = 'Success';
+                            document.getElementById('submit').classList.add('success');
+                            document.getElementById('exit').style.display = 'block';
+                            setTimeout(() => {
+                                document.getElementById('submit').innerText = 'Save';
+                                document.getElementById('submit').classList.remove('success');
+                            }, 2000);
+                        };
+                    });
+            };
+        };
+        async function exit() {
+            window.opener.postMessage('uploadSuccess', window.location.protocol + '//' + window.location.hostname + (window.location.port ? ':' + window.location.port : ''));
+            setTimeout(() => {
+                window.close();
+            }, 500);
         };
     </script>
 </body>

@@ -80,7 +80,7 @@ export function moveFromCurrent(moveBy) {
     if (!sourceId || !dataType || !islandSource) return;
     if (!islandSource[0]) return;
     var keys = Object.keys(islandSource[0]);
-    var key = keys.includes('id') ? 'id' : keys.includes('number') ? 'number' : keys.includes('name') ? 'name' : null;
+    var key = keys.includes('id') ? 'id' : keys.includes('number') ? 'number' : keys.includes('name') ? 'name' : keys.includes('period') ? 'period' : null;
     if (!key) return;
     var currentIndex = islandSource.findIndex(item => String(item[key]) === String(sourceId));
     if (currentIndex === -1) return;
@@ -99,6 +99,25 @@ export function moveFromCurrent(moveBy) {
                     {
                         title: 'Questions',
                         items: JSON.parse(newItem.question_ids)
+                    },
+                ],
+            };
+            break;
+        case 'roster':
+            var total = [...new Set(JSON.parse(newItem.data).flatMap(a => Number(a.seatCode)))];
+            var registered = [...new Set(islandSource2.flatMap(a => a.code).filter(x => total.includes(x)))];
+            newData = {
+                sourceId: String(newItem.period),
+                title: `Period ${newItem.period}`,
+                subtitle: `${registered.length}/${total.length} Registered Students`,
+                lists: [
+                    {
+                        title: 'Unregistered Students',
+                        items: total.filter(a => !registered.includes(a)).map(a => { var student = JSON.parse(newItem.data).find(b => String(b.seatCode) === String(a)); return `${student.last}, ${student.first} (${a})`; })
+                    },
+                    {
+                        title: 'Registered Students',
+                        items: total.filter(a => registered.includes(a)).map(a => { var student = JSON.parse(newItem.data).find(b => String(b.seatCode) === String(a)); return `${student.last}, ${student.first} (${a})`; })
                     },
                 ],
             };

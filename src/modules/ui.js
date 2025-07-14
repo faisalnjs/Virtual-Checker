@@ -676,6 +676,11 @@ export function toast(message, duration = 3000, type = "info", icon = null) {
   }
 }
 
+export function clearToasts() {
+  const toastContainer = document.querySelector(".toast-container");
+  if (toastContainer) toastContainer.innerHTML = "";
+}
+
 export function startLoader() {
   const loader = document.getElementById("loader");
   if (loader) loader.classList.add("active");
@@ -691,10 +696,13 @@ export var unsavedChanges = false;
 export function reloadUnsavedInputs() {
   document.querySelectorAll('textarea').forEach(input => input.addEventListener('input', () => {
     unsavedChanges = true;
-  }));
+  }, { capture: true }));
   document.querySelectorAll('input').forEach(input => input.addEventListener('change', () => {
     unsavedChanges = true;
-  }));
+  }, { capture: true }));
+  document.querySelectorAll('select').forEach(input => input.addEventListener('change', () => {
+    unsavedChanges = true;
+  }, { capture: true }));
 }
 
 export function setUnsavedChanges(value) {
@@ -705,8 +713,8 @@ export function expandMatrix(matrixString) {
   const dialog = document.createElement("dialog");
 
   const title = document.createElement("h2");
-    title.innerText = "Matrix";
-    dialog.append(title);
+  title.innerText = "Matrix";
+  dialog.append(title);
 
   var matrix = JSON.parse(matrixString);
 
@@ -739,7 +747,7 @@ export function expandMatrix(matrixString) {
       if (cellHeight > highestComputedCellHeight) highestComputedCellHeight = cellHeight;
       if (cellWidth > longestComputedCellWidth) longestComputedCellWidth = cellWidth;
     });
-  
+
     constructedMatrix.style.setProperty("--matrix-cell-height", `${highestComputedCellHeight}px`);
     constructedMatrix.style.setProperty("--matrix-cell-width", `${longestComputedCellWidth}px`);
   });
@@ -808,4 +816,10 @@ export function expandMatrix(matrixString) {
   }
 
   return dialog;
+}
+
+export var defaultCourse = null;
+
+export function setDefaultCourse(value) {
+  defaultCourse = value;
 }

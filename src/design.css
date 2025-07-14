@@ -45,7 +45,7 @@
 
 body {
   min-height: 100%;
-  padding: 50px 10% 25px 10%;
+  padding: 50px 7.5% 25px 7.5%;
   color: var(--text-color);
   background-color: var(--background-color);
   font:
@@ -93,6 +93,7 @@ button.icon {
 
 button.fit {
   width: fit-content !important;
+  min-width: fit-content !important;
 }
 
 button:disabled {
@@ -120,6 +121,7 @@ i.bi {
 input,
 select {
   height: 2.25em;
+  min-height: 2.25em;
   padding: 0 0.5em;
   border: none;
   border-radius: 0.5rem;
@@ -586,13 +588,14 @@ div.ML__keyboard {
 
 .fit {
   width: fit-content !important;
+  min-width: fit-content !important;
 }
 
-#checker:not(:has(input)):not(:has(select)) {
+#checker:not(:has(.section)):not(:has(#submit-button)) {
   align-items: center;
 }
 
-#checker:not(:has(input)):not(:has(select)) *:not(ul):not(ol):not(li) {
+#checker:not(:has(.section)):not(:has(#submit-button)) *:not(ul):not(ol):not(li) {
   text-align: center;
 }
 
@@ -655,6 +658,10 @@ div.ML__keyboard {
 
 .description.minimal .ql-container .ql-editor {
   padding: 0 !important;
+}
+
+.description {
+  max-width: min(100%, 800px);
 }
 
 .description a {
@@ -756,6 +763,7 @@ div.ML__keyboard {
   border: none !important;
   border-radius: 0.5rem !important;
   box-shadow: none !important;
+  z-index: 1;
 }
 
 .description .ql-tooltip input[type="text"] {
@@ -864,6 +872,7 @@ div.ML__keyboard {
 }
 
 .segments .section .questions,
+.questions .section .renderedMath,
 .questions .section .description,
 .questions .section .EasyMDEContainer,
 .questions .section .attachments,
@@ -883,12 +892,17 @@ div.ML__keyboard {
 }
 
 .segments .section.expanded .questions,
+.questions .section.expanded .renderedMath.show,
 .questions .section.expanded .description,
 .questions .section.expanded .EasyMDEContainer,
 .questions .section.expanded .attachments,
 .questions .section.expanded .answers {
   max-height: 10000px;
   transition: 0.25s var(--easing);
+}
+
+.questions .section.expanded .renderedMath:not(.show) {
+  margin-bottom: -7.5px;
 }
 
 .questions .section.expanded .description {
@@ -1052,6 +1066,10 @@ hidden,
   gap: 0.5rem;
   z-index: 1000;
   background: transparent;
+}
+
+.toast-container:has(.toast.error) {
+  z-index: 10000;
 }
 
 .toast {
@@ -1224,8 +1242,16 @@ hidden,
   min-width: 250px;
 }
 
+.barcount-wrapper.fill {
+  width: -webkit-fill-available;
+}
+
+.barcount-wrapper.fill .barcount {
+  min-width: fit-content;
+}
+
 .barcount {
-  padding: 5px 7.5px;
+  padding: 5px 12.5px;
   display: flex;
   justify-content: center;
   width: -webkit-fill-available;
@@ -1340,6 +1366,10 @@ hidden,
   padding-left: 5px;
 }
 
+.color-name:has(> .showonhover):hover .showonhover {
+  display: inline-block !important;
+}
+
 *:has(> .hideonhover):hover .hideonhover {
   display: none !important;
 }
@@ -1384,4 +1414,13 @@ body > canvas {
 [mockDisabled] {
   opacity: 0.75;
   cursor: not-allowed;
+}
+
+#checker.anonymous .input-group:has(#sort-seat-input),
+#checker.anonymous [data-seat-code] {
+  display: none !important;
+}
+
+.katex .vlist {
+  height: unset !important;
 }
