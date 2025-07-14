@@ -2206,6 +2206,42 @@ try {
     });
     if (document.querySelector('.seat-code-reports')) {
       var sortedSeatCodes = seatCodes.filter(seatCode => JSON.parse(courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value).periods).includes(Number(String(seatCode.code)[0])));
+      if (document.getElementById('useRoster').checked) {
+        var currentCourseRosters = rosters.filter(roster => JSON.parse(courses.find(course => String(course.id) === document.getElementById("course-period-input").value)?.periods).includes(Number(String(roster.period))));
+        if (currentCourseRosters.length) document.querySelector('.seat-code-reports').appendChild(document.createElement('div'));
+        currentCourseRosters.forEach(currentCourseRoster => {
+          var total = [...new Set(JSON.parse(currentCourseRoster.data).flatMap(a => Number(a.seatCode)))];
+          var registered = [...new Set(sortedSeatCodes.flatMap(a => a.code).filter(x => total.includes(x)))];
+          var courseRosterProgress = document.createElement('div');
+          courseRosterProgress.classList = (currentCourseRosters.length > 1) ? 'seat-code-report' : 'barcount-wrapper fill';
+          courseRosterProgress.innerHTML = `${(currentCourseRosters.length > 1) ? `<b>Period ${currentCourseRoster.period}</b><div class="barcount-wrapper fill">` : ''}
+              ${registered.length ? `<div class="barcount correct" style="width: calc(${registered.length / total.length} * 100%)">${registered.length} Registered Student${(registered.length > 1) ? 's' : ''}</div>` : ''}
+              ${(total.length - registered.length) ? `<div class="barcount other" style="width: calc(${(total.length - registered.length) / total.length} * 100%)">${total.length - registered.length} Unregistered Student${((total.length - registered.length) > 1) ? 's' : ''}</div>` : ''}
+          ${(currentCourseRosters.length > 1) ? `</div>` : ''}`;
+          document.querySelector('.seat-code-reports').appendChild(courseRosterProgress);
+          courseRosterProgress.addEventListener('mouseenter', () => {
+            island(currentCourseRosters, 'roster', {
+              sourceId: String(currentCourseRoster.period),
+              title: `Period ${currentCourseRoster.period}`,
+              subtitle: `${registered.length}/${total.length} Registered Students`,
+              lists: [
+                {
+                  title: 'Unregistered Students',
+                  items: total.filter(a => !registered.includes(a)).map(a => { var student = JSON.parse(currentCourseRoster.data).find(b => String(b.seatCode) === String(a)); return `${student.last}, ${student.first} (${a})`; })
+                },
+                {
+                  title: 'Registered Students',
+                  items: total.filter(a => registered.includes(a)).map(a => { var student = JSON.parse(currentCourseRoster.data).find(b => String(b.seatCode) === String(a)); return `${student.last}, ${student.first} (${a})`; })
+                },
+              ],
+            }, sortedSeatCodes);
+          });
+          courseRosterProgress.addEventListener('mouseleave', () => {
+            island();
+          });
+        });
+        if (currentCourseRosters.length) document.querySelector('.seat-code-reports').appendChild(document.createElement('div'));
+      }
       switch (document.querySelector('#sort-report-responses [aria-selected="true"]').getAttribute('data-value')) {
         case 'seatCode':
           sortedSeatCodes = sortedSeatCodes.sort((a, b) => Number(a.code) - Number(b.code));
@@ -2277,18 +2313,24 @@ try {
             if (student) name = `${student.last}, ${student.first}`;
           }
         }
-        document.querySelector('.seat-code-reports').innerHTML += `<div class="seat-code-report" report="seat-code-${seatCode.code}">
-          <b>${document.getElementById('useRoster').checked ? `${name} (${seatCode.code})` : seatCode.code} (${seatCodeResponses.length} Response${(seatCodeResponses.length != 1) ? 's' : ''})</b>
-          <div class="barcount-wrapper">
-            ${(seatCodeResponses.filter(r => r.status === 'Correct').length != 0) ? `<div class="barcount correct" style="width: calc(${seatCodeResponses.filter(r => r.status === 'Correct').length / (seatCodeResponses.length || 1)} * 100%)">${seatCodeResponses.filter(r => r.status === 'Correct').length}</div>` : ''}
-            ${(seatCodeResponses.filter(r => (r.status != 'Correct') && (r.status != 'Incorrect') && !r.status.includes('Recorded')).length != 0) ? `<div class="barcount other" style="width: calc(${seatCodeResponses.filter(r => (r.status != 'Correct') && (r.status != 'Incorrect') && !r.status.includes('Recorded')).length / (seatCodeResponses.length || 1)} * 100%)">${seatCodeResponses.filter(r => (r.status != 'Correct') && (r.status != 'Incorrect') && !r.status.includes('Recorded')).length}</div>` : ''}
-            ${(seatCodeResponses.filter(r => r.status.includes('Recorded')).length != 0) ? `<div class="barcount waiting" style="width: calc(${seatCodeResponses.filter(r => r.status.includes('Recorded')).length / (seatCodeResponses.length || 1)} * 100%)">${seatCodeResponses.filter(r => r.status.includes('Recorded')).length}</div>` : ''}
-            ${(seatCodeResponses.filter(r => r.status === 'Incorrect').length != 0) ? `<div class="barcount incorrect" style="width: calc(${seatCodeResponses.filter(r => r.status === 'Incorrect').length / (seatCodeResponses.length || 1)} * 100%)">${seatCodeResponses.filter(r => r.status === 'Incorrect').length}</div>` : ''}
-          </div>
-        </div>
-        <div class="section detailed-report" id="seat-code-${seatCode.code}">
+        var seatCodeReport = document.createElement('div');
+        seatCodeReport.classList = 'seat-code-report';
+        seatCodeReport.setAttribute('report', `seat-code-${seatCode.code}`);
+        seatCodeReport.innerHTML = `<b>${document.getElementById('useRoster').checked ? `${name} (${seatCode.code})` : seatCode.code} (${seatCodeResponses.length} Response${(seatCodeResponses.length != 1) ? 's' : ''})</b>
+        <div class="barcount-wrapper">
+          ${(seatCodeResponses.filter(r => r.status === 'Correct').length != 0) ? `<div class="barcount correct" style="width: calc(${seatCodeResponses.filter(r => r.status === 'Correct').length / (seatCodeResponses.length || 1)} * 100%)">${seatCodeResponses.filter(r => r.status === 'Correct').length}</div>` : ''}
+          ${(seatCodeResponses.filter(r => (r.status != 'Correct') && (r.status != 'Incorrect') && !r.status.includes('Recorded')).length != 0) ? `<div class="barcount other" style="width: calc(${seatCodeResponses.filter(r => (r.status != 'Correct') && (r.status != 'Incorrect') && !r.status.includes('Recorded')).length / (seatCodeResponses.length || 1)} * 100%)">${seatCodeResponses.filter(r => (r.status != 'Correct') && (r.status != 'Incorrect') && !r.status.includes('Recorded')).length}</div>` : ''}
+          ${(seatCodeResponses.filter(r => r.status.includes('Recorded')).length != 0) ? `<div class="barcount waiting" style="width: calc(${seatCodeResponses.filter(r => r.status.includes('Recorded')).length / (seatCodeResponses.length || 1)} * 100%)">${seatCodeResponses.filter(r => r.status.includes('Recorded')).length}</div>` : ''}
+          ${(seatCodeResponses.filter(r => r.status === 'Incorrect').length != 0) ? `<div class="barcount incorrect" style="width: calc(${seatCodeResponses.filter(r => r.status === 'Incorrect').length / (seatCodeResponses.length || 1)} * 100%)">${seatCodeResponses.filter(r => r.status === 'Incorrect').length}</div>` : ''}
+        </div>`;
+        document.querySelector('.seat-code-reports').appendChild(seatCodeReport);
+        var seatCodeDetailedReport = document.createElement('div');
+        seatCodeDetailedReport.classList = 'seat-code-report';
+        seatCodeDetailedReport.setAttribute('report', `seat-code-${seatCode.code}`);
+        seatCodeDetailedReport.innerHTML = `<div class="section detailed-report" id="seat-code-${seatCode.code}">
           ${detailedReport}
         </div>`;
+        document.querySelector('.seat-code-reports').appendChild(seatCodeDetailedReport);
       });
     }
     const stdDev = calculateStandardDeviation(timedResponses);

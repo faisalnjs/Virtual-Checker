@@ -1242,8 +1242,16 @@ hidden,
   min-width: 250px;
 }
 
+.barcount-wrapper.fill {
+  width: -webkit-fill-available;
+}
+
+.barcount-wrapper.fill .barcount {
+  min-width: fit-content;
+}
+
 .barcount {
-  padding: 5px 7.5px;
+  padding: 5px 12.5px;
   display: flex;
   justify-content: center;
   width: -webkit-fill-available;
