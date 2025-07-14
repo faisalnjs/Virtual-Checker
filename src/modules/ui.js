@@ -676,6 +676,11 @@ export function toast(message, duration = 3000, type = "info", icon = null) {
   }
 }
 
+export function clearToasts() {
+  const toastContainer = document.querySelector(".toast-container");
+  if (toastContainer) toastContainer.innerHTML = "";
+}
+
 export function startLoader() {
   const loader = document.getElementById("loader");
   if (loader) loader.classList.add("active");

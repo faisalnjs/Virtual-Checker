@@ -30,6 +30,7 @@ export function admin(returnFunction) {
                 onclick: (inputValues) => {
                     storage.set("usr", inputValues[0]);
                     storage.set("pwd", inputValues[1]);
+                    ui.clearToasts();
                     ui.view();
                     authModalOpen = false;
                     ui.setUnsavedChanges(false);
@@ -59,6 +60,7 @@ export function ta(returnFunction) {
                 class: 'submit-button',
                 onclick: (inputValue) => {
                     storage.set("pwd", inputValue);
+                    ui.clearToasts();
                     ui.view();
                     authModalOpen = false;
                     ui.setUnsavedChanges(false);
