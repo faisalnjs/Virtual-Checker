@@ -1343,6 +1343,7 @@ try {
       updatedInfo = {
         questions: []
       };
+      if (document.getElementById("filter-segment-input").value) updatedInfo.segment = document.getElementById("filter-segment-input").value || null;
       Array.from(document.querySelectorAll('.questions .section .section'))
         .filter(w => w.id)
         .forEach(question => {
@@ -1370,7 +1371,7 @@ try {
     }
     for (const key in updatedInfo) {
       if (Object.prototype.hasOwnProperty.call(updatedInfo, key)) {
-        formData.append(key, JSON.stringify(updatedInfo[key]));
+        formData.append(key, (typeof updatedInfo[key] === 'string') ? updatedInfo[key] : JSON.stringify(updatedInfo[key]));
       }
     }
     formData.append('usr', storage.get("usr"));

@@ -121,7 +121,6 @@ i.bi {
 input,
 select {
   height: 2.25em;
-  min-height: 2.25em;
   padding: 0 0.5em;
   border: none;
   border-radius: 0.5rem;
@@ -141,6 +140,10 @@ select:disabled {
 input.disabled:disabled,
 select.disabled:disabled {
   opacity: 0.5;
+}
+
+input:not(#code-input) {
+  min-height: 2.25em;
 }
 
 select[multiple] {
