@@ -289,11 +289,20 @@ try {
       var responseString = r.response;
       var isMatrix = null;
       if (responseString.includes('[[')) {
-        isMatrix = responseString;
-        responseString = JSON.stringify(JSON.parse(r.response).map(innerArray => innerArray.map(numString => String(numString)))).replaceAll('["', '[').replaceAll('","', ', ').replaceAll('"]', ']');
+        try {
+          isMatrix = responseString;
+          responseString = JSON.stringify(JSON.parse(r.response).map(innerArray => innerArray.map(numString => String(numString)))).replaceAll('["', '[').replaceAll('","', ', ').replaceAll('"]', ']');
+        } catch {
+          isMatrix = null;
+          console.log(`Invalid matrix: ${r.response}`);
+        }
       } else if (responseString.includes('[')) {
-        var parsedResponse = JSON.parse(r.response);
-        responseString = parsedResponse.join(', ');
+        try {
+          var parsedResponse = JSON.parse(r.response);
+          responseString = parsedResponse.join(', ');
+        } catch {
+          console.log(`Invalid JSON: ${r.response}`);
+        }
       }
       var correctResponsesString = `Accepted: ${answers.find(a => a.id === questions.find(q => String(q.id) === String(r.question_id)).id).correct_answers.join(', ')}`;
       const date = new Date(r.timestamp);
@@ -384,11 +393,20 @@ try {
       var responseString = r.response;
       var isMatrix = null;
       if (responseString.includes('[[')) {
-        isMatrix = responseString;
-        responseString = JSON.stringify(JSON.parse(r.response).map(innerArray => innerArray.map(numString => String(numString)))).replaceAll('["', '[').replaceAll('","', ', ').replaceAll('"]', ']');
+        try {
+          isMatrix = responseString;
+          responseString = JSON.stringify(JSON.parse(r.response).map(innerArray => innerArray.map(numString => String(numString)))).replaceAll('["', '[').replaceAll('","', ', ').replaceAll('"]', ']');
+        } catch {
+          isMatrix = null;
+          console.log(`Invalid matrix: ${r.response}`);
+        }
       } else if (responseString.includes('[')) {
-        var parsedResponse = JSON.parse(r.response);
-        responseString = parsedResponse.join(', ');
+        try {
+          var parsedResponse = JSON.parse(r.response);
+          responseString = parsedResponse.join(', ');
+        } catch {
+          console.log(`Invalid JSON: ${r.response}`);
+        }
       }
       var buttonGrid = document.createElement('div');
       buttonGrid.className = "button-grid inputs";
