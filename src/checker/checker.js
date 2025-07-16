@@ -319,6 +319,7 @@ try {
       return ui.modeless(`<i class="bi bi-exclamation-lg"></i>`, 'Already Correct');
     }
     ui.setUnsavedChanges(true);
+    ui.toast("Submitting check...", "info", 2000);
     await fetch(domain + '/check_answer', {
       method: "POST",
       headers: {
@@ -335,6 +336,7 @@ try {
       .then(r => {
         ui.setUnsavedChanges(false);
         window.scroll(0, 0);
+        ui.clearToasts();
         if (typeof r.correct != 'undefined') {
           ui.modeless(`<i class="bi bi-${(r.correct) ? 'check' : 'x'}-lg"></i>`, (r.correct) ? 'Correct' : 'Try Again', r.reason || null);
           if (qA.find(q => (q.segment === segment) && (q.question === question))) {
