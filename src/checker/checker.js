@@ -107,7 +107,7 @@ try {
     document.getElementById("answer-suggestion").addEventListener("click", () => answerInput.focus());
     // Initialize questionsAnswered if not already set
     if (!storage.get("questionsAnswered")) storage.set("questionsAnswered", []);
-    document.querySelector("[data-sync]").addEventListener("click", () => auth.sync(domain));
+    document.querySelector("[data-sync]").addEventListener("click", () => auth.syncManual(domain));
     ui.reloadUnsavedInputs();
   } else {
     ui.stopLoader();
@@ -539,6 +539,7 @@ try {
         questionsArray = await questionsResponse.json();
         updateSegment();
         ui.stopLoader();
+        await auth.sync(domain);
       } catch (error) {
         ui.view("api-fail");
       }

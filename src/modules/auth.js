@@ -84,7 +84,7 @@ export function logout(returnFunction = null) {
     return;
 }
 
-export async function sync(domain, hideWelcome = false) {
+export async function syncManual(domain, hideWelcome = false) {
     ui.view();
     if (!storage.get("code")) {
         ui.modal({
@@ -130,7 +130,7 @@ export async function sync(domain, hideWelcome = false) {
                     onclick: (inputValue) => {
                         storage.set("otp", inputValue);
                         ui.setUnsavedChanges(false);
-                        sync(domain);
+                        syncManual(domain);
                     },
                     close: true,
                 },
@@ -155,7 +155,7 @@ export async function sync(domain, hideWelcome = false) {
                             ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
                             if ((re.error === "Access denied.") || (re.message === "Access denied.")) {
                                 if (storage.get("otp")) storage.delete("otp");
-                                sync(domain);
+                                syncManual(domain);
                             }
                             throw new Error(re.error || re.message);
                         } else {
@@ -206,7 +206,7 @@ export async function sync(domain, hideWelcome = false) {
                                                                 var re = await r.json();
                                                                 if (re.error || re.message) {
                                                                     ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
-                                                                    if ((re.error === "Access denied.") || (re.message === "Access denied.")) sync(domain);
+                                                                    if ((re.error === "Access denied.") || (re.message === "Access denied.")) syncManual(domain);
                                                                     throw new Error(re.error || re.message);
                                                                 } else {
                                                                     throw new Error("API error");
@@ -257,7 +257,7 @@ export async function sync(domain, hideWelcome = false) {
                                                                 var re = await r.json();
                                                                 if (re.error || re.message) {
                                                                     ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
-                                                                    if ((re.error === "Access denied.") || (re.message === "Access denied.")) sync(domain);
+                                                                    if ((re.error === "Access denied.") || (re.message === "Access denied.")) syncManual(domain);
                                                                     throw new Error(re.error || re.message);
                                                                 } else {
                                                                     throw new Error("API error");
@@ -376,7 +376,7 @@ export async function sync(domain, hideWelcome = false) {
                             .then(r => {
                                 ui.toast(r.message, 3000, "success", "bi bi-key");
                                 ui.setUnsavedChanges(false);
-                                sync(domain);
+                                syncManual(domain);
                             })
                             .catch((e) => {
                                 console.error(e);
@@ -402,7 +402,7 @@ function prompt(backingUp = true, type = 'settings', func = () => { }, domain, o
                 onclick: () => {
                     if (otp) storage.set("otp", otp);
                     ui.setUnsavedChanges(false);
-                    sync(domain, true);
+                    syncManual(domain, true);
                 },
                 close: true,
             },
@@ -413,7 +413,7 @@ function prompt(backingUp = true, type = 'settings', func = () => { }, domain, o
                     func();
                     if (otp) storage.set("otp", otp);
                     ui.setUnsavedChanges(false);
-                    sync(domain, true);
+                    syncManual(domain, true);
                 },
                 close: true,
             },
