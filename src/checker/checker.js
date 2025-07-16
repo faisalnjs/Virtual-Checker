@@ -512,9 +512,9 @@ try {
         segmentsArray = segmentsData;
         segmentsArray.sort((a, b) => a.order - b.order).forEach(segment => {
           const option = document.createElement('option');
-          option.value = segment.number;
+          option.value = segment.id;
           const allQuestionsCorrect = (JSON.parse(segment.question_ids).length > 0) && JSON.parse(segment.question_ids).every(questionId => {
-            const questionStatus = storage.get("questionsAnswered")?.find(q => (String(q.segment) === String(segment.number)) && (String(q.question) === String(questionId.id)))?.status;
+            const questionStatus = storage.get("questionsAnswered")?.find(q => (String(q.segment) === String(segment.id)) && (String(q.question) === String(questionId.id)))?.status;
             return questionStatus === 'Correct';
           });
           option.innerHTML = `${segment.number} - ${segment.name}${segment.due ? ` (Due ${new Date(`${segment.due}T00:00:00`).toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })})` : ''}${allQuestionsCorrect ? ' [MASTERY]' : ''}`;
@@ -524,10 +524,10 @@ try {
         segments.value = segmentsArray.find(s => {
           if (!s.due) return false;
           return (new Date(`${s.due}T00:00:00`).toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' }) === new Date().toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric', }) && new Date().getTime() <= periodRange[1]);
-        })?.number || segmentsArray.find(s => {
+        })?.id || segmentsArray.find(s => {
           if (!s.due) return false;
           return (new Date(`${s.due}T00:00:00`).getTime() > periodRange[1] && new Date(`${s.due}T00:00:00`).getTime() <= periodRange[0] + 86400000);
-        })?.number || segmentsArray.find(s => !s.due)?.number || segmentsArray[0]?.number;
+        })?.id || segmentsArray.find(s => !s.due)?.id || segmentsArray[0]?.id;
         segments.removeEventListener("change", updateSegment);
         segments.addEventListener("change", updateSegment);
         const questionsResponse = await fetch(`${domain}/questions`, {
@@ -545,7 +545,7 @@ try {
   }
 
   async function updateSegment() {
-    const selectedSegment = segmentsArray.find(s => String(s.number) === String(segments.value));
+    const selectedSegment = segmentsArray.find(s => String(s.id) === String(segments.value));
     questions.innerHTML = '';
     if (!selectedSegment) return updateQuestion();
     JSON.parse(selectedSegment.question_ids).forEach(questionId => {
@@ -559,7 +559,7 @@ try {
     const qA = storage.get("questionsAnswered") || [];
     qA.forEach(q => {
       var i = questions.querySelector(`option[value="${q.question}"]`);
-      const selectedSegment = segmentsArray.find(s => String(s.number) === String(segments.value));
+      const selectedSegment = segmentsArray.find(s => String(s.id) === String(segments.value));
       if (i) i.innerHTML = `${JSON.parse(selectedSegment.question_ids).find(q2 => String(q2.id) === String(q.question)).name} - ${q.status}`;
     });
     document.querySelector('[data-segment-due]').setAttribute('hidden', '');
@@ -1274,7 +1274,7 @@ try {
     });
     qA.forEach(q => {
       var i = questions.querySelector(`option[value="${q.question}"]`);
-      const selectedSegment = segmentsArray.find(s => String(s.number) === String(segments.value));
+      const selectedSegment = segmentsArray.find(s => String(s.id) === String(segments.value));
       if (i) i.innerHTML = `${JSON.parse(selectedSegment.question_ids).find(q2 => String(q2.id) === String(q.question)).name} - ${q.status}`;
     });
     ui.reloadUnsavedInputs();

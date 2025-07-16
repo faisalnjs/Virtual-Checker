@@ -788,7 +788,7 @@ try {
       const course = courses.find(c => document.getElementById("course-period-input") ? (String(c.id) === document.getElementById("course-period-input").value) : null);
       if (course) filteredSegments = filteredSegments.filter(segment => String(segment.course) === String(course.id));
       filteredSegments.forEach(segment => {
-        document.getElementById("filter-segment-input").innerHTML += `<option value="${segment.number}" ${(document.location.search.split('?segment=')[1] && (document.location.search.split('?segment=')[1] === String(segment.number))) ? 'selected' : ''}>${segment.number} - ${segment.name}${segment.due ? ` (Due ${new Date(`${segment.due}T00:00:00`).toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })})` : ''}</option>`;
+        document.getElementById("filter-segment-input").innerHTML += `<option value="${segment.id}" ${(document.location.search.split('?segment=')[1] && (document.location.search.split('?segment=')[1] === String(segment.id))) ? 'selected' : ''}>${segment.number} - ${segment.name}${segment.due ? ` (Due ${new Date(`${segment.due}T00:00:00`).toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })})` : ''}</option>`;
       });
     }
     const coursesArchiveTab = document.querySelector('[data-archive-type="courses"]');
@@ -899,15 +899,15 @@ try {
           if (document.querySelector('.segments .section')) {
             var segment = document.createElement('div');
             segment.className = "section";
-            segment.id = `segment-${s.number}`;
-            segment.setAttribute("data-swapy-slot", `segmentReorder-${s.number}`);
+            segment.id = `segment-${s.id}`;
+            segment.setAttribute("data-swapy-slot", `segmentReorder-${s.id}`);
             var buttonGrid = document.createElement('div');
             buttonGrid.className = "button-grid inputs";
-            buttonGrid.setAttribute("data-swapy-item", `segmentReorder-${s.number}`);
+            buttonGrid.setAttribute("data-swapy-item", `segmentReorder-${s.id}`);
             buttonGrid.innerHTML = `<button square data-select tooltip="Select Segment"><i class="bi bi-circle"></i><i class="bi bi-circle-fill"></i></button><div class="input-group small"><div class="space" id="question-container"><input type="text" autocomplete="off" id="segment-number-input" value="${s.number}" placeholder="${s.number}" /></div></div><div class="input-group"><div class="space" id="question-container"><input type="text" autocomplete="off" id="segment-name-input" value="${s.name}" placeholder="${s.name}" /></div></div><div class="input-group mediuml"><div class="space" id="question-container"><input type="date" id="segment-due-date" value="${s.due || ''}"></div></div><button square data-remove-segment-input tooltip="Remove Segment"><i class="bi bi-trash"></i></button><button square data-archive-segment tooltip="Archive Segment"><i class="bi bi-archive"></i></button><button square data-edit-segment tooltip="Edit Segment"><i class="bi bi-pencil"></i></button><div class="drag" data-swapy-handle><i class="bi bi-grip-vertical"></i></div>`;
             buttonGrid.addEventListener('mouseenter', () => {
               island(c.sort((a, b) => a.order - b.order), 'segment', {
-                sourceId: String(s.number),
+                sourceId: String(s.id),
                 id: `# ${s.number}`,
                 title: `${s.name}`,
                 subtitle: s.due ? `Due ${new Date(`${s.due}T00:00:00`).toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })}` : '',
@@ -936,7 +936,7 @@ try {
         });
       }
       if (document.querySelector('.segment-reports')) {
-        c.filter(s => document.getElementById("filter-segment-input")?.value ? (String(s.number) === document.getElementById("filter-segment-input").value) : true).sort((a, b) => a.order - b.order).forEach(segment => {
+        c.filter(s => document.getElementById("filter-segment-input")?.value ? (String(s.id) === document.getElementById("filter-segment-input").value) : true).sort((a, b) => a.order - b.order).forEach(segment => {
           document.querySelector('.section:has(> .segment-reports)').setAttribute('hidden', '');
           if (document.getElementById("filter-segment-input").value) {
             document.querySelector('.segment-reports').innerHTML = '';
@@ -947,7 +947,7 @@ try {
             JSON.parse(segment.question_ids).filter(q => questions.find(q1 => String(q1.id) === String(q.id))?.number.startsWith(document.getElementById("sort-question-input")?.value)).forEach(q => {
               var question = questions.find(q1 => String(q1.id) === String(q.id));
               if (!question) return;
-              var questionResponses = responses.filter(seatCode => JSON.parse(courses.find(course => String(course.id) === document.getElementById("course-period-input").value).periods).includes(Number(String(seatCode.seatCode)[0]))).filter(r => String(r.segment) === String(segment.number)).filter(r => r.question_id === question.id).filter(r => String(r.seatCode).startsWith(document.getElementById("sort-seat-input")?.value));
+              var questionResponses = responses.filter(seatCode => JSON.parse(courses.find(course => String(course.id) === document.getElementById("course-period-input").value).periods).includes(Number(String(seatCode.seatCode)[0]))).filter(r => String(r.segment) === String(segment.id)).filter(r => r.question_id === question.id).filter(r => String(r.seatCode).startsWith(document.getElementById("sort-seat-input")?.value));
               if (document.getElementById('hideIncorrectAttempts').checked) questionResponses = questionResponses.filter((r, index, self) => r.status === 'Correct' || !self.some(other => other.question_id === r.question_id && other.status === 'Correct'));
               if (document.querySelector('#filter-report-responses [aria-selected="true"]').getAttribute('data-value') === 'first') {
                 questionResponses = questionResponses.filter(r => r.id === Math.min(...questionResponses.filter(r1 => r1.seatCode === r.seatCode && r1.question_id === r.question_id).map(r1 => r1.id)));
@@ -1053,7 +1053,7 @@ try {
                 total = segmentResponses.length + unansweredStudentsCount;
               }
             }
-            document.querySelector('.segment-reports').innerHTML += `<div class="segment-report"${(JSON.parse(segment.question_ids) != 0) ? ` report="segment-${segment.number}"` : ''}>
+            document.querySelector('.segment-reports').innerHTML += `<div class="segment-report"${(JSON.parse(segment.question_ids) != 0) ? ` report="segment-${segment.id}"` : ''}>
               <b>Segment ${segment.number} (${JSON.parse(segment.question_ids).length} Question${JSON.parse(segment.question_ids).length != 1 ? 's' : ''})</b>
               <div class="barcount-wrapper">
                 ${(segmentResponses.filter(r => r.status === 'Correct').length != 0) ? `<div class="barcount correct" style="width: calc(${segmentResponses.filter(r => r.status === 'Correct').length / total} * 100%)">${segmentResponses.filter(r => r.status === 'Correct').length}</div>` : ''}
@@ -1062,7 +1062,7 @@ try {
                 ${(segmentResponses.filter(r => r.status === 'Incorrect').length != 0) ? `<div class="barcount incorrect" style="width: calc(${segmentResponses.filter(r => r.status === 'Incorrect').length / total} * 100%)">${segmentResponses.filter(r => r.status === 'Incorrect').length}</div>` : ''}
               </div>
             </div>
-            ${(JSON.parse(segment.question_ids).length != 0) ? `<div class="section detailed-report" id="segment-${segment.number}">
+            ${(JSON.parse(segment.question_ids).length != 0) ? `<div class="section detailed-report" id="segment-${segment.id}">
               ${detailedReport}
             </div>` : ''}`;
           }
@@ -1087,7 +1087,7 @@ try {
         var buttonGrid = document.createElement('div');
         buttonGrid.className = "button-grid inputs";
         buttonGrid.setAttribute('archive-type', 'segment');
-        buttonGrid.id = segment.number;
+        buttonGrid.id = segment.id;
         buttonGrid.innerHTML = `<button square data-select tooltip="Select Item"><i class="bi bi-circle"></i><i class="bi bi-circle-fill"></i></button>
         <div class="input-group small">
           <div class="space" id="question-container">
@@ -1117,7 +1117,7 @@ try {
         <button square data-restore-item tooltip="Restore Item"><i class="bi bi-arrow-counterclockwise"></i></button>`;
         buttonGrid.addEventListener('mouseenter', () => {
           island(segments.sort((a, b) => a.order - b.order), 'segment', {
-            sourceId: String(segment.number),
+            sourceId: String(segment.id),
             id: `# ${segment.number}`,
             title: `${segment.name}`,
             subtitle: segment.due ? `Due ${new Date(`${segment.due}T00:00:00`).toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })}` : '',
@@ -1163,7 +1163,8 @@ try {
 
   function editSegment(event, segment) {
     if (!active) return;
-    return window.location.href = `/admin/editor?segment=${segment || this.parentElement.parentElement.id.split('segment-')[1]}`;
+    if (!segment && this && this.parentElement && this.parentElement.parentElement && this.parentElement.parentElement.id) segment = this.parentElement.parentElement.id.split('segment-')[1];
+    return window.location.href = segment ? `/admin/editor?segment=${segment}` : '/admin/';
   }
 
   function calculateButtonHeights(container) {
@@ -1325,7 +1326,7 @@ try {
         .filter(w => w.id)
         .forEach(segment => {
           updatedInfo.segments.push({
-            order: segments.find(s => String(s.number) === String(segment.id.split('-')[1])).order,
+            order: segments.find(s => String(s.id) === String(segment.id.split('-')[1])).order,
             id: segment.id.split('-')[1],
             number: segment.querySelector('#segment-number-input').value,
             name: segment.querySelector('#segment-name-input').value,
@@ -1335,7 +1336,7 @@ try {
             //     id: q.nextElementSibling.value
             //   };
             // })),
-            question_ids: segments.find(s => String(s.number) === String(segment.id.split('-')[1])).question_ids,
+            question_ids: segments.find(s => String(s.id) === String(segment.id.split('-')[1])).question_ids,
             due: segment.querySelector('#segment-due-date').value || null,
           });
         });
@@ -1534,7 +1535,7 @@ try {
         document.querySelector('.questions .section').innerHTML = '';
         var filteredQuestions = questions;
         if (document.getElementById("filter-segment-input")) {
-          var selectedSegment = segments.find(segment => String(segment.number) === document.getElementById("filter-segment-input").value);
+          var selectedSegment = segments.find(segment => String(segment.id) === document.getElementById("filter-segment-input").value);
           if (selectedSegment) filteredQuestions = filteredQuestions.filter(q => JSON.parse(selectedSegment.question_ids).find(qId => String(qId.id) === String(q.id)));
         }
         renderedEditors = {};
@@ -1547,7 +1548,7 @@ try {
           var allSegmentsQuestionIsIn = segments.filter(e => JSON.parse(e.question_ids).find(qId => String(qId.id) === String(q.id)));
           var segmentsString = "";
           segments.forEach(s => {
-            segmentsString += `<option value="${s.number}"${(allSegmentsQuestionIsIn[0] && (allSegmentsQuestionIsIn[0].number === s.number)) ? ' selected' : ''}>${s.number}</option>`;
+            segmentsString += `<option value="${s.id}"${(allSegmentsQuestionIsIn[0] && (allSegmentsQuestionIsIn[0].id === s.id)) ? ' selected' : ''}>${s.number}</option>`;
           });
           buttonGrid.innerHTML = `<button square data-select tooltip="Select Question"><i class="bi bi-circle"></i><i class="bi bi-circle-fill"></i></button><div class="input-group small"><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-id-input" value="${q.id}" disabled /></div></div><div class="input-group small"><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-number-input" value="${q.number}" placeholder="${q.number}" /></div></div><div class="input-group small"><div class="space" id="question-container"><select id="question-segment-input">${segmentsString}</select></div></div><div class="input-group"><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-text-input" value="${q.question}" placeholder="${q.question}" /></div></div><button square data-toggle-latex tooltip="Toggle LaTeX Title"><i class="bi bi-${q.latex ? 'calculator-fill' : 'cursor-text'}"></i></button><button square data-remove-question-input tooltip="Remove Question"><i class="bi bi-trash"></i></button><button square data-archive-question-input tooltip="Archive Question"><i class="bi bi-archive"></i></button><button square data-toggle-question tooltip="Expand Question"><i class="bi bi-caret-down-fill"></i><i class="bi bi-caret-up-fill"></i></button>`;
           buttonGrid.addEventListener('mouseenter', () => {
@@ -1962,7 +1963,7 @@ try {
     var buttonGrid = document.createElement('div');
     buttonGrid.className = "button-grid inputs";
     var segmentsString = "";
-    segments.forEach(s => segmentsString += `<option value="${s.number}"${(document.location.search.split('?segment=')[1] && (document.location.search.split('?segment=')[1] === String(s.number))) ? ' selected' : ''}>${s.number}</option>`);
+    segments.forEach(s => segmentsString += `<option value="${s.id}"${(document.location.search.split('?segment=')[1] && (document.location.search.split('?segment=')[1] === String(s.id))) ? ' selected' : ''}>${s.number}</option>`);
     buttonGrid.innerHTML = `<button square data-select tooltip="Select Question"><i class="bi bi-circle"></i><i class="bi bi-circle-fill"></i></button><div class="input-group small"><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-id-input" value="" disabled /></div></div><div class="input-group small"><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-number-input" value="" /></div></div><div class="input-group small"><div class="space" id="question-container"><select id="question-segment-input">${segmentsString}</select></div></div><div class="input-group"><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-text-input" value="" /></div></div><button square data-toggle-latex disabled tooltip="Toggle LaTeX Title"><i class="bi bi-cursor-text"></i></button><button square data-remove-question-input tooltip="Remove Question"><i class="bi bi-trash"></i></button><button square data-toggle-question tooltip="Expand Question"><i class="bi bi-caret-down-fill"></i><i class="bi bi-caret-up-fill"></i></button>`;
     group.appendChild(buttonGrid);
     this.parentElement.insertBefore(group, this.parentElement.children[this.parentElement.children.length - 1]);
@@ -2745,9 +2746,9 @@ try {
     document.getElementById("speed-mode-segments").innerHTML = '';
     segments.forEach(segment => {
       var option = document.createElement('option');
-      option.value = segment.number;
+      option.value = segment.id;
       option.innerHTML = segment.name;
-      if (document.location.search.split('?segment=')[1] && (document.location.search.split('?segment=')[1] === String(segment.number))) option.selected = true;
+      if (document.location.search.split('?segment=')[1] && (document.location.search.split('?segment=')[1] === String(segment.id))) option.selected = true;
       document.getElementById("speed-mode-segments").appendChild(option);
     });
   }
@@ -3153,7 +3154,7 @@ try {
     document.querySelector('.question-reports').innerHTML = '';
     const course = courses.find(c => document.getElementById("course-period-input") ? (String(c.id) === document.getElementById("course-period-input").value) : null);
     var courseQuestions = [];
-    segments.filter(s => String(s.course) === String(course?.id)).filter(s => document.getElementById("filter-segment-input")?.value ? (String(s.number) === document.getElementById("filter-segment-input").value) : true).forEach(segment => {
+    segments.filter(s => String(s.course) === String(course?.id)).filter(s => document.getElementById("filter-segment-input")?.value ? (String(s.id) === document.getElementById("filter-segment-input").value) : true).forEach(segment => {
       JSON.parse(segment.question_ids).filter(q => questions.find(q1 => String(q1.id) === String(q.id))?.number.startsWith(document.getElementById("sort-question-input")?.value)).forEach(questionId => {
         const question = questions.find(q => String(q.id) === String(questionId.id));
         if (question) courseQuestions.push(question);
@@ -3460,7 +3461,7 @@ try {
       name.classList.add("attention");
       return name.focus();
     }
-    if (loadedSegmentCreator && segments.find(s => String(s.number) === String(number.value))) {
+    if (loadedSegmentCreator && segments.find(s => String(s.id) === String(number.value))) {
       number.classList.add("attention");
       return ui.toast("Segment number already exists.", 3000, "error", "bi bi-exclamation-triangle-fill");
     }
@@ -3510,7 +3511,7 @@ try {
       .then(() => {
         ui.setUnsavedChanges(false);
         ui.toast(loadedSegmentEditor ? "Segment updated successfully." : "Segment created successfully.", 3000, "success", "bi bi-check-circle-fill");
-        editSegment(null, number.value);
+        editSegment(null, loadedSegmentEditor ? loadedSegment.id : null);
       })
       .catch((e) => {
         console.error(e);
@@ -3531,7 +3532,7 @@ try {
       ui.reloadUnsavedInputs();
       return;
     }
-    loadedSegment = segments.find(s => String(s.number) === String(segment));
+    loadedSegment = segments.find(s => String(s.id) === String(segment));
     if (!loadedSegment) {
       loadedSegmentCreator = true;
       ui.toast(`Segment ${String(segment)} not found.`, 3000, "error", "bi bi-exclamation-triangle-fill");
@@ -3553,7 +3554,7 @@ try {
     document.querySelector('[data-delete-segment]')?.addEventListener('click', deleteSegmentConfirm);
     document.querySelector('[edit-segment-questions]')?.addEventListener('click', () => {
       if (ui.unsavedChanges) return ui.toast("You have unsaved changes. Please save or discard them before editing questions.", 3000, "error", "bi bi-exclamation-triangle-fill");
-      const url = `/admin/questions?segment=${loadedSegment.number}`;
+      const url = `/admin/questions?segment=${loadedSegment.id}`;
       const width = window.outerWidth;
       const height = window.outerHeight;
       const left = window.screenLeft;
@@ -3606,7 +3607,7 @@ try {
       body: JSON.stringify({
         usr: storage.get("usr"),
         pwd: storage.get("pwd"),
-        segment: loadedSegment.number,
+        segment: loadedSegment.id,
       })
     })
       .then(async (r) => {
@@ -5059,7 +5060,7 @@ try {
         itemName = document.getElementById("course-period-input") ? courses.find(c => (String(c.id) === document.getElementById("course-period-input").value))?.name : null;
         break;
       case 'segment':
-        if (!itemId) itemId = loadedSegment ? loadedSegment.number : null;
+        if (!itemId) itemId = loadedSegment ? loadedSegment.id : null;
         itemName = loadedSegment ? loadedSegment.name : null;
         break;
       case 'question':
@@ -5101,7 +5102,7 @@ try {
       var itemName = null;
       switch (itemType) {
         case 'segment':
-          itemName = segments.find(s => String(s.number) === itemId).name;
+          itemName = segments.find(s => String(s.id) === itemId).name;
           break;
         case 'question':
           itemName = questions.find(q => String(q.id) === itemId).number;
@@ -5201,7 +5202,7 @@ try {
         itemName = courses.find(c => String(c.id) === itemId)?.name;
         break;
       case 'segment':
-        itemName = segments.find(s => String(s.number) === itemId)?.name;
+        itemName = segments.find(s => String(s.id) === itemId)?.name;
         break;
       case 'question':
         itemName = questions.find(q => String(q.id) === itemId)?.number;
@@ -5248,7 +5249,7 @@ try {
           itemName = courses.find(c => String(c.id) === itemId)?.name;
           break;
         case 'segment':
-          itemName = segments.find(s => String(s.number) === itemId)?.name;
+          itemName = segments.find(s => String(s.id) === itemId)?.name;
           break;
         case 'question':
           itemName = questions.find(q => String(q.id) === itemId)?.number;
