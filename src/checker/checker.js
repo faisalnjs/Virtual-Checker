@@ -319,7 +319,7 @@ try {
       return ui.modeless(`<i class="bi bi-exclamation-lg"></i>`, 'Already Correct');
     }
     ui.setUnsavedChanges(true);
-    ui.toast("Submitting check...", "info", 2000);
+    ui.toast("Submitting check...", 10000, "info");
     await fetch(domain + '/check_answer', {
       method: "POST",
       headers: {
