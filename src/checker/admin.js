@@ -3461,10 +3461,6 @@ try {
       name.classList.add("attention");
       return name.focus();
     }
-    if (loadedSegmentCreator && segments.find(s => String(s.id) === String(number.value))) {
-      number.classList.add("attention");
-      return ui.toast("Segment number already exists.", 3000, "error", "bi bi-exclamation-triangle-fill");
-    }
     document.querySelector("#create-button").disabled = true;
     const question_ids = JSON.stringify(Array.from(document.querySelectorAll('.question')).filter(q => (q.querySelectorAll('input')[1].value.length > 0) && (q.querySelectorAll('input')[1].value != ' ')).map(q => {
       return {
