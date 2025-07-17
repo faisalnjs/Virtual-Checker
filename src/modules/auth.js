@@ -5,7 +5,7 @@ import * as themes from "../themes/themes.js";
 const domain = ((window.location.hostname.search('check') != -1) || (window.location.hostname.search('127') != -1)) ? 'https://api.check.vssfalcons.com' : `http://${document.domain}:5000`;
 
 var authModalOpen = false;
-var hasOTP = false;
+var hasPassword = false;
 
 function removeDuplicates(array) {
     const seen = new Set();
@@ -124,7 +124,7 @@ export async function sync(hideWelcome = true) {
         ui.stopLoader();
         return;
     }
-    await fetch(domain + '/otp', {
+    await fetch(domain + '/password', {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
@@ -134,17 +134,17 @@ export async function sync(hideWelcome = true) {
         })
     })
         .then(r => {
-            hasOTP = r.ok ? true : false;
+            hasPassword = r.ok ? true : false;
         })
         .catch((e) => {
             console.error(e);
             if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
         });
-    if (hasOTP && !storage.get("otp")) {
+    if (hasPassword && !storage.get("password")) {
         ui.view();
         ui.modal({
-            title: 'Enter OTP',
-            body: `<p>Enter the existing OTP for seat code <code>${storage.get("code")}</code>. Contact an administrator to reset your OTP.</p>`,
+            title: 'Enter Password',
+            body: `<p>Enter the existing password for seat code <code>${storage.get("code")}</code>. Contact an administrator to reset your password.</p>`,
             input: {
                 type: 'password'
             },
@@ -153,7 +153,7 @@ export async function sync(hideWelcome = true) {
                     text: 'Verify',
                     class: 'submit-button',
                     onclick: (inputValue) => {
-                        storage.set("otp", inputValue);
+                        storage.set("password", inputValue);
                         ui.setUnsavedChanges(false);
                         sync(hideWelcome);
                     },
@@ -162,15 +162,15 @@ export async function sync(hideWelcome = true) {
             ],
             required: true,
         });
-    } else if (hasOTP && storage.get("otp")) {
-        await fetch(domain + '/otp', {
+    } else if (hasPassword && storage.get("password")) {
+        await fetch(domain + '/password', {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
             },
             body: JSON.stringify({
                 "seatCode": storage.get("code"),
-                "OTP": storage.get("otp"),
+                "password": storage.get("password"),
             })
         })
             .then(async (r) => {
@@ -180,7 +180,7 @@ export async function sync(hideWelcome = true) {
                         if (re.error || re.message) {
                             ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
                             if ((re.error === "Access denied.") || (re.message === "Access denied.")) {
-                                if (storage.get("otp")) storage.delete("otp");
+                                if (storage.get("password")) storage.delete("password");
                                 sync(hideWelcome);
                             }
                             throw new Error(re.error || re.message);
@@ -194,7 +194,7 @@ export async function sync(hideWelcome = true) {
                 return await r.json();
             })
             .then(async r => {
-                var OTP = storage.get("otp");
+                var password = storage.get("password");
                 if (!hideWelcome) ui.toast("Welcome back!", 3000, "success", "bi bi-key");
                 const combinedHistory = {
                     "questionsAnswered": (!r.history || Object.keys(r.history).length === 0)
@@ -206,7 +206,7 @@ export async function sync(hideWelcome = true) {
                 };
                 if ((JSON.stringify(sortKeys(r.settings)) === JSON.stringify(sortKeys(Object.fromEntries(
                     Object.entries(storage.all()).filter(([key]) =>
-                        key !== "otp" && key !== "code" && key !== "usr" && key !== "pwd" && key !== "questionsAnswered" && key !== "history"
+                        key !== "password" && key !== "code" && key !== "usr" && key !== "pwd" && key !== "questionsAnswered" && key !== "history"
                     )
                 )))) && (JSON.stringify(sortKeys(r.history)) === JSON.stringify(sortKeys({
                     "questionsAnswered": storage.get("questionsAnswered"),
@@ -215,17 +215,17 @@ export async function sync(hideWelcome = true) {
                     ui.stopLoader();
                     return;
                 }
-                await fetch(domain + '/otp', {
+                await fetch(domain + '/password', {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
                     },
                     body: JSON.stringify({
                         "seatCode": storage.get("code"),
-                        "OTP": OTP,
+                        "password": password,
                         "settings": (Object.keys(r.settings).length === 0) ? Object.fromEntries(
                             Object.entries(storage.all()).filter(([key]) =>
-                                key !== "otp" && key !== "code" && key !== "usr" && key !== "pwd" && key !== "questionsAnswered" && key !== "history"
+                                key !== "password" && key !== "code" && key !== "usr" && key !== "pwd" && key !== "questionsAnswered" && key !== "history"
                             )
                         ) : r.settings,
                         "history": combinedHistory,
@@ -252,14 +252,14 @@ export async function sync(hideWelcome = true) {
                         console.error(e);
                         if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
                     });
-                await fetch(domain + '/otp', {
+                await fetch(domain + '/password', {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
                     },
                     body: JSON.stringify({
                         "seatCode": storage.get("code"),
-                        "OTP": storage.get("otp"),
+                        "password": storage.get("password"),
                     })
                 })
                     .then(async (r) => {
@@ -269,7 +269,7 @@ export async function sync(hideWelcome = true) {
                                 if (re.error || re.message) {
                                     ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
                                     if ((re.error === "Access denied.") || (re.message === "Access denied.")) {
-                                        if (storage.get("otp")) storage.delete("otp");
+                                        if (storage.get("password")) storage.delete("password");
                                         sync(hideWelcome);
                                     }
                                     throw new Error(re.error || re.message);
@@ -285,7 +285,7 @@ export async function sync(hideWelcome = true) {
                     .then(async r => {
                         if (r.settings && Object.keys(r.settings).length > 0) {
                             Object.entries(r.settings).forEach(([key, value]) => {
-                                if (key !== "otp" && key !== "code" && key !== "usr" && key !== "pwd" && key !== "questionsAnswered" && key !== "history") storage.set(key, value);
+                                if (key !== "password" && key !== "code" && key !== "usr" && key !== "pwd" && key !== "questionsAnswered" && key !== "history") storage.set(key, value);
                             });
                             await themes.syncTheme();
                         }
@@ -306,11 +306,11 @@ export async function sync(hideWelcome = true) {
                 console.error(e);
                 if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
             });
-    } else if (!hasOTP) {
-        if (storage.get("otp")) storage.delete("otp");
+    } else if (!hasPassword) {
+        if (storage.get("password")) storage.delete("password");
         ui.modal({
-            title: 'Set OTP',
-            body: `<p>Set an OTP for seat code <code>${storage.get("code")}</code>. This OTP will be required to sync, backup, and restore your settings and history between devices, and cannot be reset by students.</p>`,
+            title: 'Set Password',
+            body: `<p>Set a password for seat code <code>${storage.get("code")}</code>. This password will be required to sync, backup, and restore your settings and history between devices, and cannot be reset by students.</p>`,
             input: {
                 type: 'password'
             },
@@ -319,15 +319,15 @@ export async function sync(hideWelcome = true) {
                     text: 'Set OTP',
                     class: 'submit-button',
                     onclick: async (inputValue) => {
-                        storage.set("otp", inputValue);
-                        await fetch(domain + '/otp', {
+                        storage.set("password", inputValue);
+                        await fetch(domain + '/password', {
                             method: "POST",
                             headers: {
                                 "Content-Type": "application/json",
                             },
                             body: JSON.stringify({
                                 "seatCode": storage.get("code"),
-                                "OTP": inputValue,
+                                "password": inputValue,
                             })
                         })
                             .then(async (r) => {
@@ -384,7 +384,7 @@ export async function syncPush(type, key = null) {
         });
         return;
     }
-    await fetch(domain + '/otp', {
+    await fetch(domain + '/password', {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
@@ -394,17 +394,17 @@ export async function syncPush(type, key = null) {
         })
     })
         .then(r => {
-            hasOTP = r.ok ? true : false;
+            hasPassword = r.ok ? true : false;
         })
         .catch((e) => {
             console.error(e);
             if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
         });
-    if (hasOTP && !storage.get("otp")) {
+    if (hasPassword && !storage.get("password")) {
         ui.view();
         ui.modal({
-            title: 'Enter OTP',
-            body: `<p>Enter the existing OTP for seat code <code>${storage.get("code")}</code>. Contact an administrator to reset your OTP.</p>`,
+            title: 'Enter Password',
+            body: `<p>Enter the existing password for seat code <code>${storage.get("code")}</code>. Contact an administrator to reset your password.</p>`,
             input: {
                 type: 'password'
             },
@@ -413,7 +413,7 @@ export async function syncPush(type, key = null) {
                     text: 'Verify',
                     class: 'submit-button',
                     onclick: (inputValue) => {
-                        storage.set("otp", inputValue);
+                        storage.set("password", inputValue);
                         ui.setUnsavedChanges(false);
                         syncPush();
                     },
@@ -422,15 +422,15 @@ export async function syncPush(type, key = null) {
             ],
             required: true,
         });
-    } else if (hasOTP && storage.get("otp")) {
-        await fetch(domain + '/otp', {
+    } else if (hasPassword && storage.get("password")) {
+        await fetch(domain + '/password', {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
             },
             body: JSON.stringify({
                 "seatCode": storage.get("code"),
-                "OTP": storage.get("otp"),
+                "password": storage.get("password"),
             })
         })
             .then(async (r) => {
@@ -440,7 +440,7 @@ export async function syncPush(type, key = null) {
                         if (re.error || re.message) {
                             ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
                             if ((re.error === "Access denied.") || (re.message === "Access denied.")) {
-                                if (storage.get("otp")) storage.delete("otp");
+                                if (storage.get("password")) storage.delete("password");
                                 syncPush();
                             }
                             throw new Error(re.error || re.message);
@@ -454,7 +454,7 @@ export async function syncPush(type, key = null) {
                 return await r.json();
             })
             .then(async r => {
-                var OTP = storage.get("otp");
+                var password = storage.get("password");
                 var out = {};
                 if (type === "settings") {
                     r.settings[key] = storage.get(key);
@@ -469,14 +469,14 @@ export async function syncPush(type, key = null) {
                             : removeDuplicates([...r.history.history, ...(storage.get("history") || [])]),
                     };
                 }
-                await fetch(domain + '/otp', {
+                await fetch(domain + '/password', {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
                     },
                     body: JSON.stringify({
                         "seatCode": storage.get("code"),
-                        "OTP": OTP,
+                        "password": password,
                         [type]: out,
                     })
                 })
@@ -509,28 +509,28 @@ export async function syncPush(type, key = null) {
                 console.error(e);
                 if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
             });
-    } else if (!hasOTP) {
-        if (storage.get("otp")) storage.delete("otp");
+    } else if (!hasPassword) {
+        if (storage.get("password")) storage.delete("password");
         ui.modal({
-            title: 'Set OTP',
-            body: `<p>Set an OTP for seat code <code>${storage.get("code")}</code>. This OTP will be required to sync, backup, and restore your settings and history between devices, and cannot be reset by students.</p>`,
+            title: 'Set Password',
+            body: `<p>Set a password for seat code <code>${storage.get("code")}</code>. This password will be required to sync, backup, and restore your settings and history between devices, and cannot be reset by students.</p>`,
             input: {
                 type: 'password'
             },
             buttons: [
                 {
-                    text: 'Set OTP',
+                    text: 'Set Password',
                     class: 'submit-button',
                     onclick: async (inputValue) => {
-                        storage.set("otp", inputValue);
-                        await fetch(domain + '/otp', {
+                        storage.set("password", inputValue);
+                        await fetch(domain + '/password', {
                             method: "POST",
                             headers: {
                                 "Content-Type": "application/json",
                             },
                             body: JSON.stringify({
                                 "seatCode": storage.get("code"),
-                                "OTP": inputValue,
+                                "password": inputValue,
                             })
                         })
                             .then(async (r) => {
@@ -584,7 +584,7 @@ export async function syncManual(hideWelcome = false) {
         });
         return;
     }
-    await fetch(domain + '/otp', {
+    await fetch(domain + '/password', {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
@@ -594,16 +594,16 @@ export async function syncManual(hideWelcome = false) {
         })
     })
         .then(r => {
-            hasOTP = r.ok ? true : false;
+            hasPassword = r.ok ? true : false;
         })
         .catch((e) => {
             console.error(e);
             if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
         });
-    if (hasOTP && !storage.get("otp")) {
+    if (hasPassword && !storage.get("password")) {
         ui.modal({
-            title: 'Enter OTP',
-            body: `<p>Enter the existing OTP for seat code <code>${storage.get("code")}</code>. Contact an administrator to reset your OTP.</p>`,
+            title: 'Enter Password',
+            body: `<p>Enter the existing password for seat code <code>${storage.get("code")}</code>. Contact an administrator to reset your password.</p>`,
             input: {
                 type: 'password'
             },
@@ -612,7 +612,7 @@ export async function syncManual(hideWelcome = false) {
                     text: 'Verify',
                     class: 'submit-button',
                     onclick: (inputValue) => {
-                        storage.set("otp", inputValue);
+                        storage.set("password", inputValue);
                         ui.setUnsavedChanges(false);
                         syncManual();
                     },
@@ -620,15 +620,15 @@ export async function syncManual(hideWelcome = false) {
                 },
             ],
         });
-    } else if (hasOTP && storage.get("otp")) {
-        await fetch(domain + '/otp', {
+    } else if (hasPassword && storage.get("password")) {
+        await fetch(domain + '/password', {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
             },
             body: JSON.stringify({
                 "seatCode": storage.get("code"),
-                "OTP": storage.get("otp"),
+                "password": storage.get("password"),
             })
         })
             .then(async (r) => {
@@ -638,7 +638,7 @@ export async function syncManual(hideWelcome = false) {
                         if (re.error || re.message) {
                             ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
                             if ((re.error === "Access denied.") || (re.message === "Access denied.")) {
-                                if (storage.get("otp")) storage.delete("otp");
+                                if (storage.get("password")) storage.delete("password");
                                 syncManual();
                             }
                             throw new Error(re.error || re.message);
@@ -652,7 +652,7 @@ export async function syncManual(hideWelcome = false) {
                 return await r.json();
             })
             .then(r => {
-                var OTP = storage.get("otp");
+                var password = storage.get("password");
                 if (!hideWelcome) ui.toast("Welcome back!", 3000, "success", "bi bi-key");
                 ui.modal({
                     title: 'Sync Settings & History',
@@ -668,17 +668,17 @@ export async function syncManual(hideWelcome = false) {
                                     onclick: () => {
                                         prompt(true, 'settings', async () => {
                                             if (storage.all() && Object.keys(storage.all()).length > 0) {
-                                                await fetch(domain + '/otp', {
+                                                await fetch(domain + '/password', {
                                                     method: "POST",
                                                     headers: {
                                                         "Content-Type": "application/json",
                                                     },
                                                     body: JSON.stringify({
                                                         "seatCode": storage.get("code"),
-                                                        "OTP": OTP,
+                                                        "password": password,
                                                         "settings": Object.fromEntries(
                                                             Object.entries(storage.all()).filter(([key]) =>
-                                                                key !== "otp" && key !== "code" && key !== "usr" && key !== "pwd" && key !== "questionsAnswered" && key !== "history"
+                                                                key !== "password" && key !== "code" && key !== "usr" && key !== "pwd" && key !== "questionsAnswered" && key !== "history"
                                                             )
                                                         ),
                                                     })
@@ -710,7 +710,7 @@ export async function syncManual(hideWelcome = false) {
                                             } else {
                                                 ui.toast("No settings found to backup.", 3000, "warning", "bi bi-exclamation-triangle-fill");
                                             }
-                                        }, domain, OTP)
+                                        }, domain, password)
                                     },
                                     close: true,
                                 },
@@ -720,14 +720,14 @@ export async function syncManual(hideWelcome = false) {
                                     onclick: () => {
                                         prompt(true, 'history', async () => {
                                             if (storage.get("history") && storage.get("history").length > 0) {
-                                                await fetch(domain + '/otp', {
+                                                await fetch(domain + '/password', {
                                                     method: "POST",
                                                     headers: {
                                                         "Content-Type": "application/json",
                                                     },
                                                     body: JSON.stringify({
                                                         "seatCode": storage.get("code"),
-                                                        "OTP": OTP,
+                                                        "password": password,
                                                         "history": {
                                                             "questionsAnswered": storage.get("questionsAnswered"),
                                                             "history": storage.get("history"),
@@ -761,7 +761,7 @@ export async function syncManual(hideWelcome = false) {
                                             } else {
                                                 ui.toast("No history found to backup.", 3000, "warning", "bi bi-exclamation-triangle-fill");
                                             }
-                                        }, domain, OTP)
+                                        }, domain, password)
                                     },
                                     close: true,
                                 },
@@ -778,14 +778,14 @@ export async function syncManual(hideWelcome = false) {
                                         prompt(false, 'settings', () => {
                                             if (r.settings && Object.keys(r.settings).length > 0) {
                                                 Object.entries(r.settings).forEach(([key, value]) => {
-                                                    if (key !== "otp" && key !== "code" && key !== "usr" && key !== "pwd" && key !== "questionsAnswered" && key !== "history") storage.set(key, value);
+                                                    if (key !== "password" && key !== "code" && key !== "usr" && key !== "pwd" && key !== "questionsAnswered" && key !== "history") storage.set(key, value);
                                                 });
                                                 ui.toast("Settings restored successfully!", 3000, "success", "bi bi-check-circle-fill");
                                                 window.location.reload();
                                             } else {
                                                 ui.toast("No settings found to restore.", 3000, "warning", "bi bi-exclamation-triangle-fill");
                                             }
-                                        }, domain, OTP)
+                                        }, domain, password)
                                     },
                                     close: true,
                                 },
@@ -803,7 +803,7 @@ export async function syncManual(hideWelcome = false) {
                                             } else {
                                                 ui.toast("No history found to restore.", 3000, "warning", "bi bi-exclamation-triangle-fill");
                                             }
-                                        }, domain, OTP)
+                                        }, domain, password)
                                     },
                                     close: true,
                                 },
@@ -816,28 +816,28 @@ export async function syncManual(hideWelcome = false) {
                 console.error(e);
                 if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
             });
-    } else if (!hasOTP) {
-        if (storage.get("otp")) storage.delete("otp");
+    } else if (!hasPassword) {
+        if (storage.get("password")) storage.delete("password");
         ui.modal({
-            title: 'Set OTP',
-            body: `<p>Set an OTP for seat code <code>${storage.get("code")}</code>. This OTP will be required to sync, backup, and restore your settings and history between devices, and cannot be reset by students.</p>`,
+            title: 'Set Password',
+            body: `<p>Set a password for seat code <code>${storage.get("code")}</code>. This password will be required to sync, backup, and restore your settings and history between devices, and cannot be reset by students.</p>`,
             input: {
                 type: 'password'
             },
             buttons: [
                 {
-                    text: 'Set OTP',
+                    text: 'Set Password',
                     class: 'submit-button',
                     onclick: async (inputValue) => {
-                        storage.set("otp", inputValue);
-                        await fetch(domain + '/otp', {
+                        storage.set("password", inputValue);
+                        await fetch(domain + '/password', {
                             method: "POST",
                             headers: {
                                 "Content-Type": "application/json",
                             },
                             body: JSON.stringify({
                                 "seatCode": storage.get("code"),
-                                "OTP": inputValue,
+                                "password": inputValue,
                             })
                         })
                             .then(async (r) => {
@@ -874,7 +874,7 @@ export async function syncManual(hideWelcome = false) {
     return;
 }
 
-function prompt(backingUp = true, type = 'settings', func = () => { }, domain, otp) {
+function prompt(backingUp = true, type = 'settings', func = () => { }, domain, password) {
     ui.modal({
         title: 'Are you sure?',
         body: `<p>${backingUp ? 'Backing up' : 'Restoring'} ${type} will forever remove your currently ${backingUp ? 'backed up' : 'set'} ${type}. This action is not reversible.</p>`,
@@ -883,7 +883,7 @@ function prompt(backingUp = true, type = 'settings', func = () => { }, domain, o
                 text: 'Back',
                 class: 'cancel-button',
                 onclick: () => {
-                    if (otp) storage.set("otp", otp);
+                    if (password) storage.set("password", password);
                     ui.setUnsavedChanges(false);
                     syncManual(true);
                 },
@@ -894,7 +894,7 @@ function prompt(backingUp = true, type = 'settings', func = () => { }, domain, o
                 class: 'submit-button',
                 onclick: async () => {
                     func();
-                    if (otp) storage.set("otp", otp);
+                    if (password) storage.set("password", password);
                     ui.setUnsavedChanges(false);
                     syncManual(true);
                 },

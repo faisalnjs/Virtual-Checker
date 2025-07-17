@@ -168,9 +168,9 @@ try {
         });
     }
 
-    if (document.querySelector('.otps')) {
-      if (document.getElementById('remove-otps')) document.getElementById('remove-otps').addEventListener('click', removeOTPsModal);
-      await fetch(domain + '/otps', {
+    if (document.querySelector('.passwords')) {
+      if (document.getElementById('remove-passwords')) document.getElementById('remove-passwords').addEventListener('click', removePasswordsModal);
+      await fetch(domain + '/passwords', {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -196,33 +196,33 @@ try {
           }
           return await r.json();
         })
-        .then(otps => {
-          document.querySelector('.otps').innerHTML = '<div class="row header"><span>Seat Code</span><span>Saved Settings</span><span>Saved History</span><span>Actions</span></div>';
-          if (otps.length > 0) {
-            document.getElementById('no-otps').setAttribute('hidden', '');
-            document.querySelector('.otps').removeAttribute('hidden');
+        .then(passwords => {
+          document.querySelector('.passwords').innerHTML = '<div class="row header"><span>Seat Code</span><span>Saved Settings</span><span>Saved History</span><span>Actions</span></div>';
+          if (passwords.length > 0) {
+            document.getElementById('no-passwords').setAttribute('hidden', '');
+            document.querySelector('.passwords').removeAttribute('hidden');
           } else {
-            document.getElementById('no-otps').removeAttribute('hidden');
-            document.querySelector('.otps').setAttribute('hidden', '');
+            document.getElementById('no-passwords').removeAttribute('hidden');
+            document.querySelector('.passwords').setAttribute('hidden', '');
           }
-          otps = otps.sort((a, b) => a.seatCode - b.seatCode);
-          otps.forEach(otp => {
-            document.querySelector('.otps').innerHTML += `<div class="enhanced-item" id="${otp.seatCode}">
-              <span class="seatCode">${otp.seatCode}</span>
-              <span class="settings">${(Object.keys(JSON.parse(otp.settings.replace(/'/g, '"'))).length > 0) ? '<i class="bi bi-check-lg"></i>' : ''}</span>
-              <span class="history">${(Object.keys(JSON.parse(otp.history.replace(/'/g, '"'))).length > 0) ? '<i class="bi bi-check-lg"></i>' : ''}</span>
+          passwords = passwords.sort((a, b) => a.seatCode - b.seatCode);
+          passwords.forEach(password => {
+            document.querySelector('.passwords').innerHTML += `<div class="enhanced-item" id="${password.seatCode}">
+              <span class="seatCode">${password.seatCode}</span>
+              <span class="settings">${(Object.keys(JSON.parse(password.settings.replace(/'/g, '"'))).length > 0) ? '<i class="bi bi-check-lg"></i>' : ''}</span>
+              <span class="history">${(Object.keys(JSON.parse(password.history.replace(/'/g, '"'))).length > 0) ? '<i class="bi bi-check-lg"></i>' : ''}</span>
               <span class="actions">
-                <button class="icon" data-reset-otp tooltip="Reset OTP">
+                <button class="icon" data-reset-password tooltip="Reset Password">
                   <i class="bi bi-key"></i>
                 </button>
-                <button class="icon" data-remove-otp tooltip="Remove OTP">
+                <button class="icon" data-remove-password tooltip="Remove Password">
                   <i class="bi bi-trash"></i>
                 </button>
               </span>
             </div>`;
           });
-          document.querySelectorAll('[data-reset-otp]').forEach(button => button.addEventListener('click', resetOTPModal));
-          document.querySelectorAll('[data-remove-otp]').forEach(button => button.addEventListener('click', removeOTPModal));
+          document.querySelectorAll('[data-reset-password]').forEach(button => button.addEventListener('click', resetPasswordModal));
+          document.querySelectorAll('[data-remove-password]').forEach(button => button.addEventListener('click', removePasswordModal));
           ui.stopLoader();
           active = true;
         })
@@ -4628,11 +4628,11 @@ try {
       });
   }
 
-  function removeOTPsModal() {
+  function removePasswordsModal() {
     if (!active) return;
     ui.modal({
-      title: 'Remove OTPs',
-      body: '<p>Are you sure you would like to remove OTPs from all seat codes? All seat codes will lose their saved settings and history. This action is not reversible.</p>',
+      title: 'Remove Passwords',
+      body: '<p>Are you sure you would like to remove passwords from all seat codes? All seat codes will lose their saved settings and history. This action is not reversible.</p>',
       buttons: [
         {
           text: 'Cancel',
@@ -4643,7 +4643,7 @@ try {
           text: 'Remove',
           class: 'submit-button',
           onclick: () => {
-            removeOTPs();
+            removePasswords();
           },
           close: true,
         },
@@ -4651,10 +4651,10 @@ try {
     });
   }
 
-  function removeOTPs() {
+  function removePasswords() {
     if (!active) return;
     ui.setUnsavedChanges(true);
-    fetch(domain + '/otps', {
+    fetch(domain + '/passwords', {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",
@@ -4682,7 +4682,7 @@ try {
       })
       .then(() => {
         ui.setUnsavedChanges(false);
-        ui.toast("Successfully removed OTPs.", 3000, "success", "bi bi-check-lg");
+        ui.toast("Successfully removed passwords.", 3000, "success", "bi bi-check-lg");
         init();
       })
       .catch((e) => {
@@ -4693,12 +4693,12 @@ try {
       });
   }
 
-  function removeOTPModal() {
+  function removePasswordModal() {
     if (!active) return;
     const seatCode = this.parentElement.parentElement.id;
     ui.modal({
-      title: 'Remove OTP',
-      body: `<p>Are you sure you would like to remove the OTP from seat code <code>${seatCode}</code>? This seat code will lose all their saved settings and history. This action is not reversible.</p>`,
+      title: 'Remove Password',
+      body: `<p>Are you sure you would like to remove the password from seat code <code>${seatCode}</code>? This seat code will lose all their saved settings and history. This action is not reversible.</p>`,
       buttons: [
         {
           text: 'Cancel',
@@ -4709,7 +4709,7 @@ try {
           text: 'Remove',
           class: 'submit-button',
           onclick: () => {
-            removeOTP(seatCode);
+            removePassword(seatCode);
           },
           close: true,
         },
@@ -4717,10 +4717,10 @@ try {
     });
   }
 
-  function removeOTP(seatCode) {
+  function removePassword(seatCode) {
     if (!active) return;
     ui.setUnsavedChanges(true);
-    fetch(domain + '/otps', {
+    fetch(domain + '/passwords', {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",
@@ -4749,7 +4749,7 @@ try {
       })
       .then(() => {
         ui.setUnsavedChanges(false);
-        ui.toast("Successfully removed OTP.", 3000, "success", "bi bi-check-lg");
+        ui.toast("Successfully removed password.", 3000, "success", "bi bi-check-lg");
         init();
       })
       .catch((e) => {
@@ -4760,12 +4760,12 @@ try {
       });
   }
 
-  function resetOTPModal() {
+  function resetPasswordModal() {
     if (!active) return;
     const seatCode = this.parentElement.parentElement.id;
     ui.modal({
-      title: 'Reset OTP',
-      body: `<p>Are you sure you would like to reset this OTP's associated OTP? The seat code will be prompted to set a new OTP on next app load. This action is not reversible.</p>`,
+      title: 'Reset Password',
+      body: `<p>Are you sure you would like to reset this password's associated password? The seat code will be prompted to set a new password on next app load. This action is not reversible.</p>`,
       buttons: [
         {
           text: 'Cancel',
@@ -4776,7 +4776,7 @@ try {
           text: 'Reset',
           class: 'submit-button',
           onclick: () => {
-            resetOTP(seatCode);
+            resetPassword(seatCode);
           },
           close: true,
         },
@@ -4784,10 +4784,10 @@ try {
     });
   }
 
-  function resetOTP(seatCode) {
+  function resetPassword(seatCode) {
     if (!active) return;
     ui.setUnsavedChanges(true);
-    fetch(domain + '/otp', {
+    fetch(domain + '/password', {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",
@@ -4816,7 +4816,7 @@ try {
       })
       .then(() => {
         ui.setUnsavedChanges(false);
-        ui.toast("Successfully reset OTP.", 3000, "success", "bi bi-check-lg");
+        ui.toast("Successfully reset password.", 3000, "success", "bi bi-check-lg");
         init();
       })
       .catch((e) => {

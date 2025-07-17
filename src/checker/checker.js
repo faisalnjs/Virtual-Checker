@@ -121,7 +121,7 @@ try {
 
   // Process check
   function processCheck(part = null) {
-    if (!storage.get("otp")) {
+    if (!storage.get("password")) {
       auth.sync(false);
       return;
     }

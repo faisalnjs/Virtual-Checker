@@ -5,11 +5,11 @@
 Next generation AI-powered homework checking, cloud hosted ☁️🚀✅
 
 - Courses, Periods, Segments, Questions
+- Passwords & Settings, History Backups
 - Image Uploads, Math, Sets, Matrices
 - Correct, Incorrect, Pending Statuses
 - Known Correct & Incorrect Answers
 - Multi-selecting & Response Polling
-- OTPs & Settings, History Backups
 - Instant AI Response Matching
 - Flag Response for Review
 - Course, Segment Reports

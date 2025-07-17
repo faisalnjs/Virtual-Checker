@@ -35,7 +35,7 @@ export default {
         users: new URL('admin/users.html', import.meta.url).pathname,
         ta: new URL('ta/index.html', import.meta.url).pathname,
         logs: new URL('admin/logs.html', import.meta.url).pathname,
-        otps: new URL('admin/otps.html', import.meta.url).pathname,
+        passwords: new URL('admin/passwords.html', import.meta.url).pathname,
         backups: new URL('admin/backups.html', import.meta.url).pathname,
       },
     },
