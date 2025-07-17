@@ -27,7 +27,7 @@ dialog img {
 }
 
 dialog #version-string {
-  margin: -45px 10px 10px auto;
+  margin: -45px 10px 15px auto;
   width: fit-content;
   z-index: 1;
   background: var(--background-color);

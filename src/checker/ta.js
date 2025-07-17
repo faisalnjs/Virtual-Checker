@@ -71,7 +71,7 @@ try {
             },
           ],
         });
-        await auth.loadAdminSettings(domain, courses);
+        await auth.loadAdminSettings(courses);
         if (!noReloadCourse) {
           document.getElementById("course-period-input").innerHTML = "";
           c.sort((a, b) => a.id - b.id).forEach(course => {

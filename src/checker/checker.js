@@ -106,7 +106,7 @@ try {
     document.getElementById("answer-suggestion").addEventListener("click", () => answerInput.focus());
     // Initialize questionsAnswered if not already set
     if (!storage.get("questionsAnswered")) storage.set("questionsAnswered", []);
-    document.querySelector("[data-sync]").addEventListener("click", () => auth.syncManual(domain));
+    document.querySelector("[data-sync]").addEventListener("click", () => auth.syncManual());
     ui.reloadUnsavedInputs();
   } else {
     ui.stopLoader();
@@ -122,7 +122,7 @@ try {
   // Process check
   function processCheck(part = null) {
     if (!storage.get("otp")) {
-      auth.sync(domain, false);
+      auth.sync(false);
       return;
     }
     document.getElementById("submit-button").disabled = true;
@@ -542,7 +542,7 @@ try {
         questionsArray = await questionsResponse.json();
         updateSegment();
         ui.stopLoader();
-        await auth.sync(domain, false);
+        await auth.sync(false);
       } catch (error) {
         ui.view("api-fail");
       }

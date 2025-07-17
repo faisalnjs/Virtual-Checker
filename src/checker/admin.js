@@ -386,7 +386,7 @@ try {
       })
       .then(async c => {
         courses = c;
-        await auth.loadAdminSettings(domain, courses);
+        await auth.loadAdminSettings(courses);
         if (document.querySelector('.users')) {
           ui.reloadUnsavedInputs();
           return;

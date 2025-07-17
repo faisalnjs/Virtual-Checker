@@ -2,8 +2,27 @@ import * as ui from "./ui.js";
 import storage from "./storage.js";
 import * as themes from "../themes/themes.js";
 
+const domain = ((window.location.hostname.search('check') != -1) || (window.location.hostname.search('127') != -1)) ? 'https://api.check.vssfalcons.com' : `http://${document.domain}:5000`;
+
 var authModalOpen = false;
 var hasOTP = false;
+
+function removeDuplicates(array) {
+    const seen = new Set();
+    return array.filter(item => {
+        const key = JSON.stringify(item);
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+    });
+}
+
+function sortKeys(obj) {
+    return Object.keys(obj).sort().reduce((acc, key) => {
+        acc[key] = obj[key];
+        return acc;
+    }, {});
+}
 
 export function admin(returnFunction) {
     ui.view();
@@ -85,9 +104,9 @@ export function logout(returnFunction = null) {
     return;
 }
 
-export async function sync(domain, hideWelcome = true) {
-    ui.view();
+export async function sync(hideWelcome = true) {
     if (!storage.get("code")) {
+        ui.view();
         ui.modal({
             title: 'Error',
             body: '<p>No seat code found. Please enter a valid seat code first.</p>',
@@ -118,6 +137,7 @@ export async function sync(domain, hideWelcome = true) {
             if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
         });
     if (hasOTP && !storage.get("otp")) {
+        ui.view();
         ui.modal({
             title: 'Enter OTP',
             body: `<p>Enter the existing OTP for seat code <code>${storage.get("code")}</code>. Contact an administrator to reset your OTP.</p>`,
@@ -131,7 +151,7 @@ export async function sync(domain, hideWelcome = true) {
                     onclick: (inputValue) => {
                         storage.set("otp", inputValue);
                         ui.setUnsavedChanges(false);
-                        sync(domain, hideWelcome);
+                        sync(hideWelcome);
                     },
                     close: true,
                 },
@@ -156,7 +176,7 @@ export async function sync(domain, hideWelcome = true) {
                             ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
                             if ((re.error === "Access denied.") || (re.message === "Access denied.")) {
                                 if (storage.get("otp")) storage.delete("otp");
-                                sync(domain, hideWelcome);
+                                sync(hideWelcome);
                             }
                             throw new Error(re.error || re.message);
                         } else {
@@ -171,26 +191,6 @@ export async function sync(domain, hideWelcome = true) {
             .then(async r => {
                 var OTP = storage.get("otp");
                 if (!hideWelcome) ui.toast("Welcome back!", 3000, "success", "bi bi-key");
-                function removeDuplicates(array) {
-                    const seen = new Set();
-                    return array.filter(item => {
-                        const key = JSON.stringify(item);
-                        if (seen.has(key)) return false;
-                        seen.add(key);
-                        return true;
-                    });
-                }
-                var combinedSettings = (!r.settings || Object.keys(r.settings).length === 0) ? Object.fromEntries(
-                    Object.entries(storage.all()).filter(([key]) =>
-                        key !== "otp" && key !== "code" && key !== "usr" && key !== "pwd" && key !== "questionsAnswered" && key !== "history"
-                    )
-                ) : {
-                    ...r.settings, ...Object.fromEntries(
-                        Object.entries(storage.all()).filter(([key]) =>
-                            key !== "otp" && key !== "code" && key !== "usr" && key !== "pwd" && key !== "questionsAnswered" && key !== "history"
-                        )
-                    )
-                };
                 const combinedHistory = {
                     "questionsAnswered": (!r.history || Object.keys(r.history).length === 0)
                         ? storage.get("questionsAnswered") || []
@@ -199,20 +199,14 @@ export async function sync(domain, hideWelcome = true) {
                         ? storage.get("history") || []
                         : removeDuplicates([...r.history.history, ...(storage.get("history") || [])]),
                 };
-                function sortKeys(obj) {
-                    return Object.keys(obj).sort().reduce((acc, key) => {
-                        acc[key] = obj[key];
-                        return acc;
-                    }, {});
-                }
-                if ((JSON.stringify(sortKeys(combinedSettings)) === JSON.stringify(sortKeys(Object.fromEntries(
+                if ((JSON.stringify(sortKeys(r.settings)) === JSON.stringify(sortKeys(Object.fromEntries(
                     Object.entries(storage.all()).filter(([key]) =>
                         key !== "otp" && key !== "code" && key !== "usr" && key !== "pwd" && key !== "questionsAnswered" && key !== "history"
                     )
-                )))) && (JSON.stringify(combinedHistory) === JSON.stringify({
+                )))) && (JSON.stringify(sortKeys(r.history)) === JSON.stringify(sortKeys({
                     "questionsAnswered": storage.get("questionsAnswered"),
                     "history": storage.get("history"),
-                }))) return;
+                })))) return;
                 await fetch(domain + '/otp', {
                     method: "POST",
                     headers: {
@@ -221,7 +215,6 @@ export async function sync(domain, hideWelcome = true) {
                     body: JSON.stringify({
                         "seatCode": storage.get("code"),
                         "OTP": OTP,
-                        "settings": combinedSettings,
                         "history": combinedHistory,
                     })
                 })
@@ -231,7 +224,7 @@ export async function sync(domain, hideWelcome = true) {
                                 var re = await r.json();
                                 if (re.error || re.message) {
                                     ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
-                                    if ((re.error === "Access denied.") || (re.message === "Access denied.")) syncManual(domain);
+                                    if ((re.error === "Access denied.") || (re.message === "Access denied.")) syncManual();
                                     throw new Error(re.error || re.message);
                                 } else {
                                     throw new Error("API error");
@@ -264,7 +257,7 @@ export async function sync(domain, hideWelcome = true) {
                                     ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
                                     if ((re.error === "Access denied.") || (re.message === "Access denied.")) {
                                         if (storage.get("otp")) storage.delete("otp");
-                                        sync(domain, hideWelcome);
+                                        sync(hideWelcome);
                                     }
                                     throw new Error(re.error || re.message);
                                 } else {
@@ -282,14 +275,14 @@ export async function sync(domain, hideWelcome = true) {
                                 if (key !== "otp" && key !== "code" && key !== "usr" && key !== "pwd" && key !== "questionsAnswered" && key !== "history") storage.set(key, value);
                             });
                             await themes.syncTheme();
-                            window.location.reload();
                         }
                         if (r.history && Object.keys(r.history).length > 0) {
                             Object.entries(r.history).forEach(([key, value]) => {
                                 if (key === "questionsAnswered" || key === "history") storage.set(key, value);
                             });
-                            window.location.reload();
                         }
+                        ui.setUnsavedChanges(false);
+                        window.location.reload();
                     })
                     .catch((e) => {
                         console.error(e);
@@ -343,7 +336,7 @@ export async function sync(domain, hideWelcome = true) {
                             .then(r => {
                                 ui.toast(r.message, 3000, "success", "bi bi-key");
                                 ui.setUnsavedChanges(false);
-                                sync(domain, hideWelcome);
+                                sync(hideWelcome);
                             })
                             .catch((e) => {
                                 console.error(e);
@@ -358,7 +351,208 @@ export async function sync(domain, hideWelcome = true) {
     return;
 }
 
-export async function syncManual(domain, hideWelcome = false) {
+export async function syncPush(type, key = null) {
+    if (!type) return;
+    if ((type !== "settings") && (type !== "history")) return;
+    if ((type === "settings") && !key) return;
+    if (!storage.get("code")) {
+        ui.view();
+        ui.modal({
+            title: 'Error',
+            body: '<p>No seat code found. Please enter a valid seat code first.</p>',
+            buttons: [
+                {
+                    text: 'OK',
+                    class: 'submit-button',
+                    close: true,
+                },
+            ],
+        });
+        return;
+    }
+    await fetch(domain + '/otp', {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+            "seatCode": storage.get("code"),
+        })
+    })
+        .then(r => {
+            hasOTP = r.ok ? true : false;
+        })
+        .catch((e) => {
+            console.error(e);
+            if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        });
+    if (hasOTP && !storage.get("otp")) {
+        ui.view();
+        ui.modal({
+            title: 'Enter OTP',
+            body: `<p>Enter the existing OTP for seat code <code>${storage.get("code")}</code>. Contact an administrator to reset your OTP.</p>`,
+            input: {
+                type: 'password'
+            },
+            buttons: [
+                {
+                    text: 'Verify',
+                    class: 'submit-button',
+                    onclick: (inputValue) => {
+                        storage.set("otp", inputValue);
+                        ui.setUnsavedChanges(false);
+                        syncPush();
+                    },
+                    close: true,
+                },
+            ],
+        });
+    } else if (hasOTP && storage.get("otp")) {
+        await fetch(domain + '/otp', {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                "seatCode": storage.get("code"),
+                "OTP": storage.get("otp"),
+            })
+        })
+            .then(async (r) => {
+                if (!r.ok) {
+                    try {
+                        var re = await r.json();
+                        if (re.error || re.message) {
+                            ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+                            if ((re.error === "Access denied.") || (re.message === "Access denied.")) {
+                                if (storage.get("otp")) storage.delete("otp");
+                                syncPush();
+                            }
+                            throw new Error(re.error || re.message);
+                        } else {
+                            throw new Error("API error");
+                        }
+                    } catch (e) {
+                        throw new Error(e.message || "API error");
+                    }
+                }
+                return await r.json();
+            })
+            .then(async r => {
+                var OTP = storage.get("otp");
+                var out = {};
+                if (type === "settings") {
+                    r.settings[key] = storage.get(key);
+                    out = r.settings;
+                } else if (type === "history") {
+                    out = {
+                        "questionsAnswered": (!r.history || Object.keys(r.history).length === 0)
+                            ? storage.get("questionsAnswered") || []
+                            : removeDuplicates([...r.history.questionsAnswered, ...(storage.get("questionsAnswered") || [])]),
+                        "history": (!r.history || Object.keys(r.history).length === 0)
+                            ? storage.get("history") || []
+                            : removeDuplicates([...r.history.history, ...(storage.get("history") || [])]),
+                    };
+                }
+                await fetch(domain + '/otp', {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        "seatCode": storage.get("code"),
+                        "OTP": OTP,
+                        [type]: out,
+                    })
+                })
+                    .then(async (r) => {
+                        if (!r.ok) {
+                            try {
+                                var re = await r.json();
+                                if (re.error || re.message) {
+                                    ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+                                    if ((re.error === "Access denied.") || (re.message === "Access denied.")) syncManual();
+                                    throw new Error(re.error || re.message);
+                                } else {
+                                    throw new Error("API error");
+                                }
+                            } catch (e) {
+                                throw new Error(e.message || "API error");
+                            }
+                        }
+                        return await r.json();
+                    })
+                    .then(() => {
+                        ui.setUnsavedChanges(false);
+                    })
+                    .catch((e) => {
+                        console.error(e);
+                        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+                    });
+            })
+            .catch((e) => {
+                console.error(e);
+                if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+            });
+    } else if (!hasOTP) {
+        if (storage.get("otp")) storage.delete("otp");
+        ui.modal({
+            title: 'Set OTP',
+            body: `<p>Set an OTP for seat code <code>${storage.get("code")}</code>. This OTP will be required to sync, backup, and restore your settings and history between devices, and cannot be reset by students.</p>`,
+            input: {
+                type: 'password'
+            },
+            buttons: [
+                {
+                    text: 'Set OTP',
+                    class: 'submit-button',
+                    onclick: async (inputValue) => {
+                        storage.set("otp", inputValue);
+                        await fetch(domain + '/otp', {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                            },
+                            body: JSON.stringify({
+                                "seatCode": storage.get("code"),
+                                "OTP": inputValue,
+                            })
+                        })
+                            .then(async (r) => {
+                                if (!r.ok) {
+                                    try {
+                                        var re = await r.json();
+                                        if (re.error || re.message) {
+                                            ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+                                            throw new Error(re.error || re.message);
+                                        } else {
+                                            throw new Error("API error");
+                                        }
+                                    } catch (e) {
+                                        throw new Error(e.message || "API error");
+                                    }
+                                }
+                                return await r.json();
+                            })
+                            .then(r => {
+                                ui.toast(r.message, 3000, "success", "bi bi-key");
+                                ui.setUnsavedChanges(false);
+                                syncPush();
+                            })
+                            .catch((e) => {
+                                console.error(e);
+                                if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+                            });
+                    },
+                    close: true,
+                },
+            ],
+        });
+    }
+    return;
+}
+
+export async function syncManual(hideWelcome = false) {
     ui.view();
     if (!storage.get("code")) {
         ui.modal({
@@ -404,7 +598,7 @@ export async function syncManual(domain, hideWelcome = false) {
                     onclick: (inputValue) => {
                         storage.set("otp", inputValue);
                         ui.setUnsavedChanges(false);
-                        syncManual(domain);
+                        syncManual();
                     },
                     close: true,
                 },
@@ -429,7 +623,7 @@ export async function syncManual(domain, hideWelcome = false) {
                             ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
                             if ((re.error === "Access denied.") || (re.message === "Access denied.")) {
                                 if (storage.get("otp")) storage.delete("otp");
-                                syncManual(domain);
+                                syncManual();
                             }
                             throw new Error(re.error || re.message);
                         } else {
@@ -480,7 +674,7 @@ export async function syncManual(domain, hideWelcome = false) {
                                                                 var re = await r.json();
                                                                 if (re.error || re.message) {
                                                                     ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
-                                                                    if ((re.error === "Access denied.") || (re.message === "Access denied.")) syncManual(domain);
+                                                                    if ((re.error === "Access denied.") || (re.message === "Access denied.")) syncManual();
                                                                     throw new Error(re.error || re.message);
                                                                 } else {
                                                                     throw new Error("API error");
@@ -531,7 +725,7 @@ export async function syncManual(domain, hideWelcome = false) {
                                                                 var re = await r.json();
                                                                 if (re.error || re.message) {
                                                                     ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
-                                                                    if ((re.error === "Access denied.") || (re.message === "Access denied.")) syncManual(domain);
+                                                                    if ((re.error === "Access denied.") || (re.message === "Access denied.")) syncManual();
                                                                     throw new Error(re.error || re.message);
                                                                 } else {
                                                                     throw new Error("API error");
@@ -650,7 +844,7 @@ export async function syncManual(domain, hideWelcome = false) {
                             .then(r => {
                                 ui.toast(r.message, 3000, "success", "bi bi-key");
                                 ui.setUnsavedChanges(false);
-                                syncManual(domain);
+                                syncManual();
                             })
                             .catch((e) => {
                                 console.error(e);
@@ -676,7 +870,7 @@ function prompt(backingUp = true, type = 'settings', func = () => { }, domain, o
                 onclick: () => {
                     if (otp) storage.set("otp", otp);
                     ui.setUnsavedChanges(false);
-                    syncManual(domain, true);
+                    syncManual(true);
                 },
                 close: true,
             },
@@ -687,7 +881,7 @@ function prompt(backingUp = true, type = 'settings', func = () => { }, domain, o
                     func();
                     if (otp) storage.set("otp", otp);
                     ui.setUnsavedChanges(false);
-                    syncManual(domain, true);
+                    syncManual(true);
                 },
                 close: true,
             },
@@ -695,7 +889,7 @@ function prompt(backingUp = true, type = 'settings', func = () => { }, domain, o
     });
 }
 
-export async function loadAdminSettings(domain, courses) {
+export async function loadAdminSettings(courses) {
     await fetch(domain + '/user/settings', {
         method: "POST",
         headers: {

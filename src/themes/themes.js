@@ -6,6 +6,7 @@ import "./festive/festive.js";
 
 import * as ui from "/src/modules/ui.js";
 import storage from "/src/modules/storage.js";
+import * as auth from "/src/modules/auth.js";
 
 const defaultTheme = {
   "color-scheme": "light",
@@ -160,7 +161,7 @@ try {
   }
   enableTransitions();
 
-  document.getElementById("theme-apply")?.addEventListener("click", () => {
+  document.getElementById("theme-apply")?.addEventListener("click", async () => {
     const value = selectedTheme;
     disableTransitions();
     document.body.setAttribute("data-theme", value);
@@ -171,6 +172,7 @@ try {
     if (document.getElementById("theme-debug")) {
       document.getElementById("theme-debug").value = value;
     }
+    await auth.syncPush("settings", "theme");
   });
 
   document.getElementById("theme-reset")?.addEventListener("click", resetTheme);
