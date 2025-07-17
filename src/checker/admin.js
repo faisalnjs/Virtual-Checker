@@ -207,10 +207,11 @@ try {
           }
           passwords = passwords.sort((a, b) => a.seatCode - b.seatCode);
           passwords.forEach(password => {
+            console.log(password.settings, password.history)
             document.querySelector('.passwords').innerHTML += `<div class="enhanced-item" id="${password.seatCode}">
               <span class="seatCode">${password.seatCode}</span>
-              <span class="settings">${(Object.keys(JSON.parse(password.settings.replace(/'/g, '"'))).length > 0) ? '<i class="bi bi-check-lg"></i>' : ''}</span>
-              <span class="history">${(Object.keys(JSON.parse(password.history.replace(/'/g, '"'))).length > 0) ? '<i class="bi bi-check-lg"></i>' : ''}</span>
+              <span class="settings">${(password.settings !== '{}') ? '<i class="bi bi-check-lg"></i>' : ''}</span>
+              <span class="history">${(password.history !== '{}') ? '<i class="bi bi-check-lg"></i>' : ''}</span>
               <span class="actions">
                 <button class="icon" data-reset-password tooltip="Reset Password">
                   <i class="bi bi-key"></i>
