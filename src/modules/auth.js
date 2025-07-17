@@ -316,7 +316,7 @@ export async function sync(hideWelcome = true) {
             },
             buttons: [
                 {
-                    text: 'Set OTP',
+                    text: 'Set Password',
                     class: 'submit-button',
                     onclick: async (inputValue) => {
                         storage.set("password", inputValue);
