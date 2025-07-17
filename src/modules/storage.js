@@ -8,7 +8,7 @@ class Storage {
     let temp = this.object;
     temp[key] = value;
     localStorage.setItem(this.id, JSON.stringify(temp));
-    setCookie(this.id, JSON.stringify(temp), 7);
+    this.syncWithCookie();
     return this;
   }
 
@@ -24,7 +24,7 @@ class Storage {
     let temp = this.object;
     delete temp[key];
     localStorage.setItem(this.id, JSON.stringify(temp));
-    setCookie(this.id, JSON.stringify(temp), 7);
+    this.syncWithCookie();
     return this;
   }
 
@@ -38,8 +38,11 @@ class Storage {
   }
 
   syncWithCookie() {
+    const localData = localStorage.getItem(this.id);
     const cookieData = getCookie(this.id);
-    if (cookieData) {
+    if (localData && cookieData && localData !== cookieData) {
+      setCookie(this.id, localData, 7);
+    } else if (!localData && cookieData) {
       localStorage.setItem(this.id, cookieData);
     }
   }

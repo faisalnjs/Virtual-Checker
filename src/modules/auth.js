@@ -196,14 +196,14 @@ export async function sync(hideWelcome = true) {
             .then(async r => {
                 var password = storage.get("password");
                 if (!hideWelcome) ui.toast("Welcome back!", 3000, "success", "bi bi-key");
-                const combinedHistory = {
+                const combinedHistory = sortKeys({
                     "questionsAnswered": (!r.history || Object.keys(r.history).length === 0)
                         ? storage.get("questionsAnswered") || []
                         : removeDuplicates([...r.history.questionsAnswered, ...(storage.get("questionsAnswered") || [])]),
                     "history": (!r.history || Object.keys(r.history).length === 0)
                         ? storage.get("history") || []
                         : removeDuplicates([...r.history.history, ...(storage.get("history") || [])]),
-                };
+                });
                 if ((JSON.stringify(sortKeys(r.settings)) === JSON.stringify(sortKeys(Object.fromEntries(
                     Object.entries(storage.all()).filter(([key]) =>
                         key !== "password" && key !== "code" && key !== "usr" && key !== "pwd" && key !== "questionsAnswered" && key !== "history"
@@ -248,41 +248,7 @@ export async function sync(hideWelcome = true) {
                         }
                         return await r.json();
                     })
-                    .catch((e) => {
-                        console.error(e);
-                        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
-                    });
-                await fetch(domain + '/password', {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({
-                        "seatCode": storage.get("code"),
-                        "password": storage.get("password"),
-                    })
-                })
-                    .then(async (r) => {
-                        if (!r.ok) {
-                            try {
-                                var re = await r.json();
-                                if (re.error || re.message) {
-                                    ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
-                                    if ((re.error === "Access denied.") || (re.message === "Access denied.")) {
-                                        if (storage.get("password")) storage.delete("password");
-                                        sync(hideWelcome);
-                                    }
-                                    throw new Error(re.error || re.message);
-                                } else {
-                                    throw new Error("API error");
-                                }
-                            } catch (e) {
-                                throw new Error(e.message || "API error");
-                            }
-                        }
-                        return await r.json();
-                    })
-                    .then(async r => {
+                    .then(async () => {
                         if (r.settings && Object.keys(r.settings).length > 0) {
                             Object.entries(r.settings).forEach(([key, value]) => {
                                 if (key !== "password" && key !== "code" && key !== "usr" && key !== "pwd" && key !== "questionsAnswered" && key !== "history") storage.set(key, value);
