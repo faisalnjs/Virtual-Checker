@@ -51,7 +51,6 @@ try {
     if (regex.test(code)) {
       // Update seat code
       storage.set("code", code);
-      updateCode();
     }
     // Show seat code modal if no saved code exists
     if (storage.get("code")) {
@@ -122,6 +121,10 @@ try {
 
   // Process check
   function processCheck(part = null) {
+    if (!storage.get("otp")) {
+      auth.sync(domain, false);
+      return;
+    }
     document.getElementById("submit-button").disabled = true;
     const mode = ui.getButtonSelectValue(document.getElementById("answer-mode-selector"));
     const segment = segmentInput.value?.trim();
@@ -539,7 +542,7 @@ try {
         questionsArray = await questionsResponse.json();
         updateSegment();
         ui.stopLoader();
-        await auth.sync(domain);
+        await auth.sync(domain, false);
       } catch (error) {
         ui.view("api-fail");
       }

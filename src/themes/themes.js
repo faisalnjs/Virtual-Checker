@@ -7,6 +7,19 @@ import "./festive/festive.js";
 import * as ui from "/src/modules/ui.js";
 import storage from "/src/modules/storage.js";
 
+const defaultTheme = {
+  "color-scheme": "light",
+  "text-color": "#2c2c2c",
+  "background-color": "#fafafa",
+  "surface-color": "#e7e7e7",
+  "accent-color": "#424242",
+  "accent-text-color": "#ffffff",
+  "error-color": "#fa8796",
+};
+Object.freeze(defaultTheme);
+
+const customTheme = Object.assign({}, storage.get("custom-theme") || defaultTheme);
+
 export function resetTheme() {
   disableTransitions();
   document.body.removeAttribute("data-theme");
@@ -24,6 +37,98 @@ export function disableTransitions() {
 export function enableTransitions() {
   document.body.offsetHeight;
   document.body.classList.add("enable-transitions");
+}
+
+export async function syncTheme() {
+  const value = storage.get("theme");
+  disableTransitions();
+  document.body.setAttribute("data-theme", value);
+  removeCustomTheme();
+  enableTransitions();
+  // Update developer theme input
+  if (document.getElementById("theme-debug")) {
+    document.getElementById("theme-debug").value = value;
+  }
+}
+
+function copyThemeCSS() {
+  const properties = Object.entries(customTheme)
+    .filter(([key]) => key?.trim())
+    .map(([key, value]) => {
+      const prefix = key == "color-scheme" ? "" : "--";
+      return `${prefix}${key}: ${value};`;
+    });
+  const css = `[data-theme="custom"] {\n  ${properties.join("\n  ")}\n}`;
+  navigator.clipboard.writeText(css);
+}
+
+function validateThemeCode() {
+  const code = document.getElementById("theme-code").value;
+  const theme = decodeThemeCode(code);
+  storage.get("developer") && console.log(theme);
+  if (theme) {
+    Object.assign(customTheme, theme);
+    updateEditorFields();
+    updateEditorPreview();
+  }
+  updateThemeCode();
+}
+
+function updateEditorFields() {
+  Object.entries(customTheme).forEach(([key, value]) => {
+    const event = new Event("update");
+    const input = document.querySelector(`#theme-editor [name="${key}"]`);
+    if (input) {
+      input.value = value;
+      input.dispatchEvent(event);
+    }
+  });
+}
+
+function updateEditorPreview(theme = customTheme) {
+  const preview = document.getElementById("editor-preview");
+  Object.entries(theme).forEach(([key, value]) => {
+    const prefix = key == "color-scheme" ? "" : "--";
+    preview?.style.setProperty(prefix + key, value);
+  });
+}
+
+function applyCustomTheme() {
+  if (!storage.get("custom-theme")) return;
+  Object.entries(storage.get("custom-theme")).forEach(([key, value]) => {
+    const prefix = key == "color-scheme" ? "" : "--";
+    document.body.style.setProperty(prefix + key, value);
+  });
+  document.getElementById("theme-preview")?.removeAttribute("data-theme");
+}
+
+function removeCustomTheme() {
+  if (!storage.get("custom-theme")) return;
+  Object.keys(storage.get("custom-theme")).forEach((key) => {
+    const prefix = key == "color-scheme" ? "" : "--";
+    document.body.style.removeProperty(prefix + key);
+  });
+}
+
+function updateThemeCode() {
+  if (document.getElementById("theme-code")) document.getElementById("theme-code").value = encodeThemeCode(customTheme);
+}
+
+function encodeThemeCode(theme) {
+  return "VC" + btoa(Object.values(theme).join(","));
+}
+
+function decodeThemeCode(code) {
+  try {
+    const keys = Object.keys(defaultTheme);
+    const values = atob(code.substring(2)).split(",");
+    if (values.length < keys.length) {
+      throw new Error();
+    }
+    return Object.fromEntries(keys.map((key, i) => [key, values[i]]));
+  } catch (e) {
+    return false;
+  }
 }
 
 try {
@@ -72,19 +177,6 @@ try {
 
   // Editor
 
-  const defaultTheme = {
-    "color-scheme": "light",
-    "text-color": "#2c2c2c",
-    "background-color": "#fafafa",
-    "surface-color": "#e7e7e7",
-    "accent-color": "#424242",
-    "accent-text-color": "#ffffff",
-    "error-color": "#fa8796",
-  };
-  Object.freeze(defaultTheme);
-
-  const customTheme = Object.assign({}, storage.get("custom-theme") || defaultTheme);
-
   updateEditorFields();
   updateEditorPreview();
   updateThemeCode();
@@ -124,75 +216,6 @@ try {
     }
   });
 
-  function validateThemeCode() {
-    const code = document.getElementById("theme-code").value;
-    const theme = decodeThemeCode(code);
-    storage.get("developer") && console.log(theme);
-    if (theme) {
-      Object.assign(customTheme, theme);
-      updateEditorFields();
-      updateEditorPreview();
-    }
-    updateThemeCode();
-  }
-
-  function updateEditorFields() {
-    Object.entries(customTheme).forEach(([key, value]) => {
-      const event = new Event("update");
-      const input = document.querySelector(`#theme-editor [name="${key}"]`);
-      if (input) {
-        input.value = value;
-        input.dispatchEvent(event);
-      }
-    });
-  }
-
-  function updateEditorPreview(theme = customTheme) {
-    const preview = document.getElementById("editor-preview");
-    Object.entries(theme).forEach(([key, value]) => {
-      const prefix = key == "color-scheme" ? "" : "--";
-      preview?.style.setProperty(prefix + key, value);
-    });
-  }
-
-  function applyCustomTheme() {
-    if (!storage.get("custom-theme")) return;
-    Object.entries(storage.get("custom-theme")).forEach(([key, value]) => {
-      const prefix = key == "color-scheme" ? "" : "--";
-      document.body.style.setProperty(prefix + key, value);
-    });
-    document.getElementById("theme-preview")?.removeAttribute("data-theme");
-  }
-
-  function removeCustomTheme() {
-    if (!storage.get("custom-theme")) return;
-    Object.keys(storage.get("custom-theme")).forEach((key) => {
-      const prefix = key == "color-scheme" ? "" : "--";
-      document.body.style.removeProperty(prefix + key);
-    });
-  }
-
-  function updateThemeCode() {
-    if (document.getElementById("theme-code")) document.getElementById("theme-code").value = encodeThemeCode(customTheme);
-  }
-
-  function encodeThemeCode(theme) {
-    return "VC" + btoa(Object.values(theme).join(","));
-  }
-
-  function decodeThemeCode(code) {
-    try {
-      const keys = Object.keys(defaultTheme);
-      const values = atob(code.substring(2)).split(",");
-      if (values.length < keys.length) {
-        throw new Error();
-      }
-      return Object.fromEntries(keys.map((key, i) => [key, values[i]]));
-    } catch (e) {
-      return false;
-    }
-  }
-
   // Load theme editor
   document.querySelector(`[data-modal-page="editor"]`)?.addEventListener("view", () => {
     Object.assign(customTheme, storage.get("custom-theme") || defaultTheme);
@@ -231,17 +254,6 @@ try {
         "click": copyThemeCSS,
       }).element,
     );
-  }
-
-  function copyThemeCSS() {
-    const properties = Object.entries(customTheme)
-      .filter(([key]) => key?.trim())
-      .map(([key, value]) => {
-        const prefix = key == "color-scheme" ? "" : "--";
-        return `${prefix}${key}: ${value};`;
-      });
-    const css = `[data-theme="custom"] {\n  ${properties.join("\n  ")}\n}`;
-    navigator.clipboard.writeText(css);
   }
 
   // Seasonal themes
