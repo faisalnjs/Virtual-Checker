@@ -212,12 +212,16 @@ try {
               <span class="settings">${(Object.keys(JSON.parse(otp.settings.replace(/'/g, '"'))).length > 0) ? '<i class="bi bi-check-lg"></i>' : ''}</span>
               <span class="history">${(Object.keys(JSON.parse(otp.history.replace(/'/g, '"'))).length > 0) ? '<i class="bi bi-check-lg"></i>' : ''}</span>
               <span class="actions">
+                <button class="icon" data-reset-otp tooltip="Reset OTP">
+                  <i class="bi bi-key"></i>
+                </button>
                 <button class="icon" data-remove-otp tooltip="Remove OTP">
                   <i class="bi bi-trash"></i>
                 </button>
               </span>
             </div>`;
           });
+          document.querySelectorAll('[data-reset-otp]').forEach(button => button.addEventListener('click', resetOTPModal));
           document.querySelectorAll('[data-remove-otp]').forEach(button => button.addEventListener('click', removeOTPModal));
           ui.stopLoader();
           active = true;
@@ -4746,6 +4750,73 @@ try {
       .then(() => {
         ui.setUnsavedChanges(false);
         ui.toast("Successfully removed OTP.", 3000, "success", "bi bi-check-lg");
+        init();
+      })
+      .catch((e) => {
+        console.error(e);
+        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
+        pollingOff();
+      });
+  }
+
+  function resetOTPModal() {
+    if (!active) return;
+    const seatCode = this.parentElement.parentElement.id;
+    ui.modal({
+      title: 'Reset OTP',
+      body: `<p>Are you sure you would like to reset this OTP's associated OTP? The seat code will be prompted to set a new OTP on next app load. This action is not reversible.</p>`,
+      buttons: [
+        {
+          text: 'Cancel',
+          class: 'cancel-button',
+          close: true,
+        },
+        {
+          text: 'Reset',
+          class: 'submit-button',
+          onclick: () => {
+            resetOTP(seatCode);
+          },
+          close: true,
+        },
+      ],
+    });
+  }
+
+  function resetOTP(seatCode) {
+    if (!active) return;
+    ui.setUnsavedChanges(true);
+    fetch(domain + '/otp', {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        usr: storage.get("usr"),
+        pwd: storage.get("pwd"),
+        seatCode,
+      }),
+    })
+      .then(async (r) => {
+        if (!r.ok) {
+          try {
+            var re = await r.json();
+            if (re.error || re.message) {
+              ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+              throw new Error(re.error || re.message);
+            } else {
+              throw new Error("API error");
+            }
+          } catch (e) {
+            throw new Error(e.message || "API error");
+          }
+        }
+        return await r.json();
+      })
+      .then(() => {
+        ui.setUnsavedChanges(false);
+        ui.toast("Successfully reset OTP.", 3000, "success", "bi bi-check-lg");
         init();
       })
       .catch((e) => {

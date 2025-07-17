@@ -191,6 +191,7 @@ export async function sync(hideWelcome = true) {
             .then(async r => {
                 var OTP = storage.get("otp");
                 if (!hideWelcome) ui.toast("Welcome back!", 3000, "success", "bi bi-key");
+                console.log(r)
                 const combinedHistory = {
                     "questionsAnswered": (!r.history || Object.keys(r.history).length === 0)
                         ? storage.get("questionsAnswered") || []
@@ -215,6 +216,11 @@ export async function sync(hideWelcome = true) {
                     body: JSON.stringify({
                         "seatCode": storage.get("code"),
                         "OTP": OTP,
+                        "settings": (Object.keys(r.settings).length === 0) ? Object.fromEntries(
+                            Object.entries(storage.all()).filter(([key]) =>
+                                key !== "otp" && key !== "code" && key !== "usr" && key !== "pwd" && key !== "questionsAnswered" && key !== "history"
+                            )
+                        ) : r.settings,
                         "history": combinedHistory,
                     })
                 })
