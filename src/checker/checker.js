@@ -542,7 +542,6 @@ try {
         });
         questionsArray = await questionsResponse.json();
         updateSegment();
-        ui.stopLoader();
         await auth.sync(false);
       } catch (error) {
         ui.view("api-fail");

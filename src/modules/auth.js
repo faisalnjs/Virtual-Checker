@@ -59,6 +59,7 @@ export function admin(returnFunction) {
                 close: true,
             },
         ],
+        required: true,
     });
     authModalOpen = true;
     return;
@@ -89,6 +90,7 @@ export function ta(returnFunction) {
                 close: true,
             },
         ],
+        required: true,
     });
     authModalOpen = true;
     return;
@@ -105,6 +107,7 @@ export function logout(returnFunction = null) {
 }
 
 export async function sync(hideWelcome = true) {
+    ui.startLoader();
     if (!storage.get("code")) {
         ui.view();
         ui.modal({
@@ -118,6 +121,7 @@ export async function sync(hideWelcome = true) {
                 },
             ],
         });
+        ui.stopLoader();
         return;
     }
     await fetch(domain + '/otp', {
@@ -156,6 +160,7 @@ export async function sync(hideWelcome = true) {
                     close: true,
                 },
             ],
+            required: true,
         });
     } else if (hasOTP && storage.get("otp")) {
         await fetch(domain + '/otp', {
@@ -191,7 +196,6 @@ export async function sync(hideWelcome = true) {
             .then(async r => {
                 var OTP = storage.get("otp");
                 if (!hideWelcome) ui.toast("Welcome back!", 3000, "success", "bi bi-key");
-                console.log(r)
                 const combinedHistory = {
                     "questionsAnswered": (!r.history || Object.keys(r.history).length === 0)
                         ? storage.get("questionsAnswered") || []
@@ -207,7 +211,10 @@ export async function sync(hideWelcome = true) {
                 )))) && (JSON.stringify(sortKeys(r.history)) === JSON.stringify(sortKeys({
                     "questionsAnswered": storage.get("questionsAnswered"),
                     "history": storage.get("history"),
-                })))) return;
+                })))) {
+                    ui.stopLoader();
+                    return;
+                }
                 await fetch(domain + '/otp', {
                     method: "POST",
                     headers: {
@@ -352,6 +359,7 @@ export async function sync(hideWelcome = true) {
                     close: true,
                 },
             ],
+            required: true,
         });
     }
     return;
@@ -412,6 +420,7 @@ export async function syncPush(type, key = null) {
                     close: true,
                 },
             ],
+            required: true,
         });
     } else if (hasOTP && storage.get("otp")) {
         await fetch(domain + '/otp', {
@@ -553,6 +562,7 @@ export async function syncPush(type, key = null) {
                     close: true,
                 },
             ],
+            required: true,
         });
     }
     return;
@@ -642,8 +652,7 @@ export async function syncManual(hideWelcome = false) {
                 return await r.json();
             })
             .then(r => {
-                var tempOTP = storage.get("otp");
-                storage.delete("otp");
+                var OTP = storage.get("otp");
                 if (!hideWelcome) ui.toast("Welcome back!", 3000, "success", "bi bi-key");
                 ui.modal({
                     title: 'Sync Settings & History',
@@ -666,7 +675,7 @@ export async function syncManual(hideWelcome = false) {
                                                     },
                                                     body: JSON.stringify({
                                                         "seatCode": storage.get("code"),
-                                                        "OTP": tempOTP,
+                                                        "OTP": OTP,
                                                         "settings": Object.fromEntries(
                                                             Object.entries(storage.all()).filter(([key]) =>
                                                                 key !== "otp" && key !== "code" && key !== "usr" && key !== "pwd" && key !== "questionsAnswered" && key !== "history"
@@ -701,7 +710,7 @@ export async function syncManual(hideWelcome = false) {
                                             } else {
                                                 ui.toast("No settings found to backup.", 3000, "warning", "bi bi-exclamation-triangle-fill");
                                             }
-                                        }, domain, tempOTP)
+                                        }, domain, OTP)
                                     },
                                     close: true,
                                 },
@@ -718,7 +727,7 @@ export async function syncManual(hideWelcome = false) {
                                                     },
                                                     body: JSON.stringify({
                                                         "seatCode": storage.get("code"),
-                                                        "OTP": tempOTP,
+                                                        "OTP": OTP,
                                                         "history": {
                                                             "questionsAnswered": storage.get("questionsAnswered"),
                                                             "history": storage.get("history"),
@@ -752,7 +761,7 @@ export async function syncManual(hideWelcome = false) {
                                             } else {
                                                 ui.toast("No history found to backup.", 3000, "warning", "bi bi-exclamation-triangle-fill");
                                             }
-                                        }, domain, tempOTP)
+                                        }, domain, OTP)
                                     },
                                     close: true,
                                 },
@@ -776,7 +785,7 @@ export async function syncManual(hideWelcome = false) {
                                             } else {
                                                 ui.toast("No settings found to restore.", 3000, "warning", "bi bi-exclamation-triangle-fill");
                                             }
-                                        }, domain, tempOTP)
+                                        }, domain, OTP)
                                     },
                                     close: true,
                                 },
@@ -794,7 +803,7 @@ export async function syncManual(hideWelcome = false) {
                                             } else {
                                                 ui.toast("No history found to restore.", 3000, "warning", "bi bi-exclamation-triangle-fill");
                                             }
-                                        }, domain, tempOTP)
+                                        }, domain, OTP)
                                     },
                                     close: true,
                                 },

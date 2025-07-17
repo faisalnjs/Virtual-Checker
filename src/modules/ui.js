@@ -27,6 +27,8 @@ export function prompt(title, text, buttons, blur) {
 export function modal(options) {
   const dialog = document.createElement("dialog");
 
+  if (options.required) dialog.setAttribute('closedby', 'none');
+
   if (options.title) {
     const title = document.createElement("h2");
     title.innerText = options.title;
@@ -210,17 +212,19 @@ export function modal(options) {
     }, 250);
   });
 
-  document.addEventListener("pointerdown", (e) => {
-    if (!dialog.contains(e.target)) {
-      closeModal();
-    }
-  });
+  if (!options.required) {
+    document.addEventListener("pointerdown", (e) => {
+      if (!dialog.contains(e.target)) {
+        closeModal();
+      }
+    });
 
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") {
-      closeModal();
-    }
-  });
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        closeModal();
+      }
+    });
+  }
 
   function closeModal() {
     animate(
