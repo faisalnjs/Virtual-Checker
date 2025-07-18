@@ -43,8 +43,27 @@ try {
 
   // Initialization
   async function init() {
-    if (document.getElementById("course-input")) {
-      // Populate seat code finder grid
+    if (!document.getElementById("course-input")) {
+      ui.stopLoader();
+      return;
+    }
+    // Populate seat code finder grid
+    for (let col = 1; col <= 5; col++) {
+      for (let row = 6; row > 0; row--) {
+        period = document.getElementById("period-input").value;
+        const code = period + row.toString() + col.toString();
+        const button = new ui.Element("button", "", {
+          click: () => {
+            document.getElementById("code-input").value = code;
+            ui.view("settings/code");
+          },
+        }).element;
+        document.getElementById("seat-grid").append(button);
+        ui.addTooltip(button, code);
+      }
+    }
+    document.getElementById("period-input").addEventListener("change", () => {
+      document.getElementById("seat-grid").innerHTML = "";
       for (let col = 1; col <= 5; col++) {
         for (let row = 6; row > 0; row--) {
           period = document.getElementById("period-input").value;
@@ -59,60 +78,41 @@ try {
           ui.addTooltip(button, code);
         }
       }
-      document.getElementById("period-input").addEventListener("change", () => {
-        document.getElementById("seat-grid").innerHTML = "";
-        for (let col = 1; col <= 5; col++) {
-          for (let row = 6; row > 0; row--) {
-            period = document.getElementById("period-input").value;
-            const code = period + row.toString() + col.toString();
-            const button = new ui.Element("button", "", {
-              click: () => {
-                document.getElementById("code-input").value = code;
-                ui.view("settings/code");
-              },
-            }).element;
-            document.getElementById("seat-grid").append(button);
-            ui.addTooltip(button, code);
-          }
-        }
-      });
-      // Get URL parameters
-      const params = new URLSearchParams(window.location.search);
-      const code = params.get("code");
-      // Test for valid seat code
-      const regex = /^[1-9][0-6][0-5]$/;
-      if (regex.test(code)) {
-        // Update seat code
-        storage.set("code", code);
-      }
-      // Show seat code modal if no saved code exists
-      if (!storage.get("code")) {
-        ui.view("settings/code");
-        return;
-      }
-      if (document.querySelector('[data-logout]')) document.querySelector('[data-logout]').addEventListener('click', () => auth.logout(init));
-      await updateCode();
-      // Show clear data fix guide
-      // if (storage.get("created")) {
-      //   document.querySelector(`[data-modal-view="clear-data-fix"]`).remove();
-      // } else {
-      //   storage.set("created", Date.now());
-      // }
-      // Focus segment input
-      if (segmentInput) segmentInput.focus();
-      // Set default answer mode
-      answerMode("input");
-      // Update history feed
-      updateHistory();
-      // Focus answer input
-      document.getElementById("answer-suggestion").addEventListener("click", () => answerInput.focus());
-      // Initialize questionsAnswered if not already set
-      if (!storage.get("questionsAnswered")) storage.set("questionsAnswered", []);
-      document.querySelector("[data-sync]").addEventListener("click", () => auth.syncManual());
-      ui.reloadUnsavedInputs();
-    } else {
-      ui.stopLoader();
-    };
+    });
+    if (document.querySelector('[data-logout]')) document.querySelector('[data-logout]').addEventListener('click', () => auth.logout(init));
+    // Get URL parameters
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get("code");
+    // Test for valid seat code
+    const regex = /^[1-9][0-6][0-5]$/;
+    if (regex.test(code)) {
+      // Update seat code
+      storage.set("code", code);
+    }
+    // Show seat code modal if no saved code exists
+    if (!storage.get("code")) {
+      ui.view("settings/code");
+      return;
+    }
+    await updateCode();
+    // Show clear data fix guide
+    // if (storage.get("created")) {
+    //   document.querySelector(`[data-modal-view="clear-data-fix"]`).remove();
+    // } else {
+    //   storage.set("created", Date.now());
+    // }
+    // Focus segment input
+    if (segmentInput) segmentInput.focus();
+    // Set default answer mode
+    answerMode("input");
+    // Update history feed
+    updateHistory();
+    // Focus answer input
+    document.getElementById("answer-suggestion").addEventListener("click", () => answerInput.focus());
+    // Initialize questionsAnswered if not already set
+    if (!storage.get("questionsAnswered")) storage.set("questionsAnswered", []);
+    document.querySelector("[data-sync]").addEventListener("click", () => auth.syncManual());
+    ui.reloadUnsavedInputs();
   };
 
   init();
