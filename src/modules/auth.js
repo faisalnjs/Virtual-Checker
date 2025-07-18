@@ -24,6 +24,23 @@ function sortKeys(obj) {
     }, {});
 }
 
+function highestQuestionsAnswered(array) {
+    const newArray = [];
+    array.forEach(question => {
+        var a = newArray.find(q => (q.segment === question.segment) && (q.question === question.question));
+        console.log(a)
+        if (a) {
+            if (((question.status === 'In Progress') && (a.status === 'Pending')) || ((question.status === 'Correct') && (a.status === 'In Progress'))) {
+                a.status = question.status;
+                console.log(`Found ${a.status}, replacing with ${question.status}`)
+            }
+        } else {
+            newArray.push(question);
+        }
+    });
+    return newArray;
+}
+
 export function admin(returnFunction) {
     ui.view();
     if (authModalOpen) return;
@@ -76,6 +93,14 @@ export function ta(returnFunction) {
             type: 'password'
         },
         buttons: [
+            {
+                text: 'Back',
+                class: 'cancel-button',
+                onclick: () => {
+                    ui.view("settings/code");
+                },
+                close: true,
+            },
             {
                 text: 'Verify',
                 class: 'submit-button',
@@ -150,6 +175,14 @@ export async function sync(hideWelcome = true) {
             },
             buttons: [
                 {
+                    text: 'Back',
+                    class: 'cancel-button',
+                    onclick: () => {
+                        ui.view("settings/code");
+                    },
+                    close: true,
+                },
+                {
                     text: 'Verify',
                     class: 'submit-button',
                     onclick: (inputValue) => {
@@ -196,22 +229,34 @@ export async function sync(hideWelcome = true) {
             .then(async r => {
                 var password = storage.get("password");
                 if (!hideWelcome) ui.toast("Welcome back!", 3000, "success", "bi bi-key");
+                const combinedSettings = sortKeys({
+                    ...Object.fromEntries(
+                        Object.entries(storage.all()).filter(([key]) =>
+                            key !== "password" && key !== "code" && key !== "usr" && key !== "pwd" && key !== "questionsAnswered" && key !== "history"
+                        )
+                    ),
+                    ...r.settings,
+                });
                 const combinedHistory = sortKeys({
                     "questionsAnswered": (!r.history || Object.keys(r.history).length === 0)
-                        ? storage.get("questionsAnswered") || []
-                        : removeDuplicates([...r.history.questionsAnswered, ...(storage.get("questionsAnswered") || [])]),
+                        ? highestQuestionsAnswered(removeDuplicates(storage.get("questionsAnswered"))) || []
+                        : highestQuestionsAnswered(removeDuplicates([...r.history.questionsAnswered, ...(storage.get("questionsAnswered") || [])])),
                     "history": (!r.history || Object.keys(r.history).length === 0)
-                        ? storage.get("history") || []
+                        ? removeDuplicates(storage.get("history")) || []
                         : removeDuplicates([...r.history.history, ...(storage.get("history") || [])]),
                 });
-                if ((JSON.stringify(sortKeys(r.settings)) === JSON.stringify(sortKeys(Object.fromEntries(
+                var settingsIsSynced = JSON.stringify(sortKeys(r.settings)) === JSON.stringify(sortKeys(Object.fromEntries(
                     Object.entries(storage.all()).filter(([key]) =>
                         key !== "password" && key !== "code" && key !== "usr" && key !== "pwd" && key !== "questionsAnswered" && key !== "history"
                     )
-                )))) && (JSON.stringify(sortKeys(r.history)) === JSON.stringify(sortKeys({
-                    "questionsAnswered": storage.get("questionsAnswered"),
-                    "history": storage.get("history"),
-                })))) {
+                )));
+                var historyIsSynced = JSON.stringify(sortKeys(r.history)) === JSON.stringify(sortKeys({
+                    "questionsAnswered": highestQuestionsAnswered(removeDuplicates(storage.get("questionsAnswered"))),
+                    "history": removeDuplicates(storage.get("history")),
+                }));
+                console.log(settingsIsSynced, historyIsSynced);
+                console.log(combinedHistory)
+                if (settingsIsSynced && historyIsSynced) {
                     ui.stopLoader();
                     return;
                 }
@@ -223,11 +268,7 @@ export async function sync(hideWelcome = true) {
                     body: JSON.stringify({
                         "seatCode": storage.get("code"),
                         "password": password,
-                        "settings": (Object.keys(r.settings).length === 0) ? Object.fromEntries(
-                            Object.entries(storage.all()).filter(([key]) =>
-                                key !== "password" && key !== "code" && key !== "usr" && key !== "pwd" && key !== "questionsAnswered" && key !== "history"
-                            )
-                        ) : r.settings,
+                        "settings": combinedSettings,
                         "history": combinedHistory,
                     })
                 })
@@ -281,6 +322,14 @@ export async function sync(hideWelcome = true) {
                 type: 'password'
             },
             buttons: [
+                {
+                    text: 'Back',
+                    class: 'cancel-button',
+                    onclick: () => {
+                        ui.view("settings/code");
+                    },
+                    close: true,
+                },
                 {
                     text: 'Set Password',
                     class: 'submit-button',
@@ -375,6 +424,14 @@ export async function syncPush(type, key = null) {
                 type: 'password'
             },
             buttons: [
+                {
+                    text: 'Back',
+                    class: 'cancel-button',
+                    onclick: () => {
+                        ui.view("settings/code");
+                    },
+                    close: true,
+                },
                 {
                     text: 'Verify',
                     class: 'submit-button',
@@ -485,6 +542,14 @@ export async function syncPush(type, key = null) {
             },
             buttons: [
                 {
+                    text: 'Back',
+                    class: 'cancel-button',
+                    onclick: () => {
+                        ui.view("settings/code");
+                    },
+                    close: true,
+                },
+                {
                     text: 'Set Password',
                     class: 'submit-button',
                     onclick: async (inputValue) => {
@@ -574,6 +639,14 @@ export async function syncManual(hideWelcome = false) {
                 type: 'password'
             },
             buttons: [
+                {
+                    text: 'Back',
+                    class: 'cancel-button',
+                    onclick: () => {
+                        ui.view("settings/code");
+                    },
+                    close: true,
+                },
                 {
                     text: 'Verify',
                     class: 'submit-button',
