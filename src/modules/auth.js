@@ -28,7 +28,6 @@ function highestQuestionsAnswered(array) {
     const newArray = [];
     array.forEach(question => {
         var a = newArray.find(q => (q.segment === question.segment) && (q.question === question.question));
-        console.log(a)
         if (a) {
             if (((question.status === 'In Progress') && (a.status === 'Pending')) || ((question.status === 'Correct') && (a.status === 'In Progress'))) {
                 a.status = question.status;
@@ -125,6 +124,7 @@ export function logout(returnFunction = null) {
     storage.delete("usr");
     storage.delete("pwd");
     storage.delete("code");
+    storage.delete("password");
     ui.view();
     ui.setUnsavedChanges(false);
     if (returnFunction) returnFunction();
@@ -239,10 +239,10 @@ export async function sync(hideWelcome = true) {
                 });
                 const combinedHistory = sortKeys({
                     "questionsAnswered": (!r.history || Object.keys(r.history).length === 0)
-                        ? highestQuestionsAnswered(removeDuplicates(storage.get("questionsAnswered"))) || []
+                        ? highestQuestionsAnswered(removeDuplicates(storage.get("questionsAnswered") || []))
                         : highestQuestionsAnswered(removeDuplicates([...r.history.questionsAnswered, ...(storage.get("questionsAnswered") || [])])),
                     "history": (!r.history || Object.keys(r.history).length === 0)
-                        ? removeDuplicates(storage.get("history")) || []
+                        ? removeDuplicates(storage.get("history") || [])
                         : removeDuplicates([...r.history.history, ...(storage.get("history") || [])]),
                 });
                 var settingsIsSynced = JSON.stringify(sortKeys(r.settings)) === JSON.stringify(sortKeys(Object.fromEntries(
@@ -251,11 +251,11 @@ export async function sync(hideWelcome = true) {
                     )
                 )));
                 var historyIsSynced = JSON.stringify(sortKeys(r.history)) === JSON.stringify(sortKeys({
-                    "questionsAnswered": highestQuestionsAnswered(removeDuplicates(storage.get("questionsAnswered"))),
-                    "history": removeDuplicates(storage.get("history")),
+                    "questionsAnswered": highestQuestionsAnswered(removeDuplicates(storage.get("questionsAnswered") || [])),
+                    "history": removeDuplicates(storage.get("history") || []),
                 }));
-                console.log(settingsIsSynced, historyIsSynced);
-                console.log(combinedHistory)
+                console.log(`Settings is ${!settingsIsSynced ? 'not ' : ''}synced!`);
+                console.log(`History is ${!historyIsSynced ? 'not ' : ''}synced!`);
                 if (settingsIsSynced && historyIsSynced) {
                     ui.stopLoader();
                     return;
