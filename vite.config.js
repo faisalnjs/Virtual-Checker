@@ -38,6 +38,7 @@ export default {
         passwords: new URL('admin/passwords.html', import.meta.url).pathname,
         backups: new URL('admin/backups.html', import.meta.url).pathname,
         archive: new URL('admin/archive.html', import.meta.url).pathname,
+        courses: new URL('admin/courses.html', import.meta.url).pathname,
       },
     },
   },

@@ -8,7 +8,7 @@
   <link rel="shortcut icon" href="../favicon.ico" type="image/x-icon" media="(prefers-color-scheme: dark)" />
   <link rel="shortcut icon" href="../favicon-dark.ico" type="image/x-icon" media="(prefers-color-scheme: light)" />
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-  <title>Segment Editor - Virtual Checker</title>
+  <title>Courses - Virtual Checker</title>
   <meta name="title" content="Virtual Checker" />
   <meta name="description" content="Next generation AI-powered homework checking, cloud hosted ☁️🚀✅" />
   <meta property="og:type" content="website" />
@@ -57,87 +57,22 @@
       </button>
     </div>
   </div>
+  </div>
   <div id="checker">
     <div class="section">
-      <h1>Information</h1>
-      <div class="input-group">
-        <label for="course-period-input">Course</label>
-        <div class="space" id="question-container">
-          <select id="course-period-input"></select>
-        </div>
-      </div>
-      <div class="button-grid inputs">
-        <div class="input-group small">
-          <label for="segment-number-input">Number</label>
-          <div class="space" id="question-container">
-            <input type="text" autocomplete="off" id="segment-number-input" value="" />
-          </div>
-        </div>
-        <div class="input-group">
-          <label for="segment-name-input">Name</label>
-          <div class="space" id="question-container">
-            <input type="text" autocomplete="off" id="segment-name-input" value="" />
-          </div>
-        </div>
-      </div>
-      <div class="input-group">
-        <label for="segment-due-date-input">Due Date</label>
-        <div class="space" id="question-container">
-          <input type="date" id="segment-due-date-input">
-        </div>
+      <h1>Courses</h1>
+      <div class="section course-reorder">
+        <button class="space" id="download-roster-template-button">Download Roster Template</button>
+        <div class="button-grid reorder"></div>
+        <button id="new-course-button">New Course</button>
+        <button class="space" id="save-course-order-button">Save Periods</button>
       </div>
     </div>
-    <div class="section">
-      <h1>Questions</h1>
-      <div class="button-grid wrap">
-        <button class="space fit" sort-segment-questions-increasing><i class="bi bi-sort-numeric-up"></i> Sort by ID Increasing (1-9)</button>
-        <button class="space fit" sort-segment-questions-decreasing><i class="bi bi-sort-numeric-down"></i> Sort by ID Decreasing (9-1)</button>
-      </div>
-      <div class="button-grid wrap">
-        <button class="space fit" sort-segment-questions-number-increasing><i class="bi bi-sort-numeric-up"></i> Sort by Number Increasing (1A-9Z)</button>
-        <button class="space fit" sort-segment-questions-number-decreasing><i class="bi bi-sort-numeric-down"></i> Sort by Number Decreasing (9Z-1A)</button>
-      </div>
-      <div class="button-grid wrap">
-        <button class="space fit" edit-segment-questions><i class="bi bi-pencil"></i> Edit Questions (Popup)</button>
-      </div>
-      <div class="section" id="question-list">
-        <div class="button-grid inputs">
-          <div class="input-group">
-            <label>Question</label>
-          </div>
-          <div class="input-group small">
-            <label>As</label>
-          </div>
-          <div square hidden-spacer></div>
-        </div>
-      </div>
-      <div class="button-grid inputs">
-        <div class="input-group">
-          <label for="add-question-input">Existing Question</label>
-          <div class="space" id="question-container">
-            <select id="add-question-input"></select>
-          </div>
-        </div>
-        <button class="space small" id="add-existing-question-button">Add</button>
-      </div>
-      <button class="space" id="launch-speed-mode">Launch Speed Mode</button>
-    </div>
-    <button class="space" id="create-button">Create</button>
   </div>
   <!-- Controls -->
   <div id="controls-container" class="pill">
     <button class="icon" data-modal-view="settings" tooltip="Settings">
       <i class="bi bi-gear"></i>
-    </button>
-    <button class="icon" data-speed data-modal-view="speed-mode" tooltip="Speed Mode">
-      <i class="bi bi-lightning-charge"></i>
-      <i class="bi bi-lightning-charge-fill" style="display: none;"></i>
-    </button>
-    <button class="icon" data-delete-segment tooltip="Delete Segment">
-      <i class="bi bi-trash"></i>
-    </button>
-    <button class="icon" data-archive-segment tooltip="Archive Segment">
-      <i class="bi bi-archive"></i>
     </button>
     <!-- <button class="pill" data-modal-view="settings/code" tooltip="Change Seat Code">
         <span class="code">000</span>
@@ -350,9 +285,9 @@
     <div class="menu-icons">
       <a href="/admin/" tooltip="Segments"><i class="bi bi-list-check"></i></a>
       <a href="/admin/questions" tooltip="Questions"><i class="bi bi-patch-question"></i></a>
-      <a href="/admin/courses" tooltip="Courses"><i class="bi bi-diagram-3"></i></a>
+      <a href="/admin/courses" class="active" tooltip="Courses"><i class="bi bi-diagram-3"></i></a>
       <a href="/admin/responses" tooltip="Responses"><i class="bi bi-chat-left-text"></i></a>
-      <a href="/admin/editor" class="active" tooltip="Segment Editor"><i class="bi bi-pencil"></i></a>
+      <a href="/admin/editor" tooltip="Segment Editor"><i class="bi bi-pencil"></i></a>
       <a href="/admin/reports" tooltip="Reports"><i class="bi bi-bar-chart"></i></a>
       <a href="/admin/passwords" tooltip="Passwords"><i class="bi bi-key"></i></a>
       <a href="/admin/users" tooltip="Users"><i class="bi bi-person-fill-lock"></i></a>
@@ -360,17 +295,6 @@
       <a href="/admin/backups" tooltip="Backups"><i class="bi bi-file-zip"></i></a>
       <a href="/admin/archive" tooltip="Archive"><i class="bi bi-archive"></i></a>
       <a href="/" tooltip="Exit"><i class="bi bi-door-open"></i></a>
-    </div>
-  </dialog>
-  <dialog data-modal-page="speed" data-page-title="Speed Mode">
-    <p>
-      Rapidly create new questions by pasting or uploading images - one for each. Images will be saved to a new
-      integer numbered question. To quit, close the popup. Enter the first question name (e.g. 39):
-    </p>
-    <input type="number" id="speed-mode-starting-question-id" step="1" min="1" disabled hidden>
-    <input type="text" id="speed-mode-starting-question">
-    <div data-modal-actions>
-      <button class="submit-button" id="enable-speed-mode-button">Start</button>
     </div>
   </dialog>
   <div id="loader" class="active">

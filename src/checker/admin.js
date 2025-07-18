@@ -23,7 +23,6 @@ var polling = false;
 var active = false;
 var timestamps = false;
 var speed = false;
-var reorder = false;
 var expandedReports = [];
 var loadedSegment = null;
 var loadedSegmentEditor = false;
@@ -596,8 +595,6 @@ try {
                             if (document.querySelector('.segment-reports')) updateSegments();
                             if (document.querySelector('.question-reports')) updateQuestionReports();
                             if (window.location.pathname.split('/admin/')[1] === 'editor') loadSegmentEditor();
-                            reorder = reorder ? false : true;
-                            toggleReorder();
                             active = true;
                             ui.stopLoader();
                             if (!polling) ui.toast("Data restored.", 1000, "info", "bi bi-cloud-arrow-down");
@@ -674,7 +671,6 @@ try {
   if (document.querySelector('[data-timestamps]')) document.querySelector('[data-timestamps]').addEventListener("click", toggleTimestamps);
   if (document.querySelector('[data-speed]')) document.querySelector('[data-speed]').addEventListener("click", toggleSpeedMode);
   if (document.getElementById('enable-speed-mode-button')) document.getElementById('enable-speed-mode-button').addEventListener("click", enableSpeedMode);
-  if (document.querySelector('[data-reorder]')) document.querySelector('[data-reorder]').addEventListener("click", toggleReorder);
   if (document.getElementById('sort-segments-due')) document.getElementById('sort-segments-due').addEventListener("click", sortSegmentsDue);
   if (document.getElementById('sort-segments-increasing')) document.getElementById('sort-segments-increasing').addEventListener("click", sortSegmentsIncreasing);
   if (document.getElementById('sort-segments-decreasing')) document.getElementById('sort-segments-decreasing').addEventListener("click", sortSegmentsDecreasing);
@@ -1170,18 +1166,6 @@ try {
     if (!active) return;
     if (!segment && this && this.parentElement && this.parentElement.parentElement && this.parentElement.parentElement.id) segment = this.parentElement.parentElement.id.split('segment-')[1];
     return window.location.href = segment ? `/admin/editor?segment=${segment}` : '/admin/';
-  }
-
-  function calculateButtonHeights(container) {
-    let totalHeight = 0;
-    const buttons = container.querySelectorAll('button');
-    buttons.forEach(button => {
-      const style = window.getComputedStyle(button);
-      if (style.display !== 'none') {
-        totalHeight += button.getBoundingClientRect().height;
-      }
-    });
-    return totalHeight;
   }
 
   // Save Course Order
@@ -2853,67 +2837,6 @@ try {
         init();
       }
     }, 1000);
-  }
-
-  function toggleReorder() {
-    if (!document.querySelector('[data-reorder]')) return;
-    if (reorder) {
-      reorder = false;
-      document.querySelector('[data-reorder] .bi-arrows-move').style.display = "block";
-      document.querySelector('[data-reorder] .bi-x').style.display = "none";
-      document.querySelector('.section:has(> .segments)').style.display = "flex";
-      const reorderSections = document.querySelectorAll(':has(> .reorder)');
-      reorderSections.forEach(reorderSection => {
-        const fromHeight = reorderSection?.getBoundingClientRect().height;
-        reorderSection.parentElement.querySelector('.selector').style.display = 'flex';
-        document.querySelectorAll('#save-button').forEach(w => w.style.display = '');
-        reorderSection.style.display = 'none';
-        const container = reorderSection.parentElement;
-        const target = reorderSection.parentElement.querySelector('.selector');
-        const toHeight = target.getBoundingClientRect().height + calculateButtonHeights(target);
-        ui.animate(
-          container,
-          fromHeight
-            ? {
-              height: fromHeight + "px",
-            }
-            : undefined,
-          {
-            height: toHeight + "px",
-          },
-          500,
-          false,
-        );
-      });
-    } else {
-      reorder = true;
-      document.querySelector('[data-reorder] .bi-arrows-move').style.display = "none";
-      document.querySelector('[data-reorder] .bi-x').style.display = "block";
-      document.querySelector('.section:has(> .segments)').style.display = "none";
-      const reorderSections = document.querySelectorAll(':has(> .reorder)');
-      reorderSections.forEach(reorderSection => {
-        const fromHeight = reorderSection.parentElement.querySelector('.selector')?.getBoundingClientRect().height;
-        reorderSection.style.display = 'flex';
-        reorderSection.parentElement.querySelector('.selector').style.display = 'none';
-        document.querySelectorAll('#save-button').forEach(w => w.style.display = 'none');
-        const container = reorderSection.parentElement;
-        const target = reorderSection;
-        const toHeight = target.getBoundingClientRect().height + calculateButtonHeights(target);
-        ui.animate(
-          container,
-          fromHeight
-            ? {
-              height: fromHeight + "px",
-            }
-            : undefined,
-          {
-            height: toHeight + "px",
-          },
-          500,
-          false,
-        );
-      });
-    }
   }
 
   function sortSegmentsDue() {
