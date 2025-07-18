@@ -31,7 +31,6 @@ function highestQuestionsAnswered(array) {
         if (a) {
             if (((question.status === 'In Progress') && (a.status === 'Pending')) || ((question.status === 'Correct') && (a.status === 'In Progress'))) {
                 a.status = question.status;
-                console.log(`Found ${a.status}, replacing with ${question.status}`)
             }
         } else {
             newArray.push(question);

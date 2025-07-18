@@ -206,7 +206,6 @@ try {
           }
           passwords = passwords.sort((a, b) => a.seatCode - b.seatCode);
           passwords.forEach(password => {
-            console.log(password.settings, password.history)
             document.querySelector('.passwords').innerHTML += `<div class="enhanced-item" id="${password.seatCode}">
               <span class="seatCode">${password.seatCode}</span>
               <span class="settings">${(password.settings !== '{}') ? '<i class="bi bi-check-lg"></i>' : ''}</span>
@@ -1299,8 +1298,12 @@ try {
   document.querySelectorAll("#save-button").forEach(w => w.addEventListener("click", save));
   document.querySelectorAll("#create-button").forEach(w => w.addEventListener("click", createSegment));
 
-  async function save(hideResult) {
+  async function save(event, hideResult) {
     if (!active) return;
+    if (!ui.unsavedChanges) {
+      if (!hideResult) ui.toast("No changes to save.", 5000, "error", "bi bi-exclamation-triangle-fill");
+      return;
+    }
     removeAllSelected();
     removeSelecting();
     var updatedInfo = {};
@@ -1973,7 +1976,7 @@ try {
 
   async function renderPond() {
     if (!active) return;
-    await save(true);
+    await save(null, true);
     document.querySelector(`#question-${this.id} [data-toggle-question]`).click();
     const url = '/admin/upload?question=' + this.id;
     const width = 600;
@@ -2002,7 +2005,7 @@ try {
 
   async function removeImage(event) {
     if (!active) return;
-    await save(true);
+    await save(null, true);
     const element = event.target;
     const rect = element.getBoundingClientRect();
     const clickYRelativeToElement = event.clientY - rect.top;
@@ -2861,7 +2864,7 @@ try {
   async function sortSegments(event, sortAs) {
     if (!active) return;
     await settingsPush('sort-segments', sortAs || document.getElementById('sort-segments-types').value);
-    await save(true);
+    await save(null, true);
     var updatedSegments = [...segments];
     switch (sortAs || document.getElementById('sort-segments-types').value) {
       case 'az':
