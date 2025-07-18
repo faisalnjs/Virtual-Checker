@@ -37,6 +37,7 @@ export default {
         logs: new URL('admin/logs.html', import.meta.url).pathname,
         passwords: new URL('admin/passwords.html', import.meta.url).pathname,
         backups: new URL('admin/backups.html', import.meta.url).pathname,
+        archive: new URL('admin/archive.html', import.meta.url).pathname,
       },
     },
   },
