@@ -125,6 +125,8 @@ export function logout(returnFunction = null) {
     storage.delete("pwd");
     storage.delete("code");
     storage.delete("password");
+    storage.delete("history");
+    storage.delete("questionsAnswered");
     ui.view();
     ui.setUnsavedChanges(false);
     if (returnFunction) returnFunction();
