@@ -959,6 +959,10 @@ div.ML__keyboard {
   display: none;
 }
 
+#controls-container [data-select-between] {
+  display: none;
+}
+
 body:has(.selecting) #controls-container button:has(.bi-gear) {
   display: none;
 }
@@ -1000,6 +1004,10 @@ body:has(.selecting) #controls-container button:has(.bi-archive):not([data-archi
 }
 
 body:has(.selecting) #controls-container [data-unarchive-multiple] {
+  display: block;
+}
+
+body:has(.selecting) #controls-container [data-select-between] {
   display: block;
 }
 

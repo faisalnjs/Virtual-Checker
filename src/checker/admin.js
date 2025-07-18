@@ -702,6 +702,7 @@ try {
   if (document.getElementById('hideUnanswered')) document.getElementById('hideUnanswered').addEventListener("input", updateSegments);
   if (document.getElementById('hideUnanswered')) document.getElementById('hideUnanswered').addEventListener("input", updateResponses);
   if (document.getElementById('hideUnanswered')) document.getElementById('hideUnanswered').addEventListener("input", updateQuestionReports);
+  if (document.querySelector('[data-select-between]')) document.querySelector('[data-select-between]').addEventListener("click", selectBetween);
 
   function toggleSelecting() {
     if (!active) return;
@@ -5462,6 +5463,24 @@ try {
     document.body.removeChild(link);
     ui.toast("Roster template downloaded successfully.", 3000, "success", "bi bi-check-circle-fill");
   });
+
+  function selectBetween() {
+    if (!active) return;
+    ui.setUnsavedChanges(true);
+    if (document.querySelectorAll('.selected').length < 2) return ui.toast("At least 2 bounds required.", 5000, "error", "bi bi-exclamation-triangle-fill");
+    const selected = document.querySelectorAll('.selected');
+    const first = selected[0];
+    const last = selected[selected.length - 1];
+    const selectElements = [...first.parentElement.children].filter(child => child.querySelector('[data-select]'));
+    let inBounds = false;
+    selectElements.forEach((el) => {
+      if (el === first || el === last) {
+        inBounds = !inBounds;
+      } else if (inBounds) {
+        el.classList.add('selected');
+      }
+    });
+  }
 } catch (error) {
   if (storage.get("developer")) {
     alert(`Error @ admin.js: ${error.message}`);
