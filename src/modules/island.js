@@ -91,7 +91,7 @@ export function moveFromCurrent(moveBy) {
     switch (dataType) {
         case 'segment':
             newData = {
-                sourceId: String(newItem.number),
+                sourceId: String(newItem.id),
                 id: `# ${newItem.number}`,
                 title: `${newItem.name}`,
                 subtitle: newItem.due ? `Due ${new Date(`${newItem.due}T00:00:00`).toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })}` : '',

@@ -1,8 +1,43 @@
 import * as ui from "./ui.js";
 import storage from "./storage.js";
+import * as themes from "../themes/themes.js";
+
+const domain = ((window.location.hostname.search('check') != -1) || (window.location.hostname.search('127') != -1)) ? 'https://api.check.vssfalcons.com' : `http://${document.domain}:5000`;
 
 var authModalOpen = false;
-var hasOTP = false;
+var hasPassword = false;
+
+function removeDuplicates(array) {
+    const seen = new Set();
+    return array.filter(item => {
+        const key = JSON.stringify(item);
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+    });
+}
+
+function sortKeys(obj) {
+    return Object.keys(obj).sort().reduce((acc, key) => {
+        acc[key] = obj[key];
+        return acc;
+    }, {});
+}
+
+function highestQuestionsAnswered(array) {
+    const newArray = [];
+    array.forEach(question => {
+        var a = newArray.find(q => (q.segment === question.segment) && (q.question === question.question));
+        if (a) {
+            if (((question.status === 'In Progress') && (a.status === 'Pending')) || ((question.status === 'Correct') && (a.status === 'In Progress'))) {
+                a.status = question.status;
+            }
+        } else {
+            newArray.push(question);
+        }
+    });
+    return newArray;
+}
 
 export function admin(returnFunction) {
     ui.view();
@@ -39,6 +74,7 @@ export function admin(returnFunction) {
                 close: true,
             },
         ],
+        required: true,
     });
     authModalOpen = true;
     return;
@@ -56,6 +92,14 @@ export function ta(returnFunction) {
         },
         buttons: [
             {
+                text: 'Back',
+                class: 'cancel-button',
+                onclick: () => {
+                    ui.view("settings/code");
+                },
+                close: true,
+            },
+            {
                 text: 'Verify',
                 class: 'submit-button',
                 onclick: (inputValue) => {
@@ -69,6 +113,7 @@ export function ta(returnFunction) {
                 close: true,
             },
         ],
+        required: true,
     });
     authModalOpen = true;
     return;
@@ -78,15 +123,21 @@ export function logout(returnFunction = null) {
     storage.delete("usr");
     storage.delete("pwd");
     storage.delete("code");
-    ui.view();
+    storage.delete("password");
+    storage.delete("history");
+    storage.delete("questionsAnswered");
+    const url = new URL(window.location.href);
+    url.search = '';
+    window.history.replaceState({}, document.title, url.toString());
     ui.setUnsavedChanges(false);
     if (returnFunction) returnFunction();
     return;
 }
 
-export async function sync(domain, hideWelcome = false) {
-    ui.view();
+export async function sync(hideWelcome = true) {
+    ui.startLoader();
     if (!storage.get("code")) {
+        ui.view();
         ui.modal({
             title: 'Error',
             body: '<p>No seat code found. Please enter a valid seat code first.</p>',
@@ -98,9 +149,10 @@ export async function sync(domain, hideWelcome = false) {
                 },
             ],
         });
+        ui.stopLoader();
         return;
     }
-    await fetch(domain + '/otp', {
+    await fetch(domain + '/password', {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
@@ -110,41 +162,51 @@ export async function sync(domain, hideWelcome = false) {
         })
     })
         .then(r => {
-            hasOTP = r.ok ? true : false;
+            hasPassword = r.ok ? true : false;
         })
         .catch((e) => {
             console.error(e);
             if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
         });
-    if (hasOTP && !storage.get("otp")) {
+    if (hasPassword && !storage.get("password")) {
+        ui.view();
         ui.modal({
-            title: 'Enter OTP',
-            body: `<p>Enter the existing OTP for seat code <code>${storage.get("code")}</code>. Contact an administrator to reset your OTP.</p>`,
+            title: 'Enter Password',
+            body: `<p>Enter the existing password for seat code <code>${storage.get("code")}</code>. Contact an administrator to reset your password.</p>`,
             input: {
                 type: 'password'
             },
             buttons: [
                 {
+                    text: 'Back',
+                    class: 'cancel-button',
+                    onclick: () => {
+                        ui.view("settings/code");
+                    },
+                    close: true,
+                },
+                {
                     text: 'Verify',
                     class: 'submit-button',
                     onclick: (inputValue) => {
-                        storage.set("otp", inputValue);
+                        storage.set("password", inputValue);
                         ui.setUnsavedChanges(false);
-                        sync(domain);
+                        sync(hideWelcome);
                     },
                     close: true,
                 },
             ],
+            required: true,
         });
-    } else if (hasOTP && storage.get("otp")) {
-        await fetch(domain + '/otp', {
+    } else if (hasPassword && storage.get("password")) {
+        await fetch(domain + '/password', {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
             },
             body: JSON.stringify({
                 "seatCode": storage.get("code"),
-                "OTP": storage.get("otp"),
+                "password": storage.get("password"),
             })
         })
             .then(async (r) => {
@@ -154,8 +216,8 @@ export async function sync(domain, hideWelcome = false) {
                         if (re.error || re.message) {
                             ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
                             if ((re.error === "Access denied.") || (re.message === "Access denied.")) {
-                                if (storage.get("otp")) storage.delete("otp");
-                                sync(domain);
+                                if (storage.get("password")) storage.delete("password");
+                                sync(hideWelcome);
                             }
                             throw new Error(re.error || re.message);
                         } else {
@@ -167,194 +229,123 @@ export async function sync(domain, hideWelcome = false) {
                 }
                 return await r.json();
             })
-            .then(r => {
-                var tempOTP = storage.get("otp");
-                storage.delete("otp");
+            .then(async r => {
+                var password = storage.get("password");
                 if (!hideWelcome) ui.toast("Welcome back!", 3000, "success", "bi bi-key");
-                ui.modal({
-                    title: 'Sync Settings & History',
-                    body: `<p>Backup and restore your current settings and history to seat code <code>${storage.get("code")}</code>. This action is not reversible. Contact an administrator to restore a backup of your settings or history.</p>`,
-                    buttonGroups: [
-                        {
-                            label: 'Backup',
-                            icon: 'bi-cloud-arrow-up',
-                            buttons: [
-                                {
-                                    icon: 'bi-gear',
-                                    text: 'Settings',
-                                    onclick: () => {
-                                        prompt(true, 'settings', async () => {
-                                            if (storage.all() && Object.keys(storage.all()).length > 0) {
-                                                await fetch(domain + '/otp', {
-                                                    method: "POST",
-                                                    headers: {
-                                                        "Content-Type": "application/json",
-                                                    },
-                                                    body: JSON.stringify({
-                                                        "seatCode": storage.get("code"),
-                                                        "OTP": tempOTP,
-                                                        "settings": Object.fromEntries(
-                                                            Object.entries(storage.all()).filter(([key]) =>
-                                                                key !== "otp" && key !== "code" && key !== "usr" && key !== "pwd" && key !== "questionsAnswered" && key !== "history"
-                                                            )
-                                                        ),
-                                                    })
-                                                })
-                                                    .then(async (r) => {
-                                                        if (!r.ok) {
-                                                            try {
-                                                                var re = await r.json();
-                                                                if (re.error || re.message) {
-                                                                    ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
-                                                                    if ((re.error === "Access denied.") || (re.message === "Access denied.")) sync(domain);
-                                                                    throw new Error(re.error || re.message);
-                                                                } else {
-                                                                    throw new Error("API error");
-                                                                }
-                                                            } catch (e) {
-                                                                throw new Error(e.message || "API error");
-                                                            }
-                                                        }
-                                                        return await r.json();
-                                                    })
-                                                    .then(() => {
-                                                        ui.toast("Settings backed up successfully!", 3000, "success", "bi bi-check-circle-fill");
-                                                    })
-                                                    .catch((e) => {
-                                                        console.error(e);
-                                                        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
-                                                    });
-                                            } else {
-                                                ui.toast("No settings found to backup.", 3000, "warning", "bi bi-exclamation-triangle-fill");
-                                            }
-                                        }, domain, tempOTP)
-                                    },
-                                    close: true,
-                                },
-                                {
-                                    icon: 'bi-clock-history',
-                                    text: 'History',
-                                    onclick: () => {
-                                        prompt(true, 'history', async () => {
-                                            if (storage.get("history") && storage.get("history").length > 0) {
-                                                await fetch(domain + '/otp', {
-                                                    method: "POST",
-                                                    headers: {
-                                                        "Content-Type": "application/json",
-                                                    },
-                                                    body: JSON.stringify({
-                                                        "seatCode": storage.get("code"),
-                                                        "OTP": tempOTP,
-                                                        "history": {
-                                                            "questionsAnswered": storage.get("questionsAnswered"),
-                                                            "history": storage.get("history"),
-                                                        },
-                                                    })
-                                                })
-                                                    .then(async (r) => {
-                                                        if (!r.ok) {
-                                                            try {
-                                                                var re = await r.json();
-                                                                if (re.error || re.message) {
-                                                                    ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
-                                                                    if ((re.error === "Access denied.") || (re.message === "Access denied.")) sync(domain);
-                                                                    throw new Error(re.error || re.message);
-                                                                } else {
-                                                                    throw new Error("API error");
-                                                                }
-                                                            } catch (e) {
-                                                                throw new Error(e.message || "API error");
-                                                            }
-                                                        }
-                                                        return await r.json();
-                                                    })
-                                                    .then(() => {
-                                                        ui.toast("History backed up successfully!", 3000, "success", "bi bi-check-circle-fill");
-                                                    })
-                                                    .catch((e) => {
-                                                        console.error(e);
-                                                        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
-                                                    });
-                                            } else {
-                                                ui.toast("No history found to backup.", 3000, "warning", "bi bi-exclamation-triangle-fill");
-                                            }
-                                        }, domain, tempOTP)
-                                    },
-                                    close: true,
-                                },
-                            ],
-                        },
-                        {
-                            label: 'Restore',
-                            icon: 'bi-cloud-arrow-down',
-                            buttons: [
-                                {
-                                    icon: 'bi-gear',
-                                    text: 'Settings',
-                                    onclick: () => {
-                                        prompt(false, 'settings', () => {
-                                            if (r.settings && Object.keys(r.settings).length > 0) {
-                                                Object.entries(r.settings).forEach(([key, value]) => {
-                                                    if (key !== "otp" && key !== "code" && key !== "usr" && key !== "pwd" && key !== "questionsAnswered" && key !== "history") storage.set(key, value);
-                                                });
-                                                ui.toast("Settings restored successfully!", 3000, "success", "bi bi-check-circle-fill");
-                                                window.location.reload();
-                                            } else {
-                                                ui.toast("No settings found to restore.", 3000, "warning", "bi bi-exclamation-triangle-fill");
-                                            }
-                                        }, domain, tempOTP)
-                                    },
-                                    close: true,
-                                },
-                                {
-                                    icon: 'bi-clock-history',
-                                    text: 'History',
-                                    onclick: () => {
-                                        prompt(false, 'history', () => {
-                                            if (r.history && Object.keys(r.history).length > 0) {
-                                                Object.entries(r.history).forEach(([key, value]) => {
-                                                    if (key === "questionsAnswered" || key === "history") storage.set(key, value);
-                                                });
-                                                ui.toast("History restored successfully!", 3000, "success", "bi bi-check-circle-fill");
-                                                window.location.reload();
-                                            } else {
-                                                ui.toast("No history found to restore.", 3000, "warning", "bi bi-exclamation-triangle-fill");
-                                            }
-                                        }, domain, tempOTP)
-                                    },
-                                    close: true,
-                                },
-                            ],
-                        },
-                    ],
+                const combinedSettings = sortKeys({
+                    ...Object.fromEntries(
+                        Object.entries(storage.all()).filter(([key]) =>
+                            key !== "password" && key !== "code" && key !== "usr" && key !== "pwd" && key !== "questionsAnswered" && key !== "history"
+                        )
+                    ),
+                    ...r.settings,
                 });
+                const combinedHistory = sortKeys({
+                    "questionsAnswered": (!r.history || Object.keys(r.history).length === 0)
+                        ? highestQuestionsAnswered(removeDuplicates(storage.get("questionsAnswered") || []))
+                        : highestQuestionsAnswered(removeDuplicates([...r.history.questionsAnswered, ...(storage.get("questionsAnswered") || [])])),
+                    "history": (!r.history || Object.keys(r.history).length === 0)
+                        ? removeDuplicates(storage.get("history") || [])
+                        : removeDuplicates([...r.history.history, ...(storage.get("history") || [])]),
+                });
+                var settingsIsSynced = JSON.stringify(sortKeys(r.settings)) === JSON.stringify(sortKeys(Object.fromEntries(
+                    Object.entries(storage.all()).filter(([key]) =>
+                        key !== "password" && key !== "code" && key !== "usr" && key !== "pwd" && key !== "questionsAnswered" && key !== "history"
+                    )
+                )));
+                var historyIsSynced = JSON.stringify(sortKeys(r.history)) === JSON.stringify(sortKeys({
+                    "questionsAnswered": highestQuestionsAnswered(removeDuplicates(storage.get("questionsAnswered") || [])),
+                    "history": removeDuplicates(storage.get("history") || []),
+                }));
+                console.log(`Settings is ${!settingsIsSynced ? 'not ' : ''}synced!`);
+                console.log(`History is ${!historyIsSynced ? 'not ' : ''}synced!`);
+                if (settingsIsSynced && historyIsSynced) {
+                    ui.stopLoader();
+                    return;
+                }
+                await fetch(domain + '/password', {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        "seatCode": storage.get("code"),
+                        "password": password,
+                        "settings": combinedSettings,
+                        "history": combinedHistory,
+                    })
+                })
+                    .then(async (r) => {
+                        if (!r.ok) {
+                            try {
+                                var re = await r.json();
+                                if (re.error || re.message) {
+                                    ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+                                    if ((re.error === "Access denied.") || (re.message === "Access denied.")) syncManual();
+                                    throw new Error(re.error || re.message);
+                                } else {
+                                    throw new Error("API error");
+                                }
+                            } catch (e) {
+                                throw new Error(e.message || "API error");
+                            }
+                        }
+                        return await r.json();
+                    })
+                    .then(async () => {
+                        if (r.settings && Object.keys(r.settings).length > 0) {
+                            Object.entries(r.settings).forEach(([key, value]) => {
+                                if (key !== "password" && key !== "code" && key !== "usr" && key !== "pwd" && key !== "questionsAnswered" && key !== "history") storage.set(key, value);
+                            });
+                            await themes.syncTheme();
+                        }
+                        if (r.history && Object.keys(r.history).length > 0) {
+                            Object.entries(r.history).forEach(([key, value]) => {
+                                if (key === "questionsAnswered" || key === "history") storage.set(key, value);
+                            });
+                        }
+                        ui.setUnsavedChanges(false);
+                        window.location.reload();
+                    })
+                    .catch((e) => {
+                        console.error(e);
+                        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+                    });
             })
             .catch((e) => {
                 console.error(e);
                 if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
             });
-    } else if (!hasOTP) {
-        if (storage.get("otp")) storage.delete("otp");
+    } else if (!hasPassword) {
+        if (storage.get("password")) storage.delete("password");
         ui.modal({
-            title: 'Set OTP',
-            body: `<p>Set an OTP for seat code <code>${storage.get("code")}</code>. This OTP will be required to backup and/or restore your settings and history between devices, and cannot be reset by students.</p>`,
+            title: 'Set Password',
+            body: `<p>Set a password for seat code <code>${storage.get("code")}</code>. This password will be required to sync, backup, and restore your settings and history between devices, and cannot be reset by students.</p>`,
             input: {
                 type: 'password'
             },
             buttons: [
                 {
-                    text: 'Set OTP',
+                    text: 'Back',
+                    class: 'cancel-button',
+                    onclick: () => {
+                        ui.view("settings/code");
+                    },
+                    close: true,
+                },
+                {
+                    text: 'Set Password',
                     class: 'submit-button',
                     onclick: async (inputValue) => {
-                        storage.set("otp", inputValue);
-                        await fetch(domain + '/otp', {
+                        storage.set("password", inputValue);
+                        await fetch(domain + '/password', {
                             method: "POST",
                             headers: {
                                 "Content-Type": "application/json",
                             },
                             body: JSON.stringify({
                                 "seatCode": storage.get("code"),
-                                "OTP": inputValue,
+                                "password": inputValue,
                             })
                         })
                             .then(async (r) => {
@@ -376,7 +367,7 @@ export async function sync(domain, hideWelcome = false) {
                             .then(r => {
                                 ui.toast(r.message, 3000, "success", "bi bi-key");
                                 ui.setUnsavedChanges(false);
-                                sync(domain);
+                                sync(hideWelcome);
                             })
                             .catch((e) => {
                                 console.error(e);
@@ -386,12 +377,359 @@ export async function sync(domain, hideWelcome = false) {
                     close: true,
                 },
             ],
+            required: true,
         });
     }
     return;
 }
 
-function prompt(backingUp = true, type = 'settings', func = () => { }, domain, otp) {
+export async function syncPush(type, key = null) {
+    if (!type) return;
+    if ((type !== "settings") && (type !== "history")) return;
+    if ((type === "settings") && !key) return;
+    if (!storage.get("code")) return;
+    await fetch(domain + '/password', {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+            "seatCode": storage.get("code"),
+        })
+    })
+        .then(r => {
+            hasPassword = r.ok ? true : false;
+        })
+        .catch((e) => {
+            console.error(e);
+            if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        });
+    if (!hasPassword || !storage.get("password")) {
+        window.location.reload();
+        return;
+    }
+    await fetch(domain + '/password', {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+            "seatCode": storage.get("code"),
+            "password": storage.get("password"),
+        })
+    })
+        .then(async (r) => {
+            if (!r.ok) {
+                try {
+                    var re = await r.json();
+                    if (re.error || re.message) {
+                        ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+                        if ((re.error === "Access denied.") || (re.message === "Access denied.")) {
+                            if (storage.get("password")) storage.delete("password");
+                            syncPush();
+                        }
+                        throw new Error(re.error || re.message);
+                    } else {
+                        throw new Error("API error");
+                    }
+                } catch (e) {
+                    throw new Error(e.message || "API error");
+                }
+            }
+            return await r.json();
+        })
+        .then(async r => {
+            var password = storage.get("password");
+            var out = {};
+            if (type === "settings") {
+                r.settings[key] = storage.get(key);
+                out = r.settings;
+            } else if (type === "history") {
+                out = {
+                    "questionsAnswered": (!r.history || Object.keys(r.history).length === 0)
+                        ? storage.get("questionsAnswered") || []
+                        : removeDuplicates([...r.history.questionsAnswered, ...(storage.get("questionsAnswered") || [])]),
+                    "history": (!r.history || Object.keys(r.history).length === 0)
+                        ? storage.get("history") || []
+                        : removeDuplicates([...r.history.history, ...(storage.get("history") || [])]),
+                };
+            }
+            await fetch(domain + '/password', {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    "seatCode": storage.get("code"),
+                    "password": password,
+                    [type]: out,
+                })
+            })
+                .then(async (r) => {
+                    if (!r.ok) {
+                        try {
+                            var re = await r.json();
+                            if (re.error || re.message) {
+                                ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+                                if ((re.error === "Access denied.") || (re.message === "Access denied.")) syncManual();
+                                throw new Error(re.error || re.message);
+                            } else {
+                                throw new Error("API error");
+                            }
+                        } catch (e) {
+                            throw new Error(e.message || "API error");
+                        }
+                    }
+                    return await r.json();
+                })
+                .then(() => {
+                    ui.setUnsavedChanges(false);
+                })
+                .catch((e) => {
+                    console.error(e);
+                    if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+                });
+        })
+        .catch((e) => {
+            console.error(e);
+            if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        });
+}
+
+export async function syncManual(hideWelcome = false) {
+    ui.view();
+    if (!storage.get("code")) {
+        ui.modal({
+            title: 'Error',
+            body: '<p>No seat code found. Please enter a valid seat code first.</p>',
+            buttons: [
+                {
+                    text: 'OK',
+                    class: 'submit-button',
+                    close: true,
+                },
+            ],
+        });
+        return;
+    }
+    await fetch(domain + '/password', {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+            "seatCode": storage.get("code"),
+        })
+    })
+        .then(r => {
+            hasPassword = r.ok ? true : false;
+        })
+        .catch((e) => {
+            console.error(e);
+            if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        });
+    if (!hasPassword || !storage.get("password")) {
+        window.location.reload();
+        return;
+    }
+    await fetch(domain + '/password', {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+            "seatCode": storage.get("code"),
+            "password": storage.get("password"),
+        })
+    })
+        .then(async (r) => {
+            if (!r.ok) {
+                try {
+                    var re = await r.json();
+                    if (re.error || re.message) {
+                        ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+                        if ((re.error === "Access denied.") || (re.message === "Access denied.")) {
+                            if (storage.get("password")) storage.delete("password");
+                            syncManual();
+                        }
+                        throw new Error(re.error || re.message);
+                    } else {
+                        throw new Error("API error");
+                    }
+                } catch (e) {
+                    throw new Error(e.message || "API error");
+                }
+            }
+            return await r.json();
+        })
+        .then(r => {
+            var password = storage.get("password");
+            if (!hideWelcome) ui.toast("Welcome back!", 3000, "success", "bi bi-key");
+            ui.modal({
+                title: 'Sync Settings & History',
+                body: `<p>Backup and restore your current settings and history to seat code <code>${storage.get("code")}</code>. This action is not reversible. Contact an administrator to restore a backup of your settings or history.</p>`,
+                buttonGroups: [
+                    {
+                        label: 'Backup',
+                        icon: 'bi-cloud-arrow-up',
+                        buttons: [
+                            {
+                                icon: 'bi-gear',
+                                text: 'Settings',
+                                onclick: () => {
+                                    prompt(true, 'settings', async () => {
+                                        if (storage.all() && Object.keys(storage.all()).length > 0) {
+                                            await fetch(domain + '/password', {
+                                                method: "POST",
+                                                headers: {
+                                                    "Content-Type": "application/json",
+                                                },
+                                                body: JSON.stringify({
+                                                    "seatCode": storage.get("code"),
+                                                    "password": password,
+                                                    "settings": Object.fromEntries(
+                                                        Object.entries(storage.all()).filter(([key]) =>
+                                                            key !== "password" && key !== "code" && key !== "usr" && key !== "pwd" && key !== "questionsAnswered" && key !== "history"
+                                                        )
+                                                    ),
+                                                })
+                                            })
+                                                .then(async (r) => {
+                                                    if (!r.ok) {
+                                                        try {
+                                                            var re = await r.json();
+                                                            if (re.error || re.message) {
+                                                                ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+                                                                if ((re.error === "Access denied.") || (re.message === "Access denied.")) syncManual();
+                                                                throw new Error(re.error || re.message);
+                                                            } else {
+                                                                throw new Error("API error");
+                                                            }
+                                                        } catch (e) {
+                                                            throw new Error(e.message || "API error");
+                                                        }
+                                                    }
+                                                    return await r.json();
+                                                })
+                                                .then(() => {
+                                                    ui.toast("Settings backed up successfully!", 3000, "success", "bi bi-check-circle-fill");
+                                                })
+                                                .catch((e) => {
+                                                    console.error(e);
+                                                    if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+                                                });
+                                        } else {
+                                            ui.toast("No settings found to backup.", 3000, "warning", "bi bi-exclamation-triangle-fill");
+                                        }
+                                    }, domain, password)
+                                },
+                                close: true,
+                            },
+                            {
+                                icon: 'bi-clock-history',
+                                text: 'History',
+                                onclick: () => {
+                                    prompt(true, 'history', async () => {
+                                        if (storage.get("history") && storage.get("history").length > 0) {
+                                            await fetch(domain + '/password', {
+                                                method: "POST",
+                                                headers: {
+                                                    "Content-Type": "application/json",
+                                                },
+                                                body: JSON.stringify({
+                                                    "seatCode": storage.get("code"),
+                                                    "password": password,
+                                                    "history": {
+                                                        "questionsAnswered": storage.get("questionsAnswered"),
+                                                        "history": storage.get("history"),
+                                                    },
+                                                })
+                                            })
+                                                .then(async (r) => {
+                                                    if (!r.ok) {
+                                                        try {
+                                                            var re = await r.json();
+                                                            if (re.error || re.message) {
+                                                                ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+                                                                if ((re.error === "Access denied.") || (re.message === "Access denied.")) syncManual();
+                                                                throw new Error(re.error || re.message);
+                                                            } else {
+                                                                throw new Error("API error");
+                                                            }
+                                                        } catch (e) {
+                                                            throw new Error(e.message || "API error");
+                                                        }
+                                                    }
+                                                    return await r.json();
+                                                })
+                                                .then(() => {
+                                                    ui.toast("History backed up successfully!", 3000, "success", "bi bi-check-circle-fill");
+                                                })
+                                                .catch((e) => {
+                                                    console.error(e);
+                                                    if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+                                                });
+                                        } else {
+                                            ui.toast("No history found to backup.", 3000, "warning", "bi bi-exclamation-triangle-fill");
+                                        }
+                                    }, domain, password)
+                                },
+                                close: true,
+                            },
+                        ],
+                    },
+                    {
+                        label: 'Restore',
+                        icon: 'bi-cloud-arrow-down',
+                        buttons: [
+                            {
+                                icon: 'bi-gear',
+                                text: 'Settings',
+                                onclick: () => {
+                                    prompt(false, 'settings', () => {
+                                        if (r.settings && Object.keys(r.settings).length > 0) {
+                                            Object.entries(r.settings).forEach(([key, value]) => {
+                                                if (key !== "password" && key !== "code" && key !== "usr" && key !== "pwd" && key !== "questionsAnswered" && key !== "history") storage.set(key, value);
+                                            });
+                                            ui.toast("Settings restored successfully!", 3000, "success", "bi bi-check-circle-fill");
+                                            window.location.reload();
+                                        } else {
+                                            ui.toast("No settings found to restore.", 3000, "warning", "bi bi-exclamation-triangle-fill");
+                                        }
+                                    }, domain, password)
+                                },
+                                close: true,
+                            },
+                            {
+                                icon: 'bi-clock-history',
+                                text: 'History',
+                                onclick: () => {
+                                    prompt(false, 'history', () => {
+                                        if (r.history && Object.keys(r.history).length > 0) {
+                                            Object.entries(r.history).forEach(([key, value]) => {
+                                                if (key === "questionsAnswered" || key === "history") storage.set(key, value);
+                                            });
+                                            ui.toast("History restored successfully!", 3000, "success", "bi bi-check-circle-fill");
+                                            window.location.reload();
+                                        } else {
+                                            ui.toast("No history found to restore.", 3000, "warning", "bi bi-exclamation-triangle-fill");
+                                        }
+                                    }, domain, password)
+                                },
+                                close: true,
+                            },
+                        ],
+                    },
+                ],
+            });
+        })
+        .catch((e) => {
+            console.error(e);
+            if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        });
+}
+
+function prompt(backingUp = true, type = 'settings', func = () => { }, domain, password) {
     ui.modal({
         title: 'Are you sure?',
         body: `<p>${backingUp ? 'Backing up' : 'Restoring'} ${type} will forever remove your currently ${backingUp ? 'backed up' : 'set'} ${type}. This action is not reversible.</p>`,
@@ -400,9 +738,9 @@ function prompt(backingUp = true, type = 'settings', func = () => { }, domain, o
                 text: 'Back',
                 class: 'cancel-button',
                 onclick: () => {
-                    if (otp) storage.set("otp", otp);
+                    if (password) storage.set("password", password);
                     ui.setUnsavedChanges(false);
-                    sync(domain, true);
+                    syncManual(true);
                 },
                 close: true,
             },
@@ -411,9 +749,9 @@ function prompt(backingUp = true, type = 'settings', func = () => { }, domain, o
                 class: 'submit-button',
                 onclick: async () => {
                     func();
-                    if (otp) storage.set("otp", otp);
+                    if (password) storage.set("password", password);
                     ui.setUnsavedChanges(false);
-                    sync(domain, true);
+                    syncManual(true);
                 },
                 close: true,
             },
@@ -421,7 +759,7 @@ function prompt(backingUp = true, type = 'settings', func = () => { }, domain, o
     });
 }
 
-export async function loadAdminSettings(domain, courses) {
+export async function loadAdminSettings(courses) {
     await fetch(domain + '/user/settings', {
         method: "POST",
         headers: {

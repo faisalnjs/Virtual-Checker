@@ -121,7 +121,6 @@ i.bi {
 input,
 select {
   height: 2.25em;
-  min-height: 2.25em;
   padding: 0 0.5em;
   border: none;
   border-radius: 0.5rem;
@@ -141,6 +140,10 @@ select:disabled {
 input.disabled:disabled,
 select.disabled:disabled {
   opacity: 0.5;
+}
+
+input:not(#code-input) {
+  min-height: 2.25em;
 }
 
 select[multiple] {
@@ -956,6 +959,10 @@ div.ML__keyboard {
   display: none;
 }
 
+#controls-container [data-select-between] {
+  display: none;
+}
+
 body:has(.selecting) #controls-container button:has(.bi-gear) {
   display: none;
 }
@@ -997,6 +1004,10 @@ body:has(.selecting) #controls-container button:has(.bi-archive):not([data-archi
 }
 
 body:has(.selecting) #controls-container [data-unarchive-multiple] {
+  display: block;
+}
+
+body:has(.selecting) #controls-container [data-select-between] {
   display: block;
 }
 

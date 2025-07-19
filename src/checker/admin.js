@@ -23,7 +23,6 @@ var polling = false;
 var active = false;
 var timestamps = false;
 var speed = false;
-var reorder = false;
 var expandedReports = [];
 var loadedSegment = null;
 var loadedSegmentEditor = false;
@@ -168,9 +167,9 @@ try {
         });
     }
 
-    if (document.querySelector('.otps')) {
-      if (document.getElementById('remove-otps')) document.getElementById('remove-otps').addEventListener('click', removeOTPsModal);
-      await fetch(domain + '/otps', {
+    if (document.querySelector('.passwords')) {
+      if (document.getElementById('remove-passwords')) document.getElementById('remove-passwords').addEventListener('click', removePasswordsModal);
+      await fetch(domain + '/passwords', {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -196,29 +195,33 @@ try {
           }
           return await r.json();
         })
-        .then(otps => {
-          document.querySelector('.otps').innerHTML = '<div class="row header"><span>Seat Code</span><span>Saved Settings</span><span>Saved History</span><span>Actions</span></div>';
-          if (otps.length > 0) {
-            document.getElementById('no-otps').setAttribute('hidden', '');
-            document.querySelector('.otps').removeAttribute('hidden');
+        .then(passwords => {
+          document.querySelector('.passwords').innerHTML = '<div class="row header"><span>Seat Code</span><span>Saved Settings</span><span>Saved History</span><span>Actions</span></div>';
+          if (passwords.length > 0) {
+            document.getElementById('no-passwords').setAttribute('hidden', '');
+            document.querySelector('.passwords').removeAttribute('hidden');
           } else {
-            document.getElementById('no-otps').removeAttribute('hidden');
-            document.querySelector('.otps').setAttribute('hidden', '');
+            document.getElementById('no-passwords').removeAttribute('hidden');
+            document.querySelector('.passwords').setAttribute('hidden', '');
           }
-          otps = otps.sort((a, b) => a.seatCode - b.seatCode);
-          otps.forEach(otp => {
-            document.querySelector('.otps').innerHTML += `<div class="enhanced-item" id="${otp.seatCode}">
-              <span class="seatCode">${otp.seatCode}</span>
-              <span class="settings">${(Object.keys(JSON.parse(otp.settings.replace(/'/g, '"'))).length > 0) ? '<i class="bi bi-check-lg"></i>' : ''}</span>
-              <span class="history">${(Object.keys(JSON.parse(otp.history.replace(/'/g, '"'))).length > 0) ? '<i class="bi bi-check-lg"></i>' : ''}</span>
+          passwords = passwords.sort((a, b) => a.seatCode - b.seatCode);
+          passwords.forEach(password => {
+            document.querySelector('.passwords').innerHTML += `<div class="enhanced-item" id="${password.seatCode}">
+              <span class="seatCode">${password.seatCode}</span>
+              <span class="settings">${(password.settings !== '{}') ? '<i class="bi bi-check-lg"></i>' : ''}</span>
+              <span class="history">${(password.history !== '{}') ? '<i class="bi bi-check-lg"></i>' : ''}</span>
               <span class="actions">
-                <button class="icon" data-remove-otp tooltip="Remove OTP">
+                <button class="icon" data-reset-password tooltip="Reset Password">
+                  <i class="bi bi-key"></i>
+                </button>
+                <button class="icon" data-remove-password tooltip="Remove Password">
                   <i class="bi bi-trash"></i>
                 </button>
               </span>
             </div>`;
           });
-          document.querySelectorAll('[data-remove-otp]').forEach(button => button.addEventListener('click', removeOTPModal));
+          document.querySelectorAll('[data-reset-password]').forEach(button => button.addEventListener('click', resetPasswordModal));
+          document.querySelectorAll('[data-remove-password]').forEach(button => button.addEventListener('click', removePasswordModal));
           ui.stopLoader();
           active = true;
         })
@@ -386,7 +389,7 @@ try {
       })
       .then(async c => {
         courses = c;
-        await auth.loadAdminSettings(domain, courses);
+        await auth.loadAdminSettings(courses);
         if (document.querySelector('.users')) {
           ui.reloadUnsavedInputs();
           return;
@@ -591,8 +594,6 @@ try {
                             if (document.querySelector('.segment-reports')) updateSegments();
                             if (document.querySelector('.question-reports')) updateQuestionReports();
                             if (window.location.pathname.split('/admin/')[1] === 'editor') loadSegmentEditor();
-                            reorder = reorder ? false : true;
-                            toggleReorder();
                             active = true;
                             ui.stopLoader();
                             if (!polling) ui.toast("Data restored.", 1000, "info", "bi bi-cloud-arrow-down");
@@ -669,7 +670,6 @@ try {
   if (document.querySelector('[data-timestamps]')) document.querySelector('[data-timestamps]').addEventListener("click", toggleTimestamps);
   if (document.querySelector('[data-speed]')) document.querySelector('[data-speed]').addEventListener("click", toggleSpeedMode);
   if (document.getElementById('enable-speed-mode-button')) document.getElementById('enable-speed-mode-button').addEventListener("click", enableSpeedMode);
-  if (document.querySelector('[data-reorder]')) document.querySelector('[data-reorder]').addEventListener("click", toggleReorder);
   if (document.getElementById('sort-segments-due')) document.getElementById('sort-segments-due').addEventListener("click", sortSegmentsDue);
   if (document.getElementById('sort-segments-increasing')) document.getElementById('sort-segments-increasing').addEventListener("click", sortSegmentsIncreasing);
   if (document.getElementById('sort-segments-decreasing')) document.getElementById('sort-segments-decreasing').addEventListener("click", sortSegmentsDecreasing);
@@ -701,6 +701,7 @@ try {
   if (document.getElementById('hideUnanswered')) document.getElementById('hideUnanswered').addEventListener("input", updateSegments);
   if (document.getElementById('hideUnanswered')) document.getElementById('hideUnanswered').addEventListener("input", updateResponses);
   if (document.getElementById('hideUnanswered')) document.getElementById('hideUnanswered').addEventListener("input", updateQuestionReports);
+  if (document.querySelector('[data-select-between]')) document.querySelector('[data-select-between]').addEventListener("click", selectBetween);
 
   function toggleSelecting() {
     if (!active) return;
@@ -788,7 +789,7 @@ try {
       const course = courses.find(c => document.getElementById("course-period-input") ? (String(c.id) === document.getElementById("course-period-input").value) : null);
       if (course) filteredSegments = filteredSegments.filter(segment => String(segment.course) === String(course.id));
       filteredSegments.forEach(segment => {
-        document.getElementById("filter-segment-input").innerHTML += `<option value="${segment.number}" ${(document.location.search.split('?segment=')[1] && (document.location.search.split('?segment=')[1] === String(segment.number))) ? 'selected' : ''}>${segment.number} - ${segment.name}${segment.due ? ` (Due ${new Date(`${segment.due}T00:00:00`).toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })})` : ''}</option>`;
+        document.getElementById("filter-segment-input").innerHTML += `<option value="${segment.id}" ${(document.location.search.split('?segment=')[1] && (document.location.search.split('?segment=')[1] === String(segment.id))) ? 'selected' : ''}>${segment.number} - ${segment.name}${segment.due ? ` (Due ${new Date(`${segment.due}T00:00:00`).toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })})` : ''}</option>`;
       });
     }
     const coursesArchiveTab = document.querySelector('[data-archive-type="courses"]');
@@ -899,15 +900,15 @@ try {
           if (document.querySelector('.segments .section')) {
             var segment = document.createElement('div');
             segment.className = "section";
-            segment.id = `segment-${s.number}`;
-            segment.setAttribute("data-swapy-slot", `segmentReorder-${s.number}`);
+            segment.id = `segment-${s.id}`;
+            segment.setAttribute("data-swapy-slot", `segmentReorder-${s.id}`);
             var buttonGrid = document.createElement('div');
             buttonGrid.className = "button-grid inputs";
-            buttonGrid.setAttribute("data-swapy-item", `segmentReorder-${s.number}`);
+            buttonGrid.setAttribute("data-swapy-item", `segmentReorder-${s.id}`);
             buttonGrid.innerHTML = `<button square data-select tooltip="Select Segment"><i class="bi bi-circle"></i><i class="bi bi-circle-fill"></i></button><div class="input-group small"><div class="space" id="question-container"><input type="text" autocomplete="off" id="segment-number-input" value="${s.number}" placeholder="${s.number}" /></div></div><div class="input-group"><div class="space" id="question-container"><input type="text" autocomplete="off" id="segment-name-input" value="${s.name}" placeholder="${s.name}" /></div></div><div class="input-group mediuml"><div class="space" id="question-container"><input type="date" id="segment-due-date" value="${s.due || ''}"></div></div><button square data-remove-segment-input tooltip="Remove Segment"><i class="bi bi-trash"></i></button><button square data-archive-segment tooltip="Archive Segment"><i class="bi bi-archive"></i></button><button square data-edit-segment tooltip="Edit Segment"><i class="bi bi-pencil"></i></button><div class="drag" data-swapy-handle><i class="bi bi-grip-vertical"></i></div>`;
             buttonGrid.addEventListener('mouseenter', () => {
               island(c.sort((a, b) => a.order - b.order), 'segment', {
-                sourceId: String(s.number),
+                sourceId: String(s.id),
                 id: `# ${s.number}`,
                 title: `${s.name}`,
                 subtitle: s.due ? `Due ${new Date(`${s.due}T00:00:00`).toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })}` : '',
@@ -936,7 +937,7 @@ try {
         });
       }
       if (document.querySelector('.segment-reports')) {
-        c.filter(s => document.getElementById("filter-segment-input")?.value ? (String(s.number) === document.getElementById("filter-segment-input").value) : true).sort((a, b) => a.order - b.order).forEach(segment => {
+        c.filter(s => document.getElementById("filter-segment-input")?.value ? (String(s.id) === document.getElementById("filter-segment-input").value) : true).sort((a, b) => a.order - b.order).forEach(segment => {
           document.querySelector('.section:has(> .segment-reports)').setAttribute('hidden', '');
           if (document.getElementById("filter-segment-input").value) {
             document.querySelector('.segment-reports').innerHTML = '';
@@ -947,7 +948,7 @@ try {
             JSON.parse(segment.question_ids).filter(q => questions.find(q1 => String(q1.id) === String(q.id))?.number.startsWith(document.getElementById("sort-question-input")?.value)).forEach(q => {
               var question = questions.find(q1 => String(q1.id) === String(q.id));
               if (!question) return;
-              var questionResponses = responses.filter(seatCode => JSON.parse(courses.find(course => String(course.id) === document.getElementById("course-period-input").value).periods).includes(Number(String(seatCode.seatCode)[0]))).filter(r => String(r.segment) === String(segment.number)).filter(r => r.question_id === question.id).filter(r => String(r.seatCode).startsWith(document.getElementById("sort-seat-input")?.value));
+              var questionResponses = responses.filter(seatCode => JSON.parse(courses.find(course => String(course.id) === document.getElementById("course-period-input").value).periods).includes(Number(String(seatCode.seatCode)[0]))).filter(r => String(r.segment) === String(segment.id)).filter(r => r.question_id === question.id).filter(r => String(r.seatCode).startsWith(document.getElementById("sort-seat-input")?.value));
               if (document.getElementById('hideIncorrectAttempts').checked) questionResponses = questionResponses.filter((r, index, self) => r.status === 'Correct' || !self.some(other => other.question_id === r.question_id && other.status === 'Correct'));
               if (document.querySelector('#filter-report-responses [aria-selected="true"]').getAttribute('data-value') === 'first') {
                 questionResponses = questionResponses.filter(r => r.id === Math.min(...questionResponses.filter(r1 => r1.seatCode === r.seatCode && r1.question_id === r.question_id).map(r1 => r1.id)));
@@ -1053,7 +1054,7 @@ try {
                 total = segmentResponses.length + unansweredStudentsCount;
               }
             }
-            document.querySelector('.segment-reports').innerHTML += `<div class="segment-report"${(JSON.parse(segment.question_ids) != 0) ? ` report="segment-${segment.number}"` : ''}>
+            document.querySelector('.segment-reports').innerHTML += `<div class="segment-report"${(JSON.parse(segment.question_ids) != 0) ? ` report="segment-${segment.id}"` : ''}>
               <b>Segment ${segment.number} (${JSON.parse(segment.question_ids).length} Question${JSON.parse(segment.question_ids).length != 1 ? 's' : ''})</b>
               <div class="barcount-wrapper">
                 ${(segmentResponses.filter(r => r.status === 'Correct').length != 0) ? `<div class="barcount correct" style="width: calc(${segmentResponses.filter(r => r.status === 'Correct').length / total} * 100%)">${segmentResponses.filter(r => r.status === 'Correct').length}</div>` : ''}
@@ -1062,7 +1063,7 @@ try {
                 ${(segmentResponses.filter(r => r.status === 'Incorrect').length != 0) ? `<div class="barcount incorrect" style="width: calc(${segmentResponses.filter(r => r.status === 'Incorrect').length / total} * 100%)">${segmentResponses.filter(r => r.status === 'Incorrect').length}</div>` : ''}
               </div>
             </div>
-            ${(JSON.parse(segment.question_ids).length != 0) ? `<div class="section detailed-report" id="segment-${segment.number}">
+            ${(JSON.parse(segment.question_ids).length != 0) ? `<div class="section detailed-report" id="segment-${segment.id}">
               ${detailedReport}
             </div>` : ''}`;
           }
@@ -1087,7 +1088,7 @@ try {
         var buttonGrid = document.createElement('div');
         buttonGrid.className = "button-grid inputs";
         buttonGrid.setAttribute('archive-type', 'segment');
-        buttonGrid.id = segment.number;
+        buttonGrid.id = segment.id;
         buttonGrid.innerHTML = `<button square data-select tooltip="Select Item"><i class="bi bi-circle"></i><i class="bi bi-circle-fill"></i></button>
         <div class="input-group small">
           <div class="space" id="question-container">
@@ -1117,7 +1118,7 @@ try {
         <button square data-restore-item tooltip="Restore Item"><i class="bi bi-arrow-counterclockwise"></i></button>`;
         buttonGrid.addEventListener('mouseenter', () => {
           island(segments.sort((a, b) => a.order - b.order), 'segment', {
-            sourceId: String(segment.number),
+            sourceId: String(segment.id),
             id: `# ${segment.number}`,
             title: `${segment.name}`,
             subtitle: segment.due ? `Due ${new Date(`${segment.due}T00:00:00`).toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })}` : '',
@@ -1163,19 +1164,8 @@ try {
 
   function editSegment(event, segment) {
     if (!active) return;
-    return window.location.href = `/admin/editor?segment=${segment || this.parentElement.parentElement.id.split('segment-')[1]}`;
-  }
-
-  function calculateButtonHeights(container) {
-    let totalHeight = 0;
-    const buttons = container.querySelectorAll('button');
-    buttons.forEach(button => {
-      const style = window.getComputedStyle(button);
-      if (style.display !== 'none') {
-        totalHeight += button.getBoundingClientRect().height;
-      }
-    });
-    return totalHeight;
+    if (!segment && this && this.parentElement && this.parentElement.parentElement && this.parentElement.parentElement.id) segment = this.parentElement.parentElement.id.split('segment-')[1];
+    return window.location.href = segment ? `/admin/editor?segment=${segment}` : '/admin/';
   }
 
   // Save Course Order
@@ -1308,8 +1298,12 @@ try {
   document.querySelectorAll("#save-button").forEach(w => w.addEventListener("click", save));
   document.querySelectorAll("#create-button").forEach(w => w.addEventListener("click", createSegment));
 
-  async function save(hideResult) {
+  async function save(event, hideResult) {
     if (!active) return;
+    if (!ui.unsavedChanges) {
+      if (!hideResult) ui.toast("No changes to save.", 5000, "error", "bi bi-exclamation-triangle-fill");
+      return;
+    }
     removeAllSelected();
     removeSelecting();
     var updatedInfo = {};
@@ -1325,7 +1319,7 @@ try {
         .filter(w => w.id)
         .forEach(segment => {
           updatedInfo.segments.push({
-            order: segments.find(s => String(s.number) === String(segment.id.split('-')[1])).order,
+            order: segments.find(s => String(s.id) === String(segment.id.split('-')[1])).order,
             id: segment.id.split('-')[1],
             number: segment.querySelector('#segment-number-input').value,
             name: segment.querySelector('#segment-name-input').value,
@@ -1335,7 +1329,7 @@ try {
             //     id: q.nextElementSibling.value
             //   };
             // })),
-            question_ids: segments.find(s => String(s.number) === String(segment.id.split('-')[1])).question_ids,
+            question_ids: segments.find(s => String(s.id) === String(segment.id.split('-')[1])).question_ids,
             due: segment.querySelector('#segment-due-date').value || null,
           });
         });
@@ -1343,6 +1337,7 @@ try {
       updatedInfo = {
         questions: []
       };
+      if (document.getElementById("filter-segment-input").value) updatedInfo.segment = document.getElementById("filter-segment-input").value || null;
       Array.from(document.querySelectorAll('.questions .section .section'))
         .filter(w => w.id)
         .forEach(question => {
@@ -1370,7 +1365,7 @@ try {
     }
     for (const key in updatedInfo) {
       if (Object.prototype.hasOwnProperty.call(updatedInfo, key)) {
-        formData.append(key, JSON.stringify(updatedInfo[key]));
+        formData.append(key, (typeof updatedInfo[key] === 'string') ? updatedInfo[key] : JSON.stringify(updatedInfo[key]));
       }
     }
     formData.append('usr', storage.get("usr"));
@@ -1533,7 +1528,7 @@ try {
         document.querySelector('.questions .section').innerHTML = '';
         var filteredQuestions = questions;
         if (document.getElementById("filter-segment-input")) {
-          var selectedSegment = segments.find(segment => String(segment.number) === document.getElementById("filter-segment-input").value);
+          var selectedSegment = segments.find(segment => String(segment.id) === document.getElementById("filter-segment-input").value);
           if (selectedSegment) filteredQuestions = filteredQuestions.filter(q => JSON.parse(selectedSegment.question_ids).find(qId => String(qId.id) === String(q.id)));
         }
         renderedEditors = {};
@@ -1546,7 +1541,7 @@ try {
           var allSegmentsQuestionIsIn = segments.filter(e => JSON.parse(e.question_ids).find(qId => String(qId.id) === String(q.id)));
           var segmentsString = "";
           segments.forEach(s => {
-            segmentsString += `<option value="${s.number}"${(allSegmentsQuestionIsIn[0] && (allSegmentsQuestionIsIn[0].number === s.number)) ? ' selected' : ''}>${s.number}</option>`;
+            segmentsString += `<option value="${s.id}"${(allSegmentsQuestionIsIn[0] && (allSegmentsQuestionIsIn[0].id === s.id)) ? ' selected' : ''}>${s.number}</option>`;
           });
           buttonGrid.innerHTML = `<button square data-select tooltip="Select Question"><i class="bi bi-circle"></i><i class="bi bi-circle-fill"></i></button><div class="input-group small"><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-id-input" value="${q.id}" disabled /></div></div><div class="input-group small"><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-number-input" value="${q.number}" placeholder="${q.number}" /></div></div><div class="input-group small"><div class="space" id="question-container"><select id="question-segment-input">${segmentsString}</select></div></div><div class="input-group"><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-text-input" value="${q.question}" placeholder="${q.question}" /></div></div><button square data-toggle-latex tooltip="Toggle LaTeX Title"><i class="bi bi-${q.latex ? 'calculator-fill' : 'cursor-text'}"></i></button><button square data-remove-question-input tooltip="Remove Question"><i class="bi bi-trash"></i></button><button square data-archive-question-input tooltip="Archive Question"><i class="bi bi-archive"></i></button><button square data-toggle-question tooltip="Expand Question"><i class="bi bi-caret-down-fill"></i><i class="bi bi-caret-up-fill"></i></button>`;
           buttonGrid.addEventListener('mouseenter', () => {
@@ -1961,7 +1956,7 @@ try {
     var buttonGrid = document.createElement('div');
     buttonGrid.className = "button-grid inputs";
     var segmentsString = "";
-    segments.forEach(s => segmentsString += `<option value="${s.number}"${(document.location.search.split('?segment=')[1] && (document.location.search.split('?segment=')[1] === String(s.number))) ? ' selected' : ''}>${s.number}</option>`);
+    segments.forEach(s => segmentsString += `<option value="${s.id}"${(document.location.search.split('?segment=')[1] && (document.location.search.split('?segment=')[1] === String(s.id))) ? ' selected' : ''}>${s.number}</option>`);
     buttonGrid.innerHTML = `<button square data-select tooltip="Select Question"><i class="bi bi-circle"></i><i class="bi bi-circle-fill"></i></button><div class="input-group small"><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-id-input" value="" disabled /></div></div><div class="input-group small"><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-number-input" value="" /></div></div><div class="input-group small"><div class="space" id="question-container"><select id="question-segment-input">${segmentsString}</select></div></div><div class="input-group"><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-text-input" value="" /></div></div><button square data-toggle-latex disabled tooltip="Toggle LaTeX Title"><i class="bi bi-cursor-text"></i></button><button square data-remove-question-input tooltip="Remove Question"><i class="bi bi-trash"></i></button><button square data-toggle-question tooltip="Expand Question"><i class="bi bi-caret-down-fill"></i><i class="bi bi-caret-up-fill"></i></button>`;
     group.appendChild(buttonGrid);
     this.parentElement.insertBefore(group, this.parentElement.children[this.parentElement.children.length - 1]);
@@ -1981,7 +1976,7 @@ try {
 
   async function renderPond() {
     if (!active) return;
-    await save(true);
+    await save(null, true);
     document.querySelector(`#question-${this.id} [data-toggle-question]`).click();
     const url = '/admin/upload?question=' + this.id;
     const width = 600;
@@ -2010,7 +2005,7 @@ try {
 
   async function removeImage(event) {
     if (!active) return;
-    await save(true);
+    await save(null, true);
     const element = event.target;
     const rect = element.getBoundingClientRect();
     const clickYRelativeToElement = event.clientY - rect.top;
@@ -2086,11 +2081,20 @@ try {
         var responseString = r.response;
         var isMatrix = null;
         if (responseString.includes('[[')) {
-          isMatrix = responseString;
-          responseString = JSON.stringify(JSON.parse(r.response).map(innerArray => innerArray.map(numString => String(numString)))).replaceAll('["', '[').replaceAll('","', ', ').replaceAll('"]', ']');
+          try {
+            isMatrix = responseString;
+            responseString = JSON.stringify(JSON.parse(r.response).map(innerArray => innerArray.map(numString => String(numString)))).replaceAll('["', '[').replaceAll('","', ', ').replaceAll('"]', ']');
+          } catch {
+            isMatrix = null;
+            console.log(`Invalid matrix: ${r.response}`);
+          }
         } else if (responseString.includes('[')) {
-          var parsedResponse = JSON.parse(r.response);
-          responseString = parsedResponse.join(', ');
+          try {
+            var parsedResponse = JSON.parse(r.response);
+            responseString = parsedResponse.join(', ');
+          } catch {
+            console.log(`Invalid JSON: ${r.response}`);
+          }
         }
         var correctResponsesString = `Accepted: ${answers.find(a => a.id === questions.find(q => String(q.id) === String(r.question_id)).id).correct_answers.join(', ')}`;
         const date = new Date(r.timestamp);
@@ -2131,7 +2135,7 @@ try {
         var buttonGrid = document.createElement('div');
         buttonGrid.className = "button-grid inputs";
         buttonGrid.id = `response-${r.id}`;
-        buttonGrid.innerHTML = `<button square data-select tooltip="Select Item"><i class="bi bi-circle"></i><i class="bi bi-circle-fill"></i></button><input type="text" autocomplete="off" class="small" id="response-id-input" value="${r.id}" disabled hidden />${(String(r.flagged) === '1') ? `<button square data-unflag-response tooltip="Unflag Response"><i class="bi bi-flag-fill"></i></button>` : `<button square data-flag-response tooltip="Flag Response"><i class="bi bi-flag"></i></button>`}<input type="text" autocomplete="off" class="small" id="response-segment-input" value="${r.segment}" disabled data-segment /><input type="text" autocomplete="off" class="small" id="response-question-input" value="${questions.find(q => String(q.id) === String(r.question_id)).number}" disabled data-question /><input type="text" autocomplete="off" class="small" id="response-question-id-input" value="${questions.find(q => String(q.id) === String(r.question_id)).id}" disabled hidden /><input type="text" autocomplete="off" class="small${(((r.status === 'Invalid Format') || (r.status === 'Unknown, Recorded')) && document.querySelector('.awaitingResponses .section') && (answers.find(a => a.id === questions.find(q => String(q.id) === String(r.question_id)).id).correct_answers.length > 0)) ? ' hideonhover' : ''}" id="response-seat-code-input" value="${r.seatCode}" disabled data-seat-code /><input type="text" autocomplete="off" class="small" id="response-time-taken-input" value="${timeTaken}" disabled data-time-taken${(typeof timeDifference != 'undefined') ? ` time="${timeDifference}"` : ''} /><input type="text" autocomplete="off" class="small" id="response-time-taken-input" value="${timeTakenToRevise}" disabled data-time-taken${(typeof timeDifference != 'undefined') ? ` time="${timeDifference}"` : ''} /><!--<input type="text" autocomplete="off" class="small" id="response-time-taken-input" value="${result}" disabled data-time-taken />--><input type="text" autocomplete="off" id="response-response-input" value="${responseString}" ${isMatrix ? 'mockDisabled' : 'disabled'} />${(r.status === 'Incorrect') ? `<button square data-edit-reason tooltip="Edit Reason"><i class="bi bi-reply${(r.reason) ? '-fill' : ''}"></i></button>` : ''}<input type="text" autocomplete="off" class="smedium${(((r.status === 'Invalid Format') || (r.status === 'Unknown, Recorded')) && document.querySelector('.awaitingResponses .section') && (answers.find(a => a.id === questions.find(q => String(q.id) === String(r.question_id)).id).correct_answers.length > 0)) ? ' hideonhover' : ''}" id="response-timestamp-input" value="${date.getMonth() + 1}/${date.getDate()} ${hours % 12 || 12}:${minutes < 10 ? '0' + minutes : minutes} ${hours >= 12 ? 'PM' : 'AM'}" disabled />${(((r.status === 'Invalid Format') || (r.status === 'Unknown, Recorded')) && document.querySelector('.awaitingResponses .section') && (answers.find(a => a.id === questions.find(q => String(q.id) === String(r.question_id)).id).correct_answers.length > 0)) ? `<input type="text" autocomplete="off" class="showonhover" id="response-correct-responses-input" value="${correctResponsesString}" disabled />` : ''}<button square id="mark-correct-button"${(r.status === 'Correct') ? ' disabled' : ''} tooltip="Mark Correct"><i class="bi bi-check-circle${(r.status === 'Correct') ? '-fill' : ''}"></i></button><button square id="mark-incorrect-button"${(r.status === 'Incorrect') ? ' disabled' : ''} tooltip="Mark Incorrect"><i class="bi bi-x-circle${(r.status === 'Incorrect') ? '-fill' : ''}"></i></button>`;
+        buttonGrid.innerHTML = `<button square data-select tooltip="Select Item"><i class="bi bi-circle"></i><i class="bi bi-circle-fill"></i></button><input type="text" autocomplete="off" class="small" id="response-id-input" value="${r.id}" disabled hidden />${(String(r.flagged) === '1') ? `<button square data-unflag-response tooltip="Unflag Response"><i class="bi bi-flag-fill"></i></button>` : `<button square data-flag-response tooltip="Flag Response"><i class="bi bi-flag"></i></button>`}<input type="text" autocomplete="off" class="small" id="response-segment-input" value="${segments.find(s => String(s.id) === String(r.segment))?.number || r.segment}" disabled data-segment /><input type="text" autocomplete="off" class="small" id="response-question-input" value="${questions.find(q => String(q.id) === String(r.question_id)).number}" disabled data-question /><input type="text" autocomplete="off" class="small" id="response-question-id-input" value="${questions.find(q => String(q.id) === String(r.question_id)).id}" disabled hidden /><input type="text" autocomplete="off" class="small${(((r.status === 'Invalid Format') || (r.status === 'Unknown, Recorded')) && document.querySelector('.awaitingResponses .section') && (answers.find(a => a.id === questions.find(q => String(q.id) === String(r.question_id)).id).correct_answers.length > 0)) ? ' hideonhover' : ''}" id="response-seat-code-input" value="${r.seatCode}" disabled data-seat-code /><input type="text" autocomplete="off" class="small" id="response-time-taken-input" value="${timeTaken}" disabled data-time-taken${(typeof timeDifference != 'undefined') ? ` time="${timeDifference}"` : ''} /><input type="text" autocomplete="off" class="small" id="response-time-taken-input" value="${timeTakenToRevise}" disabled data-time-taken${(typeof timeDifference != 'undefined') ? ` time="${timeDifference}"` : ''} /><!--<input type="text" autocomplete="off" class="small" id="response-time-taken-input" value="${result}" disabled data-time-taken />--><input type="text" autocomplete="off" id="response-response-input" value="${responseString}" ${isMatrix ? 'mockDisabled' : 'disabled'} />${(r.status === 'Incorrect') ? `<button square data-edit-reason tooltip="Edit Reason"><i class="bi bi-reply${(r.reason) ? '-fill' : ''}"></i></button>` : ''}<input type="text" autocomplete="off" class="smedium${(((r.status === 'Invalid Format') || (r.status === 'Unknown, Recorded')) && document.querySelector('.awaitingResponses .section') && (answers.find(a => a.id === questions.find(q => String(q.id) === String(r.question_id)).id).correct_answers.length > 0)) ? ' hideonhover' : ''}" id="response-timestamp-input" value="${date.getMonth() + 1}/${date.getDate()} ${hours % 12 || 12}:${minutes < 10 ? '0' + minutes : minutes} ${hours >= 12 ? 'PM' : 'AM'}" disabled />${(((r.status === 'Invalid Format') || (r.status === 'Unknown, Recorded')) && document.querySelector('.awaitingResponses .section') && (answers.find(a => a.id === questions.find(q => String(q.id) === String(r.question_id)).id).correct_answers.length > 0)) ? `<input type="text" autocomplete="off" class="showonhover" id="response-correct-responses-input" value="${correctResponsesString}" disabled />` : ''}<button square id="mark-correct-button"${(r.status === 'Correct') ? ' disabled' : ''} tooltip="Mark Correct"><i class="bi bi-check-circle${(r.status === 'Correct') ? '-fill' : ''}"></i></button><button square id="mark-incorrect-button"${(r.status === 'Incorrect') ? ' disabled' : ''} tooltip="Mark Incorrect"><i class="bi bi-x-circle${(r.status === 'Incorrect') ? '-fill' : ''}"></i></button>`;
         buttonGrid.addEventListener('mouseenter', () => {
           var question = questions.find(q => String(q.id) === String(r.question_id));
           island(questions, 'question', {
@@ -2342,15 +2346,24 @@ try {
       var responseString = r.response;
       var isMatrix = null;
       if (responseString.includes('[[')) {
-        isMatrix = responseString;
-        responseString = JSON.stringify(JSON.parse(r.response).map(innerArray => innerArray.map(numString => String(numString)))).replaceAll('["', '[').replaceAll('","', ', ').replaceAll('"]', ']');
+        try {
+          isMatrix = responseString;
+          responseString = JSON.stringify(JSON.parse(r.response).map(innerArray => innerArray.map(numString => String(numString)))).replaceAll('["', '[').replaceAll('","', ', ').replaceAll('"]', ']');
+        } catch {
+          isMatrix = null;
+          console.log(`Invalid matrix: ${r.response}`);
+        }
       } else if (responseString.includes('[')) {
-        var parsedResponse = JSON.parse(r.response);
-        responseString = parsedResponse.join(', ');
+        try {
+          var parsedResponse = JSON.parse(r.response);
+          responseString = parsedResponse.join(', ');
+        } catch {
+          console.log(`Invalid JSON: ${r.response}`);
+        }
       }
       var buttonGrid = document.createElement('div');
       buttonGrid.className = "button-grid inputs";
-      buttonGrid.innerHTML = `<input type="text" autocomplete="off" class="small" id="response-id-input" value="${r.single_response}" disabled hidden /><input type="text" autocomplete="off" class="small" id="response-segment-input" value="${r.segment}" disabled data-segment /><input type="text" autocomplete="off" class="small" id="response-question-input" value="${questions.find(q => String(q.id) === String(r.question_id)).number}" disabled data-question /><input type="text" autocomplete="off" class="small" id="response-question-id-input" value="${questions.find(q => String(q.id) === String(r.question_id)).id}" disabled hidden /><input type="text" autocomplete="off" id="response-response-input" value="${responseString}" ${isMatrix ? 'mockDisabled' : 'disabled'} /><input type="text" autocomplete="off" class="small" id="response-count-input" value="${r.count}" disabled /><button square id="mark-correct-button"${(r.status === 'Correct') ? ' disabled' : ''} tooltip="Mark Correct"><i class="bi bi-check-circle${(r.status === 'Correct') ? '-fill' : ''}"></i></button><button square id="mark-incorrect-button"${(r.status === 'Incorrect') ? ' disabled' : ''} tooltip="Mark Incorrect"><i class="bi bi-x-circle${(r.status === 'Incorrect') ? '-fill' : ''}"></i></button>`;
+      buttonGrid.innerHTML = `<input type="text" autocomplete="off" class="small" id="response-id-input" value="${r.single_response}" disabled hidden /><input type="text" autocomplete="off" class="small" id="response-segment-input" value="${segments.find(s => String(s.id) === String(r.segment))?.number || r.segment}" disabled data-segment /><input type="text" autocomplete="off" class="small" id="response-question-input" value="${questions.find(q => String(q.id) === String(r.question_id)).number}" disabled data-question /><input type="text" autocomplete="off" class="small" id="response-question-id-input" value="${questions.find(q => String(q.id) === String(r.question_id)).id}" disabled hidden /><input type="text" autocomplete="off" id="response-response-input" value="${responseString}" ${isMatrix ? 'mockDisabled' : 'disabled'} /><input type="text" autocomplete="off" class="small" id="response-count-input" value="${r.count}" disabled /><button square id="mark-correct-button"${(r.status === 'Correct') ? ' disabled' : ''} tooltip="Mark Correct"><i class="bi bi-check-circle${(r.status === 'Correct') ? '-fill' : ''}"></i></button><button square id="mark-incorrect-button"${(r.status === 'Incorrect') ? ' disabled' : ''} tooltip="Mark Incorrect"><i class="bi bi-x-circle${(r.status === 'Incorrect') ? '-fill' : ''}"></i></button>`;
       buttonGrid.addEventListener('mouseenter', () => {
         var question = questions.find(q => String(q.id) === String(r.question_id));
         island(questions, 'question', {
@@ -2726,9 +2739,9 @@ try {
     document.getElementById("speed-mode-segments").innerHTML = '';
     segments.forEach(segment => {
       var option = document.createElement('option');
-      option.value = segment.number;
+      option.value = segment.id;
       option.innerHTML = segment.name;
-      if (document.location.search.split('?segment=')[1] && (document.location.search.split('?segment=')[1] === String(segment.number))) option.selected = true;
+      if (document.location.search.split('?segment=')[1] && (document.location.search.split('?segment=')[1] === String(segment.id))) option.selected = true;
       document.getElementById("speed-mode-segments").appendChild(option);
     });
   }
@@ -2830,67 +2843,6 @@ try {
     }, 1000);
   }
 
-  function toggleReorder() {
-    if (!document.querySelector('[data-reorder]')) return;
-    if (reorder) {
-      reorder = false;
-      document.querySelector('[data-reorder] .bi-arrows-move').style.display = "block";
-      document.querySelector('[data-reorder] .bi-x').style.display = "none";
-      document.querySelector('.section:has(> .segments)').style.display = "flex";
-      const reorderSections = document.querySelectorAll(':has(> .reorder)');
-      reorderSections.forEach(reorderSection => {
-        const fromHeight = reorderSection?.getBoundingClientRect().height;
-        reorderSection.parentElement.querySelector('.selector').style.display = 'flex';
-        document.querySelectorAll('#save-button').forEach(w => w.style.display = '');
-        reorderSection.style.display = 'none';
-        const container = reorderSection.parentElement;
-        const target = reorderSection.parentElement.querySelector('.selector');
-        const toHeight = target.getBoundingClientRect().height + calculateButtonHeights(target);
-        ui.animate(
-          container,
-          fromHeight
-            ? {
-              height: fromHeight + "px",
-            }
-            : undefined,
-          {
-            height: toHeight + "px",
-          },
-          500,
-          false,
-        );
-      });
-    } else {
-      reorder = true;
-      document.querySelector('[data-reorder] .bi-arrows-move').style.display = "none";
-      document.querySelector('[data-reorder] .bi-x').style.display = "block";
-      document.querySelector('.section:has(> .segments)').style.display = "none";
-      const reorderSections = document.querySelectorAll(':has(> .reorder)');
-      reorderSections.forEach(reorderSection => {
-        const fromHeight = reorderSection.parentElement.querySelector('.selector')?.getBoundingClientRect().height;
-        reorderSection.style.display = 'flex';
-        reorderSection.parentElement.querySelector('.selector').style.display = 'none';
-        document.querySelectorAll('#save-button').forEach(w => w.style.display = 'none');
-        const container = reorderSection.parentElement;
-        const target = reorderSection;
-        const toHeight = target.getBoundingClientRect().height + calculateButtonHeights(target);
-        ui.animate(
-          container,
-          fromHeight
-            ? {
-              height: fromHeight + "px",
-            }
-            : undefined,
-          {
-            height: toHeight + "px",
-          },
-          500,
-          false,
-        );
-      });
-    }
-  }
-
   function sortSegmentsDue() {
     if (!active) return;
     document.getElementById('sort-segments-types').value = 'due';
@@ -2912,7 +2864,7 @@ try {
   async function sortSegments(event, sortAs) {
     if (!active) return;
     await settingsPush('sort-segments', sortAs || document.getElementById('sort-segments-types').value);
-    await save(true);
+    await save(null, true);
     var updatedSegments = [...segments];
     switch (sortAs || document.getElementById('sort-segments-types').value) {
       case 'az':
@@ -3134,7 +3086,7 @@ try {
     document.querySelector('.question-reports').innerHTML = '';
     const course = courses.find(c => document.getElementById("course-period-input") ? (String(c.id) === document.getElementById("course-period-input").value) : null);
     var courseQuestions = [];
-    segments.filter(s => String(s.course) === String(course?.id)).filter(s => document.getElementById("filter-segment-input")?.value ? (String(s.number) === document.getElementById("filter-segment-input").value) : true).forEach(segment => {
+    segments.filter(s => String(s.course) === String(course?.id)).filter(s => document.getElementById("filter-segment-input")?.value ? (String(s.id) === document.getElementById("filter-segment-input").value) : true).forEach(segment => {
       JSON.parse(segment.question_ids).filter(q => questions.find(q1 => String(q1.id) === String(q.id))?.number.startsWith(document.getElementById("sort-question-input")?.value)).forEach(questionId => {
         const question = questions.find(q => String(q.id) === String(questionId.id));
         if (question) courseQuestions.push(question);
@@ -3441,10 +3393,6 @@ try {
       name.classList.add("attention");
       return name.focus();
     }
-    if (loadedSegmentCreator && segments.find(s => String(s.number) === String(number.value))) {
-      number.classList.add("attention");
-      return ui.toast("Segment number already exists.", 3000, "error", "bi bi-exclamation-triangle-fill");
-    }
     document.querySelector("#create-button").disabled = true;
     const question_ids = JSON.stringify(Array.from(document.querySelectorAll('.question')).filter(q => (q.querySelectorAll('input')[1].value.length > 0) && (q.querySelectorAll('input')[1].value != ' ')).map(q => {
       return {
@@ -3491,7 +3439,7 @@ try {
       .then(() => {
         ui.setUnsavedChanges(false);
         ui.toast(loadedSegmentEditor ? "Segment updated successfully." : "Segment created successfully.", 3000, "success", "bi bi-check-circle-fill");
-        editSegment(null, number.value);
+        editSegment(null, loadedSegmentEditor ? loadedSegment.id : null);
       })
       .catch((e) => {
         console.error(e);
@@ -3512,7 +3460,7 @@ try {
       ui.reloadUnsavedInputs();
       return;
     }
-    loadedSegment = segments.find(s => String(s.number) === String(segment));
+    loadedSegment = segments.find(s => String(s.id) === String(segment));
     if (!loadedSegment) {
       loadedSegmentCreator = true;
       ui.toast(`Segment ${String(segment)} not found.`, 3000, "error", "bi bi-exclamation-triangle-fill");
@@ -3534,7 +3482,7 @@ try {
     document.querySelector('[data-delete-segment]')?.addEventListener('click', deleteSegmentConfirm);
     document.querySelector('[edit-segment-questions]')?.addEventListener('click', () => {
       if (ui.unsavedChanges) return ui.toast("You have unsaved changes. Please save or discard them before editing questions.", 3000, "error", "bi bi-exclamation-triangle-fill");
-      const url = `/admin/questions?segment=${loadedSegment.number}`;
+      const url = `/admin/questions?segment=${loadedSegment.id}`;
       const width = window.outerWidth;
       const height = window.outerHeight;
       const left = window.screenLeft;
@@ -3587,7 +3535,7 @@ try {
       body: JSON.stringify({
         usr: storage.get("usr"),
         pwd: storage.get("pwd"),
-        segment: loadedSegment.number,
+        segment: loadedSegment.id,
       })
     })
       .then(async (r) => {
@@ -4608,11 +4556,11 @@ try {
       });
   }
 
-  function removeOTPsModal() {
+  function removePasswordsModal() {
     if (!active) return;
     ui.modal({
-      title: 'Remove OTPs',
-      body: '<p>Are you sure you would like to remove OTPs from all seat codes? All seat codes will lose their saved settings and history. This action is not reversible.</p>',
+      title: 'Remove Passwords',
+      body: '<p>Are you sure you would like to remove passwords from all seat codes? All seat codes will lose their saved settings and history. This action is not reversible.</p>',
       buttons: [
         {
           text: 'Cancel',
@@ -4623,7 +4571,7 @@ try {
           text: 'Remove',
           class: 'submit-button',
           onclick: () => {
-            removeOTPs();
+            removePasswords();
           },
           close: true,
         },
@@ -4631,10 +4579,10 @@ try {
     });
   }
 
-  function removeOTPs() {
+  function removePasswords() {
     if (!active) return;
     ui.setUnsavedChanges(true);
-    fetch(domain + '/otps', {
+    fetch(domain + '/passwords', {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",
@@ -4662,7 +4610,7 @@ try {
       })
       .then(() => {
         ui.setUnsavedChanges(false);
-        ui.toast("Successfully removed OTPs.", 3000, "success", "bi bi-check-lg");
+        ui.toast("Successfully removed passwords.", 3000, "success", "bi bi-check-lg");
         init();
       })
       .catch((e) => {
@@ -4673,12 +4621,12 @@ try {
       });
   }
 
-  function removeOTPModal() {
+  function removePasswordModal() {
     if (!active) return;
     const seatCode = this.parentElement.parentElement.id;
     ui.modal({
-      title: 'Remove OTP',
-      body: `<p>Are you sure you would like to remove the OTP from seat code <code>${seatCode}</code>? This seat code will lose all their saved settings and history. This action is not reversible.</p>`,
+      title: 'Remove Password',
+      body: `<p>Are you sure you would like to remove the password from seat code <code>${seatCode}</code>? This seat code will lose all their saved settings and history. This action is not reversible.</p>`,
       buttons: [
         {
           text: 'Cancel',
@@ -4689,7 +4637,7 @@ try {
           text: 'Remove',
           class: 'submit-button',
           onclick: () => {
-            removeOTP(seatCode);
+            removePassword(seatCode);
           },
           close: true,
         },
@@ -4697,10 +4645,10 @@ try {
     });
   }
 
-  function removeOTP(seatCode) {
+  function removePassword(seatCode) {
     if (!active) return;
     ui.setUnsavedChanges(true);
-    fetch(domain + '/otps', {
+    fetch(domain + '/passwords', {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",
@@ -4729,7 +4677,74 @@ try {
       })
       .then(() => {
         ui.setUnsavedChanges(false);
-        ui.toast("Successfully removed OTP.", 3000, "success", "bi bi-check-lg");
+        ui.toast("Successfully removed password.", 3000, "success", "bi bi-check-lg");
+        init();
+      })
+      .catch((e) => {
+        console.error(e);
+        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
+        pollingOff();
+      });
+  }
+
+  function resetPasswordModal() {
+    if (!active) return;
+    const seatCode = this.parentElement.parentElement.id;
+    ui.modal({
+      title: 'Reset Password',
+      body: `<p>Are you sure you would like to reset this password's associated password? The seat code will be prompted to set a new password on next app load. This action is not reversible.</p>`,
+      buttons: [
+        {
+          text: 'Cancel',
+          class: 'cancel-button',
+          close: true,
+        },
+        {
+          text: 'Reset',
+          class: 'submit-button',
+          onclick: () => {
+            resetPassword(seatCode);
+          },
+          close: true,
+        },
+      ],
+    });
+  }
+
+  function resetPassword(seatCode) {
+    if (!active) return;
+    ui.setUnsavedChanges(true);
+    fetch(domain + '/password', {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        usr: storage.get("usr"),
+        pwd: storage.get("pwd"),
+        seatCode,
+      }),
+    })
+      .then(async (r) => {
+        if (!r.ok) {
+          try {
+            var re = await r.json();
+            if (re.error || re.message) {
+              ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+              throw new Error(re.error || re.message);
+            } else {
+              throw new Error("API error");
+            }
+          } catch (e) {
+            throw new Error(e.message || "API error");
+          }
+        }
+        return await r.json();
+      })
+      .then(() => {
+        ui.setUnsavedChanges(false);
+        ui.toast("Successfully reset password.", 3000, "success", "bi bi-check-lg");
         init();
       })
       .catch((e) => {
@@ -5040,7 +5055,7 @@ try {
         itemName = document.getElementById("course-period-input") ? courses.find(c => (String(c.id) === document.getElementById("course-period-input").value))?.name : null;
         break;
       case 'segment':
-        if (!itemId) itemId = loadedSegment ? loadedSegment.number : null;
+        if (!itemId) itemId = loadedSegment ? loadedSegment.id : null;
         itemName = loadedSegment ? loadedSegment.name : null;
         break;
       case 'question':
@@ -5082,7 +5097,7 @@ try {
       var itemName = null;
       switch (itemType) {
         case 'segment':
-          itemName = segments.find(s => String(s.number) === itemId).name;
+          itemName = segments.find(s => String(s.id) === itemId).name;
           break;
         case 'question':
           itemName = questions.find(q => String(q.id) === itemId).number;
@@ -5182,7 +5197,7 @@ try {
         itemName = courses.find(c => String(c.id) === itemId)?.name;
         break;
       case 'segment':
-        itemName = segments.find(s => String(s.number) === itemId)?.name;
+        itemName = segments.find(s => String(s.id) === itemId)?.name;
         break;
       case 'question':
         itemName = questions.find(q => String(q.id) === itemId)?.number;
@@ -5229,7 +5244,7 @@ try {
           itemName = courses.find(c => String(c.id) === itemId)?.name;
           break;
         case 'segment':
-          itemName = segments.find(s => String(s.number) === itemId)?.name;
+          itemName = segments.find(s => String(s.id) === itemId)?.name;
           break;
         case 'question':
           itemName = questions.find(q => String(q.id) === itemId)?.number;
@@ -5451,6 +5466,24 @@ try {
     document.body.removeChild(link);
     ui.toast("Roster template downloaded successfully.", 3000, "success", "bi bi-check-circle-fill");
   });
+
+  function selectBetween() {
+    if (!active) return;
+    ui.setUnsavedChanges(true);
+    if (document.querySelectorAll('.selected').length < 2) return ui.toast("At least 2 bounds required.", 5000, "error", "bi bi-exclamation-triangle-fill");
+    const selected = document.querySelectorAll('.selected');
+    const first = selected[0];
+    const last = selected[selected.length - 1];
+    const selectElements = [...first.parentElement.children].filter(child => child.querySelector('[data-select]'));
+    let inBounds = false;
+    selectElements.forEach((el) => {
+      if (el === first || el === last) {
+        inBounds = !inBounds;
+      } else if (inBounds) {
+        el.classList.add('selected');
+      }
+    });
+  }
 } catch (error) {
   if (storage.get("developer")) {
     alert(`Error @ admin.js: ${error.message}`);

@@ -1,21 +1,21 @@
 # Virtual Checker
 
-![Banner](banner.png)
+![Banner](banner-title.png)
 
-Next generation AI-powered homework checking, cloud hosted ☁️🚀✅
+Simplify homework distribution and grading with the next generation cloud hosted AI-powered homework checker, streamlining the educational experience for both students and educators with instant response matching and feedback.
 
-- Courses, Periods, Segments, Questions
-- Image Uploads, Math, Sets, Matrices
-- Correct, Incorrect, Pending Statuses
+- Courses, Periods, Segments, Questions, Responses
+- Text, Choice, Math, Set, Matrix Response Modes
+- Mastery, Correct, In Progress, Pending Statuses
+- Passwords & Multi-device Settings Syncing
+- Syllabus, Roster, Attachment Uploads
+- Detailed Downloadable CSV Reports
 - Known Correct & Incorrect Answers
-- Multi-selecting & Response Polling
-- OTPs & Settings, History Backups
 - Instant AI Response Matching
-- Flag Response for Review
-- Course, Segment Reports
+- Flag Responses for Review
 - Teacher Assistant Users
 - Backups & Archiving
-- Many More Features
+- Much More
 
 [![Wakatime](https://wakatime.com/badge/user/074621a8-639e-4f3e-b6d9-f23b6bb481a9/project/7100b5bf-f2be-41d1-896e-136cd000ea6e.svg)](https://faisaln.com/portfolio/virtual-checker)
 [![Github Issues](https://img.shields.io/github/issues/faisalnjs/virtual-checker?style=flat&logo=github&label=GitHub%20Issues&color=mediumseagreen)](https://wakatime.com/@faisalnjs/projects/vbofsovljs)
