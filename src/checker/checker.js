@@ -43,11 +43,13 @@ try {
 
   // Initialization
   async function init() {
+    ui.startLoader();
     if (!document.getElementById("course-input")) {
       ui.stopLoader();
       return;
     }
     // Populate seat code finder grid
+    document.getElementById("seat-grid").innerHTML = "";
     for (let col = 1; col <= 5; col++) {
       for (let row = 6; row > 0; row--) {
         period = document.getElementById("period-input").value;
