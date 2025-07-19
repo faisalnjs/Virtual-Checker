@@ -27,29 +27,27 @@ dialog img {
 }
 
 dialog #version-string {
-  margin: -45px 10px 15px auto;
+  margin: -75px auto 45px 17.5px;
   width: fit-content;
   z-index: 1;
-  background: var(--background-color);
-  padding: 0 7.5px;
-  border-radius: 5px;
+  background: transparent;
   display: flex;
   align-items: center;
   gap: 7px;
 }
 
 dialog #version-string p {
-  font-size: 20px;
+  font-size: 15px;
   font-weight: 600;
   line-height: 30px;
-  background: linear-gradient(0, var(--text-color) 50%, transparent);
+  background: linear-gradient(0, white 45%, transparent);
   background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
 dialog #version-string code {
-  font-size: 15px;
+  font-size: 10px;
 }
 
 dialog .menu-icons {

@@ -387,21 +387,7 @@ export async function syncPush(type, key = null) {
     if (!type) return;
     if ((type !== "settings") && (type !== "history")) return;
     if ((type === "settings") && !key) return;
-    if (!storage.get("code")) {
-        ui.view();
-        ui.modal({
-            title: 'Error',
-            body: '<p>No seat code found. Please enter a valid seat code first.</p>',
-            buttons: [
-                {
-                    text: 'OK',
-                    class: 'submit-button',
-                    close: true,
-                },
-            ],
-        });
-        return;
-    }
+    if (!storage.get("code")) return;
     await fetch(domain + '/password', {
         method: "POST",
         headers: {
