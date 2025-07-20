@@ -364,10 +364,11 @@ export async function sync(hideWelcome = true) {
                                 }
                                 return await r.json();
                             })
-                            .then(r => {
+                            .then(async r => {
                                 ui.toast(r.message, 3000, "success", "bi bi-key");
                                 ui.setUnsavedChanges(false);
-                                sync(hideWelcome);
+                                await sync(true);
+                                await ui.launchWelcome();
                             })
                             .catch((e) => {
                                 console.error(e);

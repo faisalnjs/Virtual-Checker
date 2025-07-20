@@ -12,6 +12,7 @@ try {
     const island = document.querySelector('.island');
     const islandOpen = island ? island.classList.contains('visible') : false;
     const isTyping = document.activeElement.matches("input, textarea, [contenteditable]");
+    const isWelcomeActive = document.querySelector('.welcome-container');
     if (e.ctrlKey) {
       if (e.key == "Enter" && !anyDialogOpen) {
         document.getElementById("submit-button")?.click();
@@ -28,6 +29,10 @@ try {
       if (e.key == "s" && !anyDialogOpen && document.querySelector('[data-speed]')) {
         e.preventDefault();
         document.querySelector('[data-speed]').click();
+      }
+      if (e.key == "f") {
+        e.preventDefault();
+        ui.launchWelcome();
       }
     } else if (e.altKey) {
       if (/[1-9]/.test(e.key)) {
@@ -78,6 +83,10 @@ try {
       }
       const filterReportResponses = document.getElementById("filter-report-responses");
       if (filterReportResponses) filterReportResponses.children[0].click();
+    } else if (e.key == "ArrowRight" && isWelcomeActive && !isTyping) {
+      if (isWelcomeActive.querySelector(`[step="${Number(isWelcomeActive.getAttribute('step')) + 1}"]`)) isWelcomeActive.setAttribute('step', Number(isWelcomeActive.getAttribute('step')) + 1);
+    } else if (e.key == "ArrowLeft" && isWelcomeActive && !isTyping) {
+      if (isWelcomeActive.querySelector(`[step="${Number(isWelcomeActive.getAttribute('step')) - 1}"]`)) isWelcomeActive.setAttribute('step', Number(isWelcomeActive.getAttribute('step')) - 1);
     }
   });
 } catch (error) {

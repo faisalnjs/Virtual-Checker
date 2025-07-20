@@ -827,3 +827,47 @@ export var defaultCourse = null;
 export function setDefaultCourse(value) {
   defaultCourse = value;
 }
+
+export async function launchWelcome() {
+  const welcomeContainer = document.createElement('div');
+  welcomeContainer.classList = 'welcome-container';
+  welcomeContainer.innerHTML = `
+    <div step="1">
+      <h4>Welcome to</h4>
+      <h1>Virtual Checker</h1>
+      <button data-skip>Skip Intro</button>
+    </div>
+    <div step="2">
+      <h4>Log in</h4>
+      <img src="../intro-step-1.gif" />
+      <button data-skip>Skip Intro</button>
+    </div>
+    <div step="3">
+      <h4>Answer modes</h4>
+      <img src="" />
+      <button data-skip>Skip Intro</button>
+    </div>
+  `;
+  document.body.appendChild(welcomeContainer);
+  welcomeContainer.querySelectorAll('[data-skip]').forEach(a => a.addEventListener('click', () => {
+    welcomeContainer.removeAttribute('step');
+    setTimeout(() => {
+      welcomeContainer.classList.remove('active');
+      setTimeout(() => {
+        welcomeContainer.remove();
+      }, 500);
+    }, 500);
+  }));
+  setTimeout(() => {
+    welcomeContainer.classList.add('active');
+    setTimeout(() => {
+      welcomeContainer.setAttribute('step', 1);
+      setTimeout(() => {
+        welcomeContainer.setAttribute('step', 2);
+        setTimeout(() => {
+          welcomeContainer.setAttribute('step', 3);
+        }, 15000);
+      }, 3000);
+    }, 500);
+  }, 500);
+}
