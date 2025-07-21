@@ -47,9 +47,9 @@ try {
     } else if (e.key == "Enter" && anyDialogOpen) {
       document.querySelector('dialog[open] .submit-button')?.click();
     } else if (e.key == "[" && island && islandOpen && !isTyping) {
-      document.querySelector('.island').classList.remove('visible');
+      island.classList.remove('visible');
     } else if (e.key == "]" && island && !islandOpen && !isTyping) {
-      document.querySelector('.island').classList.add('visible');
+      island.classList.add('visible');
     } else if (e.key == "Backspace" && !isTyping && !anyDialogOpen) {
       const filterSegmentInput = document.getElementById("filter-segment-input");
       if (filterSegmentInput) {
@@ -78,6 +78,10 @@ try {
       }
       const filterReportResponses = document.getElementById("filter-report-responses");
       if (filterReportResponses) filterReportResponses.children[0].click();
+    } else if (e.key == "=" && island && islandOpen && !isTyping) {
+      island.querySelectorAll('.extra').forEach(el => {
+        el.classList.toggle('hidden');
+      });
     }
   });
 } catch (error) {

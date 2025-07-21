@@ -1,4 +1,7 @@
 import { convertLatexToMarkup, renderMathInElement } from "mathlive";
+import mediumZoom from "medium-zoom";
+import Quill from "quill";
+import "faz-quill-emoji/autoregister";
 
 var lastIslandId = null;
 var islandSource = null;
@@ -42,6 +45,38 @@ export default function spawnIsland(source = null, dataType = 'question', data =
             subtitle.innerHTML = data.subtitle;
             island.appendChild(subtitle);
         }
+    }
+    if (data.description && data.description.includes('ops') && (data.description != '{"ops":[{"insert":"\\n"}]}') && JSON.parse(data.description)) {
+        var description = document.createElement('div');
+        description.classList = 'description extra hidden';
+        var textarea = document.createElement('div');
+        description.appendChild(textarea);
+        island.appendChild(description);
+        var quill = new Quill(textarea, {
+            readOnly: true,
+            modules: {
+                syntax: true,
+                toolbar: false,
+                fazEmoji: {
+                    collection: 'fluent-emoji',
+                },
+            },
+            theme: 'snow'
+        });
+        quill.setContents(JSON.parse(data.description));
+    }
+    if (data.attachments && JSON.parse(data.attachments)) {
+        var attachments = document.createElement('div');
+        attachments.classList = 'attachments extra hidden';
+        JSON.parse(data.attachments).forEach(attachment => {
+            var image = document.createElement('img');
+            image.src = attachment;
+            attachments.appendChild(image);
+        });
+        island.appendChild(attachments);
+        mediumZoom(".island .attachments img", {
+          background: "transparent"
+        });
     }
     if (data.lists) {
         data.lists.forEach(list => {
@@ -129,6 +164,8 @@ export function moveFromCurrent(moveBy) {
                 title: `Question ${newItem.number}`,
                 subtitle: `${newItem.question}`,
                 subtitleLatex: newItem.latex,
+                description: newItem.description,
+                attachments: newItem.images,
                 lists: [
                     {
                         title: 'Correct Answers',

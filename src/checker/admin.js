@@ -1552,6 +1552,8 @@ try {
               title: `Question ${question.number}`,
               subtitle: `${question.question}`,
               subtitleLatex: question.latex,
+              description: question.description,
+              attachments: question.images,
               lists: [
                 {
                   title: 'Correct Answers',
@@ -1652,6 +1654,7 @@ try {
           });
           if (JSON.parse(q.description)) quill.setContents(JSON.parse(q.description));
           quill.on('text-change', (delta) => {
+            ui.setUnsavedChanges(true);
             var pastedLatex = delta.ops.find(op => Object.keys(op).includes('insert'))?.insert;
             if (pastedLatex && (typeof pastedLatex === 'string')) {
               const latexMatches = [...pastedLatex.matchAll(/(\$\$(.+?)\$\$)|(?<!\\)\$(.+?)(?<!\\)\$/gs)];
@@ -1761,6 +1764,8 @@ try {
             title: `Question ${question.number}`,
             subtitle: `${question.question}`,
             subtitleLatex: question.latex,
+            description: question.description,
+            attachments: question.images,
             lists: [
               {
                 title: 'Correct Answers',
@@ -2144,6 +2149,8 @@ try {
             title: `Question ${question.number}`,
             subtitle: `${question.question}`,
             subtitleLatex: question.latex,
+            description: question.description,
+            attachments: question.images,
             lists: [
               {
                 title: 'Correct Answers',
@@ -2372,6 +2379,8 @@ try {
           title: `Question ${question.number}`,
           subtitle: `${question.question}`,
           subtitleLatex: question.latex,
+          description: question.description,
+          attachments: question.images,
           lists: [
             {
               title: 'Correct Answers',
@@ -3228,6 +3237,8 @@ try {
           title: `Question ${question.number}`,
           subtitle: `${question.question}`,
           subtitleLatex: question.latex,
+          description: question.description,
+          attachments: question.images,
           lists: [
             {
               title: 'Correct Answers',
@@ -3269,6 +3280,8 @@ try {
           title: `Question ${question.number}`,
           subtitle: `${question.question}`,
           subtitleLatex: question.latex,
+          description: question.description,
+          attachments: question.images,
           lists: [
             {
               title: 'Correct Answers',
@@ -3310,6 +3323,8 @@ try {
           title: `Question ${question.number}`,
           subtitle: `${question.question}`,
           subtitleLatex: question.latex,
+          description: question.description,
+          attachments: question.images,
           lists: [
             {
               title: 'Correct Answers',

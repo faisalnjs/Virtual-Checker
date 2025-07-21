@@ -291,10 +291,26 @@ div[data-color-input] > div[data-color-preview]:hover {
   align-items: flex-start;
   justify-content: flex-start;
   gap: 2.5px;
+  overflow-y: scroll;
+}
+
+.island::-webkit-scrollbar {
+  display: none;
+}
+
+.island::before {
+  content: "Use = to show extra fields";
+  position: absolute;
+  right: 20px;
 }
 
 .island.visible {
   opacity: 0.5;
+  transition: opacity 0.25s ease-in-out;
+}
+
+.island.visible:hover {
+  opacity: 1;
   transition: opacity 0.25s ease-in-out;
 }
 

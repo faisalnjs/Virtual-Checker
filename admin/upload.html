@@ -429,6 +429,21 @@
                 placeholder: 'Add some written content to your question...',
                 theme: 'snow'
             });
+            quill.on('text-change', (delta) => {
+                var pastedLatex = delta.ops.find(op => Object.keys(op).includes('insert'))?.insert;
+                if (pastedLatex && (typeof pastedLatex === 'string')) {
+                    const latexMatches = [...pastedLatex.matchAll(/(\$\$(.+?)\$\$)|(?<!\\)\$(.+?)(?<!\\)\$/gs)];
+                    latexMatches.forEach(match => {
+                        const fullMatch = match[0];
+                        const innerLatex = match[2] || match[3];
+                        const index = pastedLatex.indexOf(fullMatch);
+                        quill.deleteText(quill.getSelection(true)?.index + index, fullMatch.length);
+                        quill.insertEmbed(quill.getSelection(true)?.index + index, 'formula', innerLatex);
+                        pastedLatex = pastedLatex.replace(fullMatch, ' ');
+                    });
+                    pastedLatex = pastedLatex.replace(/(?<!\\)\$/g, '');
+                }
+            });
         };
         var submitSuccess = false;
         async function submit() {

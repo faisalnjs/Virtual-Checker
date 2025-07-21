@@ -607,6 +607,7 @@ div.ML__keyboard {
   align-items: center;
   gap: 10px;
   align-self: stretch;
+  flex-wrap: wrap;
 }
 
 .attachments .image,
@@ -617,6 +618,7 @@ div.ML__keyboard {
   cursor: pointer;
   position: relative;
   background-color: var(--text-color);
+  overflow: hidden;
 }
 
 .attachments .image::after {
@@ -664,6 +666,7 @@ div.ML__keyboard {
 }
 
 .description {
+  width: -webkit-fill-available;
   max-width: min(100%, 800px);
 }
 
@@ -1064,7 +1067,8 @@ body:has(.selecting) [data-unflag-response] {
 }
 
 hidden,
-[hidden] {
+[hidden],
+.hidden {
   display: none;
 }
 
@@ -1191,7 +1195,7 @@ hidden,
 }
 
 .medium-zoom-image {
-  border-radius: 5px;
+  border-radius: 0.1rem;
 }
 
 .color-info {
