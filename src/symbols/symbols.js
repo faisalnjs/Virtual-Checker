@@ -1,5 +1,6 @@
 import * as ui from "/src/modules/ui.js";
 import symbols from "./symbols.json";
+import Element from "/src/modules/element.js";
 
 class Autocomplete {
   #start = 0;
@@ -118,7 +119,7 @@ document.querySelectorAll("[data-insert-symbol]").forEach((button) => {
 if (document.querySelector("#symbols-grid")) {
   // Loop through unique symbols and append them to DOM
   uniqueSymbols.forEach((symbol) => {
-    const button = new ui.Element("button", symbol, {
+    const button = new Element("button", symbol, {
       click: () => {
         // Close the modal
         ui.view("");
