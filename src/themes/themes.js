@@ -1,13 +1,15 @@
+/* eslint-disable no-inner-declarations */
 import "./themes.css";
 import themes from "./themes.json";
 
 import "./butterfly/butterfly.js";
 import "./festive/festive.js";
 
-import * as ui from "/src/modules/ui.js";
 import storage from "/src/modules/storage.js";
 import * as auth from "/src/modules/auth.js";
+import Element from "/src/modules/element.js";
 
+let selectedTheme = "";
 const defaultTheme = {
   "color-scheme": "light",
   "text-color": "#2c2c2c",
@@ -132,9 +134,35 @@ function decodeThemeCode(code) {
   }
 }
 
-try {
-  let selectedTheme = "";
+export function renderThemesGrid(originalTheme = null) {
+  const themesGrid = document.querySelector(".themes-grid");
+  if (!themesGrid) return;
+  themesGrid.innerHTML = "";
+  themes.forEach((theme) => {
+    const value = theme[0];
+    const name = theme[1] || theme[0];
+    const button = document.createElement("button");
+    button.textContent = name;
+    button.setAttribute("data-theme", value);
+    if (value === originalTheme) button.classList.add('selected');
+    button.addEventListener("click", () => {
+      selectedTheme = value;
+      document.querySelector('.welcome-container').setAttribute("data-theme", value);
+      originalTheme = value;
+      storage.set("theme", value);
+      syncTheme();
+    });
+    button.addEventListener("mouseover", () => {
+      document.querySelector('.welcome-container').setAttribute("data-theme", value);
+    });
+    button.addEventListener("mouseout", () => {
+      document.querySelector('.welcome-container').setAttribute("data-theme", originalTheme);
+    });
+    themesGrid.append(button);
+  });
+}
 
+try {
   themes.forEach((theme) => {
     const value = theme[0];
     const name = theme[1] || theme[0];
@@ -229,7 +257,7 @@ try {
   if (storage.get("developer")) {
     // Add developer theme input
     document.querySelector(`[data-modal-page="theme"]`).append(
-      new ui.Element(
+      new Element(
         "input",
         null,
         {
@@ -252,7 +280,7 @@ try {
     document.getElementById("theme-debug").value = storage.get("theme") || "";
     // Add Copy CSS button
     document.querySelector(`[data-modal-page="editor"]`).append(
-      new ui.Element("button", "Copy CSS", {
+      new Element("button", "Copy CSS", {
         "click": copyThemeCSS,
       }).element,
     );

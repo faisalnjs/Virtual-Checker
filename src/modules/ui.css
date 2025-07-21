@@ -363,3 +363,168 @@ div[data-color-input] > div[data-color-preview]:hover {
 .matrix .matrix-row .matrix-cell:not(:last-child) {
   border-right: 1px solid var(--text-color);
 }
+
+.welcome-container {
+  background: transparent;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  opacity: 0;
+  transition: 0.5s ease-in-out;
+}
+
+.welcome-container.active {
+  background: var(--background-color);
+  opacity: 1;
+  transition: 0.5s ease-in-out;
+}
+
+.welcome-container::before {
+  content: "";
+  position: fixed;
+  top: -50vh;
+  height: 50vh;
+  width: min(135%, 1600px);
+  background: radial-gradient(var(--accent-color), transparent 65%);
+  z-index: 10001;
+  transition: top 0.5s ease-in-out;
+}
+
+.welcome-container.active::before {
+  top: calc((-50vh / 2) - 110px);
+  transition: top 0.5s ease-in-out;
+}
+
+body:has(.welcome-container.active) {
+  overflow: hidden;
+}
+
+.welcome-container [step] {
+  position: fixed;
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 50px;
+  flex-wrap: wrap;
+  color: var(--text-color) !important;
+  background: transparent;
+  padding: 10vh 10vw;
+  opacity: 0;
+  margin-bottom: -100px;
+  transition: 1s ease-in-out;
+}
+
+.welcome-container [step].center {
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  text-align: center;
+}
+
+.welcome-container[step="1"] [step="1"],
+.welcome-container[step="2"] [step="2"],
+.welcome-container[step="3"] [step="3"],
+.welcome-container[step="4"] [step="4"],
+.welcome-container[step="5"] [step="5"],
+.welcome-container[step="6"] [step="6"],
+.welcome-container[step="7"] [step="7"],
+.welcome-container[step="8"] [step="8"],
+.welcome-container[step="9"] [step="9"],
+.welcome-container[step="10"] [step="10"] {
+  opacity: 1;
+  margin-bottom: 0px;
+  z-index: 10000;
+  transition: 1s ease-in-out;
+}
+
+.welcome-container > button,
+.welcome-container [step] > button {
+  background: var(--accent-color);
+  color: var(--accent-text-color);
+  border-radius: 5px;
+  opacity: 0.75;
+}
+
+.welcome-container > button:hover,
+.welcome-container > button:focus,
+.welcome-container [step] > button:hover,
+.welcome-container [step] > button:focus {
+  opacity: 0.5;
+  scale: 0.95;
+}
+
+.welcome-container:not([step="1"]) > button {
+  position: fixed;
+  left: 25px;
+  bottom: 25px;
+}
+
+.welcome-container > p {
+  position: fixed;
+  right: 25px;
+  bottom: 25px;
+  color: var(--text-color);
+}
+
+.welcome-container:not([step]) > button,
+.welcome-container[step="1"] > button,
+.welcome-container[step="10"] > button,
+.welcome-container:not([step]) > p,
+.welcome-container[step="1"] > p,
+.welcome-container[step="10"] > p {
+  opacity: 0;
+}
+
+.welcome-container h1 {
+  font-size: min(20vw, 100px);
+  line-height: 1;
+  margin-top: -0.5vh;
+  background: linear-gradient(0, var(--text-color) 45%, transparent);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.welcome-container [step] *:not(button):not(> button),
+.welcome-container:not([step="10"]) [step="10"] button {
+  pointer-events: none;
+  user-select: none;
+}
+
+.welcome-container .themes-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 5px;
+}
+
+.welcome-container .themes-grid button {
+  min-width: fit-content;
+  color: var(--text-color);
+  background-color: var(--surface-color);
+}
+
+.welcome-container .themes-grid button[data-theme="default"] {
+  color-scheme: light;
+  --text-color: #2c2c2c;
+  --background-color: #fafafa;
+  --surface-color: #e7e7e7;
+  --accent-color: #424242;
+  --accent-text-color: #ffffff;
+  --error-color: #fa8796;
+}
+
+.welcome-container .themes-grid button:hover {
+  color: var(--accent-text-color);
+  background-color: var(--accent-color);
+}
+
+.welcome-container .themes-grid button.selected {
+  border: 2.5px solid var(--accent-color);
+}
