@@ -367,7 +367,6 @@ export async function sync(hideWelcome = true) {
                             .then(async r => {
                                 ui.toast(r.message, 3000, "success", "bi bi-key");
                                 ui.setUnsavedChanges(false);
-                                await sync(true);
                                 await ui.launchWelcome();
                             })
                             .catch((e) => {

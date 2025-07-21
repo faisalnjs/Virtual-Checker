@@ -419,7 +419,9 @@ body:has(.welcome-container.active) {
 .welcome-container[step="5"] [step="5"],
 .welcome-container[step="6"] [step="6"],
 .welcome-container[step="7"] [step="7"],
-.welcome-container[step="8"] [step="8"] {
+.welcome-container[step="8"] [step="8"],
+.welcome-container[step="9"] [step="9"],
+.welcome-container[step="10"] [step="10"] {
   opacity: 1;
   margin-bottom: 0px;
   z-index: 10000;
@@ -457,10 +459,10 @@ body:has(.welcome-container.active) {
 
 .welcome-container:not([step]) > button,
 .welcome-container[step="1"] > button,
-.welcome-container[step="5"] > button,
+.welcome-container[step="10"] > button,
 .welcome-container:not([step]) > p,
 .welcome-container[step="1"] > p,
-.welcome-container[step="5"] > p {
+.welcome-container[step="10"] > p {
   opacity: 0;
 }
 
@@ -475,7 +477,7 @@ body:has(.welcome-container.active) {
 }
 
 .welcome-container [step] *:not(button):not(> button),
-.welcome-container:not([step="5"]) [step="5"] button {
+.welcome-container:not([step="10"]) [step="10"] button {
   pointer-events: none;
   user-select: none;
 }

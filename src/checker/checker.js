@@ -314,7 +314,7 @@ try {
     multipleChoice = null;
     autocomplete.update();
     // Focus input element
-    questionInput.focus();
+    answerInput.focus();
   }
 
   // Check answer
@@ -383,7 +383,7 @@ try {
         } else if (mode === "frq" && !multipleChoice) {
           storageClickMode = "frq";
         };
-        await storeClick(storage.get("code"), segment, question, answer, r.reason, storageClickMode);
+        await storeClick(storage.get("code"), r.id, segment, question, answer, r.reason, storageClickMode);
         if (mode === "frq") {
           if (part) {
             if (document.querySelector(`[data-frq-part="${part}"]`).parentElement.nextElementSibling && (document.querySelector(`[data-frq-part="${part}"]`).parentElement.nextElementSibling.classList.contains('part'))) {
@@ -759,7 +759,7 @@ try {
     var latestResponses = (storage.get("history") || []).filter(r => (String(r.segment) === String(segments.value)) && (String(r.question) === String(question.id))).sort((a, b) => b.timestamp - a.timestamp);
     if (latestResponses.length > 0) {
       const fetchPromises = latestResponses.map(item =>
-        fetch(`${domain}/response?seatCode=${item.code}&segment=${item.segment}&question=${item.question}&answer=${item.answer}`, {
+        fetch(`${domain}/response?seatCode=${item.code}&id=${item.id}&segment=${item.segment}&question=${item.question}&answer=${item.answer}`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -908,7 +908,7 @@ try {
                 } else {
                   document.querySelector(`[data-multiple-choice="${choice[1].toLowerCase()}"]`).click();
                 }
-                questionInput.focus();
+                answerInput.focus();
                 autocomplete.update();
               }
               window.scrollTo(0, document.body.scrollHeight);
@@ -1028,12 +1028,13 @@ try {
   }
 
   // Store click to storage and history
-  async function storeClick(code, segment, question, answer, reason, type) {
+  async function storeClick(code, id, segment, question, answer, reason, type) {
     ui.setUnsavedChanges(true);
     const history = storage.get("history") || [];
     const timestamp = Date.now();
     history.push({
       "code": code,
+      "id": id,
       "segment": segment,
       "question": question,
       "answer": answer,
@@ -1127,7 +1128,7 @@ try {
     questionsArray = await questionsResponse.json();
 
     const fetchPromises = history.sort((a, b) => a.timestamp - b.timestamp).map(item =>
-      fetch(`${domain}/response?seatCode=${item.code}&segment=${item.segment}&question=${item.question}&answer=${item.answer}`, {
+      fetch(`${domain}/response?seatCode=${item.code}&id=${item.id}&segment=${item.segment}&question=${item.question}&answer=${item.answer}`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -1277,7 +1278,7 @@ try {
               } else {
                 document.querySelector(`[data-multiple-choice="${choice[1].toLowerCase()}"]`).click();
               }
-              questionInput.focus();
+              answerInput.focus();
               autocomplete.update();
             }
           });
