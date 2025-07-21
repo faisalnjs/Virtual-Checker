@@ -1,4 +1,8 @@
 import "./ui.css";
+import storage from "./storage.js";
+import * as themes from "../themes/themes.js"
+import * as auth from "./auth.js"
+import Element from "./element.js";
 
 export function alert(title, text, callback, blur) {
   return modal({
@@ -509,33 +513,6 @@ export function animate(element, from, to, duration, assign = true) {
   }, duration);
 }
 
-export class Element {
-  constructor(tag, text, events, className, attributes) {
-    this.tag = tag;
-    this.text = text;
-    this.events = events;
-    this.className = className;
-    this.attributes = attributes;
-  }
-
-  get element() {
-    const element = document.createElement(this.tag);
-    element.innerHTML = this.text;
-    this.className && (element.className = this.className);
-    this.events &&
-      Object.keys(this.events).forEach((type) => {
-        const listener = this.events[type];
-        element.addEventListener(type, listener);
-      });
-    this.attributes &&
-      Object.keys(this.attributes).forEach((attribute) => {
-        const value = this.attributes[attribute];
-        element.setAttribute(attribute, value);
-      });
-    return element;
-  }
-}
-
 // Click outside modal
 (() => {
   document.addEventListener("pointerdown", (e) => {
@@ -828,46 +805,101 @@ export function setDefaultCourse(value) {
   defaultCourse = value;
 }
 
+var welcomeTimeouts = [];
+var welcomeContainer = null;
+var originalTheme = storage.get("theme");
+
 export async function launchWelcome() {
-  const welcomeContainer = document.createElement('div');
+  if (welcomeContainer) welcomeContainer.remove();
+  if (welcomeTimeouts.length) clearWelcomeTimeouts();
+  welcomeContainer = document.createElement('div');
   welcomeContainer.classList = 'welcome-container';
+  welcomeContainer.setAttribute('data-theme', 'stealth');
   welcomeContainer.innerHTML = `
-    <div step="1">
+    <div class="center" step="1">
       <h4>Welcome to</h4>
       <h1>Virtual Checker</h1>
       <button data-skip>Skip Intro</button>
     </div>
     <div step="2">
       <h4>Log in</h4>
-      <img src="../intro-step-1.gif" />
-      <button data-skip>Skip Intro</button>
+      <img src="../intro-step-2.gif" />
     </div>
     <div step="3">
-      <h4>Answer modes</h4>
-      <img src="" />
-      <button data-skip>Skip Intro</button>
+      <h4>Select segment & question</h4>
+      <img src="../intro-step-3.gif" />
     </div>
+    <div step="4">
+      <h4>Answer modes</h4>
+      <img src="../intro-step-4.gif" />
+    </div>
+    <div class="center" step="5">
+      <h4>Pick a Theme</h4>
+      <div class="themes-grid"></div>
+      <button data-finish>Finish & Save</button>
+    </div>
+    <button data-skip>Skip Intro</button>
+    <p>Use arrow keys (<, >) to manually navigate</p>
   `;
   document.body.appendChild(welcomeContainer);
   welcomeContainer.querySelectorAll('[data-skip]').forEach(a => a.addEventListener('click', () => {
-    welcomeContainer.removeAttribute('step');
-    setTimeout(() => {
-      welcomeContainer.classList.remove('active');
-      setTimeout(() => {
-        welcomeContainer.remove();
-      }, 500);
-    }, 500);
+    removeWelcome();
   }));
-  setTimeout(() => {
+  welcomeContainer.querySelector('[data-finish]').addEventListener('click', async () => {
+    await auth.syncPush("settings", "theme");
+    unsavedChanges = false;
+    removeWelcome();
+  });
+  originalTheme = storage.get("theme");
+  welcomeTimeouts[0] = setTimeout(() => {
     welcomeContainer.classList.add('active');
-    setTimeout(() => {
-      welcomeContainer.setAttribute('step', 1);
-      setTimeout(() => {
-        welcomeContainer.setAttribute('step', 2);
-        setTimeout(() => {
-          welcomeContainer.setAttribute('step', 3);
-        }, 15000);
+    welcomeTimeouts[1] = setTimeout(() => {
+      toWelcomeSlide(1);
+      welcomeTimeouts[2] = setTimeout(() => {
+        toWelcomeSlide(2);
+        welcomeTimeouts[3] = setTimeout(() => {
+          toWelcomeSlide(3);
+          welcomeTimeouts[4] = setTimeout(() => {
+            toWelcomeSlide(4);
+            welcomeTimeouts[5] = setTimeout(() => {
+              toWelcomeSlide(5);
+            }, 8000);
+          }, 7000);
+        }, 16000);
       }, 3000);
     }, 500);
+  }, 500);
+}
+
+export function clearWelcomeTimeouts() {
+  welcomeTimeouts.forEach(timeout => clearTimeout(timeout));
+  welcomeTimeouts = [];
+}
+
+export function toWelcomeSlide(n) {
+  if (!welcomeContainer) return;
+  const step = welcomeContainer.querySelector(`[step="${n}"]`);
+  if (!step) return;
+  welcomeContainer.setAttribute('step', n);
+  var maxN = welcomeContainer.querySelectorAll('[step]').length;
+  switch (n) {
+    case maxN:
+      themes.renderThemesGrid(originalTheme || "stealth");
+      if (originalTheme) welcomeContainer.setAttribute('data-theme', originalTheme);
+      break;
+  }
+  if (n !== maxN) welcomeContainer.setAttribute('data-theme', 'stealth');
+  if (step.querySelector('img')) step.querySelector('img').src = step.querySelector('img').src;
+}
+
+export function removeWelcome() {
+  welcomeContainer.removeAttribute('step');
+  setTimeout(() => {
+    welcomeContainer.classList.remove('active');
+    clearWelcomeTimeouts();
+    setTimeout(() => {
+      welcomeContainer.remove();
+      welcomeContainer = null;
+    }, 1000);
   }, 500);
 }

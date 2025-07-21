@@ -3,6 +3,7 @@
 import * as ui from "/src/modules/ui.js";
 import storage from "/src/modules/storage.js";
 import * as auth from "/src/modules/auth.js";
+import Element from "/src/modules/element.js";
 
 import { autocomplete, uniqueSymbols } from "/src/symbols/symbols.js";
 import { unixToString, unixToTimeString } from "/src/modules/time.js";
@@ -54,7 +55,7 @@ try {
       for (let row = 6; row > 0; row--) {
         period = document.getElementById("period-input").value;
         const code = period + row.toString() + col.toString();
-        const button = new ui.Element("button", "", {
+        const button = new Element("button", "", {
           click: () => {
             document.getElementById("code-input").value = code;
             ui.view("settings/code");
@@ -70,7 +71,7 @@ try {
         for (let row = 6; row > 0; row--) {
           period = document.getElementById("period-input").value;
           const code = period + row.toString() + col.toString();
-          const button = new ui.Element("button", "", {
+          const button = new Element("button", "", {
             click: () => {
               document.getElementById("code-input").value = code;
               ui.view("settings/code");

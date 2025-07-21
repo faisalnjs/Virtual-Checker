@@ -13,6 +13,7 @@ import "/src/keybinds/keybinds.js";
 
 import * as ui from "/src/modules/ui.js";
 import storage from "/src/modules/storage.js";
+import Element from "/src/modules/element.js";
 
 try {
   const version = import.meta.env.PACKAGE_VERSION;
@@ -112,7 +113,7 @@ try {
   // Disable developer mode button
   if (storage.get("developer")) {
     document.querySelector(`[data-modal-page="reset"]`).append(
-      new ui.Element("button", "Disable Developer Mode", {
+      new Element("button", "Disable Developer Mode", {
         "click": () => {
           storage.delete("developer");
         },

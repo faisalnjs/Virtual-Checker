@@ -30,7 +30,7 @@ try {
         e.preventDefault();
         document.querySelector('[data-speed]').click();
       }
-      if (e.key == "f") {
+      if (e.key == "i" && !anyDialogOpen) {
         e.preventDefault();
         ui.launchWelcome();
       }
@@ -83,10 +83,14 @@ try {
       }
       const filterReportResponses = document.getElementById("filter-report-responses");
       if (filterReportResponses) filterReportResponses.children[0].click();
-    } else if (e.key == "ArrowRight" && isWelcomeActive && !isTyping) {
-      if (isWelcomeActive.querySelector(`[step="${Number(isWelcomeActive.getAttribute('step')) + 1}"]`)) isWelcomeActive.setAttribute('step', Number(isWelcomeActive.getAttribute('step')) + 1);
-    } else if (e.key == "ArrowLeft" && isWelcomeActive && !isTyping) {
-      if (isWelcomeActive.querySelector(`[step="${Number(isWelcomeActive.getAttribute('step')) - 1}"]`)) isWelcomeActive.setAttribute('step', Number(isWelcomeActive.getAttribute('step')) - 1);
+    } else if (e.key == "ArrowRight" && isWelcomeActive) {
+      ui.clearWelcomeTimeouts();
+      ui.toWelcomeSlide(Number(isWelcomeActive.getAttribute('step')) + 1);
+    } else if (e.key == "ArrowLeft" && isWelcomeActive) {
+      ui.clearWelcomeTimeouts();
+      ui.toWelcomeSlide(Number(isWelcomeActive.getAttribute('step')) - 1);
+    } else if (e.key == "Escape" && isWelcomeActive) {
+      ui.removeWelcome();
     }
   });
 } catch (error) {
