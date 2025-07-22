@@ -530,6 +530,24 @@ body:has(.welcome-container.active) {
   border: 2.5px solid var(--accent-color);
 }
 
+@keyframes moveBefore {
+  from {
+    left: -20px;
+  }
+  to {
+    left: -17.5px;
+  }
+}
+
+@keyframes moveAfter {
+  from {
+    right: -20px;
+  }
+  to {
+    right: -17.5px;
+  }
+}
+
 .island-extends::before {
   content: "\F135";
   display: inline-block;
@@ -547,6 +565,7 @@ body:has(.welcome-container.active) {
   height: -webkit-fill-available;
   align-items: center;
   align-content: center;
+  animation: moveBefore 0.5s ease-in-out infinite alternate;
 }
 
 .island-extends::after {
@@ -566,6 +585,7 @@ body:has(.welcome-container.active) {
   height: -webkit-fill-available;
   align-items: center;
   align-content: center;
+  animation: moveAfter 0.5s ease-in-out infinite alternate;
 }
 
 .island-extends-item {
@@ -593,4 +613,5 @@ body:has(.welcome-container.active) {
   height: -webkit-fill-available;
   align-items: center;
   align-content: center;
+  animation: moveAfter 0.5s ease-in-out infinite alternate;
 }
