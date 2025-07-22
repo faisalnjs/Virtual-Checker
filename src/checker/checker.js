@@ -83,6 +83,11 @@ try {
       }
     });
     if (document.querySelector('[data-logout]')) document.querySelector('[data-logout]').addEventListener('click', () => auth.logout(init));
+    document.getElementById("code-input").value = '';
+    document.querySelectorAll("span.code").forEach((element) => {
+      element.innerHTML = '';
+    });
+    document.title = 'Virtual Checker';
     // Get URL parameters
     const params = new URLSearchParams(window.location.search);
     const code = params.get("code");

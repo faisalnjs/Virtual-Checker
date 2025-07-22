@@ -809,7 +809,10 @@ var welcomeTimeouts = [];
 var welcomeContainer = null;
 var originalTheme = storage.get("theme");
 
+document.querySelectorAll('[data-welcome]').forEach(a => a.addEventListener('click', launchWelcome));
+
 export async function launchWelcome() {
+  view();
   if (welcomeContainer) welcomeContainer.remove();
   if (welcomeTimeouts.length) clearWelcomeTimeouts();
   welcomeContainer = document.createElement('div');
@@ -855,6 +858,14 @@ export async function launchWelcome() {
     </div>
     <div class="center" step="10">
       <h4>Choose a theme</h4>
+      <div id="theme-preview">
+        <h2 class="text-placeholder">000</h2>
+        <p class="text-placeholder">Question</p>
+        <div class="control-placeholder"></div>
+        <p class="text-placeholder">Answer</p>
+        <div class="control-placeholder"></div>
+        <div class="control-placeholder pill"></div>
+      </div>
       <div class="themes-grid"></div>
       <button data-finish>Finish & Save</button>
     </div>

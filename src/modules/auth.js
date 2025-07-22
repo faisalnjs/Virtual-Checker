@@ -101,6 +101,7 @@ export function logout(returnFunction = null) {
     storage.delete("password");
     const url = new URL(window.location.href);
     url.search = '';
+    window.history.replaceState({}, document.title, url.toString());
     ui.setUnsavedChanges(false);
     if (returnFunction) returnFunction();
     return;
