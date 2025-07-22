@@ -5506,7 +5506,7 @@ try {
     const rotatePeriodN = document.getElementById('rotate-period-input').value;
     ui.modal({
       title: `Rotate ${rotatePeriodN ? 'period' : 'all periods'}?`,
-      body: `<p>This will archive all responses from this period, as well as remove all saved seat code settings and passwords for ${rotatePeriodN ? 'this period' : 'all periods'}. This action is not reversible.</p>`,
+      body: `<p>This will archive all responses from this period, as well as remove all TA users and saved seat code settings and passwords for ${rotatePeriodN ? 'this period' : 'all periods'}. This action is not reversible.</p>`,
       buttons: [
         {
           text: 'Cancel',
@@ -5530,7 +5530,7 @@ try {
     ui.view();
     ui.modal({
       title: "Rotate all periods?",
-      body: "<p>This will archive all responses from this period, as well as remove all saved seat code settings and passwords for all periods. This action is not reversible.</p>",
+      body: "<p>This will archive all responses from this period, as well as remove all TA users and saved seat code settings and passwords for all periods. This action is not reversible.</p>",
       buttons: [
         {
           text: 'Cancel',
