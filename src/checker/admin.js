@@ -911,7 +911,7 @@ try {
             buttonGrid.setAttribute("data-swapy-item", `segmentReorder-${s.id}`);
             buttonGrid.innerHTML = `<button square data-select tooltip="Select Segment"><i class="bi bi-circle"></i><i class="bi bi-circle-fill"></i></button><div class="input-group small"><div class="space" id="question-container"><input type="text" autocomplete="off" id="segment-number-input" value="${s.number}" placeholder="${s.number}" /></div></div><div class="input-group"><div class="space" id="question-container"><input type="text" autocomplete="off" id="segment-name-input" value="${s.name}" placeholder="${s.name}" /></div></div><div class="input-group mediuml"><div class="space" id="question-container"><input type="date" id="segment-due-date" value="${s.due || ''}"></div></div><button square data-remove-segment-input tooltip="Remove Segment"><i class="bi bi-trash"></i></button><button square data-archive-segment tooltip="Archive Segment"><i class="bi bi-archive"></i></button><button square data-edit-segment tooltip="Edit Segment"><i class="bi bi-pencil"></i></button><div class="drag" data-swapy-handle><i class="bi bi-grip-vertical"></i></div>`;
             buttonGrid.addEventListener('mouseenter', () => {
-              island(c.sort((a, b) => a.order - b.order), 'segment', {
+              island(buttonGrid, c.sort((a, b) => a.order - b.order), 'segment', {
                 sourceId: String(s.id),
                 id: `# ${s.number}`,
                 title: `${s.name}`,
@@ -1121,7 +1121,7 @@ try {
         </div>
         <button square data-restore-item tooltip="Restore Item"><i class="bi bi-arrow-counterclockwise"></i></button>`;
         buttonGrid.addEventListener('mouseenter', () => {
-          island(segments.sort((a, b) => a.order - b.order), 'segment', {
+          island(buttonGrid, segments.sort((a, b) => a.order - b.order), 'segment', {
             sourceId: String(segment.id),
             id: `# ${segment.number}`,
             title: `${segment.name}`,
@@ -1550,7 +1550,7 @@ try {
           buttonGrid.innerHTML = `<button square data-select tooltip="Select Question"><i class="bi bi-circle"></i><i class="bi bi-circle-fill"></i></button><div class="input-group small"><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-id-input" value="${q.id}" disabled /></div></div><div class="input-group small"><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-number-input" value="${q.number}" placeholder="${q.number}" /></div></div><div class="input-group small"><div class="space" id="question-container"><select id="question-segment-input">${segmentsString}</select></div></div><div class="input-group"><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-text-input" value="${q.question}" placeholder="${q.question}" /></div></div><button square data-toggle-latex tooltip="Toggle LaTeX Title"><i class="bi bi-${q.latex ? 'calculator-fill' : 'cursor-text'}"></i></button><button square data-remove-question-input tooltip="Remove Question"><i class="bi bi-trash"></i></button><button square data-archive-question-input tooltip="Archive Question"><i class="bi bi-archive"></i></button><button square data-toggle-question tooltip="Expand Question"><i class="bi bi-caret-down-fill"></i><i class="bi bi-caret-up-fill"></i></button>`;
           buttonGrid.addEventListener('mouseenter', () => {
             var question = q;
-            island(filteredQuestions, 'question', {
+            island(buttonGrid, filteredQuestions, 'question', {
               sourceId: String(question.id),
               id: `ID ${question.id}`,
               title: `Question ${question.number}`,
@@ -1762,7 +1762,7 @@ try {
         </div>
         <button square data-restore-item tooltip="Restore Item"><i class="bi bi-arrow-counterclockwise"></i></button>`;
         buttonGrid.addEventListener('mouseenter', () => {
-          island(filteredQuestions, 'question', {
+          island(buttonGrid, filteredQuestions, 'question', {
             sourceId: String(question.id),
             id: `ID ${question.id}`,
             title: `Question ${question.number}`,
@@ -2147,7 +2147,7 @@ try {
         buttonGrid.innerHTML = `<button square data-select tooltip="Select Item"><i class="bi bi-circle"></i><i class="bi bi-circle-fill"></i></button><input type="text" autocomplete="off" class="small" id="response-id-input" value="${r.id}" disabled hidden />${(String(r.flagged) === '1') ? `<button square data-unflag-response tooltip="Unflag Response"><i class="bi bi-flag-fill"></i></button>` : `<button square data-flag-response tooltip="Flag Response"><i class="bi bi-flag"></i></button>`}<input type="text" autocomplete="off" class="small" id="response-segment-input" value="${segments.find(s => String(s.id) === String(r.segment))?.number || r.segment}" disabled data-segment /><input type="text" autocomplete="off" class="small" id="response-question-input" value="${questions.find(q => String(q.id) === String(r.question_id)).number}" disabled data-question /><input type="text" autocomplete="off" class="small" id="response-question-id-input" value="${questions.find(q => String(q.id) === String(r.question_id)).id}" disabled hidden /><input type="text" autocomplete="off" class="small${(((r.status === 'Invalid Format') || (r.status === 'Unknown, Recorded')) && document.querySelector('.awaitingResponses .section') && (answers.find(a => a.id === questions.find(q => String(q.id) === String(r.question_id)).id).correct_answers.length > 0)) ? ' hideonhover' : ''}" id="response-seat-code-input" value="${r.seatCode}" disabled data-seat-code /><input type="text" autocomplete="off" class="small" id="response-time-taken-input" value="${timeTaken}" disabled data-time-taken${(typeof timeDifference != 'undefined') ? ` time="${timeDifference}"` : ''} /><input type="text" autocomplete="off" class="small" id="response-time-taken-input" value="${timeTakenToRevise}" disabled data-time-taken${(typeof timeDifference != 'undefined') ? ` time="${timeDifference}"` : ''} /><!--<input type="text" autocomplete="off" class="small" id="response-time-taken-input" value="${result}" disabled data-time-taken />--><input type="text" autocomplete="off" id="response-response-input" value="${escapeHTML(responseString)}" ${isMatrix ? 'mockDisabled' : 'disabled'} />${(r.status === 'Incorrect') ? `<button square data-edit-reason tooltip="Edit Reason"><i class="bi bi-reply${(r.reason) ? '-fill' : ''}"></i></button>` : ''}<input type="text" autocomplete="off" class="smedium${(((r.status === 'Invalid Format') || (r.status === 'Unknown, Recorded')) && document.querySelector('.awaitingResponses .section') && (answers.find(a => a.id === questions.find(q => String(q.id) === String(r.question_id)).id).correct_answers.length > 0)) ? ' hideonhover' : ''}" id="response-timestamp-input" value="${date.getMonth() + 1}/${date.getDate()} ${hours % 12 || 12}:${minutes < 10 ? '0' + minutes : minutes} ${hours >= 12 ? 'PM' : 'AM'}" disabled />${(((r.status === 'Invalid Format') || (r.status === 'Unknown, Recorded')) && document.querySelector('.awaitingResponses .section') && (answers.find(a => a.id === questions.find(q => String(q.id) === String(r.question_id)).id).correct_answers.length > 0)) ? `<input type="text" autocomplete="off" class="showonhover" id="response-correct-responses-input" value="${correctResponsesString}" disabled />` : ''}<button square id="mark-correct-button"${(r.status === 'Correct') ? ' disabled' : ''} tooltip="Mark Correct"><i class="bi bi-check-circle${(r.status === 'Correct') ? '-fill' : ''}"></i></button><button square id="mark-incorrect-button"${(r.status === 'Incorrect') ? ' disabled' : ''} tooltip="Mark Incorrect"><i class="bi bi-x-circle${(r.status === 'Incorrect') ? '-fill' : ''}"></i></button>`;
         buttonGrid.addEventListener('mouseenter', () => {
           var question = questions.find(q => String(q.id) === String(r.question_id));
-          island(questions, 'question', {
+          island(buttonGrid, questions, 'question', {
             sourceId: String(question.id),
             id: `ID ${question.id}`,
             title: `Question ${question.number}`,
@@ -2235,7 +2235,7 @@ try {
           ${(currentCourseRosters.length > 1) ? `</div>` : ''}`;
           document.querySelector('.seat-code-reports').appendChild(courseRosterProgress);
           courseRosterProgress.addEventListener('mouseenter', () => {
-            island(currentCourseRosters, 'roster', {
+            island(currentRosterProgress, currentCourseRosters, 'roster', {
               sourceId: String(currentCourseRoster.period),
               title: `Period ${currentCourseRoster.period}`,
               subtitle: `${registered.length}/${total.length} Registered Students`,
@@ -2377,7 +2377,7 @@ try {
       buttonGrid.innerHTML = `<input type="text" autocomplete="off" class="small" id="response-id-input" value="${r.single_response}" disabled hidden /><input type="text" autocomplete="off" class="small" id="response-segment-input" value="${segments.find(s => String(s.id) === String(r.segment))?.number || r.segment}" disabled data-segment /><input type="text" autocomplete="off" class="small" id="response-question-input" value="${questions.find(q => String(q.id) === String(r.question_id)).number}" disabled data-question /><input type="text" autocomplete="off" class="small" id="response-question-id-input" value="${questions.find(q => String(q.id) === String(r.question_id)).id}" disabled hidden /><input type="text" autocomplete="off" id="response-response-input" value="${escapeHTML(responseString)}" ${isMatrix ? 'mockDisabled' : 'disabled'} /><input type="text" autocomplete="off" class="small" id="response-count-input" value="${r.count}" disabled /><button square id="mark-correct-button"${(r.status === 'Correct') ? ' disabled' : ''} tooltip="Mark Correct"><i class="bi bi-check-circle${(r.status === 'Correct') ? '-fill' : ''}"></i></button><button square id="mark-incorrect-button"${(r.status === 'Incorrect') ? ' disabled' : ''} tooltip="Mark Incorrect"><i class="bi bi-x-circle${(r.status === 'Incorrect') ? '-fill' : ''}"></i></button>`;
       buttonGrid.addEventListener('mouseenter', () => {
         var question = questions.find(q => String(q.id) === String(r.question_id));
-        island(questions, 'question', {
+        island(buttonGrid, questions, 'question', {
           sourceId: String(question.id),
           id: `ID ${question.id}`,
           title: `Question ${question.number}`,
@@ -3235,7 +3235,7 @@ try {
       <button class="space" id="remove-existing-question-button" square tooltip="Remove Question"><i class="bi bi-trash"></i></button>`;
       inner.addEventListener('mouseenter', () => {
         var question = addingQuestion;
-        island(null, 'question', {
+        island(inner, null, 'question', {
           sourceId: String(question.id),
           id: `ID ${question.id}`,
           title: `Question ${question.number}`,
@@ -3278,7 +3278,7 @@ try {
       <button class="space" id="remove-existing-question-button" square tooltip="Remove Question"><i class="bi bi-trash"></i></button>`;
       inner.addEventListener('mouseenter', () => {
         var question = addingQuestion;
-        island(null, 'question', {
+        island(inner, null, 'question', {
           sourceId: String(question.id),
           id: `ID ${question.id}`,
           title: `Question ${question.number}`,
@@ -3321,7 +3321,7 @@ try {
       <button class="space" id="remove-existing-question-button" square tooltip="Remove Question"><i class="bi bi-trash"></i></button>`;
       inner.addEventListener('mouseenter', () => {
         var question = questions.find(q => String(q.id) === String(questionId));
-        island(null, 'question', {
+        island(inner, null, 'question', {
           sourceId: String(question.id),
           id: `ID ${question.id}`,
           title: `Question ${question.number}`,

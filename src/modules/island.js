@@ -6,8 +6,22 @@ import "faz-quill-emoji/autoregister";
 var lastIslandId = null;
 var islandSource = null;
 var islandSource2 = null;
+var hideIslandTimeout = null;
 
-export default function spawnIsland(source = null, dataType = 'question', data = {}, source2 = null) {
+export default function spawnIsland(element = null, source = null, dataType = 'question', data = {}, source2 = null) {
+    if (element) {
+        document.querySelectorAll('.island-extends').forEach(a => a.classList.remove('island-extends'));
+        element.classList.add('island-extends');
+        clearTimeout(hideIslandTimeout);
+    } else {
+        hideIslandTimeout = setTimeout(() => {
+            if (document.querySelector('.island:hover')) return;
+            document.querySelectorAll('.island-extends').forEach(a => a.classList.remove('island-extends'));
+            var island = document.querySelector('.island');
+            if (island) island.classList.remove('visible');
+        }, 2500);
+        return;
+    }
     var island = document.querySelector('.island');
     if (!island) {
         island = document.createElement('div');
@@ -75,7 +89,7 @@ export default function spawnIsland(source = null, dataType = 'question', data =
         });
         island.appendChild(attachments);
         mediumZoom(".island .attachments img", {
-          background: "transparent"
+            background: "transparent"
         });
     }
     if (data.lists) {
