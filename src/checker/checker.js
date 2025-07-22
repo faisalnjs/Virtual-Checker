@@ -114,6 +114,10 @@ try {
     return confirmationMessage;
   });
 
+  function escapeHTML(str) {
+    return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+  }
+
   // Process check
   function processCheck() {
     if (!storage.get("password")) {
@@ -280,8 +284,7 @@ try {
 
   // Check answer
   async function submitClick(code, segment, question, answer, mode) {
-    var alreadyAnswered = history.find(r => (String(r.segment) === String(segment)) && (String(r.question) === String(question)))
-    if (alreadyAnswered && alreadyAnswered.status === 'Correct') {
+    if (history.find(r => (String(r.segment) === String(segment)) && (String(r.question_id) === String(question)) && (r.status === 'Correct'))) {
       window.scroll(0, 0);
       ui.setUnsavedChanges(false);
       setTimeout(() => {
@@ -770,7 +773,7 @@ try {
             button.innerHTML = `<p>${JSON.stringify(JSON.parse(r.response).map(innerArray => innerArray.map(numString => String(numString)))).replaceAll('["', '[').replaceAll('","', ', ').replaceAll('"]', ']')}</p>\n<p>${response}`;
             break;
           default:
-            button.innerHTML = `<p>${r.response}</p>\n<p>${response}`;
+            button.innerHTML = `<p>${escapeHTML(r.response)}</p>\n<p>${response}`;
             break;
         }
         feed.prepend(button);
@@ -992,7 +995,7 @@ try {
           button.innerHTML = `${(String(r.seatCode) !== String(storage.get("code"))) ? `<p><b>${courses.find(c => JSON.parse(c.periods).includes(Number(r.seatCode.slice(0, 1))))?.name}</b></p>\n` : ''}<p><b>Segment ${r.segment} Question #${questionNumber}.</b> ${unixToTimeString(r.timestamp)} (${r.seatCode})</p>\n<p>${JSON.stringify(JSON.parse(r.response).map(innerArray => innerArray.map(numString => String(numString)))).replaceAll('["', '[').replaceAll('","', ', ').replaceAll('"]', ']')}</p>\n<p>${response}`;
           break;
         default:
-          button.innerHTML = `${(String(r.seatCode) !== String(storage.get("code"))) ? `<p><b>${courses.find(c => JSON.parse(c.periods).includes(Number(r.seatCode.slice(0, 1))))?.name}</b></p>\n` : ''}<p><b>Segment ${r.segment} Question #${questionNumber}.</b> ${unixToTimeString(r.timestamp)} (${r.seatCode})</p>\n<p>${r.response}</p>\n<p>${response}`;
+          button.innerHTML = `${(String(r.seatCode) !== String(storage.get("code"))) ? `<p><b>${courses.find(c => JSON.parse(c.periods).includes(Number(r.seatCode.slice(0, 1))))?.name}</b></p>\n` : ''}<p><b>Segment ${r.segment} Question #${questionNumber}.</b> ${unixToTimeString(r.timestamp)} (${r.seatCode})</p>\n<p>${escapeHTML(r.response)}</p>\n<p>${response}`;
           break;
       }
       feed.prepend(button);
@@ -1085,7 +1088,7 @@ try {
         break;
       default:
         answerMode("input");
-        var choice = r.response.match(/^CHOICE ([A-E])$/);
+        var choice = escapeHTML(r.response).match(/^CHOICE ([A-E])$/);
         if (!choice) {
           answerInput.value = r.response;
         } else {
