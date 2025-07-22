@@ -104,6 +104,10 @@ try {
       var next = document.querySelector('.medium-zoom-image--hidden').previousElementSibling;
       zoomOverlay.click();
       if (next) setTimeout(() => next.click(), 500);
+    } else if (e.key == "y" && island && islandOpen && !isTyping) {
+      document.querySelector('.island-extends #mark-correct-button')?.click()
+    } else if (e.key == "n" && island && islandOpen && !isTyping) {
+      document.querySelector('.island-extends #mark-incorrect-button')?.click()
     }
   });
 } catch (error) {
