@@ -1,19 +1,23 @@
+/* eslint-disable no-redeclare */
 import { convertLatexToMarkup, renderMathInElement } from "mathlive";
 import mediumZoom from "medium-zoom";
 import Quill from "quill";
 import "faz-quill-emoji/autoregister";
 
-var lastIslandId = null;
+var lastIslandSourceId = null;
 var islandSource = null;
 var islandSource2 = null;
+var islandSource3 = null;
+var islandElement = null;
 var hideIslandTimeout = null;
 
 function escapeHTML(str) {
     return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
 }
 
-export default function spawnIsland(element = null, source = null, dataType = 'question', data = {}, source2 = null) {
+export default function spawnIsland(element = null, source = null, dataType = 'question', data = {}, source2 = null, source3 = null) {
     if (element) {
+        islandElement = element;
         document.querySelectorAll('.island-extends').forEach(a => a.classList.remove('island-extends'));
         element.classList.add('island-extends');
         clearTimeout(hideIslandTimeout);
@@ -35,12 +39,13 @@ export default function spawnIsland(element = null, source = null, dataType = 'q
     if (Object.keys(data).length === 0) return island.classList.remove('visible');
     if (island.offsetWidth < 250) return island.classList.remove('visible');
     if (data.id) {
-        if (lastIslandId && (data.id === lastIslandId)) return island.classList.add('visible');
-        lastIslandId = data.id;
+        if (lastIslandSourceId && (data.sourceId === lastIslandSourceId)) return island.classList.add('visible');
+        lastIslandSourceId = data.id;
     }
     island.innerHTML = '';
     if (source) islandSource = source;
     if (source2) islandSource2 = source2;
+    if (source3) islandSource3 = source3;
     island.setAttribute('datatype', dataType);
     island.setAttribute('sourceid', String(data.sourceId || ''));
     if (data.id) {
@@ -135,12 +140,17 @@ export function moveFromCurrent(moveBy) {
     if (!sourceId || !dataType || !islandSource) return;
     if (!islandSource[0]) return;
     var keys = Object.keys(islandSource[0]);
-    var key = keys.includes('id') ? 'id' : keys.includes('number') ? 'number' : keys.includes('name') ? 'name' : keys.includes('period') ? 'period' : null;
-    if (!key) return;
-    var currentIndex = islandSource.findIndex(item => String(item[key]) === String(sourceId));
+    if (dataType === 'response') {
+        var currentIndex = Number(sourceId);
+    } else {
+        var key = keys.includes('id') ? 'id' : keys.includes('number') ? 'number' : keys.includes('name') ? 'name' : keys.includes('period') ? 'period' : null;
+        if (!key) return;
+        var currentIndex = islandSource.findIndex(item => String(item[key]) === String(sourceId));
+    }
     if (currentIndex === -1) return;
     var newIndex = currentIndex + moveBy;
     if (newIndex < 0 || newIndex >= islandSource.length) return;
+    console.log(currentIndex, newIndex)
     var newItem = islandSource[newIndex];
     var newData = {};
     switch (dataType) {
@@ -177,6 +187,29 @@ export function moveFromCurrent(moveBy) {
                 ],
             };
             break;
+        case 'response':
+            var newQuestion = islandSource2.find(q => String(q.id) === String(newItem.querySelector('#response-question-id-input')?.value));
+            newData = {
+                sourceId: String(newIndex),
+                id: `ID ${newQuestion.id}`,
+                title: `Question ${newQuestion.number}`,
+                subtitle: `${newQuestion.question}`,
+                subtitleLatex: newQuestion.latex,
+                description: newQuestion.description,
+                attachments: newQuestion.images,
+                lists: [
+                    {
+                        title: 'Correct Answers',
+                        items: islandSource3.find(a => a.id === newQuestion.id).correct_answers
+                    },
+                    {
+                        title: 'Incorrect Answers',
+                        items: islandSource3.find(a => a.id === newQuestion.id).incorrect_answers
+                    },
+                ],
+            };
+            console.log(newQuestion, newData)
+            break;
         default:
             newData = {
                 sourceId: String(newItem.id),
@@ -199,5 +232,5 @@ export function moveFromCurrent(moveBy) {
             };
             break;
     }
-    spawnIsland(islandSource, dataType, newData);
+    spawnIsland(islandElement.parentElement.children[[...islandElement.parentElement.children].indexOf(islandElement) + moveBy], islandSource, dataType, newData);
 }
