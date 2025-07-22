@@ -98,11 +98,13 @@ try {
         el.classList.toggle('hidden');
       });
     } else if (e.key == "ArrowRight" && zoomOverlay) {
+      var next = document.querySelector('.medium-zoom-image--hidden').nextElementSibling;
       zoomOverlay.click();
-      if (document.querySelector('.medium-zoom-image--hidden').nextElementSibling) mediumZoom(document.querySelector('.medium-zoom-image--hidden').nextElementSibling).open();
+      if (next) setTimeout(() => next.click(), 500);
     } else if (e.key == "ArrowLeft" && zoomOverlay) {
+      var next = document.querySelector('.medium-zoom-image--hidden').previousElementSibling;
       zoomOverlay.click();
-      if (document.querySelector('.medium-zoom-image--hidden').previousElementSibling) mediumZoom(document.querySelector('.medium-zoom-image--hidden').previousElementSibling).open();
+      if (next) setTimeout(() => next.click(), 500);
     }
   });
 } catch (error) {

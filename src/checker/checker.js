@@ -725,9 +725,9 @@ try {
       var i = document.createElement('img');
       i.src = image;
       questionImages.append(i);
-    });
-    mediumZoom(".images img", {
-      background: "transparent"
+      mediumZoom(i, {
+        background: "transparent"
+      });
     });
     ui.setButtonSelectValue(document.getElementById("attachments-view-mode"), (JSON.parse(question.images).length > 5) ? "gallery" : "default");
     if (JSON.parse(question.images).length > 5) questionImages.classList.add('gallery');
