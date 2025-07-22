@@ -5503,7 +5503,7 @@ try {
   function rotatePeriodConfirm() {
     if (!active) return;
     ui.view();
-    const rotatePeriodN = document.getElementById('rotate-period-input').value;
+    const rotatePeriodN = Number(document.getElementById('rotate-period-input').value);
     ui.modal({
       title: `Rotate ${rotatePeriodN ? 'period' : 'all periods'}?`,
       body: `<p>This will archive all responses from this period, as well as remove all TA users and saved seat code settings and passwords for ${rotatePeriodN ? 'this period' : 'all periods'}. This action is not reversible.</p>`,
@@ -5530,7 +5530,31 @@ try {
     ui.view();
     ui.modal({
       title: "Rotate all periods?",
-      body: "<p>This will archive all responses from this period, as well as remove all TA users and saved seat code settings and passwords for all periods. This action is not reversible.</p>",
+      body: "<p>Are you sure? This will archive all responses from this period, as well as remove all TA users and saved seat code settings and passwords for all periods. This action is not reversible.</p>",
+      buttons: [
+        {
+          text: 'Cancel',
+          class: 'cancel-button',
+          close: true,
+        },
+        {
+          text: 'Continue',
+          class: 'submit-button',
+          onclick: () => {
+            rotatePeriodConfirm3();
+          },
+          close: true,
+        },
+      ],
+    });
+  }
+
+  function rotatePeriodConfirm3() {
+    if (!active) return;
+    ui.view();
+    ui.modal({
+      title: "Rotate all periods?",
+      body: "<p>Are you completely sure? This will archive all responses from this period, as well as remove all TA users and saved seat code settings and passwords for all periods. This action is not reversible.</p>",
       buttons: [
         {
           text: 'Cancel',
