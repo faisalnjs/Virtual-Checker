@@ -150,7 +150,6 @@ export function moveFromCurrent(moveBy) {
     if (currentIndex === -1) return;
     var newIndex = currentIndex + moveBy;
     if (newIndex < 0 || newIndex >= islandSource.length) return;
-    console.log(currentIndex, newIndex)
     var newItem = islandSource[newIndex];
     var newData = {};
     switch (dataType) {
@@ -208,7 +207,6 @@ export function moveFromCurrent(moveBy) {
                     },
                 ],
             };
-            console.log(newQuestion, newData)
             break;
         default:
             newData = {
