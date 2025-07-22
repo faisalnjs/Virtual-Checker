@@ -676,6 +676,7 @@ try {
   async function updateQuestion() {
     var question = questionsArray.find(q => String(q.id) === String(questions.value));
     questionImages.innerHTML = '';
+    questionImages.classList.remove('gallery');
     nextQuestionButtons.forEach(btn => btn.disabled = true);
     prevQuestionButtons.forEach(btn => btn.disabled = true);
     document.getElementById("submit-button").disabled = true;
@@ -687,9 +688,11 @@ try {
     feedContainer.classList.remove('show');
     feedContainer.setAttribute('hidden', '');
     document.getElementById('answer-mode-selector').removeAttribute('hidden');
+    document.getElementById('attachments-view-mode').removeAttribute('hidden');
     if (!question) {
       questionImages.innerHTML = '<p style="margin-bottom: -12px;">There are no questions in this segment.</p>';
       document.getElementById('answer-mode-selector').setAttribute('hidden', '');
+      document.getElementById('attachments-view-mode').setAttribute('hidden', '');
       return;
     }
     if ((question.question.length > 0) && (question.question != ' ')) {
@@ -726,6 +729,9 @@ try {
     mediumZoom(".images img", {
       background: "transparent"
     });
+    ui.setButtonSelectValue(document.getElementById("attachments-view-mode"), (JSON.parse(question.images).length > 5) ? "gallery" : "default");
+    if (JSON.parse(question.images).length > 5) questionImages.classList.add('gallery');
+
     const questionOptions = questions.querySelectorAll('option');
     const selectedQuestionOption = questions.querySelector('option:checked');
 
@@ -1146,29 +1152,30 @@ try {
   const answerLabel = document.querySelector(`label[for="answer-input"]`);
 
   // Select answer mode
-  if (document.getElementById("answer-mode-selector")) {
-    document.getElementById("answer-mode-selector").addEventListener("input", (e) => {
-      const mode = e.detail;
-      answerMode(mode);
-      if (mode === "input") {
-        answerLabel.setAttribute("for", "answer-input");
-      } else if (mode === "math") {
-        answerLabel.setAttribute("for", "math-input");
-      } else if (mode === "set") {
-        answerLabel.setAttribute("for", "set-input");
-      } else if (mode === "matrix") {
-        answerLabel.setAttribute("for", "matrix");
-      }
-    });
-  }
+  document.getElementById("answer-mode-selector")?.addEventListener("input", (e) => {
+    const mode = e.detail;
+    answerMode(mode);
+    if (mode === "input") {
+      answerLabel.setAttribute("for", "answer-input");
+    } else if (mode === "math") {
+      answerLabel.setAttribute("for", "math-input");
+    } else if (mode === "set") {
+      answerLabel.setAttribute("for", "set-input");
+    } else if (mode === "matrix") {
+      answerLabel.setAttribute("for", "matrix");
+    }
+  });
+
+  // Select attachments view mode
+  document.getElementById("attachments-view-mode")?.addEventListener("input", (e) => {
+    document.querySelector('.images').classList = `images ${e.detail}`;
+  });
 
   // Select set type
-  if (document.getElementById("set-type-selector")) {
-    document.getElementById("set-type-selector").addEventListener("input", (e) => {
-      const mode = e.detail;
-      currentSetType = mode;
-    });
-  }
+  document.getElementById("set-type-selector")?.addEventListener("input", (e) => {
+    const mode = e.detail;
+    currentSetType = mode;
+  });
 
   setInputs = document.querySelectorAll('[data-set-input]');
 

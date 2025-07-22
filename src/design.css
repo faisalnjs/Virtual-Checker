@@ -409,6 +409,15 @@ div.ML__keyboard {
   gap: 5px;
 }
 
+#checker > .images.gallery {
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+
+#checker > .images.gallery img {
+  max-height: 150px;
+}
+
 #checker > .images img {
   border-radius: 5px;
   border: 5px solid var(--surface-color);
