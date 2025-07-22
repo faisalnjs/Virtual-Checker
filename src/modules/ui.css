@@ -545,8 +545,8 @@ body:has(.welcome-container.active) {
   position: absolute;
   left: -20px;
   height: -webkit-fill-available;
-  display: flex;
   align-items: center;
+  align-content: center;
 }
 
 .island-extends::after {
@@ -564,6 +564,33 @@ body:has(.welcome-container.active) {
   position: absolute;
   right: -20px;
   height: -webkit-fill-available;
-  display: flex;
   align-items: center;
+  align-content: center;
+}
+
+.island-extends-item {
+  position: relative;
+  width: fit-content;
+  max-width: 95%;
+  font-weight: bold;
+}
+
+.island-extends-item::after {
+  content: "\F12C";
+  display: inline-block;
+  font-family: bootstrap-icons !important;
+  font-style: normal;
+  font-weight: normal !important;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1;
+  vertical-align: -.125em;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  position: absolute;
+  top: 0;
+  right: -20px;
+  height: -webkit-fill-available;
+  align-items: center;
+  align-content: center;
 }

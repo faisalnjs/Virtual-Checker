@@ -8,6 +8,10 @@ var islandSource = null;
 var islandSource2 = null;
 var hideIslandTimeout = null;
 
+function escapeHTML(str) {
+    return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+}
+
 export default function spawnIsland(element = null, source = null, dataType = 'question', data = {}, source2 = null) {
     if (element) {
         document.querySelectorAll('.island-extends').forEach(a => a.classList.remove('island-extends'));
@@ -106,11 +110,13 @@ export default function spawnIsland(element = null, source = null, dataType = 'q
                     var itemElement = document.createElement('li');
                     if (typeof item === 'object') {
                         Object.keys(item).forEach(itemKey => {
-                            itemElement.innerHTML += `${itemKey[0].toUpperCase()}${itemKey.slice(1)}: ${item[itemKey]}, `;
+                            itemElement.innerHTML += `${itemKey[0].toUpperCase()}${itemKey.slice(1)}: ${escapeHTML(item[itemKey])}, `;
+                            if (data.activeItem && (data.activeItem === item[itemKey])) itemElement.classList.add('island-extends-item');
                         });
                         itemElement.innerHTML = itemElement.innerHTML.slice(0, itemElement.innerHTML.length - 2);
                     } else {
-                        itemElement.innerHTML = item;
+                        itemElement.innerHTML = escapeHTML(item);
+                        if (data.activeItem && (data.activeItem === item)) itemElement.classList.add('island-extends-item');
                     }
                     listUl.appendChild(itemElement);
                 });

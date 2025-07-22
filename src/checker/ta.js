@@ -366,6 +366,7 @@ try {
               items: answers.find(a => a.id === questions.find(q => String(q.id) === String(r.question_id)).id).incorrect_answers
             },
           ],
+          activeItem: responseString,
         }, answers);
       });
       buttonGrid.addEventListener('mouseleave', () => {
@@ -433,6 +434,7 @@ try {
               items: answers.find(a => a.id === questions.find(q => String(q.id) === String(r.question_id)).id).incorrect_answers
             },
           ],
+          activeItem: responseString,
         }, answers);
       });
       buttonGrid.addEventListener('mouseleave', () => {

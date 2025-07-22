@@ -2165,6 +2165,7 @@ try {
                 items: answers.find(a => a.id === question.id).incorrect_answers
               },
             ],
+            activeItem: responseString,
           }, answers);
         });
         buttonGrid.addEventListener('mouseleave', () => {
@@ -2235,7 +2236,7 @@ try {
           ${(currentCourseRosters.length > 1) ? `</div>` : ''}`;
           document.querySelector('.seat-code-reports').appendChild(courseRosterProgress);
           courseRosterProgress.addEventListener('mouseenter', () => {
-            island(currentRosterProgress, currentCourseRosters, 'roster', {
+            island(courseRosterProgress, currentCourseRosters, 'roster', {
               sourceId: String(currentCourseRoster.period),
               title: `Period ${currentCourseRoster.period}`,
               subtitle: `${registered.length}/${total.length} Registered Students`,
@@ -2395,6 +2396,7 @@ try {
               items: answers.find(a => a.id === question.id).incorrect_answers
             },
           ],
+          activeItem: responseString,
         }, answers);
       });
       buttonGrid.addEventListener('mouseleave', () => {
@@ -3253,6 +3255,7 @@ try {
               items: answers.find(a => a.id === question.id).incorrect_answers
             },
           ],
+          activeItem: responseString,
         }, answers);
       });
       inner.addEventListener('mouseleave', () => {
@@ -3296,6 +3299,7 @@ try {
               items: answers.find(a => a.id === question.id).incorrect_answers
             },
           ],
+          activeItem: responseString,
         }, answers);
       });
       inner.addEventListener('mouseleave', () => {
@@ -3339,6 +3343,7 @@ try {
               items: answers.find(a => a.id === question.id).incorrect_answers
             },
           ],
+          activeItem: responseString,
         }, answers);
       });
       inner.addEventListener('mouseleave', () => {

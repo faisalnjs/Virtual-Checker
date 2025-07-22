@@ -3,7 +3,6 @@ import storage from "/src/modules/storage.js";
 import * as themes from "/src/themes/themes.js";
 import { insertFromIndex } from "/src/symbols/symbols.js";
 import { moveFromCurrent } from "/src/modules/island.js";
-import mediumZoom from "medium-zoom";
 
 try {
   document.addEventListener("keydown", (e) => {
