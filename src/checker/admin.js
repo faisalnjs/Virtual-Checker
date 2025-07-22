@@ -701,6 +701,7 @@ try {
   if (document.getElementById('hideUnanswered')) document.getElementById('hideUnanswered').addEventListener("input", updateResponses);
   if (document.getElementById('hideUnanswered')) document.getElementById('hideUnanswered').addEventListener("input", updateQuestionReports);
   if (document.querySelector('[data-select-between]')) document.querySelector('[data-select-between]').addEventListener("click", selectBetween);
+  if (document.getElementById('rotate-period')) document.getElementById('rotate-period').addEventListener("click", rotatePeriodConfirm);
 
   function toggleSelecting() {
     if (!active) return;
@@ -5497,6 +5498,97 @@ try {
         el.classList.add('selected');
       }
     });
+  }
+
+  function rotatePeriodConfirm() {
+    if (!active) return;
+    ui.view();
+    const rotatePeriodN = document.getElementById('rotate-period-input').value;
+    ui.modal({
+      title: `Rotate ${rotatePeriodN ? 'period' : 'all periods'}?`,
+      body: `<p>This will archive all responses from this period, as well as remove all saved seat code settings and passwords for ${rotatePeriodN ? 'this period' : 'all periods'}. This action is not reversible.</p>`,
+      buttons: [
+        {
+          text: 'Cancel',
+          class: 'cancel-button',
+          close: true,
+        },
+        {
+          text: 'Continue',
+          class: 'submit-button',
+          onclick: () => {
+            rotatePeriodN ? rotatePeriod(rotatePeriodN) : rotatePeriodConfirm2();
+          },
+          close: true,
+        },
+      ],
+    });
+  }
+
+  function rotatePeriodConfirm2() {
+    if (!active) return;
+    ui.view();
+    ui.modal({
+      title: "Rotate all periods?",
+      body: "<p>This will archive all responses from this period, as well as remove all saved seat code settings and passwords for all periods. This action is not reversible.</p>",
+      buttons: [
+        {
+          text: 'Cancel',
+          class: 'cancel-button',
+          close: true,
+        },
+        {
+          text: 'Continue',
+          class: 'submit-button',
+          onclick: () => {
+            rotatePeriod();
+          },
+          close: true,
+        },
+      ],
+    });
+  }
+
+  function rotatePeriod(period = 0) {
+    if (!active) return;
+    ui.setUnsavedChanges(true);
+    fetch(domain + '/rotate', {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        usr: storage.get("usr"),
+        pwd: storage.get("pwd"),
+        period: period
+      })
+    })
+      .then(async (r) => {
+        if (!r.ok) {
+          try {
+            var re = await r.json();
+            if (re.error || re.message) {
+              ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+              throw new Error(re.error || re.message);
+            } else {
+              throw new Error("API error");
+            }
+          } catch (e) {
+            throw new Error(e.message || "API error");
+          }
+        }
+        return await r.json();
+      })
+      .then(() => {
+        ui.setUnsavedChanges(false);
+        ui.toast(period ? `Period ${period} rotated successfully.` : "All periods rotated successfully.", 3000, "success", "bi bi-check-circle-fill");
+        return window.location.reload();
+      })
+      .catch((e) => {
+        console.error(e);
+        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
+      });
   }
 } catch (error) {
   if (storage.get("developer")) {
