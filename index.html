@@ -108,7 +108,6 @@
       <button aria-selected="false" data-value="math">Math</button>
       <button aria-selected="false" data-value="set">Set</button>
       <button aria-selected="false" data-value="matrix">Matrix</button>
-      <!-- <button aria-selected="false" data-value="frq">FRQ</button> -->
     </div>
     <div class="input-group hiddenOnLoad">
       <label for="answer-input">Answer</label>
@@ -220,53 +219,6 @@
             <button square data-add-matrix-row tooltip="Add Matrix Row"><i class="bi bi-arrow-return-left"></i></button>
             <button square data-remove-matrix-row tooltip="Remove Matrix Row"><i class="bi bi-x"></i></button>
           </div>
-        </div>
-        <div data-answer-mode="frq">
-          <div class="row">
-            <div class="button-grid" id="insert-row">
-              <button data-insert-symbol="0" data-target-input="default-frq-part-symbols"></button>
-              <button data-insert-symbol="1" data-target-input="default-frq-part-symbols"></button>
-              <button data-insert-symbol="2" data-target-input="default-frq-part-symbols"></button>
-              <button data-insert-symbol="3" data-target-input="default-frq-part-symbols"></button>
-              <button data-insert-symbol="4" data-target-input="default-frq-part-symbols"></button>
-              <button data-insert-symbol="5" data-target-input="default-frq-part-symbols"></button>
-              <button data-insert-symbol="6" data-target-input="default-frq-part-symbols"></button>
-              <button data-insert-symbol="7" data-target-input="default-frq-part-symbols"></button>
-              <button data-insert-symbol="8" data-target-input="default-frq-part-symbols"></button>
-              <button data-insert-symbol="9" data-target-input="default-frq-part-symbols"></button>
-            </div>
-            <button class="icon" data-modal-view="symbols" tooltip="All Symbols">
-              <i class="bi bi-three-dots"></i>
-            </button>
-          </div>
-          <div class="frq-parts">
-            <div class="part">
-              <div class="prefix">a.</div>
-              <input type="text" autocomplete="off" data-frq-part="a" id="default-frq-part-symbols" />
-              <button data-save-part="a">Save</button>
-            </div>
-            <div class="part">
-              <div class="prefix">b.</div>
-              <input type="text" autocomplete="off" data-frq-part="b" />
-              <button data-save-part="b">Save</button>
-            </div>
-            <div class="part">
-              <div class="prefix">c.</div>
-              <input type="text" autocomplete="off" data-frq-part="c" />
-              <button data-save-part="c">Save</button>
-            </div>
-            <div class="part">
-              <div class="prefix">d.</div>
-              <input type="text" autocomplete="off" data-frq-part="d" />
-              <button data-save-part="d">Save</button>
-            </div>
-            <div class="button-grid">
-              <button square data-add-frq-part tooltip="Add FRQ Part"><i class="bi bi-plus"></i></button>
-              <button square data-remove-frq-part disabled tooltip="Remove FRQ Part"><i class="bi bi-dash"></i></button>
-            </div>
-          </div>
-          <input type="range" min="0" max="9" value="4" step="1" id="frq-input" />
-          <h1 id="frq-score">4</h1>
         </div>
       </div>
     </div>

@@ -612,13 +612,17 @@ div.ML__keyboard {
 
 .attachments .image,
 .attachments img {
-  height: 65px;
-  min-width: 70px;
   border-radius: 2.5px;
   cursor: pointer;
   position: relative;
   background-color: var(--text-color);
   overflow: hidden;
+}
+
+.attachments:not(.extra) .image,
+.attachments:not(.extra) img {
+  height: 65px;
+  min-width: 70px;
 }
 
 .attachments .image::after {

@@ -134,7 +134,7 @@ export function logout(returnFunction = null) {
     return;
 }
 
-export async function sync(hideWelcome = true) {
+export async function sync(hideWelcome = true, returnFunction = null) {
     ui.startLoader();
     if (!storage.get("code")) {
         ui.view();
@@ -191,7 +191,7 @@ export async function sync(hideWelcome = true) {
                     onclick: (inputValue) => {
                         storage.set("password", inputValue);
                         ui.setUnsavedChanges(false);
-                        sync(hideWelcome);
+                        sync(hideWelcome, returnFunction);
                     },
                     close: true,
                 },
@@ -217,7 +217,7 @@ export async function sync(hideWelcome = true) {
                             ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
                             if ((re.error === "Access denied.") || (re.message === "Access denied.")) {
                                 if (storage.get("password")) storage.delete("password");
-                                sync(hideWelcome);
+                                sync(hideWelcome, returnFunction);
                             }
                             throw new Error(re.error || re.message);
                         } else {
@@ -240,27 +240,29 @@ export async function sync(hideWelcome = true) {
                     ),
                     ...r.settings,
                 });
-                const combinedHistory = sortKeys({
-                    "questionsAnswered": (!r.history || Object.keys(r.history).length === 0)
-                        ? highestQuestionsAnswered(removeDuplicates(storage.get("questionsAnswered") || []))
-                        : highestQuestionsAnswered(removeDuplicates([...r.history.questionsAnswered, ...(storage.get("questionsAnswered") || [])])),
-                    "history": (!r.history || Object.keys(r.history).length === 0)
-                        ? removeDuplicates(storage.get("history") || [])
-                        : removeDuplicates([...r.history.history, ...(storage.get("history") || [])]),
-                });
+                // const combinedHistory = sortKeys({
+                //     "questionsAnswered": (!r.history || Object.keys(r.history).length === 0)
+                //         ? highestQuestionsAnswered(removeDuplicates(storage.get("questionsAnswered") || []))
+                //         : highestQuestionsAnswered(removeDuplicates([...r.history.questionsAnswered, ...(storage.get("questionsAnswered") || [])])),
+                //     "history": (!r.history || Object.keys(r.history).length === 0)
+                //         ? removeDuplicates(storage.get("history") || [])
+                //         : removeDuplicates([...r.history.history, ...(storage.get("history") || [])]),
+                // });
                 var settingsIsSynced = JSON.stringify(sortKeys(r.settings)) === JSON.stringify(sortKeys(Object.fromEntries(
                     Object.entries(storage.all()).filter(([key]) =>
                         key !== "password" && key !== "code" && key !== "usr" && key !== "pwd" && key !== "questionsAnswered" && key !== "history"
                     )
                 )));
-                var historyIsSynced = JSON.stringify(sortKeys(r.history)) === JSON.stringify(sortKeys({
-                    "questionsAnswered": highestQuestionsAnswered(removeDuplicates(storage.get("questionsAnswered") || [])),
-                    "history": removeDuplicates(storage.get("history") || []),
-                }));
+                // var historyIsSynced = JSON.stringify(sortKeys(r.history)) === JSON.stringify(sortKeys({
+                //     "questionsAnswered": highestQuestionsAnswered(removeDuplicates(storage.get("questionsAnswered") || [])),
+                //     "history": removeDuplicates(storage.get("history") || []),
+                // }));
                 console.log(`Settings is ${!settingsIsSynced ? 'not ' : ''}synced!`);
-                console.log(`History is ${!historyIsSynced ? 'not ' : ''}synced!`);
-                if (settingsIsSynced && historyIsSynced) {
+                // console.log(`History is ${!historyIsSynced ? 'not ' : ''}synced!`);
+                if (settingsIsSynced) {
+                // if (settingsIsSynced && historyIsSynced) {
                     ui.stopLoader();
+                    if (returnFunction) returnFunction();
                     return;
                 }
                 await fetch(domain + '/password', {
@@ -272,7 +274,7 @@ export async function sync(hideWelcome = true) {
                         "seatCode": storage.get("code"),
                         "password": password,
                         "settings": combinedSettings,
-                        "history": combinedHistory,
+                        // "history": combinedHistory,
                     })
                 })
                     .then(async (r) => {
@@ -299,11 +301,11 @@ export async function sync(hideWelcome = true) {
                             });
                             await themes.syncTheme();
                         }
-                        if (r.history && Object.keys(r.history).length > 0) {
-                            Object.entries(r.history).forEach(([key, value]) => {
-                                if (key === "questionsAnswered" || key === "history") storage.set(key, value);
-                            });
-                        }
+                        // if (r.history && Object.keys(r.history).length > 0) {
+                        //     Object.entries(r.history).forEach(([key, value]) => {
+                        //         if (key === "questionsAnswered" || key === "history") storage.set(key, value);
+                        //     });
+                        // }
                         ui.setUnsavedChanges(false);
                         window.location.reload();
                     })
