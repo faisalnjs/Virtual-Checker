@@ -200,7 +200,7 @@ try {
     if (document.getElementById("theme-debug")) {
       document.getElementById("theme-debug").value = value;
     }
-    await auth.syncPush("settings", "theme");
+    await auth.syncPush("theme");
   });
 
   document.getElementById("theme-reset")?.addEventListener("click", resetTheme);

@@ -866,7 +866,7 @@ export async function launchWelcome() {
     removeWelcome();
   }));
   welcomeContainer.querySelector('[data-finish]').addEventListener('click', async () => {
-    await auth.syncPush("settings", "theme");
+    await auth.syncPush("theme");
     unsavedChanges = false;
     removeWelcome();
   });

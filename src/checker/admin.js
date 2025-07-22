@@ -196,7 +196,7 @@ try {
           return await r.json();
         })
         .then(passwords => {
-          document.querySelector('.passwords').innerHTML = '<div class="row header"><span>Seat Code</span><span>Saved Settings</span><span>Saved History</span><span>Actions</span></div>';
+          document.querySelector('.passwords').innerHTML = '<div class="row header"><span>Seat Code</span><span>Saved Settings</span><span>Actions</span></div>';
           if (passwords.length > 0) {
             document.getElementById('no-passwords').setAttribute('hidden', '');
             document.querySelector('.passwords').removeAttribute('hidden');
@@ -209,7 +209,6 @@ try {
             document.querySelector('.passwords').innerHTML += `<div class="enhanced-item" id="${password.seatCode}">
               <span class="seatCode">${password.seatCode}</span>
               <span class="settings">${(password.settings !== '{}') ? '<i class="bi bi-check-lg"></i>' : ''}</span>
-              <span class="history">${(password.history !== '{}') ? '<i class="bi bi-check-lg"></i>' : ''}</span>
               <span class="actions">
                 <button class="icon" data-reset-password tooltip="Reset Password">
                   <i class="bi bi-key"></i>
@@ -4575,7 +4574,7 @@ try {
     if (!active) return;
     ui.modal({
       title: 'Remove Passwords',
-      body: '<p>Are you sure you would like to remove passwords from all seat codes? All seat codes will lose their saved settings and history. This action is not reversible.</p>',
+      body: '<p>Are you sure you would like to remove passwords from all seat codes? All seat codes will lose their saved settings. This action is not reversible.</p>',
       buttons: [
         {
           text: 'Cancel',
@@ -4641,7 +4640,7 @@ try {
     const seatCode = this.parentElement.parentElement.id;
     ui.modal({
       title: 'Remove Password',
-      body: `<p>Are you sure you would like to remove the password from seat code <code>${seatCode}</code>? This seat code will lose all their saved settings and history. This action is not reversible.</p>`,
+      body: `<p>Are you sure you would like to remove the password from seat code <code>${seatCode}</code>? This seat code will lose all their saved settings. This action is not reversible.</p>`,
       buttons: [
         {
           text: 'Cancel',

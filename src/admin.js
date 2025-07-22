@@ -50,23 +50,6 @@ try {
 
   // Reset modals
   const resets = {
-    "history": () => {
-      ui.prompt("Clear responses?", "This action cannot be reversed!", [
-        {
-          text: "Cancel",
-          close: true,
-        },
-        {
-          text: "Clear",
-          close: true,
-          onclick: () => {
-            storage.delete("history");
-            storage.delete("questionsAnswered");
-            window.location.reload();
-          },
-        },
-      ]);
-    },
     "all": () => {
       ui.prompt("Reset all settings?", "This action cannot be reversed!", [
         {
