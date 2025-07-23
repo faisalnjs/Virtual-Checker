@@ -712,6 +712,8 @@ try {
     if (document.querySelector('.segments .section')) document.querySelector('.segments .section').classList.toggle('selecting');
     if (document.querySelector('.questions .section')) document.querySelector('.questions .section').classList.toggle('selecting');
     if (document.querySelector('.responses .section')) document.querySelector('.responses .section').classList.toggle('selecting');
+    if (document.querySelector('.awaitingResponses .section')) document.querySelector('.awaitingResponses .section').classList.toggle('selecting');
+    if (document.querySelector('.trendingResponses .section')) document.querySelector('.trendingResponses .section').classList.toggle('selecting');
     document.querySelectorAll('.archives .section').forEach(a => a.classList.toggle('selecting'));
   }
 
@@ -720,6 +722,8 @@ try {
     if (document.querySelector('.segments .section')) document.querySelector('.segments .section').classList.remove('selecting');
     if (document.querySelector('.questions .section')) document.querySelector('.questions .section').classList.remove('selecting');
     if (document.querySelector('.responses .section')) document.querySelector('.responses .section').classList.remove('selecting');
+    if (document.querySelector('.awaitingResponses .section')) document.querySelector('.awaitingResponses .section').classList.remove('selecting');
+    if (document.querySelector('.trendingResponses .section')) document.querySelector('.trendingResponses .section').classList.remove('selecting');
     document.querySelectorAll('.archives .section').forEach(a => a.classList.toggle('selecting'));
   }
 
