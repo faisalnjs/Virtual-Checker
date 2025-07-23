@@ -10,16 +10,19 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <title>Responses - Virtual Checker</title>
   <meta name="title" content="Virtual Checker" />
-  <meta name="description" content="Simplify homework distribution and grading with the next generation cloud hosted AI-powered homework checker, streamlining the educational experience for both students and educators with instant response matching and feedback." />
+  <meta name="description"
+    content="Simplify homework distribution and grading with the next generation cloud hosted AI-powered homework checker, streamlining the educational experience for both students and educators with instant response matching and feedback." />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://check.vssfalcons.com/" />
   <meta property="og:title" content="Virtual Checker" />
-  <meta property="og:description" content="Simplify homework distribution and grading with the next generation cloud hosted AI-powered homework checker, streamlining the educational experience for both students and educators with instant response matching and feedback." />
+  <meta property="og:description"
+    content="Simplify homework distribution and grading with the next generation cloud hosted AI-powered homework checker, streamlining the educational experience for both students and educators with instant response matching and feedback." />
   <meta property="og:image" content="https://check.vssfalcons.com/banner-meta.png" />
   <meta property="twitter:card" content="summary_large_image" />
   <meta property="twitter:url" content="https://check.vssfalcons.com/" />
   <meta property="twitter:title" content="Virtual Checker" />
-  <meta property="twitter:description" content="Simplify homework distribution and grading with the next generation cloud hosted AI-powered homework checker, streamlining the educational experience for both students and educators with instant response matching and feedback." />
+  <meta property="twitter:description"
+    content="Simplify homework distribution and grading with the next generation cloud hosted AI-powered homework checker, streamlining the educational experience for both students and educators with instant response matching and feedback." />
   <meta property="twitter:image" content="https://check.vssfalcons.com/banner-meta.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -215,6 +218,9 @@
     </button>
     <button class="icon" data-clear-responses tooltip="Clear Responses">
       <i class="bi bi-trash"></i>
+    </button>
+    <button class="icon" data-modal-view="export-responses" tooltip="Export Responses">
+      <i class="bi bi-download"></i>
     </button>
     <!-- <button class="pill" data-modal-view="settings/code" tooltip="Change Seat Code">
         <span class="code">000</span>
@@ -444,6 +450,36 @@
       <a href="/admin/backups" tooltip="Backups"><i class="bi bi-file-zip"></i></a>
       <a href="/admin/archive" tooltip="Archive"><i class="bi bi-archive"></i></a>
       <a href="/" tooltip="Exit"><i class="bi bi-door-open"></i></a>
+    </div>
+  </dialog>
+  <dialog data-modal-page="export-responses" data-page-title="Export Responses">
+    <p>
+      Generate a CSV spreadsheet file export containing database responses from the selected optional options.
+    </p>
+    <label for="export-responses-course">Course</label>
+    <select id="export-responses-course"></select>
+    <label for="export-responses-period">Period</label>
+    <select id="export-responses-period">
+      <option value="">All Periods</option>
+      <option value="1">1</option>
+      <option value="2">2</option>
+      <option value="3">3</option>
+      <option value="4">4</option>
+      <option value="5">5</option>
+      <option value="6">6</option>
+      <option value="7">7</option>
+      <option value="8">8</option>
+      <option value="9">9</option>
+    </select>
+    <label for="export-responses-start-date">Start Date (Inclusive)</label>
+    <input type="date" id="export-responses-start-date" value="" />
+    <label for="export-responses-end-date">End Date (Inclusive)</label>
+    <input type="date" id="export-responses-end-date" value="" />
+    <label class="checkboxGroup"><input type="checkbox" id="export-responses-include-archived" hidden>
+      <div class="checkbox"></div> Include Archived
+    </label>
+    <div data-modal-actions>
+      <button class="submit-button" id="export-responses">Generate</button>
     </div>
   </dialog>
   <div id="loader" class="active">

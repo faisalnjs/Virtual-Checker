@@ -420,6 +420,7 @@ try {
         if (document.getElementById("sort-seat-input")) document.getElementById("sort-seat-input").addEventListener("input", updateQuestionReports);
         if (document.getElementById("filter-segment-input")) document.getElementById("filter-segment-input").addEventListener("change", updateQuestions);
         if (document.getElementById("course-period-input")) document.getElementById("course-period-input").addEventListener("input", updateCourses);
+        if (document.getElementById("export-responses-course")) updateExportResponsesCourses();
         await fetch(domain + '/rosters', {
           method: "POST",
           headers: {
@@ -706,6 +707,7 @@ try {
   if (document.getElementById('hideUnanswered')) document.getElementById('hideUnanswered').addEventListener("input", updateQuestionReports);
   if (document.querySelector('[data-select-between]')) document.querySelector('[data-select-between]').addEventListener("click", selectBetween);
   if (document.getElementById('rotate-period')) document.getElementById('rotate-period').addEventListener("click", rotatePeriodConfirm);
+  if (document.getElementById('export-responses')) document.getElementById('export-responses').addEventListener("click", exportResponses);
 
   function toggleSelecting() {
     if (!active) return;
@@ -5620,6 +5622,92 @@ try {
         ui.setUnsavedChanges(false);
         ui.toast(period ? `Period ${period} rotated successfully.` : "All periods rotated successfully.", 3000, "success", "bi bi-check-circle-fill");
         return window.location.reload();
+      })
+      .catch((e) => {
+        console.error(e);
+        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
+      });
+  }
+
+  function updateExportResponsesCourses() {
+    document.getElementById("export-responses-course").innerHTML = '<option value="">All Courses</option>';
+    courses.forEach(course => {
+      var option = document.createElement('option');
+      option.value = course.id;
+      option.innerHTML = course.name;
+      document.getElementById("export-responses-course").appendChild(option);
+    });
+  }
+
+  async function exportResponses() {
+    if (!active) return;
+    this.disabled = true;
+    document.getElementById("export-responses-course").disabled = true;
+    document.getElementById("export-responses-period").disabled = true;
+    document.getElementById("export-responses-start-date").disabled = true;
+    document.getElementById("export-responses-end-date").disabled = true;
+    document.getElementById("export-responses-include-archived").disabled = true;
+    ui.toast("Generating dump...", 3000, "info", "bi bi-download");
+    var exportResponsesOptions = {};
+    if (document.getElementById("export-responses-course").value) exportResponsesOptions['course_id'] = document.getElementById("export-responses-course").value;
+    if (document.getElementById("export-responses-period").value) exportResponsesOptions['period'] = document.getElementById("export-responses-period").value;
+    if (document.getElementById("export-responses-start-date").value) exportResponsesOptions['start'] = document.getElementById("export-responses-start-date").value;
+    if (document.getElementById("export-responses-end-date").value) exportResponsesOptions['end'] = document.getElementById("export-responses-end-date").value;
+    if (document.getElementById("export-responses-include-archived").value) exportResponsesOptions['include_archived'] = document.getElementById("export-responses-include-archived").value;
+    ui.setUnsavedChanges(true);
+    await fetch(domain + '/dump', {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(exportResponsesOptions)
+    })
+      .then(async (r) => {
+        if (!r.ok) {
+          try {
+            var re = await r.json();
+            if (re.error || re.message) {
+              ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+              throw new Error(re.error || re.message);
+            } else {
+              throw new Error("API error");
+            }
+          } catch (e) {
+            throw new Error(e.message || "API error");
+          }
+        }
+        return await r.json();
+      })
+      .then(r => {
+        if (!r || !r.filename) {
+          ui.toast("Error generating dump.", 3000, "error", "bi bi-exclamation-triangle-fill");
+          this.disabled = false;
+          document.getElementById("export-responses-course").disabled = false;
+          document.getElementById("export-responses-period").disabled = false;
+          document.getElementById("export-responses-start-date").disabled = false;
+          document.getElementById("export-responses-end-date").disabled = false;
+          document.getElementById("export-responses-include-archived").disabled = false;
+          ui.setUnsavedChanges(true);
+          return;
+        }
+        ui.setUnsavedChanges(false);
+        ui.toast("Dump generated successfully.", 3000, "success", "bi bi-check-circle-fill");
+        ui.toast(`Downloading ${r.filename.split('/')[r.filename.split('/').length - 1]}...`, 3000, "info", "bi bi-download");
+        const link = document.createElement('a');
+        link.href = r.filename;
+        link.download = r.filename.split('/')[r.filename.split('/').length - 1];
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        this.disabled = false;
+        document.getElementById("export-responses-course").disabled = false;
+        document.getElementById("export-responses-period").disabled = false;
+        document.getElementById("export-responses-start-date").disabled = false;
+        document.getElementById("export-responses-end-date").disabled = false;
+        document.getElementById("export-responses-include-archived").disabled = false;
+        ui.toast("Dump downloaded successfully.", 3000, "success", "bi bi-check-circle-fill");
+        ui.view();
       })
       .catch((e) => {
         console.error(e);
