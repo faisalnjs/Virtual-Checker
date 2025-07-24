@@ -413,6 +413,100 @@
             [...document.querySelectorAll('[data-correct-answer]')].filter(e => e.value === '').forEach(e => e.remove());
             [...document.querySelectorAll('[data-incorrect-answer]')].filter(e => e.querySelector('input').value === '' && e.querySelector('input[data-incorrect-answer-reason]').value === '').forEach(e => e.remove());
         };
+        async function ai() {
+            var images = [];
+            var pondFiles = pond.getFiles();
+            if (pondFiles.length !== 0) {
+                const readPromises = pondFiles.map(file => {
+                    return new Promise((resolve, reject) => {
+                        const reader = new FileReader();
+                        reader.onloadend = function () {
+                            resolve(reader.result);
+                        };
+                        reader.onerror = reject;
+                        if (file.file) reader.readAsDataURL(file.file);
+                        else resolve(null);
+                    });
+                });
+                images = await Promise.all(readPromises);
+            };
+            images = images.filter(image => image !== null);
+            images = [...new Set(images)];
+            var description = quill.getText().replaceAll('\\n', ' ').trim() || null;
+            if (images.length || description) {
+                startLoader();
+                await fetch(domain + '/ai/q', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        OpenAI_API_Key: "sk-proj-18b3a02f4fb35e8a8421948667fbacf7_2ac9b775227456bb9d53d370cc299da7937deb6b_184751e482b7_f157c538a800",
+                        title: document.querySelectorAll('input[type="text"]')[0].value || startingQuestion,
+                        description,
+                        images,
+                    }),
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                    .then(res => res.json())
+                    .then(data => {
+                        stopLoader();
+                        const output = data.o;
+                        if (data.error || !data.o) {
+                            document.getElementById('ai').classList.add('error');
+                            setTimeout(() => {
+                                document.getElementById('ai').classList.remove('error');
+                            }, 2000);
+                            alert(data.error);
+                        } else {
+                            document.getElementById('ai').classList.add('success');
+                            setTimeout(() => {
+                                document.getElementById('ai').classList.remove('success');
+                            }, 2000);
+                            const aiCorrectAnswers = output.correct || [];
+                            const aiIncorrectAnswers = output.incorrect || [];
+                            removeAnswers();
+                            aiCorrectAnswers.forEach(answer => {
+                                if (!answer || [...document.querySelectorAll('[data-correct-answer]')].find(e => e.value.toLowerCase() === answer.toLowerCase())) return;
+                                const input = document.createElement('input');
+                                input.type = 'text';
+                                input.value = answer;
+                                input.setAttribute('data-correct-answer', '');
+                                document.getElementById('correct-answers').appendChild(input);
+                            });
+                            aiIncorrectAnswers.forEach(answer => {
+                                if (!answer.answer || !answer.reason || [...document.querySelectorAll('[data-incorrect-answer] input:not([data-incorrect-answer-reason])')].find(e => e.value.toLowerCase() === answer.answer.toLowerCase())) return;
+                                const group = document.createElement('div');
+                                group.classList.add('input-group', 'row');
+                                group.setAttribute('data-incorrect-answer', '');
+                                const input = document.createElement('input');
+                                input.type = 'text';
+                                input.value = answer.answer;
+                                group.appendChild(input);
+                                const reason = document.createElement('input');
+                                reason.type = 'text';
+                                reason.value = answer.reason;
+                                reason.setAttribute('data-incorrect-answer-reason', '');
+                                group.appendChild(reason);
+                                document.getElementById('incorrect-answers').appendChild(group);
+                            });
+                        };
+                    })
+                    .catch(error => {
+                        document.getElementById('ai').classList.add('error');
+                        setTimeout(() => {
+                            document.getElementById('ai').classList.remove('error');
+                        }, 2000);
+                        alert(error);
+                    });
+            } else {
+                alert('Image(s) or description required.');
+                document.getElementById('ai').classList.add('error');
+                setTimeout(() => {
+                    document.getElementById('ai').classList.remove('error');
+                }, 2000);
+                return;
+            };
+        };
     </script>
 </body>
 
