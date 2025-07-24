@@ -117,6 +117,7 @@
         }
         .description {
             margin-top: 1em;
+            max-width: unset;
         }
     </style>
 </head>
@@ -354,6 +355,14 @@
             setTimeout(() => {
                 window.close();
             }, 500);
+        };
+        function startLoader() {
+            const loader = document.getElementById("loader");
+            if (loader) loader.classList.add("active");
+        };
+        function stopLoader() {
+            const loader = document.getElementById("loader");
+            if (loader) loader.classList.remove("active");
         };
     </script>
 </body>
