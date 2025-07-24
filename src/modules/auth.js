@@ -7,36 +7,11 @@ const domain = ((window.location.hostname.search('check') != -1) || (window.loca
 var authModalOpen = false;
 var hasPassword = false;
 
-function removeDuplicates(array) {
-    const seen = new Set();
-    return array.filter(item => {
-        const key = JSON.stringify(item);
-        if (seen.has(key)) return false;
-        seen.add(key);
-        return true;
-    });
-}
-
 function sortKeys(obj) {
     return Object.keys(obj).sort().reduce((acc, key) => {
         acc[key] = obj[key];
         return acc;
     }, {});
-}
-
-function highestQuestionsAnswered(array) {
-    const newArray = [];
-    array.forEach(question => {
-        var a = newArray.find(q => (q.segment === question.segment) && (q.question === question.question));
-        if (a) {
-            if (((question.status === 'In Progress') && (a.status === 'Pending')) || ((question.status === 'Correct') && (a.status === 'In Progress'))) {
-                a.status = question.status;
-            }
-        } else {
-            newArray.push(question);
-        }
-    });
-    return newArray;
 }
 
 export function admin(returnFunction) {
@@ -124,8 +99,6 @@ export function logout(returnFunction = null) {
     storage.delete("pwd");
     storage.delete("code");
     storage.delete("password");
-    storage.delete("history");
-    storage.delete("questionsAnswered");
     const url = new URL(window.location.href);
     url.search = '';
     window.history.replaceState({}, document.title, url.toString());
@@ -134,7 +107,7 @@ export function logout(returnFunction = null) {
     return;
 }
 
-export async function sync(hideWelcome = true) {
+export async function sync(hideWelcome = true, returnFunction = null) {
     ui.startLoader();
     if (!storage.get("code")) {
         ui.view();
@@ -191,7 +164,7 @@ export async function sync(hideWelcome = true) {
                     onclick: (inputValue) => {
                         storage.set("password", inputValue);
                         ui.setUnsavedChanges(false);
-                        sync(hideWelcome);
+                        sync(hideWelcome, returnFunction);
                     },
                     close: true,
                 },
@@ -217,7 +190,7 @@ export async function sync(hideWelcome = true) {
                             ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
                             if ((re.error === "Access denied.") || (re.message === "Access denied.")) {
                                 if (storage.get("password")) storage.delete("password");
-                                sync(hideWelcome);
+                                sync(hideWelcome, returnFunction);
                             }
                             throw new Error(re.error || re.message);
                         } else {
@@ -234,33 +207,17 @@ export async function sync(hideWelcome = true) {
                 if (!hideWelcome) ui.toast("Welcome back!", 3000, "success", "bi bi-key");
                 const combinedSettings = sortKeys({
                     ...Object.fromEntries(
-                        Object.entries(storage.all()).filter(([key]) =>
-                            key !== "password" && key !== "code" && key !== "usr" && key !== "pwd" && key !== "questionsAnswered" && key !== "history"
-                        )
+                        Object.entries(storage.all()).filter(([key]) => key !== "password" && key !== "code" && key !== "usr" && key !== "pwd")
                     ),
                     ...r.settings,
                 });
-                const combinedHistory = sortKeys({
-                    "questionsAnswered": (!r.history || Object.keys(r.history).length === 0)
-                        ? highestQuestionsAnswered(removeDuplicates(storage.get("questionsAnswered") || []))
-                        : highestQuestionsAnswered(removeDuplicates([...r.history.questionsAnswered, ...(storage.get("questionsAnswered") || [])])),
-                    "history": (!r.history || Object.keys(r.history).length === 0)
-                        ? removeDuplicates(storage.get("history") || [])
-                        : removeDuplicates([...r.history.history, ...(storage.get("history") || [])]),
-                });
                 var settingsIsSynced = JSON.stringify(sortKeys(r.settings)) === JSON.stringify(sortKeys(Object.fromEntries(
-                    Object.entries(storage.all()).filter(([key]) =>
-                        key !== "password" && key !== "code" && key !== "usr" && key !== "pwd" && key !== "questionsAnswered" && key !== "history"
-                    )
+                    Object.entries(storage.all()).filter(([key]) => key !== "password" && key !== "code" && key !== "usr" && key !== "pwd")
                 )));
-                var historyIsSynced = JSON.stringify(sortKeys(r.history)) === JSON.stringify(sortKeys({
-                    "questionsAnswered": highestQuestionsAnswered(removeDuplicates(storage.get("questionsAnswered") || [])),
-                    "history": removeDuplicates(storage.get("history") || []),
-                }));
                 console.log(`Settings is ${!settingsIsSynced ? 'not ' : ''}synced!`);
-                console.log(`History is ${!historyIsSynced ? 'not ' : ''}synced!`);
-                if (settingsIsSynced && historyIsSynced) {
+                if (settingsIsSynced) {
                     ui.stopLoader();
+                    if (returnFunction) returnFunction();
                     return;
                 }
                 await fetch(domain + '/password', {
@@ -272,7 +229,6 @@ export async function sync(hideWelcome = true) {
                         "seatCode": storage.get("code"),
                         "password": password,
                         "settings": combinedSettings,
-                        "history": combinedHistory,
                     })
                 })
                     .then(async (r) => {
@@ -295,14 +251,9 @@ export async function sync(hideWelcome = true) {
                     .then(async () => {
                         if (r.settings && Object.keys(r.settings).length > 0) {
                             Object.entries(r.settings).forEach(([key, value]) => {
-                                if (key !== "password" && key !== "code" && key !== "usr" && key !== "pwd" && key !== "questionsAnswered" && key !== "history") storage.set(key, value);
+                                if (key !== "password" && key !== "code" && key !== "usr" && key !== "pwd") storage.set(key, value);
                             });
                             await themes.syncTheme();
-                        }
-                        if (r.history && Object.keys(r.history).length > 0) {
-                            Object.entries(r.history).forEach(([key, value]) => {
-                                if (key === "questionsAnswered" || key === "history") storage.set(key, value);
-                            });
                         }
                         ui.setUnsavedChanges(false);
                         window.location.reload();
@@ -320,7 +271,7 @@ export async function sync(hideWelcome = true) {
         if (storage.get("password")) storage.delete("password");
         ui.modal({
             title: 'Set Password',
-            body: `<p>Set a password for seat code <code>${storage.get("code")}</code>. This password will be required to sync, backup, and restore your settings and history between devices, and cannot be reset by students.</p>`,
+            body: `<p>Set a password for seat code <code>${storage.get("code")}</code>. This password will be required to sync, backup, and restore your settings between devices, and cannot be reset by students.</p>`,
             input: {
                 type: 'password'
             },
@@ -364,10 +315,10 @@ export async function sync(hideWelcome = true) {
                                 }
                                 return await r.json();
                             })
-                            .then(r => {
+                            .then(async r => {
                                 ui.toast(r.message, 3000, "success", "bi bi-key");
                                 ui.setUnsavedChanges(false);
-                                sync(hideWelcome);
+                                await ui.launchWelcome();
                             })
                             .catch((e) => {
                                 console.error(e);
@@ -383,11 +334,8 @@ export async function sync(hideWelcome = true) {
     return;
 }
 
-export async function syncPush(type, key = null) {
-    if (!type) return;
-    if ((type !== "settings") && (type !== "history")) return;
-    if ((type === "settings") && !key) return;
-    if (!storage.get("code")) return;
+export async function syncPush(key = null) {
+    if (!key || !storage.get("code")) return;
     await fetch(domain + '/password', {
         method: "POST",
         headers: {
@@ -440,20 +388,7 @@ export async function syncPush(type, key = null) {
         })
         .then(async r => {
             var password = storage.get("password");
-            var out = {};
-            if (type === "settings") {
-                r.settings[key] = storage.get(key);
-                out = r.settings;
-            } else if (type === "history") {
-                out = {
-                    "questionsAnswered": (!r.history || Object.keys(r.history).length === 0)
-                        ? storage.get("questionsAnswered") || []
-                        : removeDuplicates([...r.history.questionsAnswered, ...(storage.get("questionsAnswered") || [])]),
-                    "history": (!r.history || Object.keys(r.history).length === 0)
-                        ? storage.get("history") || []
-                        : removeDuplicates([...r.history.history, ...(storage.get("history") || [])]),
-                };
-            }
+            r.settings[key] = storage.get(key);
             await fetch(domain + '/password', {
                 method: "POST",
                 headers: {
@@ -462,7 +397,7 @@ export async function syncPush(type, key = null) {
                 body: JSON.stringify({
                     "seatCode": storage.get("code"),
                     "password": password,
-                    [type]: out,
+                    "settings": r.settings,
                 })
             })
                 .then(async (r) => {
@@ -566,8 +501,8 @@ export async function syncManual(hideWelcome = false) {
             var password = storage.get("password");
             if (!hideWelcome) ui.toast("Welcome back!", 3000, "success", "bi bi-key");
             ui.modal({
-                title: 'Sync Settings & History',
-                body: `<p>Backup and restore your current settings and history to seat code <code>${storage.get("code")}</code>. This action is not reversible. Contact an administrator to restore a backup of your settings or history.</p>`,
+                title: 'Manual Sync',
+                body: `<p>Backup and restore your current settings to seat code <code>${storage.get("code")}</code>. This action is not reversible. Contact an administrator to restore a backup of your settings.</p>`,
                 buttonGroups: [
                     {
                         label: 'Backup',
@@ -577,7 +512,7 @@ export async function syncManual(hideWelcome = false) {
                                 icon: 'bi-gear',
                                 text: 'Settings',
                                 onclick: () => {
-                                    prompt(true, 'settings', async () => {
+                                    prompt(true, async () => {
                                         if (storage.all() && Object.keys(storage.all()).length > 0) {
                                             await fetch(domain + '/password', {
                                                 method: "POST",
@@ -587,11 +522,7 @@ export async function syncManual(hideWelcome = false) {
                                                 body: JSON.stringify({
                                                     "seatCode": storage.get("code"),
                                                     "password": password,
-                                                    "settings": Object.fromEntries(
-                                                        Object.entries(storage.all()).filter(([key]) =>
-                                                            key !== "password" && key !== "code" && key !== "usr" && key !== "pwd" && key !== "questionsAnswered" && key !== "history"
-                                                        )
-                                                    ),
+                                                    "settings": Object.fromEntries(Object.entries(storage.all()).filter(([key]) => key !== "password" && key !== "code" && key !== "usr" && key !== "pwd" )),
                                                 })
                                             })
                                                 .then(async (r) => {
@@ -625,57 +556,6 @@ export async function syncManual(hideWelcome = false) {
                                 },
                                 close: true,
                             },
-                            {
-                                icon: 'bi-clock-history',
-                                text: 'History',
-                                onclick: () => {
-                                    prompt(true, 'history', async () => {
-                                        if (storage.get("history") && storage.get("history").length > 0) {
-                                            await fetch(domain + '/password', {
-                                                method: "POST",
-                                                headers: {
-                                                    "Content-Type": "application/json",
-                                                },
-                                                body: JSON.stringify({
-                                                    "seatCode": storage.get("code"),
-                                                    "password": password,
-                                                    "history": {
-                                                        "questionsAnswered": storage.get("questionsAnswered"),
-                                                        "history": storage.get("history"),
-                                                    },
-                                                })
-                                            })
-                                                .then(async (r) => {
-                                                    if (!r.ok) {
-                                                        try {
-                                                            var re = await r.json();
-                                                            if (re.error || re.message) {
-                                                                ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
-                                                                if ((re.error === "Access denied.") || (re.message === "Access denied.")) syncManual();
-                                                                throw new Error(re.error || re.message);
-                                                            } else {
-                                                                throw new Error("API error");
-                                                            }
-                                                        } catch (e) {
-                                                            throw new Error(e.message || "API error");
-                                                        }
-                                                    }
-                                                    return await r.json();
-                                                })
-                                                .then(() => {
-                                                    ui.toast("History backed up successfully!", 3000, "success", "bi bi-check-circle-fill");
-                                                })
-                                                .catch((e) => {
-                                                    console.error(e);
-                                                    if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
-                                                });
-                                        } else {
-                                            ui.toast("No history found to backup.", 3000, "warning", "bi bi-exclamation-triangle-fill");
-                                        }
-                                    }, domain, password)
-                                },
-                                close: true,
-                            },
                         ],
                     },
                     {
@@ -686,33 +566,15 @@ export async function syncManual(hideWelcome = false) {
                                 icon: 'bi-gear',
                                 text: 'Settings',
                                 onclick: () => {
-                                    prompt(false, 'settings', () => {
+                                    prompt(false, () => {
                                         if (r.settings && Object.keys(r.settings).length > 0) {
                                             Object.entries(r.settings).forEach(([key, value]) => {
-                                                if (key !== "password" && key !== "code" && key !== "usr" && key !== "pwd" && key !== "questionsAnswered" && key !== "history") storage.set(key, value);
+                                                if (key !== "password" && key !== "code" && key !== "usr" && key !== "pwd") storage.set(key, value);
                                             });
                                             ui.toast("Settings restored successfully!", 3000, "success", "bi bi-check-circle-fill");
                                             window.location.reload();
                                         } else {
                                             ui.toast("No settings found to restore.", 3000, "warning", "bi bi-exclamation-triangle-fill");
-                                        }
-                                    }, domain, password)
-                                },
-                                close: true,
-                            },
-                            {
-                                icon: 'bi-clock-history',
-                                text: 'History',
-                                onclick: () => {
-                                    prompt(false, 'history', () => {
-                                        if (r.history && Object.keys(r.history).length > 0) {
-                                            Object.entries(r.history).forEach(([key, value]) => {
-                                                if (key === "questionsAnswered" || key === "history") storage.set(key, value);
-                                            });
-                                            ui.toast("History restored successfully!", 3000, "success", "bi bi-check-circle-fill");
-                                            window.location.reload();
-                                        } else {
-                                            ui.toast("No history found to restore.", 3000, "warning", "bi bi-exclamation-triangle-fill");
                                         }
                                     }, domain, password)
                                 },
@@ -729,10 +591,10 @@ export async function syncManual(hideWelcome = false) {
         });
 }
 
-function prompt(backingUp = true, type = 'settings', func = () => { }, domain, password) {
+function prompt(backingUp = true, func = () => { }, domain, password) {
     ui.modal({
         title: 'Are you sure?',
-        body: `<p>${backingUp ? 'Backing up' : 'Restoring'} ${type} will forever remove your currently ${backingUp ? 'backed up' : 'set'} ${type}. This action is not reversible.</p>`,
+        body: `<p>${backingUp ? 'Backing up' : 'Restoring'} settings will forever remove your currently ${backingUp ? 'backed up' : 'set'} settings. This action is not reversible.</p>`,
         buttons: [
             {
                 text: 'Back',

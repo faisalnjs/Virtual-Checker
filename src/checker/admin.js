@@ -196,7 +196,7 @@ try {
           return await r.json();
         })
         .then(passwords => {
-          document.querySelector('.passwords').innerHTML = '<div class="row header"><span>Seat Code</span><span>Saved Settings</span><span>Saved History</span><span>Actions</span></div>';
+          document.querySelector('.passwords').innerHTML = '<div class="row header"><span>Seat Code</span><span>Saved Settings</span><span>Actions</span></div>';
           if (passwords.length > 0) {
             document.getElementById('no-passwords').setAttribute('hidden', '');
             document.querySelector('.passwords').removeAttribute('hidden');
@@ -209,7 +209,6 @@ try {
             document.querySelector('.passwords').innerHTML += `<div class="enhanced-item" id="${password.seatCode}">
               <span class="seatCode">${password.seatCode}</span>
               <span class="settings">${(password.settings !== '{}') ? '<i class="bi bi-check-lg"></i>' : ''}</span>
-              <span class="history">${(password.history !== '{}') ? '<i class="bi bi-check-lg"></i>' : ''}</span>
               <span class="actions">
                 <button class="icon" data-reset-password tooltip="Reset Password">
                   <i class="bi bi-key"></i>
@@ -421,6 +420,7 @@ try {
         if (document.getElementById("sort-seat-input")) document.getElementById("sort-seat-input").addEventListener("input", updateQuestionReports);
         if (document.getElementById("filter-segment-input")) document.getElementById("filter-segment-input").addEventListener("change", updateQuestions);
         if (document.getElementById("course-period-input")) document.getElementById("course-period-input").addEventListener("input", updateCourses);
+        if (document.getElementById("export-responses-course")) updateExportResponsesCourses();
         await fetch(domain + '/rosters', {
           method: "POST",
           headers: {
@@ -663,6 +663,10 @@ try {
     return confirmationMessage;
   });
 
+  function escapeHTML(str) {
+    return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+  }
+
   if (document.getElementById("course-period-input")) document.getElementById("course-period-input").addEventListener("change", updateSegments);
   if (document.querySelector('[data-select-multiple]')) document.querySelector('[data-select-multiple]').addEventListener("click", toggleSelecting);
   if (document.querySelector('[data-delete-multiple]')) document.querySelector('[data-delete-multiple]').addEventListener("click", deleteMultiple);
@@ -702,12 +706,16 @@ try {
   if (document.getElementById('hideUnanswered')) document.getElementById('hideUnanswered').addEventListener("input", updateResponses);
   if (document.getElementById('hideUnanswered')) document.getElementById('hideUnanswered').addEventListener("input", updateQuestionReports);
   if (document.querySelector('[data-select-between]')) document.querySelector('[data-select-between]').addEventListener("click", selectBetween);
+  if (document.getElementById('rotate-period')) document.getElementById('rotate-period').addEventListener("click", rotatePeriodConfirm);
+  if (document.getElementById('export-responses')) document.getElementById('export-responses').addEventListener("click", exportResponses);
 
   function toggleSelecting() {
     if (!active) return;
     if (document.querySelector('.segments .section')) document.querySelector('.segments .section').classList.toggle('selecting');
     if (document.querySelector('.questions .section')) document.querySelector('.questions .section').classList.toggle('selecting');
     if (document.querySelector('.responses .section')) document.querySelector('.responses .section').classList.toggle('selecting');
+    if (document.querySelector('.awaitingResponses .section')) document.querySelector('.awaitingResponses .section').classList.toggle('selecting');
+    if (document.querySelector('.trendingResponses .section')) document.querySelector('.trendingResponses .section').classList.toggle('selecting');
     document.querySelectorAll('.archives .section').forEach(a => a.classList.toggle('selecting'));
   }
 
@@ -716,6 +724,8 @@ try {
     if (document.querySelector('.segments .section')) document.querySelector('.segments .section').classList.remove('selecting');
     if (document.querySelector('.questions .section')) document.querySelector('.questions .section').classList.remove('selecting');
     if (document.querySelector('.responses .section')) document.querySelector('.responses .section').classList.remove('selecting');
+    if (document.querySelector('.awaitingResponses .section')) document.querySelector('.awaitingResponses .section').classList.remove('selecting');
+    if (document.querySelector('.trendingResponses .section')) document.querySelector('.trendingResponses .section').classList.remove('selecting');
     document.querySelectorAll('.archives .section').forEach(a => a.classList.toggle('selecting'));
   }
 
@@ -907,7 +917,7 @@ try {
             buttonGrid.setAttribute("data-swapy-item", `segmentReorder-${s.id}`);
             buttonGrid.innerHTML = `<button square data-select tooltip="Select Segment"><i class="bi bi-circle"></i><i class="bi bi-circle-fill"></i></button><div class="input-group small"><div class="space" id="question-container"><input type="text" autocomplete="off" id="segment-number-input" value="${s.number}" placeholder="${s.number}" /></div></div><div class="input-group"><div class="space" id="question-container"><input type="text" autocomplete="off" id="segment-name-input" value="${s.name}" placeholder="${s.name}" /></div></div><div class="input-group mediuml"><div class="space" id="question-container"><input type="date" id="segment-due-date" value="${s.due || ''}"></div></div><button square data-remove-segment-input tooltip="Remove Segment"><i class="bi bi-trash"></i></button><button square data-archive-segment tooltip="Archive Segment"><i class="bi bi-archive"></i></button><button square data-edit-segment tooltip="Edit Segment"><i class="bi bi-pencil"></i></button><div class="drag" data-swapy-handle><i class="bi bi-grip-vertical"></i></div>`;
             buttonGrid.addEventListener('mouseenter', () => {
-              island(c.sort((a, b) => a.order - b.order), 'segment', {
+              island(buttonGrid, c.sort((a, b) => a.order - b.order), 'segment', {
                 sourceId: String(s.id),
                 id: `# ${s.number}`,
                 title: `${s.name}`,
@@ -1010,7 +1020,7 @@ try {
                 detailedReport1 += `<div class="detailed-report-question">
                   <div class="color">
                     <span class="color-box ${(r.status === 'Correct') ? 'correct' : (r.status === 'Incorrect') ? 'incorrect' : r.status.includes('Recorded') ? 'waiting' : 'other'}"></span>
-                    <span class="color-name">${document.getElementById('useRoster').checked ? `${name} (${r.seatCode})` : r.seatCode}<p class="showonhover"> (${time.unixToString(r.timestamp)})</p>: ${r.response}</span>
+                    <span class="color-name">${document.getElementById('useRoster').checked ? `${name} (${r.seatCode})` : r.seatCode}<p class="showonhover"> (${time.unixToString(r.timestamp)})</p>: ${escapeHTML(r.response)}</span>
                   </div>
                   <div class="color">
                     <span class="color-name">${timeTaken}</span>
@@ -1117,7 +1127,7 @@ try {
         </div>
         <button square data-restore-item tooltip="Restore Item"><i class="bi bi-arrow-counterclockwise"></i></button>`;
         buttonGrid.addEventListener('mouseenter', () => {
-          island(segments.sort((a, b) => a.order - b.order), 'segment', {
+          island(buttonGrid, segments.sort((a, b) => a.order - b.order), 'segment', {
             sourceId: String(segment.id),
             id: `# ${segment.number}`,
             title: `${segment.name}`,
@@ -1546,12 +1556,14 @@ try {
           buttonGrid.innerHTML = `<button square data-select tooltip="Select Question"><i class="bi bi-circle"></i><i class="bi bi-circle-fill"></i></button><div class="input-group small"><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-id-input" value="${q.id}" disabled /></div></div><div class="input-group small"><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-number-input" value="${q.number}" placeholder="${q.number}" /></div></div><div class="input-group small"><div class="space" id="question-container"><select id="question-segment-input">${segmentsString}</select></div></div><div class="input-group"><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-text-input" value="${q.question}" placeholder="${q.question}" /></div></div><button square data-toggle-latex tooltip="Toggle LaTeX Title"><i class="bi bi-${q.latex ? 'calculator-fill' : 'cursor-text'}"></i></button><button square data-remove-question-input tooltip="Remove Question"><i class="bi bi-trash"></i></button><button square data-archive-question-input tooltip="Archive Question"><i class="bi bi-archive"></i></button><button square data-toggle-question tooltip="Expand Question"><i class="bi bi-caret-down-fill"></i><i class="bi bi-caret-up-fill"></i></button>`;
           buttonGrid.addEventListener('mouseenter', () => {
             var question = q;
-            island(filteredQuestions, 'question', {
+            island(buttonGrid, filteredQuestions, 'question', {
               sourceId: String(question.id),
               id: `ID ${question.id}`,
               title: `Question ${question.number}`,
               subtitle: `${question.question}`,
               subtitleLatex: question.latex,
+              description: question.description,
+              attachments: question.images,
               lists: [
                 {
                   title: 'Correct Answers',
@@ -1652,6 +1664,7 @@ try {
           });
           if (JSON.parse(q.description)) quill.setContents(JSON.parse(q.description));
           quill.on('text-change', (delta) => {
+            ui.setUnsavedChanges(true);
             var pastedLatex = delta.ops.find(op => Object.keys(op).includes('insert'))?.insert;
             if (pastedLatex && (typeof pastedLatex === 'string')) {
               const latexMatches = [...pastedLatex.matchAll(/(\$\$(.+?)\$\$)|(?<!\\)\$(.+?)(?<!\\)\$/gs)];
@@ -1755,12 +1768,14 @@ try {
         </div>
         <button square data-restore-item tooltip="Restore Item"><i class="bi bi-arrow-counterclockwise"></i></button>`;
         buttonGrid.addEventListener('mouseenter', () => {
-          island(filteredQuestions, 'question', {
+          island(buttonGrid, filteredQuestions, 'question', {
             sourceId: String(question.id),
             id: `ID ${question.id}`,
             title: `Question ${question.number}`,
             subtitle: `${question.question}`,
             subtitleLatex: question.latex,
+            description: question.description,
+            attachments: question.images,
             lists: [
               {
                 title: 'Correct Answers',
@@ -2135,15 +2150,17 @@ try {
         var buttonGrid = document.createElement('div');
         buttonGrid.className = "button-grid inputs";
         buttonGrid.id = `response-${r.id}`;
-        buttonGrid.innerHTML = `<button square data-select tooltip="Select Item"><i class="bi bi-circle"></i><i class="bi bi-circle-fill"></i></button><input type="text" autocomplete="off" class="small" id="response-id-input" value="${r.id}" disabled hidden />${(String(r.flagged) === '1') ? `<button square data-unflag-response tooltip="Unflag Response"><i class="bi bi-flag-fill"></i></button>` : `<button square data-flag-response tooltip="Flag Response"><i class="bi bi-flag"></i></button>`}<input type="text" autocomplete="off" class="small" id="response-segment-input" value="${segments.find(s => String(s.id) === String(r.segment))?.number || r.segment}" disabled data-segment /><input type="text" autocomplete="off" class="small" id="response-question-input" value="${questions.find(q => String(q.id) === String(r.question_id)).number}" disabled data-question /><input type="text" autocomplete="off" class="small" id="response-question-id-input" value="${questions.find(q => String(q.id) === String(r.question_id)).id}" disabled hidden /><input type="text" autocomplete="off" class="small${(((r.status === 'Invalid Format') || (r.status === 'Unknown, Recorded')) && document.querySelector('.awaitingResponses .section') && (answers.find(a => a.id === questions.find(q => String(q.id) === String(r.question_id)).id).correct_answers.length > 0)) ? ' hideonhover' : ''}" id="response-seat-code-input" value="${r.seatCode}" disabled data-seat-code /><input type="text" autocomplete="off" class="small" id="response-time-taken-input" value="${timeTaken}" disabled data-time-taken${(typeof timeDifference != 'undefined') ? ` time="${timeDifference}"` : ''} /><input type="text" autocomplete="off" class="small" id="response-time-taken-input" value="${timeTakenToRevise}" disabled data-time-taken${(typeof timeDifference != 'undefined') ? ` time="${timeDifference}"` : ''} /><!--<input type="text" autocomplete="off" class="small" id="response-time-taken-input" value="${result}" disabled data-time-taken />--><input type="text" autocomplete="off" id="response-response-input" value="${responseString}" ${isMatrix ? 'mockDisabled' : 'disabled'} />${(r.status === 'Incorrect') ? `<button square data-edit-reason tooltip="Edit Reason"><i class="bi bi-reply${(r.reason) ? '-fill' : ''}"></i></button>` : ''}<input type="text" autocomplete="off" class="smedium${(((r.status === 'Invalid Format') || (r.status === 'Unknown, Recorded')) && document.querySelector('.awaitingResponses .section') && (answers.find(a => a.id === questions.find(q => String(q.id) === String(r.question_id)).id).correct_answers.length > 0)) ? ' hideonhover' : ''}" id="response-timestamp-input" value="${date.getMonth() + 1}/${date.getDate()} ${hours % 12 || 12}:${minutes < 10 ? '0' + minutes : minutes} ${hours >= 12 ? 'PM' : 'AM'}" disabled />${(((r.status === 'Invalid Format') || (r.status === 'Unknown, Recorded')) && document.querySelector('.awaitingResponses .section') && (answers.find(a => a.id === questions.find(q => String(q.id) === String(r.question_id)).id).correct_answers.length > 0)) ? `<input type="text" autocomplete="off" class="showonhover" id="response-correct-responses-input" value="${correctResponsesString}" disabled />` : ''}<button square id="mark-correct-button"${(r.status === 'Correct') ? ' disabled' : ''} tooltip="Mark Correct"><i class="bi bi-check-circle${(r.status === 'Correct') ? '-fill' : ''}"></i></button><button square id="mark-incorrect-button"${(r.status === 'Incorrect') ? ' disabled' : ''} tooltip="Mark Incorrect"><i class="bi bi-x-circle${(r.status === 'Incorrect') ? '-fill' : ''}"></i></button>`;
+        buttonGrid.innerHTML = `<button square data-select tooltip="Select Item"><i class="bi bi-circle"></i><i class="bi bi-circle-fill"></i></button><input type="text" autocomplete="off" class="small" id="response-id-input" value="${r.id}" disabled hidden />${(String(r.flagged) === '1') ? `<button square data-unflag-response tooltip="Unflag Response"><i class="bi bi-flag-fill"></i></button>` : `<button square data-flag-response tooltip="Flag Response"><i class="bi bi-flag"></i></button>`}<input type="text" autocomplete="off" class="small" id="response-segment-input" value="${segments.find(s => String(s.id) === String(r.segment))?.number || r.segment}" disabled data-segment /><input type="text" autocomplete="off" class="small" id="response-question-input" value="${questions.find(q => String(q.id) === String(r.question_id)).number}" disabled data-question /><input type="text" autocomplete="off" class="small" id="response-question-id-input" value="${questions.find(q => String(q.id) === String(r.question_id)).id}" disabled hidden /><input type="text" autocomplete="off" class="small${(((r.status === 'Invalid Format') || (r.status === 'Unknown, Recorded')) && document.querySelector('.awaitingResponses .section') && (answers.find(a => a.id === questions.find(q => String(q.id) === String(r.question_id)).id).correct_answers.length > 0)) ? ' hideonhover' : ''}" id="response-seat-code-input" value="${r.seatCode}" disabled data-seat-code /><input type="text" autocomplete="off" class="small" id="response-time-taken-input" value="${timeTaken}" disabled data-time-taken${(typeof timeDifference != 'undefined') ? ` time="${timeDifference}"` : ''} /><input type="text" autocomplete="off" class="small" id="response-time-taken-input" value="${timeTakenToRevise}" disabled data-time-taken${(typeof timeDifference != 'undefined') ? ` time="${timeDifference}"` : ''} /><!--<input type="text" autocomplete="off" class="small" id="response-time-taken-input" value="${result}" disabled data-time-taken />--><input type="text" autocomplete="off" id="response-response-input" value="${escapeHTML(responseString)}" ${isMatrix ? 'mockDisabled' : 'disabled'} />${(r.status === 'Incorrect') ? `<button square data-edit-reason tooltip="Edit Reason"><i class="bi bi-reply${(r.reason) ? '-fill' : ''}"></i></button>` : ''}<input type="text" autocomplete="off" class="smedium${(((r.status === 'Invalid Format') || (r.status === 'Unknown, Recorded')) && document.querySelector('.awaitingResponses .section') && (answers.find(a => a.id === questions.find(q => String(q.id) === String(r.question_id)).id).correct_answers.length > 0)) ? ' hideonhover' : ''}" id="response-timestamp-input" value="${date.getMonth() + 1}/${date.getDate()} ${hours % 12 || 12}:${minutes < 10 ? '0' + minutes : minutes} ${hours >= 12 ? 'PM' : 'AM'}" disabled />${(((r.status === 'Invalid Format') || (r.status === 'Unknown, Recorded')) && document.querySelector('.awaitingResponses .section') && (answers.find(a => a.id === questions.find(q => String(q.id) === String(r.question_id)).id).correct_answers.length > 0)) ? `<input type="text" autocomplete="off" class="showonhover" id="response-correct-responses-input" value="${correctResponsesString}" disabled />` : ''}<button square id="mark-correct-button"${(r.status === 'Correct') ? ' disabled' : ''} tooltip="Mark Correct"><i class="bi bi-check-circle${(r.status === 'Correct') ? '-fill' : ''}"></i></button><button square id="mark-incorrect-button"${(r.status === 'Incorrect') ? ' disabled' : ''} tooltip="Mark Incorrect"><i class="bi bi-x-circle${(r.status === 'Incorrect') ? '-fill' : ''}"></i></button>`;
         buttonGrid.addEventListener('mouseenter', () => {
           var question = questions.find(q => String(q.id) === String(r.question_id));
-          island(questions, 'question', {
-            sourceId: String(question.id),
+          island(buttonGrid, buttonGrid.parentElement.children, 'response', {
+            sourceId: String([...buttonGrid.parentElement.children].indexOf(buttonGrid)),
             id: `ID ${question.id}`,
             title: `Question ${question.number}`,
             subtitle: `${question.question}`,
             subtitleLatex: question.latex,
+            description: question.description,
+            attachments: question.images,
             lists: [
               {
                 title: 'Correct Answers',
@@ -2154,7 +2171,8 @@ try {
                 items: answers.find(a => a.id === question.id).incorrect_answers
               },
             ],
-          }, answers);
+            activeItem: responseString,
+          }, questions, answers);
         });
         buttonGrid.addEventListener('mouseleave', () => {
           island();
@@ -2224,7 +2242,7 @@ try {
           ${(currentCourseRosters.length > 1) ? `</div>` : ''}`;
           document.querySelector('.seat-code-reports').appendChild(courseRosterProgress);
           courseRosterProgress.addEventListener('mouseenter', () => {
-            island(currentCourseRosters, 'roster', {
+            island(courseRosterProgress, currentCourseRosters, 'roster', {
               sourceId: String(currentCourseRoster.period),
               title: `Period ${currentCourseRoster.period}`,
               subtitle: `${registered.length}/${total.length} Registered Students`,
@@ -2301,7 +2319,7 @@ try {
           detailedReport += questions.find(q => String(q.id) === String(r.question_id)).number ? `<div class="detailed-report-question">
             <div class="color">
               <span class="color-box ${(r.status === 'Correct') ? 'correct' : (r.status === 'Incorrect') ? 'incorrect' : r.status.includes('Recorded') ? 'waiting' : 'other'}"></span>
-              <span class="color-name">Segment ${r.segment} #${questions.find(q => String(q.id) === String(r.question_id)).number}<p class="showonhover"> (${time.unixToString(r.timestamp)})</p>: ${r.response}</span>
+              <span class="color-name">Segment ${segments.find(s => String(s.id) === String(r.segment))?.number || r.segment} #${questions.find(q => String(q.id) === String(r.question_id)).number}<p class="showonhover"> (${time.unixToString(r.timestamp)})</p>: ${escapeHTML(r.response)}</span>
             </div>
             <div class="color">
               <span class="color-name">${timeTaken}</span>
@@ -2363,15 +2381,17 @@ try {
       }
       var buttonGrid = document.createElement('div');
       buttonGrid.className = "button-grid inputs";
-      buttonGrid.innerHTML = `<input type="text" autocomplete="off" class="small" id="response-id-input" value="${r.single_response}" disabled hidden /><input type="text" autocomplete="off" class="small" id="response-segment-input" value="${segments.find(s => String(s.id) === String(r.segment))?.number || r.segment}" disabled data-segment /><input type="text" autocomplete="off" class="small" id="response-question-input" value="${questions.find(q => String(q.id) === String(r.question_id)).number}" disabled data-question /><input type="text" autocomplete="off" class="small" id="response-question-id-input" value="${questions.find(q => String(q.id) === String(r.question_id)).id}" disabled hidden /><input type="text" autocomplete="off" id="response-response-input" value="${responseString}" ${isMatrix ? 'mockDisabled' : 'disabled'} /><input type="text" autocomplete="off" class="small" id="response-count-input" value="${r.count}" disabled /><button square id="mark-correct-button"${(r.status === 'Correct') ? ' disabled' : ''} tooltip="Mark Correct"><i class="bi bi-check-circle${(r.status === 'Correct') ? '-fill' : ''}"></i></button><button square id="mark-incorrect-button"${(r.status === 'Incorrect') ? ' disabled' : ''} tooltip="Mark Incorrect"><i class="bi bi-x-circle${(r.status === 'Incorrect') ? '-fill' : ''}"></i></button>`;
+      buttonGrid.innerHTML = `<input type="text" autocomplete="off" class="small" id="response-id-input" value="${r.single_response}" disabled hidden /><input type="text" autocomplete="off" class="small" id="response-segment-input" value="${segments.find(s => String(s.id) === String(r.segment))?.number || r.segment}" disabled data-segment /><input type="text" autocomplete="off" class="small" id="response-question-input" value="${questions.find(q => String(q.id) === String(r.question_id)).number}" disabled data-question /><input type="text" autocomplete="off" class="small" id="response-question-id-input" value="${questions.find(q => String(q.id) === String(r.question_id)).id}" disabled hidden /><input type="text" autocomplete="off" id="response-response-input" value="${escapeHTML(responseString)}" ${isMatrix ? 'mockDisabled' : 'disabled'} /><input type="text" autocomplete="off" class="small" id="response-count-input" value="${r.count}" disabled /><button square id="mark-correct-button"${(r.status === 'Correct') ? ' disabled' : ''} tooltip="Mark Correct"><i class="bi bi-check-circle${(r.status === 'Correct') ? '-fill' : ''}"></i></button><button square id="mark-incorrect-button"${(r.status === 'Incorrect') ? ' disabled' : ''} tooltip="Mark Incorrect"><i class="bi bi-x-circle${(r.status === 'Incorrect') ? '-fill' : ''}"></i></button>`;
       buttonGrid.addEventListener('mouseenter', () => {
         var question = questions.find(q => String(q.id) === String(r.question_id));
-        island(questions, 'question', {
-          sourceId: String(question.id),
+        island(buttonGrid, buttonGrid.parentElement.children, 'response', {
+          sourceId: String([...buttonGrid.parentElement.children].indexOf(buttonGrid)),
           id: `ID ${question.id}`,
           title: `Question ${question.number}`,
           subtitle: `${question.question}`,
           subtitleLatex: question.latex,
+          description: question.description,
+          attachments: question.images,
           lists: [
             {
               title: 'Correct Answers',
@@ -2382,7 +2402,8 @@ try {
               items: answers.find(a => a.id === question.id).incorrect_answers
             },
           ],
-        }, answers);
+          activeItem: responseString,
+        }, questions, answers);
       });
       buttonGrid.addEventListener('mouseleave', () => {
         island();
@@ -2425,7 +2446,7 @@ try {
         </div>
         <div class="input-group">
           <div class="space" id="response-container">
-            <input type="text" id="response-response-input" value="${response.response || ''}" disabled />
+            <input type="text" id="response-response-input" value="${escapeHTML(response.response) || ''}" disabled />
           </div>
         </div>
         <div class="input-group vsmedium">
@@ -3155,7 +3176,7 @@ try {
         detailedReport += `<div class="detailed-report-question">
           <div class="color">
             <span class="color-box ${(r.status === 'Correct') ? 'correct' : (r.status === 'Incorrect') ? 'incorrect' : r.status.includes('Recorded') ? 'waiting' : 'other'}"></span>
-            <span class="color-name">${document.getElementById('useRoster').checked ? `${name} (${r.seatCode})` : r.seatCode}<p class="showonhover"> (${time.unixToString(r.timestamp)})</p>: ${r.response}</span>
+            <span class="color-name">${document.getElementById('useRoster').checked ? `${name} (${r.seatCode})` : r.seatCode}<p class="showonhover"> (${time.unixToString(r.timestamp)})</p>: ${escapeHTML(r.response)}</span>
           </div>
           <div class="color">
             <span class="color-name">${timeTaken}</span>
@@ -3222,12 +3243,14 @@ try {
       <button class="space" id="remove-existing-question-button" square tooltip="Remove Question"><i class="bi bi-trash"></i></button>`;
       inner.addEventListener('mouseenter', () => {
         var question = addingQuestion;
-        island(null, 'question', {
+        island(inner, null, 'question', {
           sourceId: String(question.id),
           id: `ID ${question.id}`,
           title: `Question ${question.number}`,
           subtitle: `${question.question}`,
           subtitleLatex: question.latex,
+          description: question.description,
+          attachments: question.images,
           lists: [
             {
               title: 'Correct Answers',
@@ -3238,6 +3261,7 @@ try {
               items: answers.find(a => a.id === question.id).incorrect_answers
             },
           ],
+          activeItem: responseString,
         }, answers);
       });
       inner.addEventListener('mouseleave', () => {
@@ -3263,12 +3287,14 @@ try {
       <button class="space" id="remove-existing-question-button" square tooltip="Remove Question"><i class="bi bi-trash"></i></button>`;
       inner.addEventListener('mouseenter', () => {
         var question = addingQuestion;
-        island(null, 'question', {
+        island(inner, null, 'question', {
           sourceId: String(question.id),
           id: `ID ${question.id}`,
           title: `Question ${question.number}`,
           subtitle: `${question.question}`,
           subtitleLatex: question.latex,
+          description: question.description,
+          attachments: question.images,
           lists: [
             {
               title: 'Correct Answers',
@@ -3279,6 +3305,7 @@ try {
               items: answers.find(a => a.id === question.id).incorrect_answers
             },
           ],
+          activeItem: responseString,
         }, answers);
       });
       inner.addEventListener('mouseleave', () => {
@@ -3304,12 +3331,14 @@ try {
       <button class="space" id="remove-existing-question-button" square tooltip="Remove Question"><i class="bi bi-trash"></i></button>`;
       inner.addEventListener('mouseenter', () => {
         var question = questions.find(q => String(q.id) === String(questionId));
-        island(null, 'question', {
+        island(inner, null, 'question', {
           sourceId: String(question.id),
           id: `ID ${question.id}`,
           title: `Question ${question.number}`,
           subtitle: `${question.question}`,
           subtitleLatex: question.latex,
+          description: question.description,
+          attachments: question.images,
           lists: [
             {
               title: 'Correct Answers',
@@ -3320,6 +3349,7 @@ try {
               items: answers.find(a => a.id === question.id).incorrect_answers
             },
           ],
+          activeItem: responseString,
         }, answers);
       });
       inner.addEventListener('mouseleave', () => {
@@ -4560,7 +4590,7 @@ try {
     if (!active) return;
     ui.modal({
       title: 'Remove Passwords',
-      body: '<p>Are you sure you would like to remove passwords from all seat codes? All seat codes will lose their saved settings and history. This action is not reversible.</p>',
+      body: '<p>Are you sure you would like to remove passwords from all seat codes? All seat codes will lose their saved settings. This action is not reversible.</p>',
       buttons: [
         {
           text: 'Cancel',
@@ -4626,7 +4656,7 @@ try {
     const seatCode = this.parentElement.parentElement.id;
     ui.modal({
       title: 'Remove Password',
-      body: `<p>Are you sure you would like to remove the password from seat code <code>${seatCode}</code>? This seat code will lose all their saved settings and history. This action is not reversible.</p>`,
+      body: `<p>Are you sure you would like to remove the password from seat code <code>${seatCode}</code>? This seat code will lose all their saved settings. This action is not reversible.</p>`,
       buttons: [
         {
           text: 'Cancel',
@@ -5483,6 +5513,207 @@ try {
         el.classList.add('selected');
       }
     });
+  }
+
+  function rotatePeriodConfirm() {
+    if (!active) return;
+    ui.view();
+    const rotatePeriodN = Number(document.getElementById('rotate-period-input').value);
+    ui.modal({
+      title: `Rotate ${rotatePeriodN ? 'period' : 'all periods'}?`,
+      body: `<p>This will archive all responses from this period, as well as remove all TA users and saved seat code settings and passwords for ${rotatePeriodN ? 'this period' : 'all periods'}. This action is not reversible.</p>`,
+      buttons: [
+        {
+          text: 'Cancel',
+          class: 'cancel-button',
+          close: true,
+        },
+        {
+          text: 'Continue',
+          class: 'submit-button',
+          onclick: () => {
+            rotatePeriodN ? rotatePeriod(rotatePeriodN) : rotatePeriodConfirm2();
+          },
+          close: true,
+        },
+      ],
+    });
+  }
+
+  function rotatePeriodConfirm2() {
+    if (!active) return;
+    ui.view();
+    ui.modal({
+      title: "Rotate all periods?",
+      body: "<p>Are you sure? This will archive all responses from this period, as well as remove all TA users and saved seat code settings and passwords for all periods. This action is not reversible.</p>",
+      buttons: [
+        {
+          text: 'Cancel',
+          class: 'cancel-button',
+          close: true,
+        },
+        {
+          text: 'Continue',
+          class: 'submit-button',
+          onclick: () => {
+            rotatePeriodConfirm3();
+          },
+          close: true,
+        },
+      ],
+    });
+  }
+
+  function rotatePeriodConfirm3() {
+    if (!active) return;
+    ui.view();
+    ui.modal({
+      title: "Rotate all periods?",
+      body: "<p>Are you completely sure? This will archive all responses from this period, as well as remove all TA users and saved seat code settings and passwords for all periods. This action is not reversible.</p>",
+      buttons: [
+        {
+          text: 'Cancel',
+          class: 'cancel-button',
+          close: true,
+        },
+        {
+          text: 'Continue',
+          class: 'submit-button',
+          onclick: () => {
+            rotatePeriod();
+          },
+          close: true,
+        },
+      ],
+    });
+  }
+
+  function rotatePeriod(period = 0) {
+    if (!active) return;
+    ui.setUnsavedChanges(true);
+    fetch(domain + '/rotate', {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        usr: storage.get("usr"),
+        pwd: storage.get("pwd"),
+        period: period
+      })
+    })
+      .then(async (r) => {
+        if (!r.ok) {
+          try {
+            var re = await r.json();
+            if (re.error || re.message) {
+              ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+              throw new Error(re.error || re.message);
+            } else {
+              throw new Error("API error");
+            }
+          } catch (e) {
+            throw new Error(e.message || "API error");
+          }
+        }
+        return await r.json();
+      })
+      .then(() => {
+        ui.setUnsavedChanges(false);
+        ui.toast(period ? `Period ${period} rotated successfully.` : "All periods rotated successfully.", 3000, "success", "bi bi-check-circle-fill");
+        return window.location.reload();
+      })
+      .catch((e) => {
+        console.error(e);
+        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
+      });
+  }
+
+  function updateExportResponsesCourses() {
+    document.getElementById("export-responses-course").innerHTML = '<option value="">All Courses</option>';
+    courses.forEach(course => {
+      var option = document.createElement('option');
+      option.value = course.id;
+      option.innerHTML = course.name;
+      document.getElementById("export-responses-course").appendChild(option);
+    });
+  }
+
+  async function exportResponses() {
+    if (!active) return;
+    this.disabled = true;
+    document.getElementById("export-responses-course").disabled = true;
+    document.getElementById("export-responses-period").disabled = true;
+    document.getElementById("export-responses-start-date").disabled = true;
+    document.getElementById("export-responses-end-date").disabled = true;
+    document.getElementById("export-responses-include-archived").disabled = true;
+    ui.toast("Generating dump...", 3000, "info", "bi bi-download");
+    var exportResponsesOptions = {};
+    if (document.getElementById("export-responses-course").value) exportResponsesOptions['course_id'] = document.getElementById("export-responses-course").value;
+    if (document.getElementById("export-responses-period").value) exportResponsesOptions['period'] = document.getElementById("export-responses-period").value;
+    if (document.getElementById("export-responses-start-date").value) exportResponsesOptions['start'] = document.getElementById("export-responses-start-date").value;
+    if (document.getElementById("export-responses-end-date").value) exportResponsesOptions['end'] = document.getElementById("export-responses-end-date").value;
+    if (document.getElementById("export-responses-include-archived").value) exportResponsesOptions['include_archived'] = document.getElementById("export-responses-include-archived").value;
+    ui.setUnsavedChanges(true);
+    await fetch(domain + '/dump', {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(exportResponsesOptions)
+    })
+      .then(async (r) => {
+        if (!r.ok) {
+          try {
+            var re = await r.json();
+            if (re.error || re.message) {
+              ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+              throw new Error(re.error || re.message);
+            } else {
+              throw new Error("API error");
+            }
+          } catch (e) {
+            throw new Error(e.message || "API error");
+          }
+        }
+        return await r.json();
+      })
+      .then(r => {
+        if (!r || !r.filename) {
+          ui.toast("Error generating dump.", 3000, "error", "bi bi-exclamation-triangle-fill");
+          this.disabled = false;
+          document.getElementById("export-responses-course").disabled = false;
+          document.getElementById("export-responses-period").disabled = false;
+          document.getElementById("export-responses-start-date").disabled = false;
+          document.getElementById("export-responses-end-date").disabled = false;
+          document.getElementById("export-responses-include-archived").disabled = false;
+          ui.setUnsavedChanges(true);
+          return;
+        }
+        ui.setUnsavedChanges(false);
+        ui.toast("Dump generated successfully.", 3000, "success", "bi bi-check-circle-fill");
+        ui.toast(`Downloading ${r.filename.split('/')[r.filename.split('/').length - 1]}...`, 3000, "info", "bi bi-download");
+        const link = document.createElement('a');
+        link.href = r.filename;
+        link.download = r.filename.split('/')[r.filename.split('/').length - 1];
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        this.disabled = false;
+        document.getElementById("export-responses-course").disabled = false;
+        document.getElementById("export-responses-period").disabled = false;
+        document.getElementById("export-responses-start-date").disabled = false;
+        document.getElementById("export-responses-end-date").disabled = false;
+        document.getElementById("export-responses-include-archived").disabled = false;
+        ui.toast("Dump downloaded successfully.", 3000, "success", "bi bi-check-circle-fill");
+        ui.view();
+      })
+      .catch((e) => {
+        console.error(e);
+        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
+      });
   }
 } catch (error) {
   if (storage.get("developer")) {

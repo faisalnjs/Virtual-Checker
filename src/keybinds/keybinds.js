@@ -12,6 +12,8 @@ try {
     const island = document.querySelector('.island');
     const islandOpen = island ? island.classList.contains('visible') : false;
     const isTyping = document.activeElement.matches("input, textarea, [contenteditable]");
+    const isWelcomeActive = document.querySelector('.welcome-container');
+    const zoomOverlay = document.querySelector('.medium-zoom-overlay');
     if (e.ctrlKey) {
       if (e.key == "Enter" && !anyDialogOpen) {
         document.getElementById("submit-button")?.click();
@@ -28,6 +30,10 @@ try {
       if (e.key == "s" && !anyDialogOpen && document.querySelector('[data-speed]')) {
         e.preventDefault();
         document.querySelector('[data-speed]').click();
+      }
+      if (e.key == "i" && !anyDialogOpen) {
+        e.preventDefault();
+        ui.launchWelcome();
       }
     } else if (e.altKey) {
       if (/[1-9]/.test(e.key)) {
@@ -47,9 +53,9 @@ try {
     } else if (e.key == "Enter" && anyDialogOpen) {
       document.querySelector('dialog[open] .submit-button')?.click();
     } else if (e.key == "[" && island && islandOpen && !isTyping) {
-      document.querySelector('.island').classList.remove('visible');
+      island.classList.remove('visible');
     } else if (e.key == "]" && island && !islandOpen && !isTyping) {
-      document.querySelector('.island').classList.add('visible');
+      island.classList.add('visible');
     } else if (e.key == "Backspace" && !isTyping && !anyDialogOpen) {
       const filterSegmentInput = document.getElementById("filter-segment-input");
       if (filterSegmentInput) {
@@ -78,6 +84,30 @@ try {
       }
       const filterReportResponses = document.getElementById("filter-report-responses");
       if (filterReportResponses) filterReportResponses.children[0].click();
+    } else if (e.key == "ArrowRight" && isWelcomeActive) {
+      ui.clearWelcomeTimeouts();
+      ui.toWelcomeSlide(Number(isWelcomeActive.getAttribute('step')) + 1);
+    } else if (e.key == "ArrowLeft" && isWelcomeActive) {
+      ui.clearWelcomeTimeouts();
+      ui.toWelcomeSlide(Number(isWelcomeActive.getAttribute('step')) - 1);
+    } else if (e.key == "Escape" && isWelcomeActive) {
+      ui.removeWelcome();
+    } else if (e.key == "=" && island && islandOpen && !isTyping) {
+      island.querySelectorAll('.extra').forEach(el => {
+        el.classList.toggle('hidden');
+      });
+    } else if (e.key == "ArrowRight" && zoomOverlay) {
+      var next = document.querySelector('.medium-zoom-image--hidden').nextElementSibling;
+      zoomOverlay.click();
+      if (next) setTimeout(() => next.click(), 500);
+    } else if (e.key == "ArrowLeft" && zoomOverlay) {
+      var next = document.querySelector('.medium-zoom-image--hidden').previousElementSibling;
+      zoomOverlay.click();
+      if (next) setTimeout(() => next.click(), 500);
+    } else if (e.key == "y" && island && islandOpen && !isTyping) {
+      document.querySelector('.island-extends #mark-correct-button')?.click()
+    } else if (e.key == "n" && island && islandOpen && !isTyping) {
+      document.querySelector('.island-extends #mark-incorrect-button')?.click()
     }
   });
 } catch (error) {

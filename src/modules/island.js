@@ -1,10 +1,35 @@
+/* eslint-disable no-redeclare */
 import { convertLatexToMarkup, renderMathInElement } from "mathlive";
+import mediumZoom from "medium-zoom";
+import Quill from "quill";
+import "faz-quill-emoji/autoregister";
 
-var lastIslandId = null;
+var lastIslandSourceId = null;
 var islandSource = null;
 var islandSource2 = null;
+var islandSource3 = null;
+var islandElement = null;
+var hideIslandTimeout = null;
 
-export default function spawnIsland(source = null, dataType = 'question', data = {}, source2 = null) {
+function escapeHTML(str) {
+    return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+}
+
+export default function spawnIsland(element = null, source = null, dataType = 'question', data = {}, source2 = null, source3 = null) {
+    if (element) {
+        islandElement = element;
+        document.querySelectorAll('.island-extends').forEach(a => a.classList.remove('island-extends'));
+        element.classList.add('island-extends');
+        clearTimeout(hideIslandTimeout);
+    } else {
+        hideIslandTimeout = setTimeout(() => {
+            if (document.querySelector('.island:hover')) return;
+            document.querySelectorAll('.island-extends').forEach(a => a.classList.remove('island-extends'));
+            var island = document.querySelector('.island');
+            if (island) island.classList.remove('visible');
+        }, 2500);
+        return;
+    }
     var island = document.querySelector('.island');
     if (!island) {
         island = document.createElement('div');
@@ -14,12 +39,13 @@ export default function spawnIsland(source = null, dataType = 'question', data =
     if (Object.keys(data).length === 0) return island.classList.remove('visible');
     if (island.offsetWidth < 250) return island.classList.remove('visible');
     if (data.id) {
-        if (lastIslandId && (data.id === lastIslandId)) return island.classList.add('visible');
-        lastIslandId = data.id;
+        if (lastIslandSourceId && (data.sourceId === lastIslandSourceId)) return island.classList.add('visible');
+        lastIslandSourceId = data.id;
     }
     island.innerHTML = '';
     if (source) islandSource = source;
     if (source2) islandSource2 = source2;
+    if (source3) islandSource3 = source3;
     island.setAttribute('datatype', dataType);
     island.setAttribute('sourceid', String(data.sourceId || ''));
     if (data.id) {
@@ -43,6 +69,38 @@ export default function spawnIsland(source = null, dataType = 'question', data =
             island.appendChild(subtitle);
         }
     }
+    if (data.description && data.description.includes('ops') && (data.description != '{"ops":[{"insert":"\\n"}]}') && JSON.parse(data.description)) {
+        var description = document.createElement('div');
+        description.classList = 'description extra hidden';
+        var textarea = document.createElement('div');
+        description.appendChild(textarea);
+        island.appendChild(description);
+        var quill = new Quill(textarea, {
+            readOnly: true,
+            modules: {
+                syntax: true,
+                toolbar: false,
+                fazEmoji: {
+                    collection: 'fluent-emoji',
+                },
+            },
+            theme: 'snow'
+        });
+        quill.setContents(JSON.parse(data.description));
+    }
+    if (data.attachments && JSON.parse(data.attachments)) {
+        var attachments = document.createElement('div');
+        attachments.classList = 'attachments extra hidden';
+        JSON.parse(data.attachments).forEach(attachment => {
+            var image = document.createElement('img');
+            image.src = attachment;
+            attachments.appendChild(image);
+        });
+        island.appendChild(attachments);
+        mediumZoom(".island .attachments img", {
+            background: "transparent"
+        });
+    }
     if (data.lists) {
         data.lists.forEach(list => {
             var listContainer = document.createElement('div');
@@ -57,11 +115,13 @@ export default function spawnIsland(source = null, dataType = 'question', data =
                     var itemElement = document.createElement('li');
                     if (typeof item === 'object') {
                         Object.keys(item).forEach(itemKey => {
-                            itemElement.innerHTML += `${itemKey[0].toUpperCase()}${itemKey.slice(1)}: ${item[itemKey]}, `;
+                            itemElement.innerHTML += `${itemKey[0].toUpperCase()}${itemKey.slice(1)}: ${escapeHTML(item[itemKey])}, `;
+                            if (data.activeItem && (data.activeItem === item[itemKey])) itemElement.classList.add('island-extends-item');
                         });
                         itemElement.innerHTML = itemElement.innerHTML.slice(0, itemElement.innerHTML.length - 2);
                     } else {
-                        itemElement.innerHTML = item;
+                        itemElement.innerHTML = escapeHTML(item);
+                        if (data.activeItem && (data.activeItem === item)) itemElement.classList.add('island-extends-item');
                     }
                     listUl.appendChild(itemElement);
                 });
@@ -80,9 +140,13 @@ export function moveFromCurrent(moveBy) {
     if (!sourceId || !dataType || !islandSource) return;
     if (!islandSource[0]) return;
     var keys = Object.keys(islandSource[0]);
-    var key = keys.includes('id') ? 'id' : keys.includes('number') ? 'number' : keys.includes('name') ? 'name' : keys.includes('period') ? 'period' : null;
-    if (!key) return;
-    var currentIndex = islandSource.findIndex(item => String(item[key]) === String(sourceId));
+    if (dataType === 'response') {
+        var currentIndex = Number(sourceId);
+    } else {
+        var key = keys.includes('id') ? 'id' : keys.includes('number') ? 'number' : keys.includes('name') ? 'name' : keys.includes('period') ? 'period' : null;
+        if (!key) return;
+        var currentIndex = islandSource.findIndex(item => String(item[key]) === String(sourceId));
+    }
     if (currentIndex === -1) return;
     var newIndex = currentIndex + moveBy;
     if (newIndex < 0 || newIndex >= islandSource.length) return;
@@ -122,6 +186,28 @@ export function moveFromCurrent(moveBy) {
                 ],
             };
             break;
+        case 'response':
+            var newQuestion = islandSource2.find(q => String(q.id) === String(newItem.querySelector('#response-question-id-input')?.value));
+            newData = {
+                sourceId: String(newIndex),
+                id: `ID ${newQuestion.id}`,
+                title: `Question ${newQuestion.number}`,
+                subtitle: `${newQuestion.question}`,
+                subtitleLatex: newQuestion.latex,
+                description: newQuestion.description,
+                attachments: newQuestion.images,
+                lists: [
+                    {
+                        title: 'Correct Answers',
+                        items: islandSource3.find(a => a.id === newQuestion.id).correct_answers
+                    },
+                    {
+                        title: 'Incorrect Answers',
+                        items: islandSource3.find(a => a.id === newQuestion.id).incorrect_answers
+                    },
+                ],
+            };
+            break;
         default:
             newData = {
                 sourceId: String(newItem.id),
@@ -129,6 +215,8 @@ export function moveFromCurrent(moveBy) {
                 title: `Question ${newItem.number}`,
                 subtitle: `${newItem.question}`,
                 subtitleLatex: newItem.latex,
+                description: newItem.description,
+                attachments: newItem.images,
                 lists: [
                     {
                         title: 'Correct Answers',
@@ -142,5 +230,5 @@ export function moveFromCurrent(moveBy) {
             };
             break;
     }
-    spawnIsland(islandSource, dataType, newData);
+    spawnIsland(islandElement.parentElement.children[[...islandElement.parentElement.children].indexOf(islandElement) + moveBy], islandSource, dataType, newData);
 }

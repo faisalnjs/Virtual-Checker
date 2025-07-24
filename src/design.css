@@ -409,6 +409,15 @@ div.ML__keyboard {
   gap: 5px;
 }
 
+#checker > .images.gallery {
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+
+#checker > .images.gallery img {
+  max-height: 150px;
+}
+
 #checker > .images img {
   border-radius: 5px;
   border: 5px solid var(--surface-color);
@@ -607,16 +616,22 @@ div.ML__keyboard {
   align-items: center;
   gap: 10px;
   align-self: stretch;
+  flex-wrap: wrap;
 }
 
 .attachments .image,
 .attachments img {
-  height: 65px;
-  min-width: 70px;
   border-radius: 2.5px;
   cursor: pointer;
   position: relative;
   background-color: var(--text-color);
+  overflow: hidden;
+}
+
+.attachments:not(.extra) .image,
+.attachments:not(.extra) img {
+  height: 65px;
+  min-width: 70px;
 }
 
 .attachments .image::after {
@@ -664,6 +679,7 @@ div.ML__keyboard {
 }
 
 .description {
+  width: -webkit-fill-available;
   max-width: min(100%, 800px);
 }
 
@@ -1031,6 +1047,9 @@ body:has(.selecting) [data-unflag-response] {
   display: none;
 }
 
+body:has(.selecting) #controls-container button:has(.bi-download) {
+  display: none;
+}
 .section:not(:has(.expanded)) {
   gap: 7.5px;
   transition: 0.25s gap var(--easing);
@@ -1064,7 +1083,8 @@ body:has(.selecting) [data-unflag-response] {
 }
 
 hidden,
-[hidden] {
+[hidden],
+.hidden {
   display: none;
 }
 
@@ -1191,7 +1211,7 @@ hidden,
 }
 
 .medium-zoom-image {
-  border-radius: 5px;
+  border-radius: 0.1rem;
 }
 
 .color-info {

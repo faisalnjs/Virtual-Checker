@@ -16,6 +16,7 @@ import "/src/keybinds/keybinds.js";
 
 import * as ui from "/src/modules/ui.js";
 import storage from "/src/modules/storage.js";
+import Element from "/src/modules/element.js";
 
 try {
   const version = import.meta.env.PACKAGE_VERSION;
@@ -48,23 +49,6 @@ try {
 
   // Reset modals
   const resets = {
-    "history": () => {
-      ui.prompt("Clear responses?", "This action cannot be reversed!", [
-        {
-          text: "Cancel",
-          close: true,
-        },
-        {
-          text: "Clear",
-          close: true,
-          onclick: () => {
-            storage.delete("history");
-            storage.delete("questionsAnswered");
-            window.location.reload();
-          },
-        },
-      ]);
-    },
     "all": () => {
       ui.prompt("Reset all settings?", "This action cannot be reversed!", [
         {
@@ -115,7 +99,7 @@ try {
   // Disable developer mode button
   if (storage.get("developer")) {
     document.querySelector(`[data-modal-page="reset"]`).append(
-      new ui.Element("button", "Disable Developer Mode", {
+      new Element("button", "Disable Developer Mode", {
         "click": () => {
           storage.delete("developer");
         },

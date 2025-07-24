@@ -25,6 +25,9 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,400;0,700;1,400;1,700&display=swap"
     rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <link rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
 </head>
 
 <body class="col">
@@ -308,9 +311,16 @@
       <p><kbd>Ctrl</kbd> + <kbd>.</kbd> Open History</p>
       <p><kbd>Shift</kbd> + <kbd>R</kbd> Reset theme</p>
       <p><kbd>Ctrl</kbd> + <kbd>S</kbd> Launch Speed Mode</p>
+      <p><kbd>[</kbd> Hide Island</p>
+      <p><kbd>]</kbd> Show Island</p>
+      <p><kbd>Shift</kbd> + <kbd>[</kbd> Previous Island item</p>
+      <p><kbd>Shift</kbd> + <kbd>]</kbd> Next Island item</p>
+      <p><kbd>Backspace</kbd> Clear filters</p>
+      <p><kbd>=</kbd> Toggle extra Island fields</p>
+      <p><kbd>y</kbd> Mark response correct</p>
+      <p><kbd>n</kbd> Mark response incorrect</p>
     </div>
     <div data-modal-page="reset" data-page-title="Reset">
-      <button data-reset="history">Clear History</button>
       <button data-reset="all">Reset All Settings</button>
       <button data-reset="cache">Force Reset Cache</button>
       <button onclick="window.open('/resetcookies')">How To Reset Cookies</button>

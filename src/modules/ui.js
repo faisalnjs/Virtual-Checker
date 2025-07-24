@@ -1,4 +1,8 @@
 import "./ui.css";
+import storage from "./storage.js";
+import * as themes from "../themes/themes.js"
+import * as auth from "./auth.js"
+import Element from "./element.js";
 
 export function alert(title, text, callback, blur) {
   return modal({
@@ -509,33 +513,6 @@ export function animate(element, from, to, duration, assign = true) {
   }, duration);
 }
 
-export class Element {
-  constructor(tag, text, events, className, attributes) {
-    this.tag = tag;
-    this.text = text;
-    this.events = events;
-    this.className = className;
-    this.attributes = attributes;
-  }
-
-  get element() {
-    const element = document.createElement(this.tag);
-    element.innerHTML = this.text;
-    this.className && (element.className = this.className);
-    this.events &&
-      Object.keys(this.events).forEach((type) => {
-        const listener = this.events[type];
-        element.addEventListener(type, listener);
-      });
-    this.attributes &&
-      Object.keys(this.attributes).forEach((attribute) => {
-        const value = this.attributes[attribute];
-        element.setAttribute(attribute, value);
-      });
-    return element;
-  }
-}
-
 // Click outside modal
 (() => {
   document.addEventListener("pointerdown", (e) => {
@@ -826,4 +803,149 @@ export var defaultCourse = null;
 
 export function setDefaultCourse(value) {
   defaultCourse = value;
+}
+
+var welcomeTimeouts = [];
+var welcomeContainer = null;
+var originalTheme = storage.get("theme");
+
+document.querySelectorAll('[data-welcome]').forEach(a => a.addEventListener('click', launchWelcome));
+
+export async function launchWelcome() {
+  view();
+  if (welcomeContainer) welcomeContainer.remove();
+  if (welcomeTimeouts.length) clearWelcomeTimeouts();
+  welcomeContainer = document.createElement('div');
+  welcomeContainer.classList = 'welcome-container';
+  welcomeContainer.setAttribute('data-theme', 'stealth');
+  welcomeContainer.innerHTML = `
+    <div class="center" step="1">
+      <h4>Welcome to</h4>
+      <h1>Virtual Checker</h1>
+      <button data-skip>Skip Intro</button>
+    </div>
+    <div step="2">
+      <h4>Log in</h4>
+      <img src="../intro-step-2.gif" />
+    </div>
+    <div step="3">
+      <h4>Select segment and question</h4>
+      <img src="../intro-step-3.gif" />
+    </div>
+    <div step="4">
+      <h4>Switch your answer mode</h4>
+      <img src="../intro-step-4.gif" />
+    </div>
+    <div step="5">
+      <h4>Flag your response for review</h4>
+      <img src="../intro-step-5.gif" />
+    </div>
+    <div step="6">
+      <h4>See past attempts</h4>
+      <img src="../intro-step-6.png" />
+    </div>
+    <div step="7">
+      <h4>Submit before the due date</h4>
+      <img src="../intro-step-7.png" />
+    </div>
+    <div step="8">
+      <h4>Complete segments</h4>
+      <img src="../intro-step-8.png" />
+    </div>
+    <div step="9">
+      <h4>Achieve mastery</h4>
+      <img src="../intro-step-9.png" />
+    </div>
+    <div class="center" step="10">
+      <h4>Choose a theme</h4>
+      <div id="theme-preview">
+        <h2 class="text-placeholder">000</h2>
+        <p class="text-placeholder">Question</p>
+        <div class="control-placeholder"></div>
+        <p class="text-placeholder">Answer</p>
+        <div class="control-placeholder"></div>
+        <div class="control-placeholder pill"></div>
+      </div>
+      <div class="themes-grid"></div>
+      <button data-finish>Finish & Save</button>
+    </div>
+    <button data-skip>Skip Intro</button>
+    <p>Use arrow keys (<, >) to manually navigate</p>
+  `;
+  document.body.appendChild(welcomeContainer);
+  welcomeContainer.querySelectorAll('[data-skip]').forEach(a => a.addEventListener('click', () => {
+    removeWelcome();
+  }));
+  welcomeContainer.querySelector('[data-finish]').addEventListener('click', async () => {
+    await auth.syncPush("theme");
+    unsavedChanges = false;
+    removeWelcome();
+  });
+  originalTheme = storage.get("theme");
+  welcomeTimeouts[0] = setTimeout(() => {
+    welcomeContainer.classList.add('active');
+    welcomeTimeouts[1] = setTimeout(() => {
+      toWelcomeSlide(1);
+      welcomeTimeouts[2] = setTimeout(() => {
+        toWelcomeSlide(2);
+        welcomeTimeouts[3] = setTimeout(() => {
+          toWelcomeSlide(3);
+          welcomeTimeouts[4] = setTimeout(() => {
+            toWelcomeSlide(4);
+            welcomeTimeouts[5] = setTimeout(() => {
+              toWelcomeSlide(5);
+              welcomeTimeouts[6] = setTimeout(() => {
+                toWelcomeSlide(6);
+                welcomeTimeouts[7] = setTimeout(() => {
+                  toWelcomeSlide(7);
+                  welcomeTimeouts[8] = setTimeout(() => {
+                    toWelcomeSlide(8);
+                    welcomeTimeouts[9] = setTimeout(() => {
+                      toWelcomeSlide(9);
+                      welcomeTimeouts[10] = setTimeout(() => {
+                        toWelcomeSlide(10);
+                      }, 3000);
+                    }, 3000);
+                  }, 3000);
+                }, 3000);
+              }, 16000);
+            }, 8000);
+          }, 7000);
+        }, 16000);
+      }, 3000);
+    }, 500);
+  }, 500);
+}
+
+export function clearWelcomeTimeouts() {
+  welcomeTimeouts.forEach(timeout => clearTimeout(timeout));
+  welcomeTimeouts = [];
+}
+
+export function toWelcomeSlide(n) {
+  if (!welcomeContainer) return;
+  const step = welcomeContainer.querySelector(`[step="${n}"]`);
+  if (!step) return;
+  welcomeContainer.setAttribute('step', n);
+  var maxN = welcomeContainer.querySelectorAll('[step]').length;
+  switch (n) {
+    case maxN:
+      themes.renderThemesGrid(originalTheme || "stealth");
+      if (originalTheme) welcomeContainer.setAttribute('data-theme', originalTheme);
+      break;
+  }
+  if (n !== maxN) welcomeContainer.setAttribute('data-theme', 'stealth');
+  if (step.querySelector('img')) step.querySelector('img').src = step.querySelector('img').src;
+}
+
+export function removeWelcome() {
+  welcomeContainer.removeAttribute('step');
+  setTimeout(() => {
+    welcomeContainer.classList.remove('active');
+    clearWelcomeTimeouts();
+    setTimeout(() => {
+      welcomeContainer.remove();
+      welcomeContainer = null;
+    }, 1000);
+  }, 500);
 }

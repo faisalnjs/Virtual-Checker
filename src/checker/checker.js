@@ -3,6 +3,7 @@
 import * as ui from "/src/modules/ui.js";
 import storage from "/src/modules/storage.js";
 import * as auth from "/src/modules/auth.js";
+import Element from "/src/modules/element.js";
 
 import { autocomplete, uniqueSymbols } from "/src/symbols/symbols.js";
 import { unixToString, unixToTimeString } from "/src/modules/time.js";
@@ -24,35 +25,37 @@ try {
   const mf = document.getElementById("math-input");
   const setInput = document.getElementById("set-input");
   var setInputs = document.querySelectorAll("[data-set-input]");
-  const frqInput = document.getElementById("frq-input");
-  var frqParts = document.querySelectorAll(".frq-parts .part");
-  var frqPartInputs = document.querySelectorAll(".frq-parts .part input");
   const questionImages = document.querySelector('.images');
   const nextQuestionButtons = document.querySelectorAll('[data-next-question]');
   const prevQuestionButtons = document.querySelectorAll('[data-prev-question]');
   var period = document.getElementById("period-input")?.value;
 
   var courses = [];
+  var segmentsArray = [];
+  var questionsArray = [];
   let currentAnswerMode;
   let currentSetType = "brackets";
   let multipleChoice = null;
   let highestDataElement = null;
   let restoredSetType = "";
+  var history = [];
 
   let historyIndex = 0;
 
   // Initialization
   async function init() {
+    ui.startLoader();
     if (!document.getElementById("course-input")) {
       ui.stopLoader();
       return;
     }
     // Populate seat code finder grid
+    document.getElementById("seat-grid").innerHTML = "";
     for (let col = 1; col <= 5; col++) {
       for (let row = 6; row > 0; row--) {
         period = document.getElementById("period-input").value;
         const code = period + row.toString() + col.toString();
-        const button = new ui.Element("button", "", {
+        const button = new Element("button", "", {
           click: () => {
             document.getElementById("code-input").value = code;
             ui.view("settings/code");
@@ -68,7 +71,7 @@ try {
         for (let row = 6; row > 0; row--) {
           period = document.getElementById("period-input").value;
           const code = period + row.toString() + col.toString();
-          const button = new ui.Element("button", "", {
+          const button = new Element("button", "", {
             click: () => {
               document.getElementById("code-input").value = code;
               ui.view("settings/code");
@@ -80,6 +83,11 @@ try {
       }
     });
     if (document.querySelector('[data-logout]')) document.querySelector('[data-logout]').addEventListener('click', () => auth.logout(init));
+    document.getElementById("code-input").value = '';
+    document.querySelectorAll("span.code").forEach((element) => {
+      element.innerHTML = '';
+    });
+    document.title = 'Virtual Checker';
     // Get URL parameters
     const params = new URLSearchParams(window.location.search);
     const code = params.get("code");
@@ -94,25 +102,7 @@ try {
       ui.view("settings/code");
       return;
     }
-    await updateCode();
-    // Show clear data fix guide
-    // if (storage.get("created")) {
-    //   document.querySelector(`[data-modal-view="clear-data-fix"]`).remove();
-    // } else {
-    //   storage.set("created", Date.now());
-    // }
-    // Focus segment input
-    if (segmentInput) segmentInput.focus();
-    // Set default answer mode
-    answerMode("input");
-    // Update history feed
-    updateHistory();
-    // Focus answer input
-    document.getElementById("answer-suggestion").addEventListener("click", () => answerInput.focus());
-    // Initialize questionsAnswered if not already set
-    if (!storage.get("questionsAnswered")) storage.set("questionsAnswered", []);
-    document.querySelector("[data-sync]").addEventListener("click", () => auth.syncManual());
-    ui.reloadUnsavedInputs();
+    await auth.sync(false, updateCode);
   };
 
   init();
@@ -124,8 +114,12 @@ try {
     return confirmationMessage;
   });
 
+  function escapeHTML(str) {
+    return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+  }
+
   // Process check
-  function processCheck(part = null) {
+  function processCheck() {
     if (!storage.get("password")) {
       auth.sync(false);
       return;
@@ -185,12 +179,6 @@ try {
           });
           var matrixString = JSON.stringify(matrix);
           return matrixString;
-        } else if (mode === "frq") {
-          if (part && document.querySelector(`[data-frq-part="${part}"]`)) {
-            return document.querySelector(`[data-frq-part="${part}"]`).value?.trim();
-          } else {
-            return frqInput.value;
-          };
         }
       })();
     if (storage.get("code")) {
@@ -222,22 +210,6 @@ try {
           setTimeout(() => {
             document.getElementById("submit-button").disabled = false;
           }, 3000);
-        } else if (mode === "frq") {
-          if (part) {
-            if (document.querySelector(`[data-frq-part="${part}"]`).parentElement.nextElementSibling && (document.querySelector(`[data-frq-part="${part}"]`).parentElement.nextElementSibling.classList.contains('part'))) {
-              document.querySelector(`[data-frq-part="${part}"]`).parentElement.nextElementSibling.querySelector('input').classList.add("attention");
-              document.querySelector(`[data-frq-part="${part}"]`).parentElement.nextElementSibling.querySelector('input').focus();
-            } else {
-              document.querySelector(`[data-frq-part="${part}"]`).classList.add("attention");
-              document.querySelector(`[data-frq-part="${part}"]`).focus();
-            };
-          } else {
-            frqInput.classList.add("attention");
-            frqInput.focus();
-          };
-          setTimeout(() => {
-            document.getElementById("submit-button").disabled = false;
-          }, 3000);
         }
       }
       if (!question) {
@@ -254,15 +226,12 @@ try {
       }, 3000);
     }
     function submit() {
-      submitClick(storage.get("code"), segment, question, answer, mode, part);
+      submitClick(storage.get("code"), segment, question, answer, mode);
     };
   };
 
   // Submit check
   document.getElementById("submit-button")?.addEventListener("click", () => processCheck());
-
-  // Save check
-  document.querySelectorAll(".frq-parts .part button").forEach(button => button.addEventListener("click", () => processCheck(button.getAttribute("data-save-part"))));
 
   // Remove attention ring when user types in either input
   segmentInput?.addEventListener("input", (e) => {
@@ -305,20 +274,17 @@ try {
     }
     document.querySelectorAll('[data-answer-mode="set"] .button-grid')[1].style.flexWrap = 'nowrap';
     resetMatrix();
-    frqInput.value = 4;
     // Switch input mode (exit multiple choice)
     answerMode(mode);
     multipleChoice = null;
     autocomplete.update();
     // Focus input element
-    questionInput.focus();
+    answerInput.focus();
   }
 
   // Check answer
-  async function submitClick(code, segment, question, answer, mode, part) {
-    var qA = storage.get("questionsAnswered") || [];
-    var alreadyAnswered = qA.find(q => (String(q.segment) === String(segment)) && (String(q.question) === String(question)))
-    if (alreadyAnswered && alreadyAnswered.status === 'Correct') {
+  async function submitClick(code, segment, question, answer, mode) {
+    if (history.find(r => (String(r.segment) === String(segment)) && (String(r.question_id) === String(question)) && (r.status === 'Correct'))) {
       window.scroll(0, 0);
       ui.setUnsavedChanges(false);
       setTimeout(() => {
@@ -328,6 +294,14 @@ try {
     }
     ui.setUnsavedChanges(true);
     ui.toast("Submitting check...", 10000, "info", "bi bi-hourglass-split");
+    var storageClickMode = "text";
+    if (mode === "math" && !multipleChoice) {
+      storageClickMode = "latex";
+    } else if (mode === "set" && !multipleChoice) {
+      storageClickMode = "array";
+    } else if (mode === "matrix" && !multipleChoice) {
+      storageClickMode = "matrix";
+    }
     await fetch(domain + '/check_answer', {
       method: "POST",
       headers: {
@@ -337,7 +311,8 @@ try {
         "response": answer,
         "segment": segment,
         "question_id": question,
-        "seat": code
+        "seat": code,
+        "mode": storageClickMode
       })
     })
       .then(r => r.json())
@@ -347,51 +322,19 @@ try {
         ui.clearToasts();
         if (typeof r.correct != 'undefined') {
           ui.modeless(`<i class="bi bi-${(r.correct) ? 'check' : 'x'}-lg"></i>`, (r.correct) ? 'Correct' : 'Try Again', r.reason || null);
-          if (qA.find(q => (q.segment === segment) && (q.question === question))) {
-            qA.find(q => (q.segment === segment) && (q.question === question)).status = (r.correct) ? 'Correct' : 'In Progress';
-          } else {
-            qA.push({ "segment": segment, "question": question, "status": (r.correct) ? 'Correct' : 'In Progress' });
-          }
         } else if (typeof r.error != 'undefined') {
           ui.modeless(`<i class="bi bi-exclamation-triangle"></i>`, 'Error');
         } else {
           ui.modeless(`<i class="bi bi-hourglass"></i>`, "Submitted, Awaiting Scoring");
-          if (qA.find(q => (q.segment === segment) && (q.question === question))) {
-            qA.find(q => (q.segment === segment) && (q.question === question)).status = 'Pending';
-          } else {
-            qA.push({ "segment": segment, "question": question, "status": 'Pending' });
-          }
         }
-        storage.set("questionsAnswered", qA);
-        await auth.syncPush("history");
         resetInputs();
         if ((typeof r.correct === 'undefined') || r.correct || (typeof r.error !== 'undefined')) {
           nextQuestion();
         } else {
           updateQuestion();
         }
-        var storageClickMode = "text";
-        if (mode === "math" && !multipleChoice) {
-          storageClickMode = "latex";
-        } else if (mode === "set" && !multipleChoice) {
-          storageClickMode = "array";
-        } else if (mode === "matrix" && !multipleChoice) {
-          storageClickMode = "matrix";
-        } else if (mode === "frq" && !multipleChoice) {
-          storageClickMode = "frq";
-        };
-        await storeClick(storage.get("code"), segment, question, answer, r.reason, storageClickMode);
-        if (mode === "frq") {
-          if (part) {
-            if (document.querySelector(`[data-frq-part="${part}"]`).parentElement.nextElementSibling && (document.querySelector(`[data-frq-part="${part}"]`).parentElement.nextElementSibling.classList.contains('part'))) {
-              document.querySelector(`[data-frq-part="${part}"]`).parentElement.nextElementSibling.querySelector('input').focus();
-            } else {
-              document.querySelector(`[data-frq-part="${part}"]`).focus();
-            };
-          } else {
-            frqInput.focus();
-          };
-        };
+        await fetchHistory();
+        await updateHistory();
         setTimeout(() => {
           document.getElementById("submit-button").disabled = false;
         }, 3000);
@@ -448,13 +391,12 @@ try {
               class: 'submit-button',
               onclick: () => {
                 storage.set("code", input);
-                updateCode();
+                init();
                 // Close all modals
                 ui.view("");
                 // Update URL parameters with seat code
                 const params = new URLSearchParams(window.location.search);
                 params.set("code", input);
-                history.replaceState({}, "", "?" + params.toString());
                 ui.setUnsavedChanges(false);
               },
               close: true,
@@ -463,13 +405,12 @@ try {
         });
       } else {
         storage.set("code", input);
-        updateCode();
+        init();
         // Close all modals
         ui.view("");
         // Update URL parameters with seat code
         const params = new URLSearchParams(window.location.search);
         params.set("code", input);
-        history.replaceState({}, "", "?" + params.toString());
         ui.setUnsavedChanges(false);
       };
     } else {
@@ -477,101 +418,159 @@ try {
     }
   }
 
-  var questionsArray = [];
-  var segmentsArray = [];
-
   // Update elements with new seat code
   async function updateCode() {
     const code = storage.get("code");
-    if (code) {
-      document.getElementById("code-input").value = storage.get("code");
-      document.querySelectorAll("span.code").forEach((element) => {
-        element.innerHTML = storage.get("code");
+    document.getElementById("code-input").value = storage.get("code");
+    document.querySelectorAll("span.code").forEach((element) => {
+      element.innerHTML = storage.get("code");
+    });
+    document.title = `Virtual Checker (${storage.get("code")})`;
+    const periodRange = getExtendedPeriodRange(null, Number(code.slice(0, 1)));
+    try {
+      const coursesResponse = await fetch(`${domain}/courses`, {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
       });
-      document.title = `Virtual Checker (${storage.get("code")})`;
-      const periodRange = getExtendedPeriodRange(null, Number(code.slice(0, 1)));
-      try {
-        const coursesResponse = await fetch(`${domain}/courses`, {
-          method: "GET",
-          headers: { "Content-Type": "application/json" },
-        });
-        courses = await coursesResponse.json();
-        const course = courses.find(c => JSON.parse(c.periods).includes(Number(code.slice(0, 1))));
-        if (course) {
-          ui.view();
+      courses = await coursesResponse.json();
+      const course = courses.find(c => JSON.parse(c.periods).includes(Number(code.slice(0, 1))));
+      if (course) {
+        ui.view();
+      } else {
+        ui.startLoader();
+        return ui.view("no-course");
+      }
+      if (document.getElementById("course-input")) document.getElementById("course-input").value = course.name || "Unknown Course";
+      if (document.querySelector('[data-syllabus-download]')) {
+        if (course.syllabus) {
+          document.querySelector('[data-syllabus-download]').removeAttribute('hidden', '');
+          document.querySelector('[data-syllabus-download]').addEventListener('click', () => {
+            window.open(course.syllabus, '_blank');
+          });
         } else {
-          ui.startLoader();
-          return ui.view("no-course");
+          document.querySelector('[data-syllabus-download]').setAttribute('hidden', '');
         }
-        if (document.getElementById("course-input")) document.getElementById("course-input").value = course.name || "Unknown Course";
-        if (document.querySelector('[data-syllabus-download]')) {
-          if (course.syllabus) {
-            document.querySelector('[data-syllabus-download]').removeAttribute('hidden', '');
-            document.querySelector('[data-syllabus-download]').addEventListener('click', () => {
-              window.open(course.syllabus, '_blank');
-            });
-          } else {
-            document.querySelector('[data-syllabus-download]').setAttribute('hidden', '');
+      }
+      const segmentsResponse = await fetch(`${domain}/segments?course=${course.id}`, {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+      });
+      const segmentsData = await segmentsResponse.json();
+      const questionsResponse = await fetch(`${domain}/questions`, {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+      });
+      questionsArray = await questionsResponse.json();
+      segments.innerHTML = '';
+      segmentsArray = segmentsData;
+      segmentsArray.sort((a, b) => a.order - b.order).forEach(segment => {
+        const option = document.createElement('option');
+        option.value = segment.id;
+        var questionStatuses = [];
+        JSON.parse(segment.question_ids).forEach(questionId => {
+          if (questionsArray.find(q => String(q.id) === String(questionId.id))) {
+            var highestStatus = "";
+            var questionResponses = history.filter(r => String(r.question_id) === String(questionId.id));
+            if (questionResponses.find(r => r.status === 'Correct')) {
+              highestStatus = 'Correct';
+            } else if (questionResponses.find(r => r.status === 'In Progress')) {
+              highestStatus = 'In Progress';
+            } else if (questionResponses.length) {
+              highestStatus = 'Pending';
+            }
+            questionStatuses.push({ "segment": segment.id, "question": questionId.id, "status": highestStatus });
+          }
+        });
+        const allQuestionsCorrect = (JSON.parse(segment.question_ids).length > 0) && questionStatuses.every(question => question.status === 'Correct');
+        option.innerHTML = `${segment.number} - ${segment.name}${segment.due ? ` (Due ${new Date(`${segment.due}T00:00:00`).toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })})` : ''}${allQuestionsCorrect ? ' [MASTERY]' : ''}`;
+        option.setAttribute('due', segment.due || '');
+        segments.append(option);
+      });
+      segments.value = segmentsArray.find(s => {
+        if (!s.due) return false;
+        return (new Date(`${s.due}T00:00:00`).toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' }) === new Date().toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric', }) && new Date().getTime() <= periodRange[1]);
+      })?.id || segmentsArray.find(s => {
+        if (!s.due) return false;
+        return (new Date(`${s.due}T00:00:00`).getTime() > periodRange[1] && new Date(`${s.due}T00:00:00`).getTime() <= periodRange[0] + 86400000);
+      })?.id || segmentsArray.find(s => !s.due)?.id || segmentsArray[0]?.id;
+      segments.removeEventListener("change", updateSegment);
+      segments.addEventListener("change", updateSegment);
+      // Update history feed
+      await fetchHistory();
+      updateHistory();
+      updateSegment();
+      // Show clear data fix guide
+      // if (storage.get("created")) {
+      //   document.querySelector(`[data-modal-view="clear-data-fix"]`).remove();
+      // } else {
+      //   storage.set("created", Date.now());
+      // }
+      // Focus segment input
+      if (segmentInput) segmentInput.focus();
+      // Set default answer mode
+      answerMode("input");
+      // Focus answer input
+      document.getElementById("answer-suggestion").addEventListener("click", () => answerInput.focus());
+      document.querySelector("[data-sync]").addEventListener("click", () => auth.syncManual());
+      ui.reloadUnsavedInputs();
+    } catch (error) {
+      ui.view("api-fail");
+    }
+    ui.reloadUnsavedInputs();
+  }
+
+  async function fetchHistory() {
+    history = await fetch(domain + '/responses', {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        usr: storage.get("code"),
+        pwd: storage.get("password"),
+      }),
+    })
+      .then(async (r) => {
+        if (!r.ok) {
+          try {
+            var re = await r.json();
+            if (re.error || re.message) {
+              ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+              throw new Error(re.error || re.message);
+            } else {
+              throw new Error("API error");
+            }
+          } catch (e) {
+            throw new Error(e.message || "API error");
           }
         }
-        const segmentsResponse = await fetch(`${domain}/segments?course=${course.id}`, {
-          method: "GET",
-          headers: { "Content-Type": "application/json" },
-        });
-        const segmentsData = await segmentsResponse.json();
-        segments.innerHTML = '';
-        segmentsArray = segmentsData;
-        segmentsArray.sort((a, b) => a.order - b.order).forEach(segment => {
-          const option = document.createElement('option');
-          option.value = segment.id;
-          const allQuestionsCorrect = (JSON.parse(segment.question_ids).length > 0) && JSON.parse(segment.question_ids).every(questionId => {
-            const questionStatus = storage.get("questionsAnswered")?.find(q => (String(q.segment) === String(segment.id)) && (String(q.question) === String(questionId.id)))?.status;
-            return questionStatus === 'Correct';
-          });
-          option.innerHTML = `${segment.number} - ${segment.name}${segment.due ? ` (Due ${new Date(`${segment.due}T00:00:00`).toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })})` : ''}${allQuestionsCorrect ? ' [MASTERY]' : ''}`;
-          option.setAttribute('due', segment.due || '');
-          segments.append(option);
-        });
-        segments.value = segmentsArray.find(s => {
-          if (!s.due) return false;
-          return (new Date(`${s.due}T00:00:00`).toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' }) === new Date().toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric', }) && new Date().getTime() <= periodRange[1]);
-        })?.id || segmentsArray.find(s => {
-          if (!s.due) return false;
-          return (new Date(`${s.due}T00:00:00`).getTime() > periodRange[1] && new Date(`${s.due}T00:00:00`).getTime() <= periodRange[0] + 86400000);
-        })?.id || segmentsArray.find(s => !s.due)?.id || segmentsArray[0]?.id;
-        segments.removeEventListener("change", updateSegment);
-        segments.addEventListener("change", updateSegment);
-        const questionsResponse = await fetch(`${domain}/questions`, {
-          method: "GET",
-          headers: { "Content-Type": "application/json" },
-        });
-        questionsArray = await questionsResponse.json();
-        updateSegment();
-        await auth.sync(false);
-      } catch (error) {
-        ui.view("api-fail");
-      }
-      ui.reloadUnsavedInputs();
-    }
+        return await r.json();
+      });
   }
 
   async function updateSegment() {
     const selectedSegment = segmentsArray.find(s => String(s.id) === String(segments.value));
     questions.innerHTML = '';
     if (!selectedSegment) return updateQuestion();
+    var questionStatuses = [];
     JSON.parse(selectedSegment.question_ids).forEach(questionId => {
       if (questionsArray.find(q => String(q.id) === String(questionId.id))) {
         const questionOption = document.createElement('option');
         questionOption.value = questionId.id;
         questionOption.innerHTML = questionId.name;
+        var highestStatus = "";
+        var questionResponses = history.filter(r => String(r.question_id) === String(questionId.id));
+        if (questionResponses.find(r => r.status === 'Correct')) {
+          highestStatus = 'Correct';
+        } else if (questionResponses.find(r => r.status === 'In Progress')) {
+          highestStatus = 'In Progress';
+        } else if (questionResponses.length) {
+          highestStatus = 'Pending';
+        }
+        if (highestStatus !== "") questionOption.innerHTML += ` - ${highestStatus}`;
+        questionStatuses.push({ "segment": selectedSegment.id, "question": questionId.id, "status": highestStatus });
         questions.append(questionOption);
       }
-    });
-    const qA = storage.get("questionsAnswered") || [];
-    qA.forEach(q => {
-      var i = questions.querySelector(`option[value="${q.question}"]`);
-      const selectedSegment = segmentsArray.find(s => String(s.id) === String(segments.value));
-      if (i) i.innerHTML = `${JSON.parse(selectedSegment.question_ids).find(q2 => String(q2.id) === String(q.question)).name} - ${q.status}`;
     });
     document.querySelector('[data-segment-due]').setAttribute('hidden', '');
     if (selectedSegment.due) {
@@ -584,30 +583,23 @@ try {
     document.getElementById("segment-completed").setAttribute('hidden', '');
     document.getElementById("segment-completed").querySelector('ul').innerHTML = '';
     document.getElementById("segment-completed").classList.remove('mastery');
-    if ((questions.querySelectorAll('option').length > 0) && Array.from(questions.querySelectorAll('option')).every(option => {
-      const questionId = option.value;
-      const questionStatus = qA.find(q => (String(q.segment) === String(segments.value)) && (String(q.question) === String(questionId)))?.status;
-      return questionStatus === 'Correct' || questionStatus === 'In Progress' || questionStatus === 'Pending';
-    })) {
+    if ((questions.querySelectorAll('option').length > 0) && questionStatuses.every(question => question.status === 'Correct' || question.status === 'In Progress' || question.status === 'Pending')) {
       document.getElementById("segment-completed").removeAttribute('hidden');
-      questions.querySelectorAll('option').forEach(option => {
-        const questionStatus = qA.find(q => (String(q.segment) === String(segments.value)) && (String(q.question) === String(option.value)))?.status;
+      questionStatuses.forEach(question => {
+        const questionId = questionsArray.find(q => String(q.id) === String(question.question));
+        const questionText = `${questionId.number} - ${question.status}`;
         const li = document.createElement('li');
-        if (questionStatus === 'Correct') {
-          li.innerHTML = `<i class="bi bi-check-lg"></i> ${option.innerHTML}`;
-        } else if (questionStatus === 'In Progress') {
-          li.innerHTML = `<i class="bi bi-hourglass-split"></i> ${option.innerHTML}`;
+        if (question.status === 'Correct') {
+          li.innerHTML = `<i class="bi bi-check-lg"></i> ${questionText}`;
+        } else if (question.status === 'In Progress') {
+          li.innerHTML = `<i class="bi bi-hourglass-split"></i> ${questionText}`;
         } else {
-          li.innerHTML = `<i class="bi bi-hourglass"></i> ${option.innerHTML}`;
+          li.innerHTML = `<i class="bi bi-hourglass"></i> ${questionText}`;
         }
         document.getElementById("segment-completed").querySelector('ul').append(li);
       });
     }
-    if ((questions.querySelectorAll('option').length > 0) && Array.from(questions.querySelectorAll('option')).every(option => {
-      const questionId = option.value;
-      const questionStatus = qA.find(q => (String(q.segment) === String(segments.value)) && (String(q.question) === String(questionId)))?.status;
-      return questionStatus === 'Correct';
-    })) {
+    if ((questions.querySelectorAll('option').length > 0) && questionStatuses.every(question => question.status === 'Correct')) {
       document.getElementById("segment-completed").classList.add('mastery');
       const count = 200;
       const textColor = getComputedStyle(document.body).getPropertyValue('--text-color').trim();
@@ -687,6 +679,7 @@ try {
   async function updateQuestion() {
     var question = questionsArray.find(q => String(q.id) === String(questions.value));
     questionImages.innerHTML = '';
+    questionImages.classList.remove('gallery');
     nextQuestionButtons.forEach(btn => btn.disabled = true);
     prevQuestionButtons.forEach(btn => btn.disabled = true);
     document.getElementById("submit-button").disabled = true;
@@ -698,9 +691,11 @@ try {
     feedContainer.classList.remove('show');
     feedContainer.setAttribute('hidden', '');
     document.getElementById('answer-mode-selector').removeAttribute('hidden');
+    document.getElementById('attachments-view-mode').removeAttribute('hidden');
     if (!question) {
       questionImages.innerHTML = '<p style="margin-bottom: -12px;">There are no questions in this segment.</p>';
       document.getElementById('answer-mode-selector').setAttribute('hidden', '');
+      document.getElementById('attachments-view-mode').setAttribute('hidden', '');
       return;
     }
     if ((question.question.length > 0) && (question.question != ' ')) {
@@ -733,10 +728,13 @@ try {
       var i = document.createElement('img');
       i.src = image;
       questionImages.append(i);
+      mediumZoom(i, {
+        background: "transparent"
+      });
     });
-    mediumZoom(".images img", {
-      background: "transparent"
-    });
+    ui.setButtonSelectValue(document.getElementById("attachments-view-mode"), (JSON.parse(question.images).length > 5) ? "gallery" : "default");
+    if (JSON.parse(question.images).length > 5) questionImages.classList.add('gallery');
+
     const questionOptions = questions.querySelectorAll('option');
     const selectedQuestionOption = questions.querySelector('option:checked');
 
@@ -748,182 +746,56 @@ try {
       document.getElementById("submit-button").disabled = false;
     }
 
-    await updateHistory();
-
     resetInputs();
 
     const feed = document.getElementById('question-history-feed');
-    var latestResponses = (storage.get("history") || []).filter(r => (String(r.segment) === String(segments.value)) && (String(r.question) === String(question.id))).sort((a, b) => b.timestamp - a.timestamp);
+    var latestResponses = history.filter(r => (String(r.segment) === String(segments.value)) && (String(r.question_id) === String(question.id))).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+    feed.innerHTML = "";
     if (latestResponses.length > 0) {
-      const fetchPromises = latestResponses.map(item =>
-        fetch(`${domain}/response?seatCode=${item.code}&segment=${item.segment}&question=${item.question}&answer=${item.answer}`, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          }
-        })
-          .then(r => r.json())
-          .then(r => ({ ...r, item }))
-          .catch(e => {
-            return { error: e, item };
-          })
-      );
-
-      Promise.all(fetchPromises)
-        .then(results => {
-          feed.innerHTML = "";
-          return results;
-        })
-        .then(results => {
-          results.forEach(({ item, ...r }) => {
-            if (r.error) {
-              console.log(r.error);
-              return;
-            }
-            const button = document.createElement("button");
-            const latex = item.type === "latex";
-            const array = item.type === "array";
-            const matrix = item.type === "matrix";
-            const frq = item.type === "frq";
-            button.id = r.id;
-            button.classList = (r.status === "Incorrect") ? 'incorrect' : (r.status === "Correct") ? 'correct' : '';
-            if (String(r.flagged) === '1') button.classList.add('flagged');
-            var response = `<b>Status:</b> ${r.status.includes('Unknown') ? r.status.split('Unknown, ')[1] : r.status} at ${unixToString(item.timestamp)}${(r.reason) ? `</p>\n<p><b>Response:</b> ${r.reason}<br>` : ''}</p><button data-flag-response><i class="bi bi-flag-fill"></i> ${(String(r.flagged) === '1') ? 'Unflag Response' : 'Flag for Review'}</button>`;
-            item.number = questionsArray.find(question => question.id === Number(item.question)).number;
-            if (!latex) {
-              if (!array) {
-                if (!matrix) {
-                  if (!frq) {
-                    button.innerHTML = `<p>${item.answer}</p>\n<p>${response}`;
-                  } else {
-                    button.innerHTML = `<p${item.answer}${(item.number === '1') ? '/9' : ''}</p>\n<p>${response}`;
-                  }
-                } else {
-                  button.innerHTML = `<p>${JSON.stringify(JSON.parse(item.answer).map(innerArray => innerArray.map(numString => String(numString)))).replaceAll('["', '[').replaceAll('","', ', ').replaceAll('"]', ']')}</p>\n<p>${response}`;
-                }
-              } else {
-                button.innerHTML = `<p>${JSON.parse(`[${item.answer.slice(1, -1).split(', ')}]`).join(', ')}</p>\n<p>${response}`;
-              }
-            } else {
-              button.innerHTML = `${convertLatexToMarkup(item.answer)}\n<p class="hint">(Equation may not display properly)</p>\n<p>${response}`;
-            }
-            feed.prepend(button);
-            renderMathInElement(button);
-            // Resubmit check
-            button.addEventListener("click", (event) => {
-              if (event.target.hasAttribute('data-flag-response')) return (String(r.flagged) === '1') ? unflagResponse(event, true) : flagResponse(event, true);
-              questionInput.value = item.question;
-              if (latex) {
-                answerMode("math");
-                ui.setButtonSelectValue(document.getElementById("answer-mode-selector"), "math");
-                mf.value = item.answer;
-              } else if (array) {
-                answerMode("set");
-                ui.setButtonSelectValue(document.getElementById("answer-mode-selector"), "set");
-                resetSetInput();
-                restoredSetType = "brackets";
-                switch (item.answer.slice(0, 1)) {
-                  case "<":
-                    restoredSetType = "vector";
-                    break;
-                  case "[":
-                    restoredSetType = "array";
-                    break;
-                  case "(":
-                    restoredSetType = "coordinate";
-                    break;
-                  case "⟨":
-                    restoredSetType = "product";
-                    break;
-                  default:
-                    break;
-                };
-                ui.setButtonSelectValue(document.getElementById("set-type-selector"), restoredSetType);
-                var i = 0;
-                JSON.parse(`[${item.answer.slice(1, -1).split(', ')}]`).forEach(a => {
-                  setInputs = document.querySelectorAll("[data-set-input]");
-                  setInputs[i].value = a;
-                  i++;
-                  if (i < item.answer.slice(1, -1).split(', ').length) addSet();
-                });
-              } else if (matrix) {
-                answerMode("matrix");
-                ui.setButtonSelectValue(document.getElementById("answer-mode-selector"), "matrix");
-                resetMatrix();
-                var rows = JSON.parse(item.answer);
-                if (rows.length != 2) {
-                  if (rows.length === 1) {
-                    removeRow();
-                  } else {
-                    for (let i = 0; i < rows.length - 2; i++) {
-                      addRow();
-                    }
-                  }
-                }
-                var columns = rows[0].length;
-                if (columns != 2) {
-                  if (columns === 1) {
-                    removeColumn();
-                  } else {
-                    for (let i = 0; i < columns - 2; i++) {
-                      addColumn();
-                    }
-                  }
-                }
-                var matrixRows = document.querySelectorAll('#matrix [data-matrix-row]');
-                for (let i = 0; i < rows.length; i++) {
-                  for (let j = 0; j < rows[i].length; j++) {
-                    matrixRows[i].querySelectorAll('[data-matrix-column]')[j].value = rows[i][j];
-                  }
-                }
-                matrixRows[matrixRows.length - 1].lastChild.focus();
-              } else if (frq) {
-                answerMode("frq");
-                ui.setButtonSelectValue(document.getElementById("answer-mode-selector"), "frq");
-                questionInput.value = '1';
-                if (item.question === '1') {
-                  frqInput.value = item.answer;
-                  document.querySelector('[data-answer-mode="frq"] h1').innerText = item.answer;
-                  frqInput.focus();
-                } else {
-                  if (document.querySelector(`[data-frq-part="${item.question}"]`)) {
-                    document.querySelector(`[data-frq-part="${item.question}"]`).value = item.answer;
-                    document.querySelector(`[data-frq-part="${item.question}"]`).focus();
-                  } else {
-                    while (!document.querySelector(`[data-frq-part="${item.question}"]`)) {
-                      addPart();
-                    };
-                    document.querySelector(`[data-frq-part="${item.question}"]`).value = item.answer;
-                    document.querySelector(`[data-frq-part="${item.question}"]`).focus();
-                  };
-                };
-              } else {
-                answerMode("input");
-                const choice = item.answer.match(/^CHOICE ([A-E])$/);
-                if (!choice) {
-                  answerInput.value = item.answer;
-                } else {
-                  document.querySelector(`[data-multiple-choice="${choice[1].toLowerCase()}"]`).click();
-                }
-                questionInput.focus();
-                autocomplete.update();
-              }
-              window.scrollTo(0, document.body.scrollHeight);
-            });
-          });
-        })
-        .then(() => {
-          feedContainer.removeAttribute('hidden');
-          feedContainer.classList.add('show');
-          if (latestResponses.length > 2) {
-            feed.style.maxHeight = `calc(${Array.from(feed.children).slice(-2).reduce((acc, el) => acc + el.offsetHeight, 0)}px + 0.25rem)`;
-            feed.scrollTop = feed.scrollHeight;
-          }
-        })
+      latestResponses.forEach(r => {
+        if (r.error) {
+          console.log(r.error);
+          return;
+        }
+        const button = document.createElement("button");
+        button.id = r.id;
+        button.classList = (r.status === "Incorrect") ? 'incorrect' : (r.status === "Correct") ? 'correct' : '';
+        if (r.flagged) button.classList.add('flagged');
+        var response = `<b>Status:</b> ${r.status.includes('Unknown') ? r.status.split('Unknown, ')[1] : r.status} at ${unixToString(r.timestamp)}${(r.reason) ? `</p>\n<p><b>Response:</b> ${r.reason}<br>` : ''}</p><button data-flag-response><i class="bi bi-flag-fill"></i> ${r.flagged ? 'Unflag Response' : 'Flag for Review'}</button>`;
+        switch (r.mode) {
+          case 'latex':
+            button.innerHTML = `${convertLatexToMarkup(r.response)}\n<p class="hint">(Equation may not display properly)</p>\n<p>${response}`;
+            break;
+          case 'array':
+            button.innerHTML = `<p>${JSON.parse(`[${r.response.slice(1, -1).split(', ')}]`).join(', ')}</p>\n<p>${response}`;
+            break;
+          case 'matrix':
+            button.innerHTML = `<p>${JSON.stringify(JSON.parse(r.response).map(innerArray => innerArray.map(numString => String(numString)))).replaceAll('["', '[').replaceAll('","', ', ').replaceAll('"]', ']')}</p>\n<p>${response}`;
+            break;
+          default:
+            button.innerHTML = `<p>${escapeHTML(r.response)}</p>\n<p>${response}`;
+            break;
+        }
+        feed.prepend(button);
+        renderMathInElement(button);
+        // Resubmit check
+        button.addEventListener("click", async (event) => {
+          if (event.target.hasAttribute('data-flag-response')) return r.flagged ? unflagResponse(event, true) : flagResponse(event, true);
+          await resubmitCheck(r);
+          window.scrollTo(0, document.body.scrollHeight);
+        });
+      });
+      feedContainer.removeAttribute('hidden');
+      feedContainer.classList.add('show');
+      if (latestResponses.length > 2) {
+        feed.style.maxHeight = `calc(${Array.from(feed.children).slice(-2).reduce((acc, el) => acc + el.offsetHeight, 0)}px + 0.25rem)`;
+        feed.scrollTop = feed.scrollHeight;
+      }
     } else {
       feedContainer.classList.remove('show');
     }
 
+    ui.setUnsavedChanges(false);
     ui.reloadUnsavedInputs();
   }
 
@@ -941,14 +813,26 @@ try {
     const questionOptions = questions.querySelectorAll('option');
     const selectedQuestionOption = questions.querySelector('option:checked');
     const selectedQuestionOptionIndex = Array.from(questionOptions).indexOf(selectedQuestionOption);
+    var questionStatuses = [];
+    questionOptions.forEach(questionId => {
+      var question = questionsArray.find(q => String(q.id) === String(questionId.id));
+      if (question) {
+        var highestStatus = "";
+        var questionResponses = history.filter(r => String(r.question_id) === String(questionId.id));
+        if (questionResponses.find(r => r.status === 'Correct')) {
+          highestStatus = 'Correct';
+        } else if (questionResponses.find(r => r.status === 'In Progress')) {
+          highestStatus = 'In Progress';
+        } else if (questionResponses.length) {
+          highestStatus = 'Pending';
+        }
+        questionStatuses.push({ "question": questionId.id, "status": highestStatus });
+      }
+    });
     if (selectedQuestionOptionIndex < questionOptions.length - 1) {
       questionOptions[selectedQuestionOptionIndex + 1].selected = true;
       updateQuestion();
-    } else if ((questionOptions.length > 0) && Array.from(questionOptions).every(option => {
-      const questionId = option.value;
-      const questionStatus = storage.get("questionsAnswered")?.find(q => (String(q.segment) === String(segments.value)) && (String(q.question) === String(questionId)))?.status;
-      return questionStatus === 'Correct' || questionStatus === 'In Progress' || questionStatus === 'Pending';
-    })) {
+    } else if ((questionOptions.length > 0) && questionStatuses.every(question => question.status === 'Correct' || question.status === 'In Progress' || question.status === 'Pending')) {
       updateSegment();
     }
   }
@@ -1024,26 +908,6 @@ try {
     currentAnswerMode = mode;
   }
 
-  // Store click to storage and history
-  async function storeClick(code, segment, question, answer, reason, type) {
-    ui.setUnsavedChanges(true);
-    const history = storage.get("history") || [];
-    const timestamp = Date.now();
-    history.push({
-      "code": code,
-      "segment": segment,
-      "question": question,
-      "answer": answer,
-      "reason": reason,
-      "timestamp": timestamp,
-      "type": type || "text",
-    });
-    storage.set("history", history);
-    await auth.syncPush("history");
-    updateHistory();
-    ui.setUnsavedChanges(false);
-  }
-
   document.getElementById("history-first")?.addEventListener("click", () => {
     historyIndex = getHistoryDates().length - 1;
     updateHistory();
@@ -1066,25 +930,16 @@ try {
 
   // Count number of unique days
   function getHistoryDates() {
-    const data = (storage.get("history") || []).map((entry) => {
-      const day = entry.timestamp;
-      const date = new Date(entry.timestamp).toISOString().split("T")[0];
-      return { ...entry, day: day, date: date };
-    });
-    const unique = data
-      .map((entry) => entry.date)
-      .filter((value, i, array) => {
-        return array.indexOf(value) === i;
-      })
-      .reverse();
+    const dates = history.map((entry) => new Date(entry.timestamp).toISOString().split("T")[0]);
+    const unique = [...new Set(dates)].reverse();
     return unique;
   }
 
   // Filter history by date
-  function filterHistory() {
-    const data = (storage.get("history") || []).map((entry) => {
-      const day = entry.timestamp;
-      const date = new Date(entry.timestamp).toISOString().split("T")[0];
+  function filterHistory(data) {
+    data = data.map((entry) => {
+      const day = new Date(entry.timestamp);
+      const date = day.toISOString().split("T")[0];
       return { ...entry, day: day, date: date };
     });
     return data.filter((entry) => entry.date === getHistoryDates()[historyIndex]);
@@ -1092,15 +947,15 @@ try {
 
   // Update history feed
   async function updateHistory() {
-    const history = filterHistory();
+    const filteredHistory = filterHistory(history);
     const date =
-      history[0] &&
+      filteredHistory[0] &&
       new Intl.DateTimeFormat("en-US", {
         weekday: "long",
         year: "numeric",
         month: "long",
         day: "numeric",
-      }).format(history[0]?.day);
+      }).format(filteredHistory[0]?.day);
 
     // Update history navigation
     document.getElementById("history-first").disabled = historyIndex === getHistoryDates().length - 1;
@@ -1110,191 +965,139 @@ try {
     document.getElementById("history-date").textContent = date;
 
     const feed = document.getElementById("history-feed");
-    if (history.length === 0) {
+    if (filteredHistory.length === 0) {
       feed.innerHTML = "<p>Submitted clicks will show up here!</p>";
       ui.reloadUnsavedInputs();
       return;
     }
-    var qA = storage.get("questionsAnswered") || [];
 
-    const questionsResponse = await fetch(`${domain}/questions`, {
-      method: "GET",
-      headers: { "Content-Type": "application/json" },
-    });
-    questionsArray = await questionsResponse.json();
-
-    const fetchPromises = history.sort((a, b) => a.timestamp - b.timestamp).map(item =>
-      fetch(`${domain}/response?seatCode=${item.code}&segment=${item.segment}&question=${item.question}&answer=${item.answer}`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        }
-      })
-        .then(r => r.json())
-        .then(r => ({ ...r, item }))
-        .catch(e => {
-          return { error: e, item };
-        })
-    );
-
-    await Promise.all(fetchPromises)
-      .then(results => {
-        feed.innerHTML = "";
-        return results;
-      })
-      .then(results => {
-        results.forEach(({ item, ...r }) => {
-          if (r.error) {
-            console.log(r.error);
-            return;
-          }
-          const button = document.createElement("button");
-          const latex = item.type === "latex";
-          const array = item.type === "array";
-          const matrix = item.type === "matrix";
-          const frq = item.type === "frq";
-          button.id = r.id;
-          button.classList = (r.status === "Incorrect") ? 'incorrect' : (r.status === "Correct") ? 'correct' : '';
-          if (String(r.flagged) === '1') button.classList.add('flagged');
-          var response = `<b>Status:</b> ${r.status.includes('Unknown') ? r.status.split('Unknown, ')[1] : r.status}${(r.reason) ? `</p>\n<p><b>Response:</b> ${r.reason}<br>` : ''}</p><button data-flag-response><i class="bi bi-flag-fill"></i> ${(String(r.flagged) === '1') ? 'Unflag Response' : 'Flag for Review'}</button>`;
-          item.number = questionsArray.find(question => question.id === Number(item.question)).number;
-          if (!latex) {
-            if (!array) {
-              if (!matrix) {
-                if (!frq) {
-                  button.innerHTML = `${(item.code !== storage.get("code")) ? `<p><b>${courses.find(c => JSON.parse(c.periods).includes(Number(item.code.slice(0, 1))))?.name}</b></p>\n` : ''}<p><b>Segment ${item.segment} Question #${item.number}.</b> ${unixToTimeString(item.timestamp)} (${item.code})</p>\n<p>${item.answer}</p>\n<p>${response}`;
-                } else {
-                  button.innerHTML = `${(item.code !== storage.get("code")) ? `<p><b>${courses.find(c => JSON.parse(c.periods).includes(Number(item.code.slice(0, 1))))?.name}</b></p>\n` : ''}<p><b>Segment ${item.segment} Question #${item.number}.</b> ${unixToTimeString(item.timestamp)} (${item.code})</p>\n<p>${item.answer}${(item.number === '1') ? '/9' : ''}</p>\n<p>${response}`;
-                }
-              } else {
-                button.innerHTML = `${(item.code !== storage.get("code")) ? `<p><b>${courses.find(c => JSON.parse(c.periods).includes(Number(item.code.slice(0, 1))))?.name}</b></p>\n` : ''}<p><b>Segment ${item.segment} Question #${item.number}.</b> ${unixToTimeString(item.timestamp)} (${item.code})</p>\n<p>${JSON.stringify(JSON.parse(item.answer).map(innerArray => innerArray.map(numString => String(numString)))).replaceAll('["', '[').replaceAll('","', ', ').replaceAll('"]', ']')}</p>\n<p>${response}`;
-              }
-            } else {
-              button.innerHTML = `${(item.code !== storage.get("code")) ? `<p><b>${courses.find(c => JSON.parse(c.periods).includes(Number(item.code.slice(0, 1))))?.name}</b></p>\n` : ''}<p><b>Segment ${item.segment} Question #${item.number}.</b> ${unixToTimeString(item.timestamp)} (${item.code})</p>\n<p>${JSON.parse(`[${item.answer.slice(1, -1).split(', ')}]`).join(', ')}</p>\n<p>${response}`;
-            }
-          } else {
-            button.innerHTML = `${(item.code !== storage.get("code")) ? `<p><b>${courses.find(c => JSON.parse(c.periods).includes(Number(item.code.slice(0, 1))))?.name}</b></p>\n` : ''}<p><b>Segment ${item.segment} Question #${item.number}.</b> ${unixToTimeString(item.timestamp)} (${item.code})</p>\n${convertLatexToMarkup(item.answer)}\n<p class="hint">(Equation may not display properly)</p>\n<p>${response}`;
-          }
-          feed.prepend(button);
-          renderMathInElement(button);
-          // Resubmit check
-          button.addEventListener("click", (event) => {
-            if (event.target.hasAttribute('data-flag-response')) return (String(r.flagged) === '1') ? unflagResponse(event) : flagResponse(event);
-            questionInput.value = item.question;
-            ui.view("");
-            if (latex) {
-              answerMode("math");
-              ui.setButtonSelectValue(document.getElementById("answer-mode-selector"), "math");
-              mf.value = item.answer;
-            } else if (array) {
-              answerMode("set");
-              ui.setButtonSelectValue(document.getElementById("answer-mode-selector"), "set");
-              resetSetInput();
-              restoredSetType = "brackets";
-              switch (item.answer.slice(0, 1)) {
-                case "<":
-                  restoredSetType = "vector";
-                  break;
-                case "[":
-                  restoredSetType = "array";
-                  break;
-                case "(":
-                  restoredSetType = "coordinate";
-                  break;
-                case "⟨":
-                  restoredSetType = "product";
-                  break;
-                default:
-                  break;
-              };
-              ui.setButtonSelectValue(document.getElementById("set-type-selector"), restoredSetType);
-              var i = 0;
-              JSON.parse(`[${item.answer.slice(1, -1).split(', ')}]`).forEach(a => {
-                setInputs = document.querySelectorAll("[data-set-input]");
-                setInputs[i].value = a;
-                i++;
-                if (i < item.answer.slice(1, -1).split(', ').length) addSet();
-              });
-            } else if (matrix) {
-              answerMode("matrix");
-              ui.setButtonSelectValue(document.getElementById("answer-mode-selector"), "matrix");
-              resetMatrix();
-              var rows = JSON.parse(item.answer);
-              if (rows.length != 2) {
-                if (rows.length === 1) {
-                  removeRow();
-                } else {
-                  for (let i = 0; i < rows.length - 2; i++) {
-                    addRow();
-                  }
-                }
-              }
-              var columns = rows[0].length;
-              if (columns != 2) {
-                if (columns === 1) {
-                  removeColumn();
-                } else {
-                  for (let i = 0; i < columns - 2; i++) {
-                    addColumn();
-                  }
-                }
-              }
-              var matrixRows = document.querySelectorAll('#matrix [data-matrix-row]');
-              for (let i = 0; i < rows.length; i++) {
-                for (let j = 0; j < rows[i].length; j++) {
-                  matrixRows[i].querySelectorAll('[data-matrix-column]')[j].value = rows[i][j];
-                }
-              }
-              matrixRows[matrixRows.length - 1].lastChild.focus();
-            } else if (frq) {
-              answerMode("frq");
-              ui.setButtonSelectValue(document.getElementById("answer-mode-selector"), "frq");
-              questionInput.value = '1';
-              if (item.question === '1') {
-                frqInput.value = item.answer;
-                document.querySelector('[data-answer-mode="frq"] h1').innerText = item.answer;
-                frqInput.focus();
-              } else {
-                if (document.querySelector(`[data-frq-part="${item.question}"]`)) {
-                  document.querySelector(`[data-frq-part="${item.question}"]`).value = item.answer;
-                  document.querySelector(`[data-frq-part="${item.question}"]`).focus();
-                } else {
-                  while (!document.querySelector(`[data-frq-part="${item.question}"]`)) {
-                    addPart();
-                  };
-                  document.querySelector(`[data-frq-part="${item.question}"]`).value = item.answer;
-                  document.querySelector(`[data-frq-part="${item.question}"]`).focus();
-                };
-              };
-            } else {
-              answerMode("input");
-              const choice = item.answer.match(/^CHOICE ([A-E])$/);
-              if (!choice) {
-                answerInput.value = item.answer;
-              } else {
-                document.querySelector(`[data-multiple-choice="${choice[1].toLowerCase()}"]`).click();
-              }
-              questionInput.focus();
-              autocomplete.update();
-            }
-          });
-          if (qA.find(q => (q.segment === item.segment) && (q.question === item.question))) qA.find(q => (q.segment === item.segment) && (q.question === item.question)).status = (r.status.includes("Recorded")) ? "Pending" : r.status;
-        });
-        if (results.find(({ item, ...r }) => String(r.flagged) === '1')) {
-          var p = document.createElement("p");
-          p.classList = "flagged-response-alert";
-          p.innerText = "You have flagged responses to review.";
-          feed.prepend(p);
-        }
-      }).then(async () => {
-        storage.set("questionsAnswered", qA);
+    var sortedHistory = filteredHistory.sort((a, b) => a.timestamp - b.timestamp);
+    feed.innerHTML = "";
+    sortedHistory.forEach(r => {
+      if (r.error) {
+        console.log(r.error);
+        return;
+      }
+      const button = document.createElement("button");
+      button.id = r.id;
+      button.classList = (r.status === "Incorrect") ? 'incorrect' : (r.status === "Correct") ? 'correct' : '';
+      if (r.flagged) button.classList.add('flagged');
+      var response = `<b>Status:</b> ${r.status.includes('Unknown') ? r.status.split('Unknown, ')[1] : r.status}${(r.reason) ? `</p>\n<p><b>Response:</b> ${r.reason}<br>` : ''}</p><button data-flag-response><i class="bi bi-flag-fill"></i> ${r.flagged ? 'Unflag Response' : 'Flag for Review'}</button>`;
+      var questionNumber = questionsArray.find(question => String(question.id) === String(r.question_id)).number;
+      switch (r.mode) {
+        case 'latex':
+          button.innerHTML = `${(String(r.seatCode) !== String(storage.get("code"))) ? `<p><b>${courses.find(c => JSON.parse(c.periods).includes(Number(r.seatCode.slice(0, 1))))?.name}</b></p>\n` : ''}<p><b>Segment ${r.segment} Question #${questionNumber}.</b> ${unixToTimeString(r.timestamp)} (${r.seatCode})</p>\n${convertLatexToMarkup(r.response)}\n<p class="hint">(Equation may not display properly)</p>\n<p>${response}`;
+          break;
+        case 'array':
+          button.innerHTML = `${(String(r.seatCode) !== String(storage.get("code"))) ? `<p><b>${courses.find(c => JSON.parse(c.periods).includes(Number(r.seatCode.slice(0, 1))))?.name}</b></p>\n` : ''}<p><b>Segment ${r.segment} Question #${questionNumber}.</b> ${unixToTimeString(r.timestamp)} (${r.seatCode})</p>\n<p>${JSON.parse(`[${r.response.slice(1, -1).split(', ')}]`).join(', ')}</p>\n<p>${response}`;
+          break;
+        case 'matrix':
+          button.innerHTML = `${(String(r.seatCode) !== String(storage.get("code"))) ? `<p><b>${courses.find(c => JSON.parse(c.periods).includes(Number(r.seatCode.slice(0, 1))))?.name}</b></p>\n` : ''}<p><b>Segment ${r.segment} Question #${questionNumber}.</b> ${unixToTimeString(r.timestamp)} (${r.seatCode})</p>\n<p>${JSON.stringify(JSON.parse(r.response).map(innerArray => innerArray.map(numString => String(numString)))).replaceAll('["', '[').replaceAll('","', ', ').replaceAll('"]', ']')}</p>\n<p>${response}`;
+          break;
+        default:
+          button.innerHTML = `${(String(r.seatCode) !== String(storage.get("code"))) ? `<p><b>${courses.find(c => JSON.parse(c.periods).includes(Number(r.seatCode.slice(0, 1))))?.name}</b></p>\n` : ''}<p><b>Segment ${r.segment} Question #${questionNumber}.</b> ${unixToTimeString(r.timestamp)} (${r.seatCode})</p>\n<p>${escapeHTML(r.response)}</p>\n<p>${response}`;
+          break;
+      }
+      feed.prepend(button);
+      renderMathInElement(button);
+      // Resubmit check
+      button.addEventListener("click", async (event) => {
+        if (event.target.hasAttribute('data-flag-response')) return r.flagged ? unflagResponse(event) : flagResponse(event);
+        ui.view("");
+        await resubmitCheck(r);
       });
-    qA.forEach(q => {
-      var i = questions.querySelector(`option[value="${q.question}"]`);
-      const selectedSegment = segmentsArray.find(s => String(s.id) === String(segments.value));
-      if (i) i.innerHTML = `${JSON.parse(selectedSegment.question_ids).find(q2 => String(q2.id) === String(q.question)).name} - ${q.status}`;
     });
+    if (sortedHistory.find(r => r.flagged)) {
+      var p = document.createElement("p");
+      p.classList = "flagged-response-alert";
+      p.innerText = "You have flagged responses to review.";
+      feed.prepend(p);
+    }
     ui.reloadUnsavedInputs();
+  }
+
+  async function resubmitCheck(r) {
+    questionInput.value = r.question_id;
+    switch (r.mode) {
+      case 'latex':
+        answerMode("math");
+        ui.setButtonSelectValue(document.getElementById("answer-mode-selector"), "math");
+        mf.value = r.response;
+        break;
+      case 'array':
+        answerMode("set");
+        ui.setButtonSelectValue(document.getElementById("answer-mode-selector"), "set");
+        resetSetInput();
+        restoredSetType = "brackets";
+        switch (r.response.slice(0, 1)) {
+          case "<":
+            restoredSetType = "vector";
+            break;
+          case "[":
+            restoredSetType = "array";
+            break;
+          case "(":
+            restoredSetType = "coordinate";
+            break;
+          case "⟨":
+            restoredSetType = "product";
+            break;
+          default:
+            break;
+        };
+        ui.setButtonSelectValue(document.getElementById("set-type-selector"), restoredSetType);
+        var i = 0;
+        JSON.parse(`[${r.response.slice(1, -1).split(', ')}]`).forEach(a => {
+          setInputs = document.querySelectorAll("[data-set-input]");
+          setInputs[i].value = a;
+          i++;
+          if (i < r.response.slice(1, -1).split(', ').length) addSet();
+        });
+        break;
+      case 'matrix':
+        answerMode("matrix");
+        ui.setButtonSelectValue(document.getElementById("answer-mode-selector"), "matrix");
+        resetMatrix();
+        var rows = JSON.parse(r.response);
+        if (rows.length != 2) {
+          if (rows.length === 1) {
+            removeRow();
+          } else {
+            for (let i = 0; i < rows.length - 2; i++) {
+              addRow();
+            }
+          }
+        }
+        var columns = rows[0].length;
+        if (columns != 2) {
+          if (columns === 1) {
+            removeColumn();
+          } else {
+            for (let i = 0; i < columns - 2; i++) {
+              addColumn();
+            }
+          }
+        }
+        var matrixRows = document.querySelectorAll('#matrix [data-matrix-row]');
+        for (let i = 0; i < rows.length; i++) {
+          for (let j = 0; j < rows[i].length; j++) {
+            matrixRows[i].querySelectorAll('[data-matrix-column]')[j].value = rows[i][j];
+          }
+        }
+        matrixRows[matrixRows.length - 1].lastChild.focus();
+        break;
+      default:
+        answerMode("input");
+        var choice = escapeHTML(r.response).match(/^CHOICE ([A-E])$/);
+        if (!choice) {
+          answerInput.value = r.response;
+        } else {
+          document.querySelector(`[data-multiple-choice="${choice[1].toLowerCase()}"]`).click();
+        }
+        answerInput.focus();
+        autocomplete.update();
+        break;
+    }
   }
 
   function flagResponse(event, isInQuestion = false) {
@@ -1352,31 +1155,30 @@ try {
   const answerLabel = document.querySelector(`label[for="answer-input"]`);
 
   // Select answer mode
-  if (document.getElementById("answer-mode-selector")) {
-    document.getElementById("answer-mode-selector").addEventListener("input", (e) => {
-      const mode = e.detail;
-      answerMode(mode);
-      if (mode === "input") {
-        answerLabel.setAttribute("for", "answer-input");
-      } else if (mode === "math") {
-        answerLabel.setAttribute("for", "math-input");
-      } else if (mode === "set") {
-        answerLabel.setAttribute("for", "set-input");
-      } else if (mode === "matrix") {
-        answerLabel.setAttribute("for", "matrix");
-      } else if (mode === "frq") {
-        answerLabel.setAttribute("for", "frq-input");
-      }
-    });
-  }
+  document.getElementById("answer-mode-selector")?.addEventListener("input", (e) => {
+    const mode = e.detail;
+    answerMode(mode);
+    if (mode === "input") {
+      answerLabel.setAttribute("for", "answer-input");
+    } else if (mode === "math") {
+      answerLabel.setAttribute("for", "math-input");
+    } else if (mode === "set") {
+      answerLabel.setAttribute("for", "set-input");
+    } else if (mode === "matrix") {
+      answerLabel.setAttribute("for", "matrix");
+    }
+  });
+
+  // Select attachments view mode
+  document.getElementById("attachments-view-mode")?.addEventListener("input", (e) => {
+    document.querySelector('.images').classList = `images ${e.detail}`;
+  });
 
   // Select set type
-  if (document.getElementById("set-type-selector")) {
-    document.getElementById("set-type-selector").addEventListener("input", (e) => {
-      const mode = e.detail;
-      currentSetType = mode;
-    });
-  }
+  document.getElementById("set-type-selector")?.addEventListener("input", (e) => {
+    const mode = e.detail;
+    currentSetType = mode;
+  });
 
   setInputs = document.querySelectorAll('[data-set-input]');
 
@@ -1438,51 +1240,6 @@ try {
     if (document.querySelector("[data-remove-set-input]")) {
       document.querySelector("[data-remove-set-input]").addEventListener("click", removeSet);
     }
-  }
-
-  // Change FRQ choice
-  frqInput?.addEventListener("change", (input) => {
-    ui.setUnsavedChanges(true);
-    document.querySelector('[data-answer-mode="frq"] h1').innerText = input.target.value;
-  });
-
-  frqInput?.addEventListener("input", (input) => {
-    ui.setUnsavedChanges(true);
-    document.querySelector('[data-answer-mode="frq"] h1').innerText = input.target.value;
-  });
-
-  // Add FRQ part
-  if (document.querySelector("[data-add-frq-part]")) document.querySelector("[data-add-frq-part]").addEventListener("click", addPart);
-
-  function addPart() {
-    ui.setUnsavedChanges(true);
-    frqPartInputs = document.querySelectorAll('.frq-parts .part input');
-    highestDataElement = frqPartInputs[frqPartInputs.length - 1];
-    var newPartLetter = String.fromCharCode(highestDataElement.getAttribute('data-frq-part').charCodeAt(0) + 1);
-    var newFRQPart = document.createElement('div');
-    newFRQPart.classList = 'part';
-    newFRQPart.innerHTML = `<div class="prefix">${newPartLetter}.</div>
-          <input type="text" autocomplete="off" data-frq-part="${newPartLetter}" />
-          <button data-save-part="${newPartLetter}">Save</button>`;
-    document.querySelector('.frq-parts').insertBefore(newFRQPart, document.querySelector('.frq-parts').children[document.querySelector('.frq-parts').children.length - 1]);
-    frqParts = document.querySelectorAll('.frq-parts .part');
-    highestDataElement = frqParts[frqParts.length - 1];
-    highestDataElement.querySelector('button').addEventListener("click", () => processCheck(newPartLetter))
-    highestDataElement.querySelector('input').focus();
-    document.querySelector("[data-remove-frq-part]").disabled = false;
-    if (newPartLetter === 'z') document.querySelector("[data-add-frq-part]").disabled = true;
-    ui.reloadUnsavedInputs();
-  }
-
-  // Remove FRQ part
-  if (document.querySelector("[data-remove-frq-part]")) {
-    document.querySelector("[data-remove-frq-part]").addEventListener("click", removePart);
-  }
-
-  function removePart() {
-    frqParts = document.querySelectorAll('.frq-parts .part');
-    if (frqParts.length > 4) frqParts[frqParts.length - 1].remove();
-    if (frqParts.length === 5) document.querySelector("[data-remove-frq-part]").disabled = true;
   }
 
   // Add matrix column
