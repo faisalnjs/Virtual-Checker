@@ -328,13 +328,13 @@ try {
           ui.modeless(`<i class="bi bi-hourglass"></i>`, "Submitted, Awaiting Scoring");
         }
         resetInputs();
+        await fetchHistory();
+        await updateHistory();
         if ((typeof r.correct === 'undefined') || r.correct || (typeof r.error !== 'undefined')) {
           nextQuestion();
         } else {
           updateQuestion();
         }
-        await fetchHistory();
-        await updateHistory();
         setTimeout(() => {
           document.getElementById("submit-button").disabled = false;
         }, 3000);

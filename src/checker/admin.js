@@ -1883,11 +1883,13 @@ try {
   function removeCorrectAnswer() {
     if (!active) return;
     this.parentElement.remove();
+    ui.setUnsavedChanges(true);
   }
 
   function removeIncorrectAnswer() {
     if (!active) return;
     this.parentElement.remove();
+    ui.setUnsavedChanges(true);
   }
 
   function toggleQuestionLatex() {
