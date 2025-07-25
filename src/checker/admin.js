@@ -5734,7 +5734,6 @@ try {
     const questionDescription = renderedEditors[Number(questionId)].getText().replaceAll('\\n', ' ').trim() || null;
     const questionImages = [...new Set(JSON.parse(questions.find(q => String(q.id) === questionId).images))];
     console.log(questionTitle, questionDescription, questionImages);
-    return;
     ui.setUnsavedChanges(true);
     if (questionImages.length || questionDescription) {
       ui.startLoader();
@@ -5766,34 +5765,19 @@ try {
             [...this.parentElement.parentElement.querySelectorAll('.correctAnswers .button-grid')].filter(e => e.querySelector('#question-correct-answer-input').value === '').forEach(e => e.remove());
             [...this.parentElement.parentElement.querySelectorAll('.incorrectAnswers .button-grid')].filter(e => (e.querySelector('#question-incorrect-answer-input').value === '') && (e.querySelector('#question-incorrect-answer-reason-input').value === '')).forEach(e => e.remove());
             aiCorrectAnswers.forEach(answer => {
-              if (!answer || [...this.parentElement.parentElement.querySelectorAll('.correctAnswers .button-grid')].find(e => e.querySelector('#question-correct-answer-input').value === answer.toLowerCase())) return;
+              if (!answer || [...this.parentElement.parentElement.querySelectorAll('.correctAnswers .button-grid')].find(e => e.querySelector('#question-correct-answer-input').value.toLowerCase() === answer.toLowerCase())) return;
               var input = document.createElement('div');
               input.className = "button-grid inputs";
               input.innerHTML = `<input type="text" autocomplete="off" id="question-correct-answer-input" value="${escapeHTML(answer)}" placeholder="Answer" /><button data-remove-correct-answer-input square><i class="bi bi-dash"></i></button>`;
               this.parentElement.parentElement.querySelector('.correctAnswers').insertBefore(input, this.parentElement.parentElement.querySelector('.correctAnswers').children[this.parentElement.parentElement.querySelector('.correctAnswers').children.length - 1]);
             });
             aiIncorrectAnswers.forEach(answer => {
-              if (!answer.answer || !answer.reason || [...document.querySelectorAll('[data-incorrect-answer] input:not([data-incorrect-answer-reason])')].find(e => e.value.toLowerCase() === answer.answer.toLowerCase())) return;
-              const group = document.createElement('div');
-              group.classList.add('input-group', 'row');
-              group.setAttribute('data-incorrect-answer', '');
-              const input = document.createElement('input');
-              input.type = 'text';
-              input.value = answer.answer;
-              group.appendChild(input);
-              const reason = document.createElement('input');
-              reason.type = 'text';
-              reason.value = answer.reason;
-              reason.setAttribute('data-incorrect-answer-reason', '');
-              group.appendChild(reason);
-              document.getElementById('incorrect-answers').appendChild(group);
+              if (!answer.answer || !answer.reason || [...this.parentElement.parentElement.querySelectorAll('.incorrectAnswers .button-grid')].find(e => e.querySelector('#question-incorrect-answer-input').value.toLowerCase() === answer.answer.toLowerCase())) return;
+              var input = document.createElement('div');
+              input.className = "button-grid inputs";
+              input.innerHTML = `<input type="text" autocomplete="off" id="question-incorrect-answer-input" value="${escapeHTML(answer.answer)}" placeholder="Answer" /><input type="text" autocomplete="off" id="question-incorrect-answer-reason-input" value="${escapeHTML(answer.reason)}" placeholder="Reason" /><button data-remove-incorrect-answer-input square><i class="bi bi-dash"></i></button>`;
+              this.parentElement.parentElement.querySelector('.incorrectAnswers').insertBefore(input, this.parentElement.parentElement.querySelector('.incorrectAnswers').children[this.parentElement.parentElement.querySelector('.incorrectAnswers').children.length - 1]);
             });
-
-            var input = document.createElement('div');
-            input.className = "button-grid inputs";
-            input.innerHTML = `<input type="text" autocomplete="off" id="question-incorrect-answer-input" value="" placeholder="Answer" /><input type="text" autocomplete="off" id="question-incorrect-answer-reason-input" value="" placeholder="Reason" /><button data-remove-incorrect-answer-input square><i class="bi bi-dash"></i></button>`;
-            this.parentElement.insertBefore(input, this);
-
             document.querySelectorAll('[data-add-correct-answer-input]').forEach(a => a.addEventListener('click', addCorrectAnswer));
             document.querySelectorAll('[data-remove-correct-answer-input]').forEach(a => a.addEventListener('click', removeCorrectAnswer));
             document.querySelectorAll('[data-add-incorrect-answer-input]').forEach(a => a.addEventListener('click', addIncorrectAnswer));
@@ -5802,7 +5786,7 @@ try {
             setTimeout(() => {
               this.classList.remove('success');
             }, 2000);
-            ui.toast("Successfully autofilled answers.", 5000, "error", "bi bi-openai");
+            ui.toast("Successfully autofilled answers.", 5000, "success", "bi bi-openai");
           }
         })
         .catch(error => {
