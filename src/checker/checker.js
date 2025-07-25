@@ -330,6 +330,7 @@ try {
         resetInputs();
         await fetchHistory();
         await updateHistory();
+        await updateSegment();
         if ((typeof r.correct === 'undefined') || r.correct || (typeof r.error !== 'undefined')) {
           nextQuestion();
         } else {
@@ -497,8 +498,8 @@ try {
       segments.addEventListener("change", updateSegment);
       // Update history feed
       await fetchHistory();
-      updateHistory();
-      updateSegment();
+      await updateHistory();
+      await updateSegment();
       // Show clear data fix guide
       // if (storage.get("created")) {
       //   document.querySelector(`[data-modal-view="clear-data-fix"]`).remove();
