@@ -83,14 +83,6 @@
             margin-top: 0.5em;
         }
 
-        button.success {
-            background: mediumseagreen !important;
-        }
-
-        button.error {
-            background: indianred !important;
-        }
-
         input[type="text"] {
             height: 2.25em;
             padding: 0.1em 0.7em;
@@ -468,10 +460,6 @@
                             }, 2000);
                             alert(data.error);
                         } else {
-                            document.getElementById('ai').classList.add('success');
-                            setTimeout(() => {
-                                document.getElementById('ai').classList.remove('success');
-                            }, 2000);
                             const aiCorrectAnswers = output.correct || [];
                             const aiIncorrectAnswers = output.incorrect || [];
                             removeAnswers();
@@ -499,6 +487,10 @@
                                 group.appendChild(reason);
                                 document.getElementById('incorrect-answers').appendChild(group);
                             });
+                            document.getElementById('ai').classList.add('success');
+                            setTimeout(() => {
+                                document.getElementById('ai').classList.remove('success');
+                            }, 2000);
                         };
                     })
                     .catch(error => {
