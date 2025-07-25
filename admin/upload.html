@@ -118,13 +118,19 @@
             margin-bottom: 0.5em;
         }
 
-        .filepond--hopper {
+        .filepond--root {
             background: var(--surface-color);
             margin-bottom: 0.5em;
+            border-radius: 0.4rem;
+        }
+
+        .filepond--root * {
+            background: transparent;
         }
 
         .filepond--drop-label {
             color: var(--text-color);
+            border-radius: 0.4rem;
         }
 
         .description {
@@ -214,8 +220,10 @@
         pond.on('processfilestart', (file) => {
             if (startingQuestionId && startingQuestion && !file.getMetadata('title')) {
                 file.setMetadata('title', document.querySelectorAll('input[type="text"]')[0].value || startingQuestion);
-                file.setMetadata('correctAnswers', [...document.querySelectorAll('[data-correct-answer]')].map(a => a.value).filter(Boolean) || []);
-                file.setMetadata('incorrectAnswers', [...document.querySelectorAll('[data-incorrect-answer]')].map(a => a.value).filter(Boolean) || []);
+                file.setMetadata('correctAnswers', JSON.stringify([...document.querySelectorAll('[data-correct-answer]')].map(a => a.value).filter(Boolean) || []));
+                file.setMetadata('incorrectAnswers', JSON.stringify([...document.querySelectorAll('[data-incorrect-answer]')].map(a => {
+                    return { 'answer': a.querySelector('input').value, 'reason': a.querySelector('input[data-incorrect-answer-reason]').value };
+                }).filter(a => a.answer !== '' && a.reason !== '') || []));
                 file.setMetadata('description', JSON.stringify(quill.getContents()) || '{"ops":[{"insert":"\n"}]}');
                 pond.processFile(file);
             };
@@ -347,7 +355,9 @@
                         description: JSON.stringify(quill.getContents()) || '{"ops":[{"insert":"\n"}]}',
                         title: document.querySelectorAll('input[type="text"]')[0].value || startingQuestion,
                         correctAnswers: [...document.querySelectorAll('[data-correct-answer]')].map(a => a.value).filter(Boolean) || [],
-                        incorrectAnswers: [...document.querySelectorAll('[data-incorrect-answer]')].map(a => a.value).filter(Boolean) || [],
+                        incorrectAnswers: [...document.querySelectorAll('[data-incorrect-answer]')].map(a => {
+                            return { 'answer': a.querySelector('input').value, 'reason': a.querySelector('input[data-incorrect-answer-reason]').value };
+                        }).filter(a => a.answer !== '' && a.reason !== '') || [],
                     }),
                     headers: {
                         'Content-Type': 'application/json'
