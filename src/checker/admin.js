@@ -5731,7 +5731,7 @@ try {
     if (!active) return;
     const questionId = this.parentElement.parentElement.querySelector('#question-id-input')?.value;
     const questionTitle = this.parentElement.parentElement.querySelector('#question-text-input')?.value;
-    const questionDescription = renderedEditors[Number(questionId)].getText().replaceAll('\\n', ' ').trim() || null;
+    const questionDescription = renderedEditors[Number(questionId)].getText().replaceAll('\\n', ' ').replaceAll('  ', ' ').trim() || null;
     const questionImages = [...new Set(JSON.parse(questions.find(q => String(q.id) === questionId).images))];
     console.log(questionTitle, questionDescription, questionImages);
     ui.setUnsavedChanges(true);

@@ -434,7 +434,7 @@
             };
             images = images.filter(image => image !== null);
             images = [...new Set(images)];
-            var description = quill.getText().replaceAll('\\n', ' ').trim() || null;
+            var description = quill.getText().replaceAll('\\n', ' ').replaceAll('  ', ' ').trim() || null;
             if (images.length || description) {
                 startLoader();
                 await fetch(domain + '/ai/q', {
