@@ -57,6 +57,7 @@ export function admin(returnFunction) {
 
 export function ta(returnFunction) {
     ui.view();
+    console.log(authModalOpen)
     if (authModalOpen) return;
     ui.startLoader();
     ui.modal({
@@ -70,6 +71,7 @@ export function ta(returnFunction) {
                 text: 'Back',
                 class: 'cancel-button',
                 onclick: () => {
+                    authModalOpen = false;
                     ui.view("settings/code");
                 },
                 close: true,
@@ -111,6 +113,7 @@ export async function sync(hideWelcome = true, returnFunction = null) {
     ui.startLoader();
     if (!storage.get("code")) {
         ui.view();
+        authModalOpen = false;
         ui.modal({
             title: 'Error',
             body: '<p>No seat code found. Please enter a valid seat code first.</p>',
@@ -154,6 +157,7 @@ export async function sync(hideWelcome = true, returnFunction = null) {
                     text: 'Back',
                     class: 'cancel-button',
                     onclick: () => {
+                        authModalOpen = false;
                         ui.view("settings/code");
                     },
                     close: true,
@@ -280,6 +284,7 @@ export async function sync(hideWelcome = true, returnFunction = null) {
                     text: 'Back',
                     class: 'cancel-button',
                     onclick: () => {
+                        authModalOpen = false;
                         ui.view("settings/code");
                     },
                     close: true,
@@ -433,6 +438,7 @@ export async function syncPush(key = null) {
 
 export async function syncManual(hideWelcome = false) {
     ui.view();
+    authModalOpen = false;
     if (!storage.get("code")) {
         ui.modal({
             title: 'Error',
@@ -601,6 +607,7 @@ function prompt(backingUp = true, func = () => { }, domain, password) {
                 class: 'cancel-button',
                 onclick: () => {
                     if (password) storage.set("password", password);
+                    authModalOpen = false;
                     ui.setUnsavedChanges(false);
                     syncManual(true);
                 },

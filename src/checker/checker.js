@@ -405,10 +405,10 @@ try {
           ],
         });
       } else {
-        storage.set("code", input);
-        init();
         // Close all modals
         ui.view("");
+        storage.set("code", input);
+        init();
         // Update URL parameters with seat code
         const params = new URLSearchParams(window.location.search);
         params.set("code", input);
