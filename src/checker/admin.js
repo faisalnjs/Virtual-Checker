@@ -1650,43 +1650,16 @@ try {
           </div>`;
           textareaContainer.appendChild(toolbar);
           var textarea = document.createElement('div');
+          textarea.classList.add('textarea');
+          textarea.setAttribute('content', q.description || '');
           textareaContainer.appendChild(textarea);
           question.appendChild(textareaContainer);
-          var quill = new Quill(textarea, {
-            modules: {
-              syntax: true,
-              toolbar,
-              fazEmoji: {
-                collection: 'fluent-emoji',
-              },
-            },
-            placeholder: 'Add some written content to your question...',
-            theme: 'snow'
-          });
-          if (JSON.parse(q.description)) quill.setContents(JSON.parse(q.description));
-          quill.on('text-change', (delta) => {
-            ui.setUnsavedChanges(true);
-            var pastedLatex = delta.ops.find(op => Object.keys(op).includes('insert'))?.insert;
-            if (pastedLatex && (typeof pastedLatex === 'string')) {
-              const latexMatches = [...pastedLatex.matchAll(/(\$\$(.+?)\$\$)|(?<!\\)\$(.+?)(?<!\\)\$/gs)];
-              latexMatches.forEach(match => {
-                const fullMatch = match[0];
-                const innerLatex = match[2] || match[3];
-                const index = pastedLatex.indexOf(fullMatch);
-                quill.deleteText(quill.getSelection(true)?.index + index, fullMatch.length);
-                quill.insertEmbed(quill.getSelection(true)?.index + index, 'formula', innerLatex);
-                pastedLatex = pastedLatex.replace(fullMatch, ' ');
-              });
-              pastedLatex = pastedLatex.replace(/(?<!\\)\$/g, '');
-            }
-          });
-          renderedEditors[q.id] = quill;
           var images = document.createElement('div');
           images.classList = "attachments";
           JSON.parse(q.images).forEach(q => {
             var image = document.createElement('div');
             image.classList = "image";
-            image.innerHTML = `<img src="${q}" />`;
+            image.innerHTML = `<img data-src="${q}" />`;
             image.addEventListener('click', removeImage);
             images.appendChild(image);
           });
@@ -1964,6 +1937,41 @@ try {
       this.parentElement.parentElement.classList.add('expanded');
       document.querySelector('[data-add-question-input]').style.display = "none";
       document.querySelectorAll('#save-button').forEach(w => w.style.display = "none");
+      if (!this.parentElement.parentElement.classList.contains('rendered')) {
+        var textarea = this.parentElement.parentElement.querySelector('.description .textarea');
+        var textareaContent = textarea.getAttribute('content');
+        var toolbar = this.parentElement.parentElement.querySelector('.description #toolbar-container');
+        var quill = new Quill(textarea, {
+          modules: {
+            syntax: true,
+            toolbar,
+            fazEmoji: {
+              collection: 'fluent-emoji',
+            },
+          },
+          placeholder: 'Add some written content to your question...',
+          theme: 'snow'
+        });
+        if (JSON.parse(textareaContent)) quill.setContents(JSON.parse(textareaContent));
+        quill.on('text-change', (delta) => {
+          ui.setUnsavedChanges(true);
+          var pastedLatex = delta.ops.find(op => Object.keys(op).includes('insert'))?.insert;
+          if (pastedLatex && (typeof pastedLatex === 'string')) {
+            const latexMatches = [...pastedLatex.matchAll(/(\$\$(.+?)\$\$)|(?<!\\)\$(.+?)(?<!\\)\$/gs)];
+            latexMatches.forEach(match => {
+              const fullMatch = match[0];
+              const innerLatex = match[2] || match[3];
+              const index = pastedLatex.indexOf(fullMatch);
+              quill.deleteText(quill.getSelection(true)?.index + index, fullMatch.length);
+              quill.insertEmbed(quill.getSelection(true)?.index + index, 'formula', innerLatex);
+              pastedLatex = pastedLatex.replace(fullMatch, ' ');
+            });
+            pastedLatex = pastedLatex.replace(/(?<!\\)\$/g, '');
+          }
+        });
+        renderedEditors[this.parentElement.parentElement.querySelector('#question-id-input').value] = quill;
+        this.parentElement.parentElement.querySelectorAll('img[data-src]:not([src])').forEach(img => img.src = img.getAttribute('data-src'));
+      }
     }
   }
 

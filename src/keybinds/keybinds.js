@@ -2,7 +2,7 @@ import * as ui from "/src/modules/ui.js";
 import storage from "/src/modules/storage.js";
 import * as themes from "/src/themes/themes.js";
 import { insertFromIndex } from "/src/symbols/symbols.js";
-import { moveFromCurrent } from "/src/modules/island.js";
+import { moveFromCurrent, renderExtras } from "/src/modules/island.js";
 
 try {
   document.addEventListener("keydown", (e) => {
@@ -96,6 +96,7 @@ try {
       island.querySelectorAll('.extra').forEach(el => {
         el.classList.toggle('hidden');
       });
+      renderExtras();
     } else if (e.key == "ArrowRight" && zoomOverlay) {
       var next = document.querySelector('.medium-zoom-image--hidden').nextElementSibling;
       zoomOverlay.click();
