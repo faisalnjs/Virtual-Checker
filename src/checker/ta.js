@@ -426,6 +426,8 @@ try {
           title: `Question ${question.number}`,
           subtitle: `${question.question}`,
           subtitleLatex: question.latex,
+          description: question.description,
+          attachments: question.images,
           lists: [
             {
               title: 'Correct Answers',
@@ -494,6 +496,8 @@ try {
           title: `Question ${question.number}`,
           subtitle: `${question.question}`,
           subtitleLatex: question.latex,
+          description: question.description,
+          attachments: question.images,
           lists: [
             {
               title: 'Correct Answers',
