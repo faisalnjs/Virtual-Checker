@@ -7,267 +7,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
     <title>Upload - Virtual Checker</title>
-    <style>
-        ::-webkit-scrollbar {
-            display: none;
-        }
-
-        * {
-            font-family: "Figtree", sans-serif;
-        }
-
-        button#paste,
-        button#submit,
-        button#exit {
-            background: dodgerblue;
-            width: -webkit-fill-available;
-            border: 1px solid aliceblue;
-            border-radius: 5px;
-            padding: 10px;
-            font-size: 12.5px;
-            font-weight: bold;
-            color: white;
-            cursor: pointer;
-        }
-
-        button#paste:hover,
-        button#submit:hover,
-        button#exit:hover {
-            opacity: 0.75;
-        }
-
-        button#submit {
-            margin-top: 1em;
-        }
-
-        button#exit {
-            display: none;
-            margin-top: 0.5em;
-        }
-
-        button.success {
-            background: mediumseagreen !important;
-        }
-
-        button.error {
-            background: indianred !important;
-        }
-
-        input[type="text"] {
-            height: 2.25em;
-            padding: 0.1em 0.7em;
-            border: none;
-            border-radius: 0.4rem;
-            background-color: #efefef;
-            width: -webkit-fill-available;
-            cursor: pointer;
-            margin-bottom: 0.5em;
-            font: 14px "Figtree", sans-serif;
-        }
-
-        input[type="text"]:last-of-type {
-            margin-bottom: 1em;
-        }
-    </style>
-    <style>
-        .description {
-            max-width: min(100%, 800px);
-            margin-top: 1em;
-        }
-
-        .description a {
-            color: dodgerblue !important;
-        }
-
-        .description .ql-toolbar {
-            background: #efefef;
-            border: none !important;
-            border-radius: 0.5rem;
-            margin-bottom: 7.5px;
-        }
-
-        .description .ql-toolbar #toolbar-container {
-            display: flex;
-            align-content: stretch;
-            flex-wrap: wrap;
-            gap: 5px 0;
-        }
-
-        .description .ql-toolbar .ql-picker-label {
-            color: black !important;
-            font-family: "Figtree";
-        }
-
-        .description .ql-toolbar .ql-stroke {
-            stroke: black !important;
-        }
-
-        .description .ql-toolbar .ql-fill {
-            fill: black !important;
-        }
-
-        .description .ql-toolbar button:hover,
-        .description .ql-toolbar button:hover .ql-picker-label,
-        .description .ql-toolbar .ql-active .ql-picker-label {
-            color: dodgerblue !important;
-        }
-
-        .description .ql-toolbar button:hover .ql-stroke,
-        .description .ql-toolbar .ql-active .ql-stroke {
-            stroke: dodgerblue !important;
-        }
-
-        .description .ql-toolbar button:hover .ql-fill,
-        .description .ql-toolbar .ql-active .ql-fill {
-            fill: dodgerblue !important;
-        }
-
-        .description .ql-container {
-            font-size: inherit !important;
-            background: #efefef;
-            border: none !important;
-            border-radius: 0.5rem;
-            font-family: inherit !important;
-        }
-
-        .description .ql-container .ql-editor {
-            border-radius: 0.5rem;
-        }
-
-        .description .ql-editor.ql-blank::before {
-            color: black !important;
-            opacity: 0.5 !important;
-        }
-
-        .description .ql-toolbar .ql-picker-label:hover,
-        .description .ql-toolbar .ql-picker-label.ql-active {
-            color: black !important;
-        }
-
-        .description .ql-toolbar .ql-picker-item,
-        .description .ql-toolbar .ql-picker-item.ql-selected {
-            color: white !important;
-            font-family: "Figtree";
-        }
-
-        .description .ql-toolbar .ql-picker-item:hover {
-            color: black !important;
-        }
-
-        .description .ql-picker-options {
-            background: dodgerblue !important;
-        }
-
-        .description .ql-toolbar .ql-picker.ql-expanded .ql-picker-label,
-        .description .ql-toolbar .ql-picker.ql-expanded .ql-picker-options {
-            border-color: dodgerblue !important;
-        }
-
-        .description .ql-picker.ql-font .ql-picker-label:not([data-value])::before,
-        .description .ql-picker.ql-font .ql-picker-item:not([data-value])::before {
-            content: "Default Font" !important;
-        }
-
-        .description .ql-tooltip {
-            background: dodgerblue !important;
-            color: white !important;
-            border: none !important;
-            border-radius: 0.5rem !important;
-            box-shadow: none !important;
-        }
-
-        .description .ql-tooltip input[type="text"] {
-            border: none !important;
-            color: black !important;
-        }
-
-        .description .ql-tooltip a {
-            color: white !important;
-        }
-
-        .description .ql-editor blockquote {
-            border-color: dodgerblue !important;
-        }
-
-        .description .ql-code-block-container {
-            border-radius: 0.3rem !important;
-        }
-
-        .description .ql-code-block-container .ql-ui {
-            width: fit-content;
-            color: black;
-            font-size: 12.5px;
-            border-radius: 0.2rem;
-        }
-
-        .description .ql-editor .ql-video {
-            width: -webkit-fill-available;
-            min-height: 22vw;
-            border-radius: 0.3rem;
-        }
-
-        .description .ql-editor p>img {
-            border-radius: 0.3rem;
-        }
-
-        .description .faz-quill-emoji-dropdown,
-        .description .faz-quill-emoji-input-group,
-        .description .faz-quill-emoji-loader {
-            background: transparent;
-        }
-
-        .description .faz-quill-emoji-dropdown-content {
-            background: #efefef;
-        }
-
-        .description .faz-quill-emoji-tab {
-            color: var(--surface-text-color) !important;
-        }
-
-        .description .faz-quill-emoji-tab.active:before {
-            background: dodgerblue !important;
-            left: -5px;
-        }
-
-        .description .faz-quill-emoji-loader svg {
-            color: white !important;
-        }
-
-        .description .faz-quill-emoji-list {
-            grid-template-columns: repeat(9, 1fr) !important;
-            gap: 5px !important;
-        }
-
-        .description .faz-quill-emoji-tab-list {
-            margin-right: -5px;
-            margin-left: 15px;
-        }
-
-        .description .faz-quill-emoji-tab {
-            padding: 0 10px !important;
-        }
-
-        .description .faz-quill-emoji-input-group input {
-            background: dodgerblue;
-            color: white;
-        }
-
-        .description .faz-quill-emoji-input-group svg {
-            color: white;
-            height: 17px;
-            width: 17px;
-            left: 10px;
-        }
-
-        .description .faz-quill-emoji-loader {
-            top: 21.5px;
-            left: unset;
-            right: 85px;
-        }
-    </style>
-</head>
-
-<body>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,400;0,700;1,400;1,700&display=swap"
@@ -280,14 +19,156 @@
         href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.min.css">
     <link rel="stylesheet" href="https://unpkg.com/faz-quill-emoji@0.1.3/dist/faz.quill.emoji.css" type="text/css" />
-    <input type="text" placeholder="Question Text" />
-    <input type="text" placeholder="Correct Answer 1" />
-    <input type="text" placeholder="Correct Answer 2" />
+    <link rel="stylesheet" href="../src/reset.css" />
+    <link rel="stylesheet" href="../src/layout.css" />
+    <link rel="stylesheet" href="../src/design.css" />
+    <style>
+        body {
+            padding: 10px;
+        }
+
+        ::-webkit-scrollbar {
+            display: none;
+        }
+
+        * {
+            font-family: "Figtree", sans-serif;
+        }
+
+        button#paste,
+        button#submit,
+        button#exit,
+        button#add-answers,
+        button#remove-answers,
+        button#ai {
+            background: var(--accent-color, dodgerblue);
+            width: -webkit-fill-available;
+            border: 1px solid 1px solid var(--accent-color, aliceblue);
+            border-radius: 5px;
+            padding: 10px;
+            line-height: 12.5px;
+            font-size: 12.5px;
+            font-weight: bold;
+            color: var(--accent-text-color, white);
+            height: unset;
+        }
+
+        button#add-answers,
+        button#remove-answers {
+            background: var(--surface-color, #efefef);
+            color: var(--text-color, black);
+        }
+
+        button#paste:hover,
+        button#submit:hover,
+        button#exit:hover,
+        button#add-answers:hover,
+        button#remove-answers:hover,
+        button#ai:hover {
+            opacity: 0.75;
+        }
+
+        [square] {
+            padding: 2px 9.5px 0 9.5px !important;
+            width: fit-content !important;
+            min-width: unset;
+        }
+
+        button#submit {
+            margin-top: 0.5em;
+        }
+
+        button#exit {
+            display: none;
+            margin-top: 0.5em;
+        }
+
+        input[type="text"] {
+            height: 2.25em;
+            padding: 0.1em 0.7em;
+            border: none;
+            border-radius: 0.4rem;
+            background-color: var(--surface-color, #efefef);
+            color: var(--text-color, black);
+            width: -webkit-fill-available;
+            cursor: pointer;
+            font: 14px "Figtree", sans-serif;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .input-group.row {
+            flex-direction: row;
+            gap: 0.25em;
+        }
+
+        .input-group:not(.row),
+        .input-group:has(#ai) {
+            margin-bottom: 0.5em;
+        }
+
+        .filepond--root {
+            background: var(--surface-color);
+            margin-bottom: 0.5em;
+            border-radius: 0.4rem;
+        }
+
+        .filepond--root * {
+            background: transparent;
+        }
+
+        .filepond--drop-label {
+            color: var(--text-color);
+            border-radius: 0.4rem;
+        }
+
+        .description {
+            margin-top: 1em;
+            max-width: unset;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="input-group row">
+        <input type="text" placeholder="Question Text" />
+        <button square id="add-answers" onclick="addAnswers()"><i class="bi bi-plus"></i></button>
+        <button square id="remove-answers" onclick="removeAnswers()"><i class="bi bi-dash"></i></button>
+        <button square id="ai" onclick="ai()"><i class="bi bi-openai"></i></button>
+    </div>
+    <div id="correct-answers" class="input-group">
+        <input type="text" data-correct-answer placeholder="Correct Answer" />
+        <input type="text" data-correct-answer placeholder="Correct Answer" />
+    </div>
+    <div id="incorrect-answers" class="input-group">
+        <div class="input-group row" data-incorrect-answer>
+            <input type="text" placeholder="Incorrect Answer" />
+            <input type="text" data-incorrect-answer-reason placeholder="Reason" />
+        </div>
+        <div class="input-group row" data-incorrect-answer>
+            <input type="text" placeholder="Incorrect Answer" />
+            <input type="text" data-incorrect-answer-reason placeholder="Reason" />
+        </div>
+    </div>
     <input type="file" />
     <button id="paste" onclick="paste()">Paste</button>
     <div class="description"></div>
     <button id="submit" onclick="submit()">Create</button>
     <button id="exit" onclick="exit()">Close & Next Question</button>
+    <div id="loader">
+        <svg xmlns="http://www.w3.org/2000/svg" height="2.5em" viewBox="0 0 1041 732" fill="none"
+            class="virtual-checker-logo">
+            <path
+                d="M1001.56 250.595C983.616 254.368 892.908 369.961 882.983 372.138C873.058 374.314 843.39 317.676 827.439 319.483C811.489 321.291 784.543 340.121 788.414 358.53C792.284 376.94 862.808 450.073 882.983 450.241C903.158 450.409 1037.91 305.154 1040.6 289.631C1043.28 274.109 1019.51 246.823 1001.56 250.595Z"
+                fill="currentColor" />
+            <path
+                d="M189.838 59.888C202.279 55.741 210.44 56.363 217.578 59.931C224.715 63.5 230.493 70.81 235.656 86.298C251.225 133.005 278.027 213.412 299.189 276.896C304.344 292.362 312.472 296.957 322.252 296.957C332.033 296.957 339.718 293.692 345.627 275.965C360.443 231.517 378.763 176.556 396.583 123.097C430.426 21.567 472.963 0 567.37 0C702.785 0 897.037 0 984.213 0C1007.19 0 1013.22 4.649 1018.88 12.496C1024.53 20.342 1025.91 30.927 1020.96 45.757C1003.43 98.372 978.676 172.62 965.135 213.242C958.535 233.041 942.92 244.474 922.051 244.44C867.547 244.351 734.987 244.117 660.22 243.996C626.461 243.941 609.299 256.289 598.623 288.316C585.437 327.874 567.7 381.085 553.255 424.42C547.69 441.115 549.36 457.81 557.708 469.392C566.057 480.975 578.691 487.839 596.163 487.839C665.057 487.839 769.309 487.839 828.841 487.839C841.883 487.839 850.611 492.488 856.266 500.334C861.921 508.18 863.336 518.639 859.639 529.731C842.137 582.235 816.643 658.717 803.139 699.23C797.202 717.039 778.155 731.758 759.383 731.758C688.339 731.758 487.826 731.758 340.593 731.758C241.323 731.758 180.603 692.479 149.211 598.303C101.094 453.954 30.348 241.716 3.64795 161.614C-1.50905 146.144 -0.672047 138.629 2.89595 131.492C6.46495 124.354 10.977 119.509 28.36 113.714C72.841 98.887 145.357 74.715 189.838 59.888Z"
+                fill="currentColor" />
+        </svg>
+    </div>
     <script
         src="https://unpkg.com/filepond-plugin-file-validate-type/dist/filepond-plugin-file-validate-type.js"></script>
     <script src="https://unpkg.com/filepond-plugin-image-preview/dist/filepond-plugin-image-preview.js"></script>
@@ -297,6 +178,8 @@
     <link href="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.snow.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.js"></script>
     <script src="https://unpkg.com/faz-quill-emoji@0.1.3"></script>
+    <script src="../src/modules/storage.js" type="module"></script>
+    <script src="../src/themes/themes.js" type="module"></script>
     <script>
         const urlParams = new URLSearchParams(window.location.search);
         const question = urlParams.get('question');
@@ -329,8 +212,10 @@
         pond.on('processfilestart', (file) => {
             if (startingQuestionId && startingQuestion && !file.getMetadata('title')) {
                 file.setMetadata('title', document.querySelectorAll('input[type="text"]')[0].value || startingQuestion);
-                file.setMetadata('correctAnswer1', document.querySelectorAll('input[type="text"]')[1].value || null);
-                file.setMetadata('correctAnswer2', document.querySelectorAll('input[type="text"]')[2].value || null);
+                file.setMetadata('correctAnswers', JSON.stringify([...document.querySelectorAll('[data-correct-answer]')].map(a => a.value).filter(Boolean) || []));
+                file.setMetadata('incorrectAnswers', JSON.stringify([...document.querySelectorAll('[data-incorrect-answer]')].map(a => {
+                    return { 'answer': a.querySelector('input').value, 'reason': a.querySelector('input[data-incorrect-answer-reason]').value };
+                }).filter(a => a.answer !== '' && a.reason !== '') || []));
                 file.setMetadata('description', JSON.stringify(quill.getContents()) || '{"ops":[{"insert":"\n"}]}');
                 pond.processFile(file);
             };
@@ -353,7 +238,7 @@
         };
         var quill = null;
         if (!startingQuestionId || !startingQuestion) {
-            document.querySelectorAll('input[type="text"]').forEach(e => e.remove());
+            document.querySelectorAll('.input-group').forEach(e => e.remove());
             document.querySelector('.description').remove();
             document.getElementById('submit').remove();
             document.getElementById('exit').remove();
@@ -461,8 +346,10 @@
                         startingQuestion: startingQuestion || null,
                         description: JSON.stringify(quill.getContents()) || '{"ops":[{"insert":"\n"}]}',
                         title: document.querySelectorAll('input[type="text"]')[0].value || startingQuestion,
-                        correctAnswer1: document.querySelectorAll('input[type="text"]')[1].value || null,
-                        correctAnswer2: document.querySelectorAll('input[type="text"]')[2].value || null,
+                        correctAnswers: [...document.querySelectorAll('[data-correct-answer]')].map(a => a.value).filter(Boolean) || [],
+                        incorrectAnswers: [...document.querySelectorAll('[data-incorrect-answer]')].map(a => {
+                            return { 'answer': a.querySelector('input').value, 'reason': a.querySelector('input[data-incorrect-answer-reason]').value };
+                        }).filter(a => a.answer !== '' && a.reason !== '') || [],
                     }),
                     headers: {
                         'Content-Type': 'application/json'
@@ -495,6 +382,132 @@
             setTimeout(() => {
                 window.close();
             }, 500);
+        };
+        function startLoader() {
+            const loader = document.getElementById("loader");
+            if (loader) loader.classList.add("active");
+        };
+        function stopLoader() {
+            const loader = document.getElementById("loader");
+            if (loader) loader.classList.remove("active");
+        };
+        function addAnswers() {
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.placeholder = 'Correct Answer';
+            input.setAttribute('data-correct-answer', '');
+            document.getElementById('correct-answers').appendChild(input);
+            const group = document.createElement('div');
+            group.classList.add('input-group', 'row');
+            group.setAttribute('data-incorrect-answer', '');
+            const input2 = document.createElement('input');
+            input2.type = 'text';
+            input2.placeholder = 'Incorrect Answer';
+            group.appendChild(input2);
+            const reason = document.createElement('input');
+            reason.type = 'text';
+            reason.placeholder = 'Reason';
+            reason.setAttribute('data-incorrect-answer-reason', '');
+            group.appendChild(reason);
+            document.getElementById('incorrect-answers').appendChild(group);
+        };
+        function removeAnswers() {
+            [...document.querySelectorAll('[data-correct-answer]')].filter(e => e.value === '').forEach(e => e.remove());
+            [...document.querySelectorAll('[data-incorrect-answer]')].filter(e => e.querySelector('input').value === '' && e.querySelector('input[data-incorrect-answer-reason]').value === '').forEach(e => e.remove());
+        };
+        async function ai() {
+            var images = [];
+            var pondFiles = pond.getFiles();
+            if (pondFiles.length !== 0) {
+                const readPromises = pondFiles.map(file => {
+                    return new Promise((resolve, reject) => {
+                        const reader = new FileReader();
+                        reader.onloadend = function () {
+                            resolve(reader.result);
+                        };
+                        reader.onerror = reject;
+                        if (file.file) reader.readAsDataURL(file.file);
+                        else resolve(null);
+                    });
+                });
+                images = await Promise.all(readPromises);
+            };
+            images = images.filter(image => image !== null);
+            images = [...new Set(images)];
+            var description = quill.getText().replaceAll('\\n', ' ').replaceAll('  ', ' ').trim() || null;
+            if (images.length || description) {
+                startLoader();
+                await fetch(domain + '/ai/q', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        OpenAI_API_Key: "sk-proj-18b3a02f4fb35e8a8421948667fbacf7_2ac9b775227456bb9d53d370cc299da7937deb6b_184751e482b7_f157c538a800",
+                        title: document.querySelectorAll('input[type="text"]')[0].value || startingQuestion,
+                        description,
+                        images,
+                    }),
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                    .then(res => res.json())
+                    .then(data => {
+                        stopLoader();
+                        const output = data.o;
+                        if (data.error || !data.o) {
+                            document.getElementById('ai').classList.add('error');
+                            setTimeout(() => {
+                                document.getElementById('ai').classList.remove('error');
+                            }, 2000);
+                            alert(data.error);
+                        } else {
+                            const aiCorrectAnswers = output.correct || [];
+                            const aiIncorrectAnswers = output.incorrect || [];
+                            removeAnswers();
+                            aiCorrectAnswers.forEach(answer => {
+                                if (!answer || [...document.querySelectorAll('[data-correct-answer]')].find(e => e.value.toLowerCase() === answer.toLowerCase())) return;
+                                const input = document.createElement('input');
+                                input.type = 'text';
+                                input.value = answer;
+                                input.setAttribute('data-correct-answer', '');
+                                document.getElementById('correct-answers').appendChild(input);
+                            });
+                            aiIncorrectAnswers.forEach(answer => {
+                                if (!answer.answer || !answer.reason || [...document.querySelectorAll('[data-incorrect-answer] input:not([data-incorrect-answer-reason])')].find(e => e.value.toLowerCase() === answer.answer.toLowerCase())) return;
+                                const group = document.createElement('div');
+                                group.classList.add('input-group', 'row');
+                                group.setAttribute('data-incorrect-answer', '');
+                                const input = document.createElement('input');
+                                input.type = 'text';
+                                input.value = answer.answer;
+                                group.appendChild(input);
+                                const reason = document.createElement('input');
+                                reason.type = 'text';
+                                reason.value = answer.reason;
+                                reason.setAttribute('data-incorrect-answer-reason', '');
+                                group.appendChild(reason);
+                                document.getElementById('incorrect-answers').appendChild(group);
+                            });
+                            document.getElementById('ai').classList.add('success');
+                            setTimeout(() => {
+                                document.getElementById('ai').classList.remove('success');
+                            }, 2000);
+                        };
+                    })
+                    .catch(error => {
+                        document.getElementById('ai').classList.add('error');
+                        setTimeout(() => {
+                            document.getElementById('ai').classList.remove('error');
+                        }, 2000);
+                        alert(error);
+                    });
+            } else {
+                alert('Image(s) or description required.');
+                document.getElementById('ai').classList.add('error');
+                setTimeout(() => {
+                    document.getElementById('ai').classList.remove('error');
+                }, 2000);
+                return;
+            };
         };
     </script>
 </body>

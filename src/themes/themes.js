@@ -49,9 +49,7 @@ export async function syncTheme() {
   removeCustomTheme();
   enableTransitions();
   // Update developer theme input
-  if (document.getElementById("theme-debug")) {
-    document.getElementById("theme-debug").value = value;
-  }
+  if (document.getElementById("theme-debug")) document.getElementById("theme-debug").value = value;
 }
 
 function copyThemeCSS() {
@@ -66,7 +64,7 @@ function copyThemeCSS() {
 }
 
 function validateThemeCode() {
-  const code = document.getElementById("theme-code").value;
+  const code = document.getElementById("theme-code")?.value;
   const theme = decodeThemeCode(code);
   storage.get("developer") && console.log(theme);
   if (theme) {
@@ -197,9 +195,7 @@ try {
     enableTransitions();
     storage.set("theme", value);
     // Update developer theme input
-    if (document.getElementById("theme-debug")) {
-      document.getElementById("theme-debug").value = value;
-    }
+    if (document.getElementById("theme-debug")) document.getElementById("theme-debug").value = value;
     await auth.syncPush("theme");
   });
 
@@ -256,7 +252,7 @@ try {
 
   if (storage.get("developer")) {
     // Add developer theme input
-    document.querySelector(`[data-modal-page="theme"]`).append(
+    document.querySelector(`[data-modal-page="theme"]`)?.append(
       new Element(
         "input",
         null,
@@ -277,9 +273,9 @@ try {
       ).element,
     );
     // Populate field
-    document.getElementById("theme-debug").value = storage.get("theme") || "";
+    if (document.getElementById("theme-debug")) document.getElementById("theme-debug").value = storage.get("theme") || "";
     // Add Copy CSS button
-    document.querySelector(`[data-modal-page="editor"]`).append(
+    document.querySelector(`[data-modal-page="editor"]`)?.append(
       new Element("button", "Copy CSS", {
         "click": copyThemeCSS,
       }).element,
@@ -309,7 +305,7 @@ try {
       storage.set("theme", seasonalTheme);
     };
     seasonalThemeButton.innerHTML = seasonalEmoji;
-    document.getElementById("controls-container").appendChild(seasonalThemeButton);
+    document.getElementById("controls-container")?.appendChild(seasonalThemeButton);
   }
 } catch (error) {
   if (storage.get("developer")) {

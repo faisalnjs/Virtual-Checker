@@ -96,6 +96,14 @@ button.fit {
   min-width: fit-content !important;
 }
 
+button.success {
+  background: mediumseagreen !important;
+}
+
+button.error {
+  background: indianred !important;
+}
+
 button:disabled {
   opacity: 0.75;
   pointer-events: none;

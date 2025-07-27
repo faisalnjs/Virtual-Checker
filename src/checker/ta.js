@@ -41,6 +41,7 @@ try {
             var re = await r.json();
             if (re.error || re.message) {
               ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+              if ((re.error === "Access denied.") || (re.message === "Access denied.")) return auth.ta(init);
               throw new Error(re.error || re.message);
             } else {
               throw new Error("API error");
@@ -225,7 +226,6 @@ try {
       })
       .catch((e) => {
         console.error(e);
-        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
         if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.ta(init);
       });
     ui.reloadUnsavedInputs();
@@ -242,6 +242,76 @@ try {
 
   function escapeHTML(str) {
     return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+  }
+
+  // Limit seat code input to integers
+  document.getElementById("code-input")?.addEventListener("input", (e) => {
+    e.target.value = parseInt(e.target.value) || "";
+  });
+
+  // Save seat code on enter
+  document.getElementById("code-input")?.addEventListener("keydown", (e) => {
+    if (e.key == "Enter") {
+      e.preventDefault();
+      saveCode();
+    }
+  });
+
+  // Save seat code button
+  document.getElementById("save-code-button")?.addEventListener("click", saveCode);
+
+  // Save seat code
+  function saveCode() {
+    const input = document.getElementById("code-input").value;
+    // Tests for valid seat code
+    const regex = /^[1-9][0-6][0-5]$/;
+    if (regex.test(input)) {
+      if (input.includes('0')) {
+        ui.view("");
+        ui.modal({
+          title: 'Reserved Seat Code',
+          body: '<p>An invalid seat code was entered. Are you sure you want to use this code?</p>',
+          buttons: [
+            {
+              text: 'Back',
+              class: 'cancel-button',
+              onclick: () => {
+                ui.view("");
+                document.getElementById("code-input").focus();
+                ui.setUnsavedChanges(true);
+                ui.view("settings/code");
+              }
+            },
+            {
+              text: `Use ${input}`,
+              class: 'submit-button',
+              onclick: () => {
+                storage.set("code", input);
+                init();
+                // Close all modals
+                ui.view("");
+                // Update URL parameters with seat code
+                const params = new URLSearchParams(window.location.search);
+                params.set("code", input);
+                ui.setUnsavedChanges(false);
+              },
+              close: true,
+            },
+          ],
+        });
+      } else {
+        // Close all modals
+        ui.view("");
+        storage.set("code", input);
+        init();
+        // Update URL parameters with seat code
+        const params = new URLSearchParams(window.location.search);
+        params.set("code", input);
+        ui.setUnsavedChanges(false);
+      };
+    } else {
+      ui.alert("Error", "Seat code isn't possible");
+    }
   }
 
   document.querySelector('[data-timestamps]').addEventListener("click", toggleTimestamps);

@@ -1,3 +1,4 @@
+/* eslint-disable no-unreachable */
 /* eslint-disable no-inner-declarations */
 import * as ui from "/src/modules/ui.js";
 import storage from "/src/modules/storage.js";
@@ -1696,6 +1697,13 @@ try {
           drop.addEventListener('click', renderPond);
           images.appendChild(drop);
           question.appendChild(images);
+          var autofillAIAnswersContainer = document.createElement('div');
+          autofillAIAnswersContainer.classList = "answers";
+          var autofillAIAnswers = document.createElement('button');
+          autofillAIAnswers.setAttribute('data-autofill-answers', '');
+          autofillAIAnswers.innerHTML = '<i class="bi bi-openai"></i> Autofill Answers';
+          autofillAIAnswersContainer.appendChild(autofillAIAnswers);
+          question.appendChild(autofillAIAnswersContainer);
           var correctAnswers = document.createElement('div');
           correctAnswers.classList = "answers";
           var correctAnswersString = "";
@@ -1845,6 +1853,7 @@ try {
         ui.toast("Failed to read content from clipboard.", 5000, "error", "bi bi-exclamation-triangle-fill");
       });
     }));
+    document.querySelectorAll('[data-autofill-answers]').forEach(a => a.addEventListener('click', autofillAnswers));
     if (!loadedSegmentEditor && !loadedSegmentCreator) ui.setUnsavedChanges(false);
     ui.reloadUnsavedInputs();
   }
@@ -1874,11 +1883,13 @@ try {
   function removeCorrectAnswer() {
     if (!active) return;
     this.parentElement.remove();
+    ui.setUnsavedChanges(true);
   }
 
   function removeIncorrectAnswer() {
     if (!active) return;
     this.parentElement.remove();
+    ui.setUnsavedChanges(true);
   }
 
   function toggleQuestionLatex() {
@@ -5714,6 +5725,86 @@ try {
         if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
         if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
       });
+  }
+
+  async function autofillAnswers() {
+    if (!active) return;
+    const questionId = this.parentElement.parentElement.querySelector('#question-id-input')?.value;
+    const questionTitle = this.parentElement.parentElement.querySelector('#question-text-input')?.value;
+    const questionDescription = renderedEditors[Number(questionId)].getText().replaceAll('\\n', ' ').replaceAll('  ', ' ').trim() || null;
+    const questionImages = [...new Set(JSON.parse(questions.find(q => String(q.id) === questionId).images))];
+    console.log(questionTitle, questionDescription, questionImages);
+    ui.setUnsavedChanges(true);
+    if (questionImages.length || questionDescription) {
+      ui.startLoader();
+      await fetch(domain + '/ai/q', {
+        method: 'POST',
+        body: JSON.stringify({
+          OpenAI_API_Key: "sk-proj-18b3a02f4fb35e8a8421948667fbacf7_2ac9b775227456bb9d53d370cc299da7937deb6b_184751e482b7_f157c538a800",
+          title: questionTitle,
+          description: questionDescription,
+          images: questionImages,
+        }),
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+        .then(res => res.json())
+        .then(data => {
+          ui.stopLoader();
+          const output = data.o;
+          if (data.error || !data.o) {
+            this.classList.add('error');
+            setTimeout(() => {
+              this.classList.remove('error');
+            }, 2000);
+            ui.toast(data.error, 5000, "error", "bi bi-exclamation-triangle-fill");
+          } else {
+            const aiCorrectAnswers = output.correct || [];
+            const aiIncorrectAnswers = output.incorrect || [];
+            [...this.parentElement.parentElement.querySelectorAll('.correctAnswers .button-grid')].filter(e => e.querySelector('#question-correct-answer-input').value === '').forEach(e => e.remove());
+            [...this.parentElement.parentElement.querySelectorAll('.incorrectAnswers .button-grid')].filter(e => (e.querySelector('#question-incorrect-answer-input').value === '') && (e.querySelector('#question-incorrect-answer-reason-input').value === '')).forEach(e => e.remove());
+            aiCorrectAnswers.forEach(answer => {
+              if (!answer || [...this.parentElement.parentElement.querySelectorAll('.correctAnswers .button-grid')].find(e => e.querySelector('#question-correct-answer-input').value.toLowerCase() === answer.toLowerCase())) return;
+              var input = document.createElement('div');
+              input.className = "button-grid inputs";
+              input.innerHTML = `<input type="text" autocomplete="off" id="question-correct-answer-input" value="${escapeHTML(answer)}" placeholder="Answer" /><button data-remove-correct-answer-input square><i class="bi bi-dash"></i></button>`;
+              this.parentElement.parentElement.querySelector('.correctAnswers').insertBefore(input, this.parentElement.parentElement.querySelector('.correctAnswers').children[this.parentElement.parentElement.querySelector('.correctAnswers').children.length - 1]);
+            });
+            aiIncorrectAnswers.forEach(answer => {
+              if (!answer.answer || !answer.reason || [...this.parentElement.parentElement.querySelectorAll('.incorrectAnswers .button-grid')].find(e => e.querySelector('#question-incorrect-answer-input').value.toLowerCase() === answer.answer.toLowerCase())) return;
+              var input = document.createElement('div');
+              input.className = "button-grid inputs";
+              input.innerHTML = `<input type="text" autocomplete="off" id="question-incorrect-answer-input" value="${escapeHTML(answer.answer)}" placeholder="Answer" /><input type="text" autocomplete="off" id="question-incorrect-answer-reason-input" value="${escapeHTML(answer.reason)}" placeholder="Reason" /><button data-remove-incorrect-answer-input square><i class="bi bi-dash"></i></button>`;
+              this.parentElement.parentElement.querySelector('.incorrectAnswers').insertBefore(input, this.parentElement.parentElement.querySelector('.incorrectAnswers').children[this.parentElement.parentElement.querySelector('.incorrectAnswers').children.length - 1]);
+            });
+            document.querySelectorAll('[data-add-correct-answer-input]').forEach(a => a.addEventListener('click', addCorrectAnswer));
+            document.querySelectorAll('[data-remove-correct-answer-input]').forEach(a => a.addEventListener('click', removeCorrectAnswer));
+            document.querySelectorAll('[data-add-incorrect-answer-input]').forEach(a => a.addEventListener('click', addIncorrectAnswer));
+            document.querySelectorAll('[data-remove-incorrect-answer-input]').forEach(a => a.addEventListener('click', removeIncorrectAnswer));
+            this.classList.add('success');
+            setTimeout(() => {
+              this.classList.remove('success');
+            }, 2000);
+            ui.toast("Successfully autofilled answers.", 5000, "success", "bi bi-openai");
+          }
+        })
+        .catch(error => {
+          this.classList.add('error');
+          setTimeout(() => {
+            this.classList.remove('error');
+          }, 2000);
+          ui.toast(error, 5000, "error", "bi bi-exclamation-triangle-fill");
+        });
+    } else {
+      ui.toast("Image(s) or description required.", 5000, "error", "bi bi-exclamation-triangle-fill");
+      this.classList.add('error');
+      setTimeout(() => {
+        this.classList.remove('error');
+      }, 2000);
+      return;
+    }
+    ui.reloadUnsavedInputs();
   }
 } catch (error) {
   if (storage.get("developer")) {
