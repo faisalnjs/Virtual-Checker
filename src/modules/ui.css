@@ -557,7 +557,7 @@ body:has(.welcome-container.active) {
   font-variant: normal;
   text-transform: none;
   line-height: 1;
-  vertical-align: -.125em;
+  vertical-align: -0.125em;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   position: absolute;
@@ -577,7 +577,7 @@ body:has(.welcome-container.active) {
   font-variant: normal;
   text-transform: none;
   line-height: 1;
-  vertical-align: -.125em;
+  vertical-align: -0.125em;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   position: absolute;
@@ -604,7 +604,7 @@ body:has(.welcome-container.active) {
   font-variant: normal;
   text-transform: none;
   line-height: 1;
-  vertical-align: -.125em;
+  vertical-align: -0.125em;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   position: absolute;
@@ -614,4 +614,60 @@ body:has(.welcome-container.active) {
   align-items: center;
   align-content: center;
   animation: moveAfter 0.5s ease-in-out infinite alternate;
+}
+
+.topbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: -webkit-fill-available;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: repeating-linear-gradient(
+      35deg,
+      #dd6317de,
+      #dd6417de 20px,
+      transparent 10px,
+      transparent 40px
+    ),
+    black;
+  color: white;
+  line-height: 17px;
+  z-index: 999;
+  height: 33px;
+  transition: 0.25s margin-top;
+}
+
+.topbar span {
+  background: black;
+  padding: 5px 10px;
+  border-radius: 5px;
+}
+
+.topbar span i {
+  color: #dd6317de;
+}
+
+body:not(:hover) .topbar {
+  margin-top: -33px;
+  transition: 0.25s margin-top;
+}
+
+body:has(.topbar) {
+  transition: 0.25s padding-top;
+}
+
+body:hover:has(.topbar) {
+  padding-top: 83px;
+  transition: 0.25s padding-top;
+}
+
+body:has(.topbar) .island {
+  transition: 0.25s top;
+}
+
+body:hover:has(.topbar) .island {
+  top: 58px;
+  transition: 0.25s top;
 }
