@@ -699,6 +699,7 @@ try {
       document.getElementById('attachments-view-mode').setAttribute('hidden', '');
       return;
     }
+    document.title = `Virtual Checker (${storage.get("code")}) - #${JSON.parse(segmentsArray.find(s => String(s.id) === segmentInput.value)?.question_ids || [])?.find(q => String(q.id) === String(question.id))?.number || question.number || question.id} in Segment ${segmentsArray.find(s => String(s.id) === segmentInput.value).number}: ${segmentsArray.find(s => String(s.id) === segmentInput.value).name}`;
     if ((question.question.length > 0) && (question.question != ' ')) {
       if (question.latex) {
         document.querySelector('[data-question-title]').innerHTML = convertLatexToMarkup(question.question);
