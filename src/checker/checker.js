@@ -477,7 +477,7 @@ try {
             } else if (questionResponses.find(r => r.status === 'Incorrect')) {
               highestStatus = 'In Progress';
             } else if (questionResponses.length) {
-              highestStatus = 'Pending';
+              highestStatus = 'Awaiting Scoring';
             }
             questionStatuses.push({ "segment": segment.id, "question": questionId.id, "status": highestStatus });
           }
@@ -566,7 +566,7 @@ try {
         } else if (questionResponses.find(r => r.status === 'Incorrect')) {
           highestStatus = 'In Progress';
         } else if (questionResponses.length) {
-          highestStatus = 'Pending';
+          highestStatus = 'Awaiting Scoring';
         }
         if (highestStatus !== "") questionOption.innerHTML += ` - ${highestStatus}`;
         questionStatuses.push({ "segment": selectedSegment.id, "question": questionId.id, "status": highestStatus });
@@ -584,7 +584,7 @@ try {
     document.getElementById("segment-completed").setAttribute('hidden', '');
     document.getElementById("segment-completed").querySelector('ul').innerHTML = '';
     document.getElementById("segment-completed").classList.remove('mastery');
-    if ((questions.querySelectorAll('option').length > 0) && questionStatuses.every(question => question.status === 'Correct' || question.status === 'Incorrect' || question.status === 'Pending')) {
+    if ((questions.querySelectorAll('option').length > 0) && questionStatuses.every(question => question.status)) {
       document.getElementById("segment-completed").removeAttribute('hidden');
       questionStatuses.forEach(question => {
         const questionId = questionsArray.find(q => String(q.id) === String(question.question));
@@ -826,7 +826,7 @@ try {
         } else if (questionResponses.find(r => r.status === 'Incorrect')) {
           highestStatus = 'In Progress';
         } else if (questionResponses.length) {
-          highestStatus = 'Pending';
+          highestStatus = 'Awaiting Scoring';
         }
         questionStatuses.push({ "question": questionId.id, "status": highestStatus });
       }
@@ -834,7 +834,7 @@ try {
     if (selectedQuestionOptionIndex < questionOptions.length - 1) {
       questionOptions[selectedQuestionOptionIndex + 1].selected = true;
       updateQuestion();
-    } else if ((questionOptions.length > 0) && questionStatuses.every(question => question.status === 'Correct' || question.status === 'Incorrect' || question.status === 'Pending')) {
+    } else if ((questionOptions.length > 0) && questionStatuses.every(question => question.status)) {
       updateSegment();
     }
   }
