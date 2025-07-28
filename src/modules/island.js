@@ -46,6 +46,7 @@ export default function spawnIsland(element = null, source = null, dataType = 'q
     if (source) islandSource = source;
     if (source2) islandSource2 = source2;
     if (source3) islandSource3 = source3;
+    island.removeAttribute('rendered');
     island.setAttribute('datatype', dataType);
     island.setAttribute('sourceid', String(data.sourceId || ''));
     if (data.id) {
@@ -73,33 +74,20 @@ export default function spawnIsland(element = null, source = null, dataType = 'q
         var description = document.createElement('div');
         description.classList = 'description extra hidden';
         var textarea = document.createElement('div');
+        textarea.classList.add('textarea');
+        textarea.setAttribute('content', data.description);
         description.appendChild(textarea);
         island.appendChild(description);
-        var quill = new Quill(textarea, {
-            readOnly: true,
-            modules: {
-                syntax: true,
-                toolbar: false,
-                fazEmoji: {
-                    collection: 'fluent-emoji',
-                },
-            },
-            theme: 'snow'
-        });
-        quill.setContents(JSON.parse(data.description));
     }
     if (data.attachments && JSON.parse(data.attachments)) {
         var attachments = document.createElement('div');
         attachments.classList = 'attachments extra hidden';
         JSON.parse(data.attachments).forEach(attachment => {
             var image = document.createElement('img');
-            image.src = attachment;
+            image.setAttribute('data-src', attachment);
             attachments.appendChild(image);
         });
         island.appendChild(attachments);
-        mediumZoom(".island .attachments img", {
-            background: "transparent"
-        });
     }
     if (data.lists) {
         data.lists.forEach(list => {
@@ -231,4 +219,29 @@ export function moveFromCurrent(moveBy) {
             break;
     }
     spawnIsland(islandElement.parentElement.children[[...islandElement.parentElement.children].indexOf(islandElement) + moveBy], islandSource, dataType, newData);
+}
+
+export function renderExtras() {
+    var island = document.querySelector('.island');
+    if (!island) return;
+    if (island.classList.contains('rendered')) return;
+    var textarea = island.querySelector('.description .textarea');
+    var textareaContent = textarea.getAttribute('content');
+    var quill = new Quill(textarea, {
+        readOnly: true,
+        modules: {
+            syntax: true,
+            toolbar: false,
+            fazEmoji: {
+                collection: 'fluent-emoji',
+            },
+        },
+        theme: 'snow'
+    });
+    quill.setContents(JSON.parse(textareaContent));
+    island.querySelectorAll('img[data-src]:not([src])').forEach(img => img.src = img.getAttribute('data-src'));
+    mediumZoom(".island .attachments img", {
+        background: "transparent"
+    });
+    island.classList.add('rendered');
 }

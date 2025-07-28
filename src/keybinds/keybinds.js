@@ -2,7 +2,7 @@ import * as ui from "/src/modules/ui.js";
 import storage from "/src/modules/storage.js";
 import * as themes from "/src/themes/themes.js";
 import { insertFromIndex } from "/src/symbols/symbols.js";
-import { moveFromCurrent } from "/src/modules/island.js";
+import { moveFromCurrent, renderExtras } from "/src/modules/island.js";
 
 try {
   document.addEventListener("keydown", (e) => {
@@ -15,18 +15,10 @@ try {
     const isWelcomeActive = document.querySelector('.welcome-container');
     const zoomOverlay = document.querySelector('.medium-zoom-overlay');
     if (e.ctrlKey) {
-      if (e.key == "Enter" && !anyDialogOpen) {
-        document.getElementById("submit-button")?.click();
-      }
-      if (e.key == "," && !anyDialogOpen) {
-        ui.view("settings");
-      }
-      if (e.key == "." && !anyDialogOpen) {
-        ui.view("history");
-      }
-      if (e.key == "/" && !anyDialogOpen) {
-        ui.view("settings/keybinds");
-      }
+      if (e.key == "Enter" && !anyDialogOpen) document.getElementById("submit-button")?.click();
+      if (e.key == "," && !anyDialogOpen) ui.view("settings");
+      if (e.key == "." && !anyDialogOpen) ui.view("history");
+      if (e.key == "/" && !anyDialogOpen) ui.view("settings/keybinds");
       if (e.key == "s" && !anyDialogOpen && document.querySelector('[data-speed]')) {
         e.preventDefault();
         document.querySelector('[data-speed]').click();
@@ -35,21 +27,23 @@ try {
         e.preventDefault();
         ui.launchWelcome();
       }
+      if (e.key == "ArrowLeft" && document.querySelector('[data-prev-question]')) {
+        e.preventDefault();
+        document.querySelector('[data-prev-question]').click();
+      }
+      if (e.key == "ArrowRight" && document.querySelector('[data-next-question]')) {
+        e.preventDefault();
+        document.querySelector('[data-next-question]').click();
+      }
     } else if (e.altKey) {
       if (/[1-9]/.test(e.key)) {
         e.preventDefault();
         insertFromIndex(parseInt(e.key) - 1);
       }
     } else if (e.shiftKey) {
-      if (e.key == "R" && !anyDialogOpen && !isTyping) {
-        themes.resetTheme();
-      }
-      if (e.key == "{" && islandOpen && !isTyping) {
-        moveFromCurrent(-1);
-      }
-      if (e.key == "}" && islandOpen && !isTyping) {
-        moveFromCurrent(1);
-      }
+      if (e.key == "R" && !anyDialogOpen && !isTyping) themes.resetTheme();
+      if (e.key == "{" && islandOpen && !isTyping) moveFromCurrent(-1);
+      if (e.key == "}" && islandOpen && !isTyping) moveFromCurrent(1);
     } else if (e.key == "Enter" && anyDialogOpen) {
       document.querySelector('dialog[open] .submit-button')?.click();
     } else if (e.key == "[" && island && islandOpen && !isTyping) {
@@ -96,6 +90,7 @@ try {
       island.querySelectorAll('.extra').forEach(el => {
         el.classList.toggle('hidden');
       });
+      renderExtras();
     } else if (e.key == "ArrowRight" && zoomOverlay) {
       var next = document.querySelector('.medium-zoom-image--hidden').nextElementSibling;
       zoomOverlay.click();

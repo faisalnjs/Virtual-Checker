@@ -219,7 +219,6 @@ div.spacer {
 #insert-row {
   flex: 1;
   overflow: hidden;
-  height: 2.25em;
 }
 
 #controls-container {
@@ -385,7 +384,7 @@ label:has(i) {
   border-radius: 10px;
   line-height: 25px;
   position: sticky;
-  top: 15px;
+  top: 48px;
   z-index: 100;
 }
 

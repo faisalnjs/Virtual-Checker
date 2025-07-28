@@ -943,6 +943,7 @@ export function removeWelcome() {
   setTimeout(() => {
     welcomeContainer.classList.remove('active');
     clearWelcomeTimeouts();
+    stopLoader();
     setTimeout(() => {
       welcomeContainer.remove();
       welcomeContainer = null;
