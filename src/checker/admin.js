@@ -171,10 +171,6 @@ try {
     }
 
     if (document.querySelector('.ai-manager')) {
-      // if (document.getElementById('clear-logs')) document.getElementById('clear-logs').addEventListener('click', clearLogsModal);
-      // if (document.getElementById("filter-logs-by-username-input")) document.getElementById("filter-logs-by-username-input").addEventListener("input", updateLogs);
-      // if (document.getElementById("filter-logs-by-action-input")) document.getElementById("filter-logs-by-action-input").addEventListener("input", updateLogs);
-      // if (document.getElementById("filter-logs-by-type")) document.getElementById("filter-logs-by-type").addEventListener("input", updateLogs);
       await fetch(domain + '/ai', {
         method: "POST",
         headers: {
@@ -4430,7 +4426,7 @@ try {
 
   function updateLogs() {
     document.querySelector('.logs').innerHTML = '<div class="row header"><span hidden>Action</span><span>Details</span><span class="smedium">Timestamp</span></div>';
-    var filteredLogs = logs.filter(l => l.user.startsWith(document.getElementById("filter-logs-by-username-input").value)).filter(l => document.getElementById("filter-logs-by-action-input").value ? (l.action === document.getElementById("filter-logs-by-action-input").value) : true).filter(l => document.querySelector('#filter-logs-by-type [aria-selected="true"]').getAttribute('data-value') ? l.action.toLowerCase().startsWith(document.querySelector('#filter-logs-by-type [aria-selected="true"]').getAttribute('data-value')) : true);
+    var filteredLogs = logs.filter(l => l.user.startsWith(document.getElementById("filter-logs-by-username-input").value)).filter(l => document.getElementById("filter-logs-by-action-input").value ? l.action.endsWith(document.getElementById("filter-logs-by-action-input").value) : true).filter(l => document.querySelector('#filter-logs-by-type [aria-selected="true"]').getAttribute('data-value') ? l.action.toLowerCase().startsWith(document.querySelector('#filter-logs-by-type [aria-selected="true"]').getAttribute('data-value')) : true);
     if (filteredLogs.length > 0) {
       document.getElementById('no-logs').setAttribute('hidden', '');
       document.querySelector('.logs').removeAttribute('hidden');
