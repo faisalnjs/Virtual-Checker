@@ -474,7 +474,7 @@ try {
             var questionResponses = history.filter(r => String(r.question_id) === String(questionId.id));
             if (questionResponses.find(r => r.status === 'Correct')) {
               highestStatus = 'Correct';
-            } else if (questionResponses.find(r => r.status === 'In Progress')) {
+            } else if (questionResponses.find(r => r.status === 'Incorrect')) {
               highestStatus = 'In Progress';
             } else if (questionResponses.length) {
               highestStatus = 'Pending';
@@ -563,7 +563,7 @@ try {
         var questionResponses = history.filter(r => String(r.question_id) === String(questionId.id));
         if (questionResponses.find(r => r.status === 'Correct')) {
           highestStatus = 'Correct';
-        } else if (questionResponses.find(r => r.status === 'In Progress')) {
+        } else if (questionResponses.find(r => r.status === 'Incorrect')) {
           highestStatus = 'In Progress';
         } else if (questionResponses.length) {
           highestStatus = 'Pending';
@@ -584,7 +584,7 @@ try {
     document.getElementById("segment-completed").setAttribute('hidden', '');
     document.getElementById("segment-completed").querySelector('ul').innerHTML = '';
     document.getElementById("segment-completed").classList.remove('mastery');
-    if ((questions.querySelectorAll('option').length > 0) && questionStatuses.every(question => question.status === 'Correct' || question.status === 'In Progress' || question.status === 'Pending')) {
+    if ((questions.querySelectorAll('option').length > 0) && questionStatuses.every(question => question.status === 'Correct' || question.status === 'Incorrect' || question.status === 'Pending')) {
       document.getElementById("segment-completed").removeAttribute('hidden');
       questionStatuses.forEach(question => {
         const questionId = questionsArray.find(q => String(q.id) === String(question.question));
@@ -592,7 +592,7 @@ try {
         const li = document.createElement('li');
         if (question.status === 'Correct') {
           li.innerHTML = `<i class="bi bi-check-lg"></i> ${questionText}`;
-        } else if (question.status === 'In Progress') {
+        } else if (question.status === 'Incorrect') {
           li.innerHTML = `<i class="bi bi-hourglass-split"></i> ${questionText}`;
         } else {
           li.innerHTML = `<i class="bi bi-hourglass"></i> ${questionText}`;
@@ -823,7 +823,7 @@ try {
         var questionResponses = history.filter(r => String(r.question_id) === String(questionId.id));
         if (questionResponses.find(r => r.status === 'Correct')) {
           highestStatus = 'Correct';
-        } else if (questionResponses.find(r => r.status === 'In Progress')) {
+        } else if (questionResponses.find(r => r.status === 'Incorrect')) {
           highestStatus = 'In Progress';
         } else if (questionResponses.length) {
           highestStatus = 'Pending';
@@ -834,7 +834,7 @@ try {
     if (selectedQuestionOptionIndex < questionOptions.length - 1) {
       questionOptions[selectedQuestionOptionIndex + 1].selected = true;
       updateQuestion();
-    } else if ((questionOptions.length > 0) && questionStatuses.every(question => question.status === 'Correct' || question.status === 'In Progress' || question.status === 'Pending')) {
+    } else if ((questionOptions.length > 0) && questionStatuses.every(question => question.status === 'Correct' || question.status === 'Incorrect' || question.status === 'Pending')) {
       updateSegment();
     }
   }
