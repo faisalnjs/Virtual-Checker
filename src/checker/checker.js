@@ -330,9 +330,9 @@ try {
         resetInputs();
         await fetchHistory();
         await updateHistory();
-        await updateSegment();
+        await updateSegment(true);
         if ((typeof r.correct === 'undefined') || r.correct || (typeof r.error !== 'undefined')) {
-          nextQuestion();
+          nextQuestion(null, true);
         } else {
           updateQuestion();
         }
@@ -474,10 +474,10 @@ try {
             var questionResponses = history.filter(r => String(r.question_id) === String(questionId.id));
             if (questionResponses.find(r => r.status === 'Correct')) {
               highestStatus = 'Correct';
+            } else if (questionResponses.find(r => r.status.includes('Unknown'))) {
+              highestStatus = 'Awaiting Scoring';
             } else if (questionResponses.find(r => r.status === 'Incorrect')) {
               highestStatus = 'In Progress';
-            } else if (questionResponses.length) {
-              highestStatus = 'Awaiting Scoring';
             }
             questionStatuses.push({ "segment": segment.id, "question": questionId.id, "status": highestStatus });
           }
@@ -549,8 +549,9 @@ try {
       });
   }
 
-  async function updateSegment() {
+  async function updateSegment(sameSegment = false) {
     const selectedSegment = segmentsArray.find(s => String(s.id) === String(segments.value));
+    const selectedQuestionOption = questions.querySelector('option:checked');
     questions.innerHTML = '';
     if (!selectedSegment) return updateQuestion();
     var questionStatuses = [];
@@ -563,16 +564,17 @@ try {
         var questionResponses = history.filter(r => String(r.question_id) === String(questionId.id));
         if (questionResponses.find(r => r.status === 'Correct')) {
           highestStatus = 'Correct';
+        } else if (questionResponses.find(r => r.status.includes('Unknown'))) {
+          highestStatus = 'Awaiting Scoring';
         } else if (questionResponses.find(r => r.status === 'Incorrect')) {
           highestStatus = 'In Progress';
-        } else if (questionResponses.length) {
-          highestStatus = 'Awaiting Scoring';
         }
         if (highestStatus !== "") questionOption.innerHTML += ` - ${highestStatus}`;
         questionStatuses.push({ "segment": selectedSegment.id, "question": questionId.id, "status": highestStatus });
         questions.append(questionOption);
       }
     });
+    if (sameSegment && selectedQuestionOption) questions.value = selectedQuestionOption.value;
     document.querySelector('[data-segment-due]').setAttribute('hidden', '');
     if (selectedSegment.due) {
       document.querySelector('[data-segment-due]').innerHTML = `<i class="bi bi-calendar3"></i> Due ${new Date(`${selectedSegment.due}T00:00:00`).toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })}`;
@@ -811,27 +813,39 @@ try {
     }
   }
 
-  function nextQuestion() {
+  function nextQuestion(event, nextBlank = false) {
     const questionOptions = questions.querySelectorAll('option');
     const selectedQuestionOption = questions.querySelector('option:checked');
     const selectedQuestionOptionIndex = Array.from(questionOptions).indexOf(selectedQuestionOption);
     var questionStatuses = [];
     questionOptions.forEach(questionId => {
-      var question = questionsArray.find(q => String(q.id) === String(questionId.id));
+      var question = questionsArray.find(q => String(q.id) === String(questionId.value));
       if (question) {
         var highestStatus = "";
-        var questionResponses = history.filter(r => String(r.question_id) === String(questionId.id));
+        var questionResponses = history.filter(r => String(r.question_id) === String(questionId.value));
         if (questionResponses.find(r => r.status === 'Correct')) {
           highestStatus = 'Correct';
+        } else if (questionResponses.find(r => r.status.includes('Unknown'))) {
+          highestStatus = 'Awaiting Scoring';
         } else if (questionResponses.find(r => r.status === 'Incorrect')) {
           highestStatus = 'In Progress';
-        } else if (questionResponses.length) {
-          highestStatus = 'Awaiting Scoring';
         }
-        questionStatuses.push({ "question": questionId.id, "status": highestStatus });
+        questionStatuses.push({ "question": questionId.value, "status": highestStatus });
       }
     });
-    if (selectedQuestionOptionIndex < questionOptions.length - 1) {
+    let nextIndex = -1;
+    for (var i = selectedQuestionOptionIndex + 1; i < Array.from(questionOptions).length; i++) {
+      const qOpt = Array.from(questionOptions)[i];
+      const statusObj = questionStatuses.find(q => q.question === qOpt.value);
+      if (!statusObj || !statusObj.status) {
+        nextIndex = i;
+        break;
+      }
+    }
+    if (nextBlank && nextIndex !== -1) {
+      Array.from(questionOptions)[nextIndex].selected = true;
+      updateQuestion();
+    } else if (selectedQuestionOptionIndex < questionOptions.length - 1) {
       questionOptions[selectedQuestionOptionIndex + 1].selected = true;
       updateQuestion();
     } else if ((questionOptions.length > 0) && questionStatuses.every(question => question.status)) {

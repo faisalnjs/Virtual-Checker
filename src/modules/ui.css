@@ -649,7 +649,7 @@ body:has(.welcome-container.active) {
   color: darkorange;
 }
 
-body:not(:hover) .topbar {
+:root:not(:hover) .topbar {
   margin-top: -33px;
   transition: 0.25s margin-top;
 }
@@ -658,7 +658,7 @@ body:has(.topbar) {
   transition: 0.25s padding-top;
 }
 
-body:hover:has(.topbar) {
+:root:hover:has(.topbar) body {
   padding-top: 83px;
   transition: 0.25s padding-top;
 }
@@ -667,7 +667,7 @@ body:has(.topbar) .island {
   transition: 0.25s top;
 }
 
-body:hover:has(.topbar) .island {
+:root:hover:has(.topbar) .island {
   top: 58px;
   transition: 0.25s top;
 }
@@ -696,6 +696,16 @@ body:hover:has(.topbar) .island {
   background: indianred;
   border: 1px dotted white;
   color: white;
+}
+
+.ai-manager .ai-activation button {
+  color: var(--text-color);
+  margin-top: 5px;
+  margin-bottom: 5px;
+}
+
+.ai-manager .ai-activation button:hover {
+  color: var(--accent-text-color);
 }
 
 .ai-manager .ai-activation .info {
