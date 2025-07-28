@@ -17,6 +17,7 @@ import "/src/keybinds/keybinds.js";
 import * as ui from "/src/modules/ui.js";
 import storage from "/src/modules/storage.js";
 import Element from "/src/modules/element.js";
+import * as auth from "/src/modules/auth.js";
 
 try {
   const version = import.meta.env.PACKAGE_VERSION;

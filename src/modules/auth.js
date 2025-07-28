@@ -211,12 +211,12 @@ export async function sync(hideWelcome = true, returnFunction = null) {
                 if (!hideWelcome) ui.toast("Welcome back!", 3000, "success", "bi bi-key");
                 const combinedSettings = sortKeys({
                     ...Object.fromEntries(
-                        Object.entries(storage.all()).filter(([key]) => key !== "password" && key !== "code" && key !== "usr" && key !== "pwd")
+                        Object.entries(storage.all()).filter(([key]) => key !== "password" && key !== "code" && key !== "usr" && key !== "pwd" && key !== "developer")
                     ),
                     ...r.settings,
                 });
                 var settingsIsSynced = JSON.stringify(sortKeys(r.settings)) === JSON.stringify(sortKeys(Object.fromEntries(
-                    Object.entries(storage.all()).filter(([key]) => key !== "password" && key !== "code" && key !== "usr" && key !== "pwd")
+                    Object.entries(storage.all()).filter(([key]) => key !== "password" && key !== "code" && key !== "usr" && key !== "pwd" && key !== "developer")
                 )));
                 console.log(`Settings is ${!settingsIsSynced ? 'not ' : ''}synced!`);
                 if (settingsIsSynced) {
@@ -255,7 +255,7 @@ export async function sync(hideWelcome = true, returnFunction = null) {
                     .then(async () => {
                         if (r.settings && Object.keys(r.settings).length > 0) {
                             Object.entries(r.settings).forEach(([key, value]) => {
-                                if (key !== "password" && key !== "code" && key !== "usr" && key !== "pwd") storage.set(key, value);
+                                if (key !== "password" && key !== "code" && key !== "usr" && key !== "pwd" && key !== "developer") storage.set(key, value);
                             });
                             await themes.syncTheme();
                         }
@@ -528,7 +528,7 @@ export async function syncManual(hideWelcome = false) {
                                                 body: JSON.stringify({
                                                     "seatCode": storage.get("code"),
                                                     "password": password,
-                                                    "settings": Object.fromEntries(Object.entries(storage.all()).filter(([key]) => key !== "password" && key !== "code" && key !== "usr" && key !== "pwd" )),
+                                                    "settings": Object.fromEntries(Object.entries(storage.all()).filter(([key]) => key !== "password" && key !== "code" && key !== "usr" && key !== "pwd" && key !== "developer" )),
                                                 })
                                             })
                                                 .then(async (r) => {
@@ -575,7 +575,7 @@ export async function syncManual(hideWelcome = false) {
                                     prompt(false, () => {
                                         if (r.settings && Object.keys(r.settings).length > 0) {
                                             Object.entries(r.settings).forEach(([key, value]) => {
-                                                if (key !== "password" && key !== "code" && key !== "usr" && key !== "pwd") storage.set(key, value);
+                                                if (key !== "password" && key !== "code" && key !== "usr" && key !== "pwd" && key !== "developer") storage.set(key, value);
                                             });
                                             ui.toast("Settings restored successfully!", 3000, "success", "bi bi-check-circle-fill");
                                             window.location.reload();

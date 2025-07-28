@@ -4437,7 +4437,7 @@ try {
     filteredLogs.forEach(log => {
       document.querySelector('.logs').innerHTML += `<div class="enhanced-item${log.undid ? ' disabled' : ''}" id="${log.id}">
         <span class="action" hidden>${log.action}</span>
-        <span class="details">${log.details}</span>
+        <span class="details">${escapeHTML(log.details)}</span>
         <span class="timestamp fit">${time.unixToString(log.timestamp)}</span>
         <span class="actions fit showonhover">
           <button class="icon" data-undo-action tooltip="Undo Action">

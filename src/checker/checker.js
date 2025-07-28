@@ -330,7 +330,7 @@ try {
         resetInputs();
         await fetchHistory();
         await updateHistory();
-        await updateSegment(true);
+        await updateSegment(null, true);
         if ((typeof r.correct === 'undefined') || r.correct || (typeof r.error !== 'undefined')) {
           nextQuestion(null, true);
         } else {
@@ -549,7 +549,7 @@ try {
       });
   }
 
-  async function updateSegment(sameSegment = false) {
+  async function updateSegment(event, sameSegment = false) {
     const selectedSegment = segmentsArray.find(s => String(s.id) === String(segments.value));
     const selectedQuestionOption = questions.querySelector('option:checked');
     questions.innerHTML = '';
