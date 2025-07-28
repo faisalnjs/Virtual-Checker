@@ -384,7 +384,7 @@ label:has(i) {
   border-radius: 10px;
   line-height: 25px;
   position: sticky;
-  top: 15px;
+  top: 48px;
   z-index: 100;
 }
 

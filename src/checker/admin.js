@@ -32,6 +32,7 @@ var noReloadCourse = false;
 var logs = [];
 var renderedEditors = {};
 var rosters = [];
+var aiInfo = {};
 
 var draggableQuestionList = null;
 var draggableSegmentReorder = null;
@@ -158,6 +159,51 @@ try {
         .then(l => {
           logs = l;
           updateLogs();
+          ui.stopLoader();
+          active = true;
+        })
+        .catch((e) => {
+          console.error(e);
+          ui.view("api-fail");
+          if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
+          pollingOff();
+        });
+    }
+
+    if (document.querySelector('.ai-manager')) {
+      // if (document.getElementById('clear-logs')) document.getElementById('clear-logs').addEventListener('click', clearLogsModal);
+      // if (document.getElementById("filter-logs-by-username-input")) document.getElementById("filter-logs-by-username-input").addEventListener("input", updateLogs);
+      // if (document.getElementById("filter-logs-by-action-input")) document.getElementById("filter-logs-by-action-input").addEventListener("input", updateLogs);
+      // if (document.getElementById("filter-logs-by-type")) document.getElementById("filter-logs-by-type").addEventListener("input", updateLogs);
+      await fetch(domain + '/ai', {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          usr: storage.get("usr"),
+          pwd: storage.get("pwd"),
+        }),
+      })
+        .then(async (r) => {
+          if (!r.ok) {
+            try {
+              var re = await r.json();
+              if (re.error || re.message) {
+                ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+                throw new Error(re.error || re.message);
+              } else {
+                throw new Error("API error");
+              }
+            } catch (e) {
+              throw new Error(e.message || "API error");
+            }
+          }
+          return await r.json();
+        })
+        .then(i => {
+          aiInfo = i;
+          updateAISettings();
           ui.stopLoader();
           active = true;
         })
@@ -1375,7 +1421,14 @@ try {
           });
         });
     } else if (document.querySelector('.ai-manager')) {
-
+      updatedInfo = {
+        ai: {
+          generator_enabled: document.getElementById('generate-answers').checked,
+          checker_enabled: document.getElementById('check-responses').checked,
+          generate_answers_prompt: document.getElementById('generate-answers-prompt').value,
+          check_responses_prompt: document.getElementById('check-responses-prompt').value
+        }
+      };
     }
     for (const key in updatedInfo) {
       if (Object.prototype.hasOwnProperty.call(updatedInfo, key)) {
@@ -5683,7 +5736,11 @@ try {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(exportResponsesOptions)
+      body: JSON.stringify({
+        usr: storage.get("usr"),
+        pwd: storage.get("pwd"),
+        ...exportResponsesOptions
+      })
     })
       .then(async (r) => {
         if (!r.ok) {
@@ -5751,6 +5808,8 @@ try {
       await fetch(domain + '/ai/q', {
         method: 'POST',
         body: JSON.stringify({
+          usr: storage.get("usr"),
+          pwd: storage.get("pwd"),
           OpenAI_API_Key: "sk-proj-18b3a02f4fb35e8a8421948667fbacf7_2ac9b775227456bb9d53d370cc299da7937deb6b_184751e482b7_f157c538a800",
           title: questionTitle,
           description: questionDescription,
@@ -5816,6 +5875,50 @@ try {
       return;
     }
     ui.reloadUnsavedInputs();
+  }
+
+  function updateAISettings() {
+    if (!aiInfo.has_api_key) {
+      document.querySelectorAll('.ai-manager label').forEach(label => label.remove());
+      document.querySelectorAll('.ai-manager textarea').forEach(textarea => textarea.remove());
+      document.querySelectorAll('.ai-manager button').forEach(button => button.remove());
+      document.querySelector('.ai-manager .ai-activation').outerHTML = `<div class="ai-activation error">
+        <h4>AI is not activated.</h4>
+        <p>Log in to the web hosting portal to enter your API key to enable AI use. Enter the API key as app environment secret <code>OPENAI_API_KEY</code>.</p>
+        <a href="https://da.dangoweb.com:2222/"><button>Control Panel</button></a>
+      </div>`;
+      return;
+    }
+    if (!aiInfo.generator_enabled && !aiInfo.checker_enabled) {
+      document.querySelector('.ai-manager .ai-activation').outerHTML = `<div class="ai-activation error">
+        <h4>AI is not activated.</h4>
+        <p>Enable full AI coverage for answer generation and automatic response marking.</p>
+      </div>`;
+    } else if (!aiInfo.generator_enabled || !aiInfo.checker_enabled) {
+      document.querySelector('.ai-manager .ai-activation').outerHTML = `<div class="ai-activation warning">
+        <h4>AI is only partially activated.</h4>
+        <p>Enable full AI coverage for answer generation and automatic response marking.</p>
+      </div>`;
+    } else {
+      document.querySelector('.ai-manager .ai-activation').outerHTML = `<div class="ai-activation success">
+        <h4>AI is activated!</h4>
+        <p>AI is activated and being used to generate answers and mark responses.</p>
+        <div class="info">
+          <p>API Key: ${aiInfo.has_api_key ? 'Exists' : 'Not found'}</p>
+          <p>Model: ${aiInfo.model}</p>
+        </div>
+      </div>`;
+    }
+    document.getElementById('generate-answers').checked = aiInfo.generator_enabled;
+    document.getElementById('check-responses').checked = aiInfo.checker_enabled;
+    document.getElementById('generate-answers-prompt').placeholder = aiInfo.generate_answers_prompt;
+    document.getElementById('generate-answers-prompt').value = aiInfo.generate_answers_prompt;
+    document.getElementById('generate-answers-prompt-ending').placeholder = aiInfo.generate_answers_prompt_ending;
+    document.getElementById('generate-answers-prompt-ending').value = aiInfo.generate_answers_prompt_ending;
+    document.getElementById('check-responses-prompt').placeholder = aiInfo.check_responses_prompt;
+    document.getElementById('check-responses-prompt').value = aiInfo.check_responses_prompt;
+    document.getElementById('check-responses-prompt-ending').placeholder = aiInfo.check_responses_prompt_ending;
+    document.getElementById('check-responses-prompt-ending').value = aiInfo.check_responses_prompt_ending;
   }
 } catch (error) {
   if (storage.get("developer")) {
