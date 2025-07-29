@@ -19,18 +19,18 @@ try {
   const version = import.meta.env.PACKAGE_VERSION;
 
   updateVersionString();
-  function updateVersionString() {
+  function updateVersionString(beta = false) {
     const DEVELOPER_MODE = storage.get("developer");
     document.querySelectorAll(".version").forEach((element) => {
       element.innerHTML = "<p>v" + version + "</p>" + (DEVELOPER_MODE ? " <code>dev</code>" : "");
     });
     if (DEVELOPER_MODE) {
       if (document.querySelector('.topbar')) {
-        document.querySelector('.topbar').innerHTML = `<span><i class="bi bi-cone-striped"></i>&nbsp;Beta Version - v${version}</span>`;
+        document.querySelector('.topbar').innerHTML = `<span><i class="bi bi-cone-striped"></i>&nbsp;${beta ? "Beta Version" : "Developer Mode"} - v${version}</span>`;
       } else {
         var topbar = document.createElement("div");
         topbar.className = "topbar";
-        topbar.innerHTML = `<span><i class="bi bi-cone-striped"></i>&nbsp;Beta Version - v${version}</span>`;
+        topbar.innerHTML = `<span><i class="bi bi-cone-striped"></i>&nbsp;${beta ? "Beta Version" : "Developer Mode"} - v${version}</span>`;
         document.body.prepend(topbar);
       }
     }
@@ -114,9 +114,9 @@ try {
     );
   }
 
-  if (window.location.hostname.includes('beta') || window.location.hostname.includes('local')) {
+  if (window.location.hostname.includes('beta')) {
     storage.set("developer", true);
-    updateVersionString();
+    updateVersionString(true);
   }
 } catch (error) {
   if (storage.get("developer")) {

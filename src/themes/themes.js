@@ -197,6 +197,7 @@ try {
     // Update developer theme input
     if (document.getElementById("theme-debug")) document.getElementById("theme-debug").value = value;
     await auth.syncPush("theme");
+    await auth.syncPush("custom-theme");
   });
 
   document.getElementById("theme-reset")?.addEventListener("click", resetTheme);
