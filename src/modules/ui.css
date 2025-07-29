@@ -26,6 +26,14 @@ dialog img {
   border-radius: 0.5rem;
 }
 
+dialog p img {
+  height: 20px;
+  display: inline-flex;
+  margin-right: 5px;
+  margin-bottom: -4px;
+  text-decoration: none;
+}
+
 dialog #version-string {
   margin: -75px auto 45px 17.5px;
   width: fit-content;
@@ -438,7 +446,8 @@ body:has(.welcome-container.active) {
 .welcome-container[step="7"] [step="7"],
 .welcome-container[step="8"] [step="8"],
 .welcome-container[step="9"] [step="9"],
-.welcome-container[step="10"] [step="10"] {
+.welcome-container[step="10"] [step="10"],
+.welcome-container[step="11"] [step="11"] {
   opacity: 1;
   margin-bottom: 0px;
   z-index: 10000;
@@ -476,10 +485,10 @@ body:has(.welcome-container.active) {
 
 .welcome-container:not([step]) > button,
 .welcome-container[step="1"] > button,
-.welcome-container[step="10"] > button,
+.welcome-container[step="11"] > button,
 .welcome-container:not([step]) > p,
 .welcome-container[step="1"] > p,
-.welcome-container[step="10"] > p {
+.welcome-container[step="11"] > p {
   opacity: 0;
 }
 
@@ -494,7 +503,7 @@ body:has(.welcome-container.active) {
 }
 
 .welcome-container [step] *:not(button):not(> button),
-.welcome-container:not([step="10"]) [step="10"] button {
+.welcome-container:not([step="11"]) [step="11"] button {
   pointer-events: none;
   user-select: none;
 }
@@ -528,6 +537,38 @@ body:has(.welcome-container.active) {
 
 .welcome-container .themes-grid button.selected {
   border: 2.5px solid var(--accent-color);
+}
+
+.welcome-container .layout-chooser {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 5px;
+  min-width: 50vw;
+}
+
+.welcome-container .layout-chooser #theme-preview {
+  cursor: pointer;
+}
+
+.welcome-container .layout-chooser #theme-preview.selected,
+.welcome-container .layout-chooser #theme-preview:hover {
+  background-color: var(--surface-color);
+}
+
+.welcome-container .layout-chooser #theme-preview.selected .text-placeholder,
+.welcome-container .layout-chooser #theme-preview:hover .text-placeholder {
+  background-color: var(--text-color);
+}
+
+.welcome-container .layout-chooser #theme-preview.selected .control-placeholder,
+.welcome-container .layout-chooser #theme-preview:hover .control-placeholder {
+  background-color: var(--accent-color);
+}
+
+.welcome-container .layout-chooser #theme-preview.selected .control-placeholder.pill,
+.welcome-container .layout-chooser #theme-preview:hover .control-placeholder.pill {
+  border-radius: 100vh;
 }
 
 @keyframes moveBefore {

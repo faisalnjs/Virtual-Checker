@@ -144,6 +144,7 @@ export function renderThemesGrid(originalTheme = null) {
     button.setAttribute("data-theme", value);
     if (value === originalTheme) button.classList.add('selected');
     button.addEventListener("click", () => {
+      if (document.querySelector('.welcome-container').getAttribute('step') !== '11') return;
       selectedTheme = value;
       document.querySelector('.welcome-container').setAttribute("data-theme", value);
       originalTheme = value;
@@ -151,10 +152,10 @@ export function renderThemesGrid(originalTheme = null) {
       syncTheme();
     });
     button.addEventListener("mouseover", () => {
-      document.querySelector('.welcome-container').setAttribute("data-theme", value);
+      if (document.querySelector('.welcome-container').getAttribute('step') === '11') document.querySelector('.welcome-container').setAttribute("data-theme", value);
     });
     button.addEventListener("mouseout", () => {
-      document.querySelector('.welcome-container').setAttribute("data-theme", originalTheme);
+      if (document.querySelector('.welcome-container').getAttribute('step') === '11') document.querySelector('.welcome-container').setAttribute("data-theme", originalTheme);
     });
     themesGrid.append(button);
   });

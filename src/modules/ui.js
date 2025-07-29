@@ -857,10 +857,43 @@ export async function launchWelcome() {
       <img src="../intro-step-9.png" />
     </div>
     <div class="center" step="10">
+      <h4>Choose a layout</h4>
+      <div class="layout-chooser">
+        <div id="theme-preview">
+          <div class="column">
+            <h2 class="text-placeholder">000</h2>
+            <p class="text-placeholder">Question</p>
+            <div class="control-placeholder"></div>
+            <div class="control-placeholder"></div>
+          </div>
+          <div class="column">
+            <p class="text-placeholder">Answer</p>
+            <div class="control-placeholder"></div>
+            <div class="control-placeholder pill"></div>
+          </div>
+        </div>
+        <div id="theme-preview" class="horizontal">
+          <div class="column">
+            <h2 class="text-placeholder">000</h2>
+            <p class="text-placeholder">Question</p>
+            <div class="control-placeholder"></div>
+            <div class="control-placeholder"></div>
+          </div>
+          <div class="column">
+            <p class="text-placeholder">Answer</p>
+            <div class="control-placeholder"></div>
+            <div class="control-placeholder pill"></div>
+          </div>
+        </div>
+      </div>
+      <button data-next>Next</button>
+    </div>
+    <div class="center" step="11">
       <h4>Choose a theme</h4>
       <div id="theme-preview">
         <h2 class="text-placeholder">000</h2>
         <p class="text-placeholder">Question</p>
+        <div class="control-placeholder"></div>
         <div class="control-placeholder"></div>
         <p class="text-placeholder">Answer</p>
         <div class="control-placeholder"></div>
@@ -876,11 +909,19 @@ export async function launchWelcome() {
   welcomeContainer.querySelectorAll('[data-skip]').forEach(a => a.addEventListener('click', () => {
     removeWelcome();
   }));
+  welcomeContainer.querySelectorAll('[data-next]').forEach(a => a.addEventListener('click', () => {
+    toWelcomeSlide(Number(welcomeContainer.getAttribute('step')) + 1);
+  }));
   welcomeContainer.querySelector('[data-finish]').addEventListener('click', async () => {
     await auth.syncPush("theme");
     unsavedChanges = false;
     removeWelcome();
   });
+  welcomeContainer.querySelectorAll('#theme-preview').forEach(a => a.addEventListener('click', () => {
+    setLayout(a.classList.toString().replaceAll('selected', '').trim());
+    welcomeContainer.querySelectorAll('#theme-preview').forEach(b => b.classList.remove('selected'));
+    a.classList.add('selected');
+  }));
   originalTheme = storage.get("theme");
   welcomeTimeouts[0] = setTimeout(() => {
     welcomeContainer.classList.add('active');
@@ -929,6 +970,9 @@ export function toWelcomeSlide(n) {
   welcomeContainer.setAttribute('step', n);
   var maxN = welcomeContainer.querySelectorAll('[step]').length;
   switch (n) {
+    case maxN - 1:
+      [...welcomeContainer.querySelectorAll('#theme-preview')].find(a => document.getElementById('checker')?.classList.toString() ? a.classList.contains(document.getElementById('checker')?.classList.toString()) : true)?.classList.add('selected');
+      break;
     case maxN:
       themes.renderThemesGrid(originalTheme || "stealth");
       if (originalTheme) welcomeContainer.setAttribute('data-theme', originalTheme);
@@ -949,4 +993,12 @@ export function removeWelcome() {
       welcomeContainer = null;
     }, 1000);
   }, 500);
+}
+
+function setLayout(layout) {
+  const checker = document.getElementById('checker');
+  if (!checker) return;
+  checker.classList = layout;
+  storage.set('layout', layout);
+  auth.syncPush('layout');
 }

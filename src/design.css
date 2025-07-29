@@ -283,6 +283,33 @@ button[data-theme] {
   transition: 200ms var(--easing);
 }
 
+#theme-preview.horizontal,
+#editor-preview.horizontal {
+  flex-direction: row;
+  align-self: stretch;
+}
+
+#theme-preview .column,
+#editor-preview .column {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  width: min(100%, 300px);
+  align-self: center;
+  border-radius: 1rem;
+  transition: 200ms var(--easing);
+}
+
+#theme-preview.horizontal .column,
+#editor-preview.horizontal .column {
+  align-self: flex-start;
+}
+
+#theme-preview.horizontal .column:first-child .control-placeholder,
+#editor-preview.horizontal .column:first-child .control-placeholder {
+  height: 4em;
+}
+
 .text-placeholder {
   color: transparent;
   background-color: var(--text-color);
@@ -304,6 +331,7 @@ button[data-theme] {
 }
 
 .control-placeholder.pill {
+  height: 1.5em;
   border-radius: 100vh;
 }
 

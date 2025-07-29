@@ -60,5 +60,5 @@ The API is **required** to run this project, and must be hosted on the same serv
 
 ### Credits
 
-- [khui0](https://github.com/khui0) - Base Virtual Clicker commits before 5/21/2024
-- [faisalnjs](https://github.com/faisalnjs) - Virtual Checker, base Virtual Clicker commits after 5/21/2024
+- [faisalnjs](https://github.com/faisalnjs) - Virtual Checker, Base Virtual Clicker
+- [khui0](https://github.com/khui0) - Base Virtual Clicker

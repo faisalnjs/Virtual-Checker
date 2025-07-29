@@ -65,7 +65,8 @@
     </div>
   </div>
   <div id="checker">
-    <button square data-toggle-layout tooltip="Switch Layout"><i class="bi bi-app"></i><i class="bi bi-layout-sidebar-reverse"></i></button>
+    <button square data-toggle-layout tooltip="Switch Layout"><i class="bi bi-app"></i><i
+        class="bi bi-layout-sidebar-reverse"></i></button>
     <div class="column">
       <h1><span class="code" data-modal-view="settings/code">000</span></h1>
       <div class="button-grid inputs">
@@ -290,14 +291,8 @@
     <button data-modal-view="settings/reset">Reset</button>
     <button data-modal-view="settings/credits">Credits</button>
     <button data-sync>Manual Sync</button>
-    <button data-welcome>Launch Welcome Intro</button>
+    <button data-welcome>Welcome Intro</button>
     <button data-logout>Log Out</button>
-    <div class="row center" style="gap: 7.5px; margin-top: 5px;">
-      <a href="https://github.com/faisalnjs/virtual-checker" class="icon" tooltip="GitHub Repository"><i
-          class="bi bi-github"></i></a>
-      <a href="https://dangoweb.com/?from=virtual-checker" class="icon" tooltip="Cloud Hosting"><i
-          class="bi bi-cloud-fill"></i></a>
-    </div>
     <div data-modal-page="code" data-page-title="Seat Code">
       <input type="text" inputmode="numeric" placeholder="000" maxlength="3" id="code-input" />
       <button data-modal-view="settings/code/help">Need help?</button>
@@ -327,6 +322,7 @@
         <h1 class="text-placeholder">000</h1>
         <p class="text-placeholder">Question</p>
         <div class="control-placeholder"></div>
+        <div class="control-placeholder"></div>
         <p class="text-placeholder">Answer</p>
         <div class="control-placeholder"></div>
         <div class="control-placeholder pill"></div>
@@ -342,6 +338,7 @@
         <div id="editor-preview">
           <h1 class="text-placeholder">000</h1>
           <p class="text-placeholder">Question</p>
+          <div class="control-placeholder"></div>
           <div class="control-placeholder"></div>
           <p class="text-placeholder">Answer</p>
           <div class="control-placeholder"></div>
@@ -414,9 +411,15 @@
       <img src="banner.png" alt="Virtual Checker Banner">
       <div></div>
       <div></div>
-      <p><a href="https://github.com/khui0">khui0</a> - Base Virtual Clicker commits before 5/21/2024</p>
-      <p><a href="https://github.com/faisalnjs">faisalnjs</a> - Virtual Checker, base Virtual Clicker commits after
-        5/21/2024</p>
+      <p><a href="https://github.com/faisalnjs"><img src="https://avatars.githubusercontent.com/u/84286255" />Faisal N
+          (@faisalnjs)</a> - Virtual Checker, Base Virtual Clicker</p>
+      <p><a href="https://github.com/khui0">khui0</a> - Base Virtual Clicker</p>
+      <div class="row center" style="gap: 7.5px; margin-top: 5px;">
+        <a href="https://github.com/faisalnjs/virtual-checker" class="icon" tooltip="GitHub Repository"><i
+            class="bi bi-github"></i></a>
+        <a href="https://dangoweb.com/?from=virtual-checker" class="icon" tooltip="Cloud Hosting"><i
+            class="bi bi-cloud-fill"></i></a>
+      </div>
     </div>
   </dialog>
   <dialog data-modal-page="clear-data-fix" data-page-title="Settings May Not Save">
