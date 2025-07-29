@@ -1127,8 +1127,8 @@ try {
       },
       body: JSON.stringify({
         usr: storage.get("code"),
+        pwd: storage.get("password"),
         question_id: event.srcElement.parentElement.id,
-        seatCode: storage.get("code"),
       }),
     })
       .then(q => q.json())
@@ -1153,8 +1153,8 @@ try {
       },
       body: JSON.stringify({
         usr: storage.get("code"),
+        pwd: storage.get("password"),
         question_id: event.srcElement.parentElement.id,
-        seatCode: storage.get("code"),
       }),
     })
       .then(q => q.json())
