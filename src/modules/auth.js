@@ -207,7 +207,8 @@ export async function sync(hideWelcome = true, returnFunction = null) {
                 return await r.json();
             })
             .then(async r => {
-                var password = storage.get("password");
+                ui.setNotifications(r.notifications);
+                if (r.notifications.length > 0) ui.toast(`You have ${r.notifications.length} unread notifications.`, 5000, 'info', 'bi bi-bell-fill');
                 if (!hideWelcome) ui.toast("Welcome back!", 3000, "success", "bi bi-key");
                 var settingsIsSynced = JSON.stringify(sortKeys(Object.fromEntries(
                     Object.entries(r.settings).filter(([key]) => key !== "password" && key !== "code" && key !== "usr" && key !== "pwd" && key !== "history" && key !== "questionsAnswered" && key !== "developer")

@@ -91,6 +91,14 @@ button.icon {
   border-radius: 50%;
 }
 
+button.icon.unread::before {
+  content: "*";
+  position: absolute;
+  border-radius: 50%;
+  top: 0.25em;
+  right: 0.05em;
+}
+
 button.fit {
   width: fit-content !important;
   min-width: fit-content !important;

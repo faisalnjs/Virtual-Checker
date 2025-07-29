@@ -1002,3 +1002,20 @@ function setLayout(layout) {
   storage.set('layout', layout);
   auth.syncPush('layout');
 }
+
+var notifications = [];
+
+export function getNotifications() {
+  return notifications;
+}
+
+export async function setNotifications(array) {
+  notifications = array;
+  if (notifications.length > 0) {
+    document.querySelector('[data-modal-view="history"]')?.classList.add('unread');
+    document.querySelector('[data-modal-view="history"]')?.setAttribute('tooltip', `History (${notifications.length} unread)`);
+  } else {
+    document.querySelector('[data-modal-view="history"]')?.classList.remove('unread');
+    document.querySelector('[data-modal-view="history"]')?.setAttribute('tooltip', 'History');
+  }
+}

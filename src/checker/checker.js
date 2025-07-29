@@ -570,7 +570,7 @@ try {
         } else if (questionResponses.find(r => r.status === 'Incorrect')) {
           highestStatus = 'In Progress';
         }
-        if (highestStatus !== "") questionOption.innerHTML += ` - ${highestStatus}`;
+        if (highestStatus !== "") questionOption.innerHTML += ` - ${ui.getNotifications().includes(Number(questionId.id)) ? '* ' : ''}${highestStatus}`;
         questionStatuses.push({ "segment": selectedSegment.id, "question": questionId.id, "status": highestStatus });
         questions.append(questionOption);
       }
@@ -800,6 +800,12 @@ try {
       feedContainer.classList.remove('show');
     }
 
+    if (ui.getNotifications().includes(question.id)) {
+      await clearNotifications([question.id]);
+      await ui.setNotifications(ui.getNotifications().filter(notification => notification !== question.id));
+      await updateSegment(null, true);
+    }
+
     ui.setUnsavedChanges(false);
     ui.reloadUnsavedInputs();
   }
@@ -925,24 +931,28 @@ try {
     currentAnswerMode = mode;
   }
 
-  document.getElementById("history-first")?.addEventListener("click", () => {
+  document.querySelector('[data-modal-view="history"]')?.addEventListener("click", async () => {
+    await updateNotifications(await updateHistory(true));
+  });
+
+  document.getElementById("history-first")?.addEventListener("click", async () => {
     historyIndex = getHistoryDates().length - 1;
-    updateHistory();
+    await updateNotifications(await updateHistory());
   });
 
-  document.getElementById("history-backward")?.addEventListener("click", () => {
+  document.getElementById("history-backward")?.addEventListener("click", async () => {
     historyIndex++;
-    updateHistory();
+    await updateNotifications(await updateHistory());
   });
 
-  document.getElementById("history-forward")?.addEventListener("click", () => {
+  document.getElementById("history-forward")?.addEventListener("click", async () => {
     historyIndex--;
-    updateHistory();
+    await updateNotifications(await updateHistory());
   });
 
-  document.getElementById("history-last")?.addEventListener("click", () => {
+  document.getElementById("history-last")?.addEventListener("click", async () => {
     historyIndex = 0;
-    updateHistory();
+    await updateNotifications(await updateHistory());
   });
 
   // Count number of unique days
@@ -963,8 +973,9 @@ try {
   }
 
   // Update history feed
-  async function updateHistory() {
+  async function updateHistory(returnOnlyFilteredHistory = false) {
     const filteredHistory = filterHistory(history);
+    if (returnOnlyFilteredHistory) return filteredHistory;
     const date =
       filteredHistory[0] &&
       new Intl.DateTimeFormat("en-US", {
@@ -985,7 +996,7 @@ try {
     if (filteredHistory.length === 0) {
       feed.innerHTML = "<p>Submitted clicks will show up here!</p>";
       ui.reloadUnsavedInputs();
-      return;
+      return filteredHistory;
     }
 
     var sortedHistory = filteredHistory.sort((a, b) => a.timestamp - b.timestamp);
@@ -993,7 +1004,7 @@ try {
     sortedHistory.forEach(r => {
       if (r.error) {
         console.log(r.error);
-        return;
+        return filteredHistory;
       }
       const button = document.createElement("button");
       button.id = r.id;
@@ -1031,6 +1042,7 @@ try {
       feed.prepend(p);
     }
     ui.reloadUnsavedInputs();
+    return filteredHistory;
   }
 
   async function resubmitCheck(r) {
@@ -1346,6 +1358,30 @@ try {
     checker.classList.toggle('horizontal');
     storage.set('layout', checker.classList.toString());
     auth.syncPush('layout');
+  }
+
+  async function updateNotifications(filteredHistory) {
+    var notifications = ui.getNotifications();
+    var notificationsToClear = notifications.filter(notification => filteredHistory.find(r => Number(r.question_id) === Number(notification)));
+    if (notificationsToClear.length > 0) {
+      await clearNotifications(notificationsToClear);
+      await ui.setNotifications(notifications.filter(notification => !notificationsToClear.includes(notification)));
+      await updateSegment(null, true);
+    }
+  }
+
+  async function clearNotifications(notifications) {
+    await fetch(domain + '/notifications', {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        usr: storage.get("code"),
+        pwd: storage.get("password"),
+        question_ids: notifications
+      }),
+    });
   }
 } catch (error) {
   if (storage.get("developer")) {
