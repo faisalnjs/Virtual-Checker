@@ -224,6 +224,7 @@ export async function sync(hideWelcome = true, returnFunction = null) {
                 )));
                 console.log(`Settings is ${!settingsIsSynced ? 'not ' : ''}synced!`);
                 if (settingsIsSynced) {
+                    if (document.getElementById('checker')) document.getElementById('checker').classList = r.settings['layout'] || '';
                     ui.stopLoader();
                     if (returnFunction) returnFunction();
                     return;
@@ -262,6 +263,7 @@ export async function sync(hideWelcome = true, returnFunction = null) {
                                 if (key !== "password" && key !== "code" && key !== "usr" && key !== "pwd" && key !== "history" && key !== "questionsAnswered" && key !== "developer") storage.set(key, value);
                             });
                             await themes.syncTheme();
+                            if (document.getElementById('checker')) document.getElementById('checker').classList = r.settings['layout'] || '';
                         }
                         ui.setUnsavedChanges(false);
                         window.location.reload();

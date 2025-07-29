@@ -1341,7 +1341,11 @@ try {
   }
 
   function toggleLayout() {
-    document.getElementById('checker')?.classList.toggle('horizontal');
+    const checker = document.getElementById('checker');
+    if (!checker) return;
+    checker.classList.toggle('horizontal');
+    storage.set('layout', checker.classList.toString());
+    auth.syncPush('layout');
   }
 } catch (error) {
   if (storage.get("developer")) {
