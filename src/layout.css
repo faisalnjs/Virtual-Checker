@@ -103,6 +103,31 @@ div.spacer {
   gap: 12.5px;
 }
 
+#checker .column {
+  flex: 1;
+  align-self: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  width: min(100%, 800px);
+  gap: 12.5px;
+}
+
+#checker.horizontal {
+  flex-direction: row;
+  width: min(100%, 1400px);
+}
+
+#checker.horizontal .column {
+  align-self: flex-start;
+}
+
+#checker.horizontal .column:last-child {
+  margin-top: calc(42px + 12.5px);
+  position: sticky;
+  top: 30px;
+}
+
 #question-container {
   display: flex;
   flex-direction: row;
@@ -419,4 +444,14 @@ label:has(i) {
 
 .enhanced-list .enhanced-item.disabled [data-undo-action] {
   display: none;
+}
+
+[data-toggle-layout] {
+  position: absolute !important;
+  top: 2.5px;
+  right: 0;
+}
+
+#checker.horizontal [data-toggle-layout] {
+
 }

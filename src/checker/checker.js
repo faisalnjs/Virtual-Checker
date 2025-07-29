@@ -83,6 +83,7 @@ try {
       }
     });
     if (document.querySelector('[data-logout]')) document.querySelector('[data-logout]').addEventListener('click', () => auth.logout(init));
+    if (document.querySelector('[data-toggle-layout]')) document.querySelector('[data-toggle-layout]').addEventListener('click', toggleLayout);
     document.getElementById("code-input").value = '';
     document.querySelectorAll("span.code").forEach((element) => {
       element.innerHTML = '';
@@ -1337,6 +1338,10 @@ try {
     if (document.querySelector("[data-remove-matrix-column]")) document.querySelector("[data-remove-matrix-column]").addEventListener("click", removeColumn);
     if (document.querySelector("[data-add-matrix-row]")) document.querySelector("[data-add-matrix-row]").addEventListener("click", addRow);
     if (document.querySelector("[data-remove-matrix-row]")) document.querySelector("[data-remove-matrix-row]").addEventListener("click", removeRow);
+  }
+
+  function toggleLayout() {
+    document.getElementById('checker')?.classList.toggle('horizontal');
   }
 } catch (error) {
   if (storage.get("developer")) {

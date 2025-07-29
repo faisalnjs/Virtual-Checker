@@ -672,6 +672,15 @@ body:has(.topbar) .island {
   transition: 0.25s top;
 }
 
+body:has(.topbar) #checker.horizontal .column:last-child {
+  transition: 0.25s top;
+}
+
+:root:hover:has(.topbar) #checker.horizontal .column:last-child {
+  top: 63px;
+  transition: 0.25s top;
+}
+
 .ai-manager .ai-activation {
   width: -webkit-fill-available;
   background: var(--surface-color);
