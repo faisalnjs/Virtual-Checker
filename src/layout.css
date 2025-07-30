@@ -125,7 +125,7 @@ div.spacer {
 }
 
 #checker.horizontal .column:last-child {
-  margin-top: calc(42px + 12.5px);
+  margin-top: 6px;
   position: sticky;
   top: 30px;
 }
@@ -452,6 +452,7 @@ label:has(i) {
   position: absolute !important;
   top: 2.5px;
   right: 0;
+  z-index: 1;
 }
 
 #checker:not(.horizontal) [data-toggle-layout] .bi-app,
