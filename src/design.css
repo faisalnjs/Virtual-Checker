@@ -91,6 +91,14 @@ button.icon {
   border-radius: 50%;
 }
 
+button.icon.unread::before {
+  content: "*";
+  position: absolute;
+  border-radius: 50%;
+  top: 0.25em;
+  right: 0.05em;
+}
+
 button.fit {
   width: fit-content !important;
   min-width: fit-content !important;
@@ -283,6 +291,33 @@ button[data-theme] {
   transition: 200ms var(--easing);
 }
 
+#theme-preview.horizontal,
+#editor-preview.horizontal {
+  flex-direction: row;
+  align-self: stretch;
+}
+
+#theme-preview .column,
+#editor-preview .column {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  width: min(100%, 300px);
+  align-self: center;
+  border-radius: 1rem;
+  transition: 200ms var(--easing);
+}
+
+#theme-preview.horizontal .column,
+#editor-preview.horizontal .column {
+  align-self: flex-start;
+}
+
+#theme-preview.horizontal .column:first-child .control-placeholder,
+#editor-preview.horizontal .column:first-child .control-placeholder {
+  height: 4em;
+}
+
 .text-placeholder {
   color: transparent;
   background-color: var(--text-color);
@@ -304,6 +339,7 @@ button[data-theme] {
 }
 
 .control-placeholder.pill {
+  height: 1.5em;
   border-radius: 100vh;
 }
 
@@ -410,23 +446,23 @@ div.ML__keyboard {
   transition: box-shadow 100ms ease;
 }
 
-#checker > .images {
+.images {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   gap: 5px;
 }
 
-#checker > .images.gallery {
+.images.gallery {
   flex-direction: row;
   flex-wrap: wrap;
 }
 
-#checker > .images.gallery img {
+.images.gallery img {
   max-height: 150px;
 }
 
-#checker > .images img {
+.images img {
   border-radius: 5px;
   border: 5px solid var(--surface-color);
   background: url(<path-to-image>) var(--surface-color) 50% / cover no-repeat;
@@ -468,6 +504,14 @@ div.ML__keyboard {
   .vlarge,
   square {
     max-width: unset !important;
+  }
+
+  #checker.horizontal {
+    flex-direction: column !important;
+  }
+
+  [data-toggle-layout] {
+    display: none;
   }
 }
 
