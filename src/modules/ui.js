@@ -538,6 +538,7 @@ document.querySelectorAll("[data-modal-view]").forEach((element) => {
 });
 
 document.querySelectorAll("[data-color-input]").forEach((element) => {
+  if (element.querySelector('input')) return;
   const name = element.getAttribute("data-color-input");
   // Create child elements
   const colorPicker = document.createElement("input");

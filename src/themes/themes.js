@@ -45,11 +45,16 @@ export function enableTransitions() {
 export async function syncTheme() {
   const value = storage.get("theme");
   disableTransitions();
-  document.body.setAttribute("data-theme", value);
-  removeCustomTheme();
-  enableTransitions();
-  // Update developer theme input
-  if (document.getElementById("theme-debug")) document.getElementById("theme-debug").value = value;
+  if (value === "custom") {
+    applyCustomTheme();
+    selectedTheme = "";
+  } else {
+    document.body.setAttribute("data-theme", value);
+    removeCustomTheme();
+    enableTransitions();
+    // Update developer theme input
+    if (document.getElementById("theme-debug")) document.getElementById("theme-debug").value = value;
+  }
 }
 
 function copyThemeCSS() {
@@ -227,10 +232,12 @@ try {
   updateEditorPreview();
   updateThemeCode();
 
-  document.getElementById("editor-apply")?.addEventListener("click", () => {
+  document.getElementById("editor-apply")?.addEventListener("click", async () => {
     storage.set("custom-theme", customTheme);
     storage.set("theme", "custom");
     applyCustomTheme();
+    await auth.syncPush("custom-theme");
+    await auth.syncPush("theme");
   });
 
   document.getElementById("editor-reset")?.addEventListener("click", () => {
