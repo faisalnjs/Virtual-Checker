@@ -587,6 +587,8 @@ document.querySelectorAll("[data-color-input]").forEach((element) => {
     colorCode.value = colorPicker.value;
     colorPreview.style.backgroundColor = colorPicker.value;
   }
+
+  themes.initializeThemeEditor();
 });
 
 document.querySelectorAll("[data-button-select]").forEach((element) => {

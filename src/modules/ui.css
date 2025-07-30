@@ -22,7 +22,7 @@ dialog:modal {
 }
 
 dialog img {
-  box-shadow: inset 0 0 0px 1000px var(--accent-color);
+  box-shadow: inset 0 0 0px 1000px var(--backlight-color, var(--accent-color));
   border-radius: 0.5rem;
 }
 
