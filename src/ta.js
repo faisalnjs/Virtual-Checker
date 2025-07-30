@@ -109,6 +109,7 @@ try {
       new Element("button", "Disable Developer Mode", {
         "click": () => {
           storage.delete("developer");
+          window.location.reload();
         },
       }).element,
     );
