@@ -226,6 +226,38 @@
   --error-color: #8b2626;
 }
 
+/* Faisal N's Custom Themes (Source: faisaln.com) */
+
+[data-theme="synthwave"] {
+  color-scheme: dark;
+  --text-color: #2de2e6;
+  --background-color: #0d0221;
+  --surface-color: #920075;
+  --accent-color: #540d6e;
+  --accent-text-color: #2de2e6;
+  --error-color: #ea1b2d;
+}
+
+[data-theme="synthwave-2077"] {
+  color-scheme: dark;
+  --text-color: #c1d3e0;
+  --background-color: #101116;
+  --surface-color: #15151f;
+  --accent-color: #00d4b2;
+  --accent-text-color: #082b29;
+  --error-color: #ea1b2d;
+}
+
+[data-theme="synthwave-2077-solarized"] {
+  color-scheme: dark;
+  --text-color: #00d4b2;
+  --background-color: #101116;
+  --surface-color: #082b29;
+  --accent-color: #00d4b2;
+  --accent-text-color: #082b29;
+  --error-color: #ea1b2d;
+}
+
 #atreides-logo {
   display: none;
 }
