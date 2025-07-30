@@ -430,11 +430,15 @@ try {
     document.title = `Virtual Checker (${storage.get("code")})`;
     const periodRange = getExtendedPeriodRange(null, Number(code.slice(0, 1)));
     try {
-      const coursesResponse = await fetch(`${domain}/courses`, {
-        method: "GET",
+      const bulkLoadResponse = await fetch(`${domain}/bulk_load`, {
+        method: "POST",
         headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({}),
       });
-      courses = await coursesResponse.json();
+      const bulkLoad = await bulkLoadResponse.json();
+      courses = bulkLoad.courses;
+      segmentsArray = bulkLoad.segments;
+      questionsArray = bulkLoad.questions;
       const course = courses.find(c => JSON.parse(c.periods).includes(Number(code.slice(0, 1))));
       if (course) {
         ui.view();
@@ -453,18 +457,8 @@ try {
           document.querySelector('[data-syllabus-download]').setAttribute('hidden', '');
         }
       }
-      const segmentsResponse = await fetch(`${domain}/segments?course=${course.id}`, {
-        method: "GET",
-        headers: { "Content-Type": "application/json" },
-      });
-      const segmentsData = await segmentsResponse.json();
-      const questionsResponse = await fetch(`${domain}/questions`, {
-        method: "GET",
-        headers: { "Content-Type": "application/json" },
-      });
-      questionsArray = await questionsResponse.json();
+      segmentsArray = segmentsArray.filter(s => String(s.course) === String(course.id));
       segments.innerHTML = '';
-      segmentsArray = segmentsData;
       segmentsArray.sort((a, b) => a.order - b.order).forEach(segment => {
         const option = document.createElement('option');
         option.value = segment.id;
