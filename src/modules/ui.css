@@ -22,7 +22,7 @@ dialog:modal {
 }
 
 dialog img {
-  box-shadow: inset 0 0 0px 1000px var(--accent-color);
+  box-shadow: inset 0 0 0px 1000px var(--backlight-color, var(--accent-color));
   border-radius: 0.5rem;
 }
 
@@ -705,12 +705,13 @@ body:has(.topbar) {
 }
 
 body:has(.topbar) .island {
-  transition: 0.25s top;
+  transition: 0.25s top, 0.25s max-height;
 }
 
 :root:hover:has(.topbar) .island {
+  max-height: calc(100vh - 80px);
   top: 58px;
-  transition: 0.25s top;
+  transition: 0.25s top, 0.25s max-height;
 }
 
 body:has(.topbar) #checker.horizontal .column:last-child {

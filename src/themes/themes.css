@@ -200,6 +200,7 @@
   --accent-color: #f2f2f2;
   --accent-text-color: #1c1c1c;
   --error-color: #eb324b;
+  --backlight-color: #141414;
 }
 
 /* Seasonal */
@@ -226,6 +227,63 @@
   --error-color: #8b2626;
 }
 
+/* Faisal N's Custom Themes (Source: faisaln.com) */
+
+[data-theme="synthwave"] {
+  color-scheme: dark;
+  --text-color: #2de2e6;
+  --background-color: #0d0221;
+  --surface-color: #920075;
+  --accent-color: #540d6e;
+  --accent-text-color: #2de2e6;
+  --error-color: #ea1b2d;
+  --backlight-color: #ff00ec;
+}
+
+[data-theme="synthwave-2077"] {
+  color-scheme: dark;
+  --text-color: #c1d3e0;
+  --background-color: #101116;
+  --surface-color: #15151f;
+  --accent-color: #00d4b2;
+  --accent-text-color: #082b29;
+  --error-color: #ea1b2d;
+  --backlight-color: #00ffef;
+}
+
+[data-theme="synthwave-2077-solarized"] {
+  color-scheme: dark;
+  --text-color: #00d4b2;
+  --background-color: #101116;
+  --surface-color: #082b29;
+  --accent-color: #00d4b2;
+  --accent-text-color: #082b29;
+  --error-color: #ea1b2d;
+  --backlight-color: #00ffef;
+}
+
+[data-theme="casino"] {
+  color-scheme: dark;
+  --text-color: white;
+  --background-color: red;
+  --surface-color: black;
+  --accent-color: yellow;
+  --accent-text-color: black;
+  --error-color: red;
+  --backlight-color: yellow;
+}
+
+[data-theme="kfc"] {
+  color-scheme: dark;
+  --text-color: white;
+  --background-color: black;
+  --surface-color: #ff0029;
+  --accent-color: white;
+  --accent-text-color: black;
+  --error-color: red;
+  --backlight-color: yellow;
+}
+
 #atreides-logo {
   display: none;
 }
@@ -236,9 +294,4 @@ body[data-theme="dune-2"] #atreides-logo {
 
 body[data-theme="dune-2"] #header > .virtual-checker-logo {
   display: none;
-}
-
-body[data-theme="stealth"] dialog img,
-body[data-theme="slytherin"] dialog img {
-  box-shadow: inset 0 0 0px 1000px var(--surface-color);
 }

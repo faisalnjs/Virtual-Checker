@@ -33,6 +33,7 @@ var logs = [];
 var renderedEditors = {};
 var rosters = [];
 var aiInfo = {};
+var settings = [];
 
 var draggableQuestionList = null;
 var draggableSegmentReorder = null;
@@ -51,35 +52,49 @@ try {
     //   storage.set("created", Date.now());
     // }
 
-    if (document.querySelector('.users')) {
-      if (document.getElementById('add-user-button')) document.getElementById('add-user-button').addEventListener('click', addUserModal);
-      await fetch(domain + '/users', {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          usr: storage.get("usr"),
-          pwd: storage.get("pwd"),
-        }),
-      })
-        .then(async (r) => {
-          if (!r.ok) {
-            try {
-              var re = await r.json();
-              if (re.error || re.message) {
-                ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
-                throw new Error(re.error || re.message);
-              } else {
-                throw new Error("API error");
-              }
-            } catch (e) {
-              throw new Error(e.message || "API error");
+    await fetch(domain + '/bulk_load', {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        usr: storage.get("usr"),
+        pwd: storage.get("pwd"),
+      }),
+    })
+      .then(async (r) => {
+        if (!r.ok) {
+          try {
+            var re = await r.json();
+            if (re.error || re.message) {
+              ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+              throw new Error(re.error || re.message);
+            } else {
+              throw new Error("API error");
             }
+          } catch (e) {
+            throw new Error(e.message || "API error");
           }
-          return await r.json();
-        })
-        .then(users => {
+        }
+        return await r.json();
+      })
+      .then(async bulkLoad => {
+        courses = bulkLoad.courses;
+        segments = bulkLoad.segments;
+        questions = bulkLoad.questions;
+        var users = bulkLoad.users;
+        logs = bulkLoad.logs;
+        aiInfo = bulkLoad.ai;
+        var passwords = bulkLoad.passwords;
+        var backups = bulkLoad.backups;
+        var archive = bulkLoad.archive;
+        var rosters = bulkLoad.rosters;
+        answers = bulkLoad.answers;
+        responses = bulkLoad.responses;
+        settings = bulkLoad.settings;
+        if (document.querySelector('.users')) {
+          if (document.getElementById('add-user-button')) document.getElementById('add-user-button').addEventListener('click', addUserModal);
+
           document.querySelector('.users').innerHTML = '<div class="row header"><span>User</span><span>Role</span><span>Partial Access</span><span>Full Access</span><span>Anonymous</span><span>Actions</span></div>';
           if (users.length > 0) {
             document.getElementById('no-users').setAttribute('hidden', '');
@@ -116,130 +131,24 @@ try {
           document.querySelectorAll('[data-delete-user]').forEach(button => button.addEventListener('click', deleteUserModal));
           ui.stopLoader();
           active = true;
-        })
-        .catch((e) => {
-          console.error(e);
-          ui.view("api-fail");
-          if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
-          pollingOff();
-        });
-    }
-
-    if (document.querySelector('.logs')) {
-      if (document.getElementById('clear-logs')) document.getElementById('clear-logs').addEventListener('click', clearLogsModal);
-      if (document.getElementById("filter-logs-by-username-input")) document.getElementById("filter-logs-by-username-input").addEventListener("input", updateLogs);
-      if (document.getElementById("filter-logs-by-action-input")) document.getElementById("filter-logs-by-action-input").addEventListener("input", updateLogs);
-      if (document.getElementById("filter-logs-by-type")) document.getElementById("filter-logs-by-type").addEventListener("input", updateLogs);
-      await fetch(domain + '/logs', {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          usr: storage.get("usr"),
-          pwd: storage.get("pwd"),
-        }),
-      })
-        .then(async (r) => {
-          if (!r.ok) {
-            try {
-              var re = await r.json();
-              if (re.error || re.message) {
-                ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
-                throw new Error(re.error || re.message);
-              } else {
-                throw new Error("API error");
-              }
-            } catch (e) {
-              throw new Error(e.message || "API error");
-            }
-          }
-          return await r.json();
-        })
-        .then(l => {
-          logs = l;
+        }
+        if (document.querySelector('.logs')) {
+          if (document.getElementById('clear-logs')) document.getElementById('clear-logs').addEventListener('click', clearLogsModal);
+          if (document.getElementById("filter-logs-by-username-input")) document.getElementById("filter-logs-by-username-input").addEventListener("input", updateLogs);
+          if (document.getElementById("filter-logs-by-action-input")) document.getElementById("filter-logs-by-action-input").addEventListener("input", updateLogs);
+          if (document.getElementById("filter-logs-by-type")) document.getElementById("filter-logs-by-type").addEventListener("input", updateLogs);
           updateLogs();
           ui.stopLoader();
           active = true;
-        })
-        .catch((e) => {
-          console.error(e);
-          ui.view("api-fail");
-          if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
-          pollingOff();
-        });
-    }
-
-    if (document.querySelector('.ai-manager')) {
-      await fetch(domain + '/ai', {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          usr: storage.get("usr"),
-          pwd: storage.get("pwd"),
-        }),
-      })
-        .then(async (r) => {
-          if (!r.ok) {
-            try {
-              var re = await r.json();
-              if (re.error || re.message) {
-                ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
-                throw new Error(re.error || re.message);
-              } else {
-                throw new Error("API error");
-              }
-            } catch (e) {
-              throw new Error(e.message || "API error");
-            }
-          }
-          return await r.json();
-        })
-        .then(i => {
-          aiInfo = i;
+        }
+        if (document.querySelector('.ai-manager')) {
           updateAISettings();
           ui.stopLoader();
           active = true;
-        })
-        .catch((e) => {
-          console.error(e);
-          ui.view("api-fail");
-          if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
-          pollingOff();
-        });
-    }
+        }
+        if (document.querySelector('.passwords')) {
+          if (document.getElementById('remove-passwords')) document.getElementById('remove-passwords').addEventListener('click', removePasswordsModal);
 
-    if (document.querySelector('.passwords')) {
-      if (document.getElementById('remove-passwords')) document.getElementById('remove-passwords').addEventListener('click', removePasswordsModal);
-      await fetch(domain + '/passwords', {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          usr: storage.get("usr"),
-          pwd: storage.get("pwd"),
-        }),
-      })
-        .then(async (r) => {
-          if (!r.ok) {
-            try {
-              var re = await r.json();
-              if (re.error || re.message) {
-                ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
-                throw new Error(re.error || re.message);
-              } else {
-                throw new Error("API error");
-              }
-            } catch (e) {
-              throw new Error(e.message || "API error");
-            }
-          }
-          return await r.json();
-        })
-        .then(passwords => {
           document.querySelector('.passwords').innerHTML = '<div class="row header"><span>Seat Code</span><span>Saved Settings</span><span>Actions</span></div>';
           if (passwords.length > 0) {
             document.getElementById('no-passwords').setAttribute('hidden', '');
@@ -267,44 +176,9 @@ try {
           document.querySelectorAll('[data-remove-password]').forEach(button => button.addEventListener('click', removePasswordModal));
           ui.stopLoader();
           active = true;
-        })
-        .catch((e) => {
-          console.error(e);
-          ui.view("api-fail");
-          if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
-          pollingOff();
-        });
-    }
-
-    if (document.querySelector('.backups')) {
-      if (document.getElementById('create-backup-button')) document.getElementById('create-backup-button').addEventListener('click', createBackupModal);
-      await fetch(domain + '/backups', {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          usr: storage.get("usr"),
-          pwd: storage.get("pwd"),
-        }),
-      })
-        .then(async (r) => {
-          if (!r.ok) {
-            try {
-              var re = await r.json();
-              if (re.error || re.message) {
-                ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
-                throw new Error(re.error || re.message);
-              } else {
-                throw new Error("API error");
-              }
-            } catch (e) {
-              throw new Error(e.message || "API error");
-            }
-          }
-          return await r.json();
-        })
-        .then(backups => {
+        }
+        if (document.querySelector('.backups')) {
+          if (document.getElementById('create-backup-button')) document.getElementById('create-backup-button').addEventListener('click', createBackupModal);
           document.querySelector('.backups').innerHTML = '<div></div><div class="row header"><span>Name</span><span>Type</span><span>Modified</span><span>Size</span><span>Actions</span></div>';
           if (backups.length > 0) {
             document.getElementById('no-backups').setAttribute('hidden', '');
@@ -345,48 +219,13 @@ try {
           document.getElementById('delete-backups-button').addEventListener('click', deleteBackupsModal);
           ui.stopLoader();
           active = true;
-        })
-        .catch((e) => {
-          console.error(e);
-          ui.view("api-fail");
-          if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
-          pollingOff();
-        });
-    }
-
-    if (document.querySelector('.archives')) {
-      archiveType("courses");
-      document.getElementById("archive-type-selector").addEventListener("input", (e) => {
-        const mode = e.detail;
-        archiveType(mode);
-      });
-      await fetch(domain + '/archive', {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          usr: storage.get("usr"),
-          pwd: storage.get("pwd"),
-        }),
-      })
-        .then(async (r) => {
-          if (!r.ok) {
-            try {
-              var re = await r.json();
-              if (re.error || re.message) {
-                ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
-                throw new Error(re.error || re.message);
-              } else {
-                throw new Error("API error");
-              }
-            } catch (e) {
-              throw new Error(e.message || "API error");
-            }
-          }
-          return await r.json();
-        })
-        .then(archive => {
+        }
+        if (document.querySelector('.archives')) {
+          archiveType("courses");
+          document.getElementById("archive-type-selector").addEventListener("input", (e) => {
+            const mode = e.detail;
+            archiveType(mode);
+          });
           courses = archive.courses;
           segments = archive.segments;
           questions = archive.questions;
@@ -399,39 +238,7 @@ try {
           document.querySelector('#archive-type-selector [aria-selected="true"]')?.click();
           ui.stopLoader();
           active = true;
-        })
-        .catch((e) => {
-          console.error(e);
-          ui.view("api-fail");
-          if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
-          pollingOff();
-        });
-    }
-
-    await fetch(domain + '/courses', {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      }
-    })
-      .then(async (r) => {
-        if (!r.ok) {
-          try {
-            var re = await r.json();
-            if (re.error || re.message) {
-              ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
-              throw new Error(re.error || re.message);
-            } else {
-              throw new Error("API error");
-            }
-          } catch (e) {
-            throw new Error(e.message || "API error");
-          }
         }
-        return await r.json();
-      })
-      .then(async c => {
-        courses = c;
         await auth.loadAdminSettings(courses);
         if (document.querySelector('.users')) {
           ui.reloadUnsavedInputs();
@@ -439,7 +246,7 @@ try {
         }
         if (document.getElementById("course-period-input") && !loadedSegmentEditor && !loadedSegmentCreator && !noReloadCourse) {
           document.getElementById("course-period-input").innerHTML = "";
-          c.sort((a, b) => a.id - b.id).forEach(course => {
+          courses.sort((a, b) => a.id - b.id).forEach(course => {
             var coursePeriods = JSON.parse(course.periods);
             const option = document.createElement("option");
             option.value = course.id;
@@ -465,222 +272,63 @@ try {
         if (document.getElementById("filter-segment-input")) document.getElementById("filter-segment-input").addEventListener("change", updateQuestions);
         if (document.getElementById("course-period-input")) document.getElementById("course-period-input").addEventListener("input", updateCourses);
         if (document.getElementById("export-responses-course")) updateExportResponsesCourses();
-        await fetch(domain + '/rosters', {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            usr: storage.get("usr"),
-            pwd: storage.get("pwd"),
-          }),
-        })
-          .then(async (r) => {
-            if (!r.ok) {
-              try {
-                var re = await r.json();
-                if (re.error || re.message) {
-                  ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
-                  throw new Error(re.error || re.message);
-                } else {
-                  throw new Error("API error");
-                }
-              } catch (e) {
-                throw new Error(e.message || "API error");
-              }
-            }
-            return await r.json();
-          })
-          .then(async r => {
-            rosters = r;
-            if (document.querySelector(".course-reorder .reorder") && !loadedSegmentEditor && !loadedSegmentCreator && !noReloadCourse) {
-              document.querySelector(".course-reorder .reorder").innerHTML = "";
-              for (let i = 1; i < 10; i++) {
-                const elem = document.createElement("div");
-                elem.classList = "button-grid inputs";
-                elem.style = "flex-wrap: nowrap !important;";
-                var periodCourse = c.find(course => JSON.parse(course.periods).includes(i))?.id;
-                var coursesSelectorString = "";
-                c.sort((a, b) => a.id - b.id).forEach(course => {
-                  coursesSelectorString += `<option value="${course.id}" ${(periodCourse === course.id) ? 'selected' : ''}>${course.name}</option>`;
-                });
-                elem.innerHTML = `<input type="text" autocomplete="off" id="period-${i}" value="Period ${i}" disabled /><select id="periodCourseSelector" value="${(periodCourse === undefined) ? '' : periodCourse}"><option value="" ${(periodCourse === undefined) ? 'selected' : ''}></option>${coursesSelectorString}</select>${rosters.find(roster => String(roster.period) === String(i)) ? '<button class="fit" style="min-width: 126px !important;" data-view-roster>View Roster</button>' : '<button class="fit" style="min-width: 126px !important;" data-upload-roster>Upload Roster</button>'}`;
-                document.querySelector(".course-reorder .reorder").appendChild(elem);
-              }
-              document.querySelectorAll("[data-view-roster]").forEach(a => a.addEventListener("click", viewRoster));
-              document.querySelectorAll("[data-upload-roster]").forEach(a => a.addEventListener("click", uploadRoster));
-            }
-            await fetch(domain + '/segments', {
-              method: "GET",
-              headers: {
-                "Content-Type": "application/json",
-              }
-            })
-              .then(async (r) => {
-                if (!r.ok) {
-                  try {
-                    var re = await r.json();
-                    if (re.error || re.message) {
-                      ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
-                      throw new Error(re.error || re.message);
-                    } else {
-                      throw new Error("API error");
-                    }
-                  } catch (e) {
-                    throw new Error(e.message || "API error");
-                  }
-                }
-                return await r.json();
-              })
-              .then(async c => {
-                segments = c;
-                if (document.getElementById("course-period-input") && !loadedSegmentEditor && !loadedSegmentCreator && !noReloadCourse) updateSegments();
-                if (document.getElementById("filter-segment-input")) updateCourses();
-                if (document.getElementById("speed-mode-segments")) updateSpeedModeSegments();
-                await fetch(domain + '/questions', {
-                  method: "GET",
-                  headers: {
-                    "Content-Type": "application/json",
-                  }
-                })
-                  .then(async (r) => {
-                    if (!r.ok) {
-                      try {
-                        var re = await r.json();
-                        if (re.error || re.message) {
-                          ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
-                          throw new Error(re.error || re.message);
-                        } else {
-                          throw new Error("API error");
-                        }
-                      } catch (e) {
-                        throw new Error(e.message || "API error");
-                      }
-                    }
-                    return await r.json();
-                  })
-                  .then(async q => {
-                    questions = q;
-                    if (document.getElementById("add-question-input")) {
-                      document.getElementById("add-question-input").innerHTML = '';
-                      questions.sort((a, b) => a.id - b.id).forEach(question => {
-                        if (document.querySelector(`#question-list .question:has(input[id="${question.id}"])`)) return;
-                        const option = document.createElement("option");
-                        option.value = question.id;
-                        option.innerHTML = `ID ${question.id} #${question.number} - ${question.question}`;
-                        document.getElementById("add-question-input").appendChild(option);
-                      });
-                      if (questions.length === 0) document.getElementById("add-existing-question-button").disabled = true;
-                    }
-                    if (document.getElementById("speed-mode-starting-question")) updateSpeedModeStartingQuestion();
-                    await fetch(domain + '/answers', {
-                      method: "POST",
-                      headers: {
-                        "Content-Type": "application/json",
-                      },
-                      body: JSON.stringify({
-                        usr: storage.get("usr"),
-                        pwd: storage.get("pwd"),
-                      }),
-                    })
-                      .then(async (r) => {
-                        if (!r.ok) {
-                          try {
-                            var re = await r.json();
-                            if (re.error || re.message) {
-                              ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
-                              throw new Error(re.error || re.message);
-                            } else {
-                              throw new Error("API error");
-                            }
-                          } catch (e) {
-                            throw new Error(e.message || "API error");
-                          }
-                        }
-                        return await r.json();
-                      })
-                      .then(async a => {
-                        answers = a;
-                        if (document.querySelector('.questions.section')) updateQuestions();
-                        await fetch(domain + '/responses', {
-                          method: "POST",
-                          headers: {
-                            "Content-Type": "application/json",
-                          },
-                          body: JSON.stringify({
-                            usr: storage.get("usr"),
-                            pwd: storage.get("pwd"),
-                          }),
-                        })
-                          .then(async (r) => {
-                            if (!r.ok) {
-                              try {
-                                var re = await r.json();
-                                if (re.error || re.message) {
-                                  ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
-                                  throw new Error(re.error || re.message);
-                                } else {
-                                  throw new Error("API error");
-                                }
-                              } catch (e) {
-                                throw new Error(e.message || "API error");
-                              }
-                            }
-                            return await r.json();
-                          })
-                          .then(async r => {
-                            responses = r;
-                            if (document.getElementById("course-period-input") && !loadedSegmentEditor && !loadedSegmentCreator && !noReloadCourse) {
-                              document.getElementById("course-period-input").value = ((ui.defaultCourse !== null) && courses.find(c => String(c.id) === String(ui.defaultCourse))) ? ui.defaultCourse : courses.find(c => responses.some(r => JSON.parse(c.periods).includes(Number(String(r.seatCode)[0])))) ? courses.find(c => responses.some(r => JSON.parse(c.periods).includes(Number(String(r.seatCode)[0])))).id : courses.sort((a, b) => a.id - b.id)[0]?.id;
-                              await updateResponses();
-                            }
-                            if (noReloadCourse) await updateResponses();
-                            if (document.querySelector('.segment-reports')) updateSegments();
-                            if (document.querySelector('.question-reports')) updateQuestionReports();
-                            if (window.location.pathname.split('/admin/')[1] === 'editor') loadSegmentEditor();
-                            active = true;
-                            ui.stopLoader();
-                            if (!polling) ui.toast("Data restored.", 1000, "info", "bi bi-cloud-arrow-down");
-                            if (polling && (expandedReports.length > 0)) {
-                              expandedReports.forEach(er => {
-                                if (document.getElementById(er)) document.getElementById(er).classList.add('active');
-                              });
-                            }
-                          })
-                          .catch((e) => {
-                            console.error(e);
-                            ui.view("api-fail");
-                            if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
-                            pollingOff();
-                          });
-                      })
-                      .catch((e) => {
-                        console.error(e);
-                        ui.view("api-fail");
-                        if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
-                        pollingOff();
-                      });
-                  })
-                  .catch((e) => {
-                    console.error(e);
-                    ui.view("api-fail");
-                    if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
-                    pollingOff();
-                  });
-              })
-              .catch((e) => {
-                console.error(e);
-                ui.view("api-fail");
-                if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
-                pollingOff();
-              });
-          })
-          .catch((e) => {
-            console.error(e);
-            if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
-            if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
-            pollingOff();
+        if (document.querySelector(".course-reorder .reorder") && !loadedSegmentEditor && !loadedSegmentCreator && !noReloadCourse) {
+          document.querySelector(".course-reorder .reorder").innerHTML = "";
+          for (let i = 1; i < 10; i++) {
+            const elem = document.createElement("div");
+            elem.classList = "button-grid inputs";
+            elem.style = "flex-wrap: nowrap !important;";
+            var periodCourse = courses.find(course => JSON.parse(course.periods).includes(i))?.id;
+            var coursesSelectorString = "";
+            courses.sort((a, b) => a.id - b.id).forEach(course => {
+              coursesSelectorString += `<option value="${course.id}" ${(periodCourse === course.id) ? 'selected' : ''}>${course.name}</option>`;
+            });
+            elem.innerHTML = `<input type="text" autocomplete="off" id="period-${i}" value="Period ${i}" disabled /><select id="periodCourseSelector" value="${(periodCourse === undefined) ? '' : periodCourse}"><option value="" ${(periodCourse === undefined) ? 'selected' : ''}></option>${coursesSelectorString}</select>${rosters.find(roster => String(roster.period) === String(i)) ? '<button class="fit" style="min-width: 126px !important;" data-view-roster>View Roster</button>' : '<button class="fit" style="min-width: 126px !important;" data-upload-roster>Upload Roster</button>'}`;
+            document.querySelector(".course-reorder .reorder").appendChild(elem);
+          }
+          document.querySelectorAll("[data-view-roster]").forEach(a => a.addEventListener("click", viewRoster));
+          document.querySelectorAll("[data-upload-roster]").forEach(a => a.addEventListener("click", uploadRoster));
+        }
+        if (document.getElementById("course-period-input") && !loadedSegmentEditor && !loadedSegmentCreator && !noReloadCourse) updateSegments();
+        if (document.getElementById("filter-segment-input")) updateCourses();
+        if (document.getElementById("speed-mode-segments")) updateSpeedModeSegments();
+        if (document.getElementById("add-question-input")) {
+          document.getElementById("add-question-input").innerHTML = '';
+          questions.sort((a, b) => a.id - b.id).forEach(question => {
+            if (document.querySelector(`#question-list .question:has(input[id="${question.id}"])`)) return;
+            const option = document.createElement("option");
+            option.value = question.id;
+            option.innerHTML = `ID ${question.id} #${question.number} - ${question.question}`;
+            document.getElementById("add-question-input").appendChild(option);
           });
+          if (questions.length === 0) document.getElementById("add-existing-question-button").disabled = true;
+        }
+        if (document.getElementById("speed-mode-starting-question")) updateSpeedModeStartingQuestion();
+        if (document.querySelector('.questions.section')) updateQuestions();
+        if (document.getElementById("course-period-input") && !loadedSegmentEditor && !loadedSegmentCreator && !noReloadCourse) {
+          document.getElementById("course-period-input").value = ((ui.defaultCourse !== null) && courses.find(c => String(c.id) === String(ui.defaultCourse))) ? ui.defaultCourse : courses.find(c => responses.some(r => JSON.parse(c.periods).includes(Number(String(r.seatCode)[0])))) ? courses.find(c => responses.some(r => JSON.parse(c.periods).includes(Number(String(r.seatCode)[0])))).id : courses.sort((a, b) => a.id - b.id)[0]?.id;
+          await updateResponses();
+        }
+        if (noReloadCourse) await updateResponses();
+        if (document.querySelector('.segment-reports')) updateSegments();
+        if (document.querySelector('.question-reports')) updateQuestionReports();
+        if (window.location.pathname.split('/admin/')[1] === 'editor') loadSegmentEditor();
+        active = true;
+        ui.stopLoader();
+        if (!polling) ui.toast("Data restored.", 1000, "info", "bi bi-cloud-arrow-down");
+        if (polling && (expandedReports.length > 0)) {
+          expandedReports.forEach(er => {
+            if (document.getElementById(er)) document.getElementById(er).classList.add('active');
+          });
+        }
+        if (document.getElementById("course-period-input") && !loadedSegmentEditor && !loadedSegmentCreator && !noReloadCourse) {
+          document.querySelectorAll('[data-remove-segment-input]').forEach(a => a.removeEventListener('click', removeSegment));
+          document.querySelectorAll('[data-remove-segment-input]').forEach(a => a.addEventListener('click', removeSegment));
+          if (document.getElementById("course-input")) document.getElementById("course-input").value = courses.find(c => String(c.id) === document.getElementById("course-period-input").value).name;
+          updateSegments();
+        }
+        if (document.getElementById("sort-segments-types")) document.getElementById("sort-segments-types").value = await getSettings('sort-segments');
+        ui.reloadUnsavedInputs();
       })
       .catch((e) => {
         console.error(e);
@@ -688,14 +336,6 @@ try {
         if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
         pollingOff();
       });
-    if (document.getElementById("course-period-input") && !loadedSegmentEditor && !loadedSegmentCreator && !noReloadCourse) {
-      document.querySelectorAll('[data-remove-segment-input]').forEach(a => a.removeEventListener('click', removeSegment));
-      document.querySelectorAll('[data-remove-segment-input]').forEach(a => a.addEventListener('click', removeSegment));
-      if (document.getElementById("course-input")) document.getElementById("course-input").value = courses.find(c => String(c.id) === document.getElementById("course-period-input").value).name;
-      updateSegments();
-    }
-    if (document.getElementById("sort-segments-types")) document.getElementById("sort-segments-types").value = await settings('sort-segments');
-    ui.reloadUnsavedInputs();
   }
 
   init();
@@ -3332,7 +2972,6 @@ try {
               items: answers.find(a => a.id === question.id).incorrect_answers
             },
           ],
-          activeItem: responseString,
         }, answers);
       });
       inner.addEventListener('mouseleave', () => {
@@ -3376,7 +3015,6 @@ try {
               items: answers.find(a => a.id === question.id).incorrect_answers
             },
           ],
-          activeItem: responseString,
         }, answers);
       });
       inner.addEventListener('mouseleave', () => {
@@ -3420,7 +3058,6 @@ try {
               items: answers.find(a => a.id === question.id).incorrect_answers
             },
           ],
-          activeItem: responseString,
         }, answers);
       });
       inner.addEventListener('mouseleave', () => {
@@ -3918,35 +3555,9 @@ try {
       });
   }
 
-  async function settings(key) {
+  async function getSettings(key) {
     if (!active) return;
-    try {
-      const r = await fetch(`${domain}/settings`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-      if (!r.ok) {
-        try {
-          var re = await r.json();
-          if (re.error || re.message) {
-            ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
-            throw new Error(re.error || re.message);
-          } else {
-            throw new Error("API error");
-          }
-        } catch (e) {
-          throw new Error(e.message || "API error");
-        }
-      }
-      const data = await r.json();
-      return key ? data[key] : data;
-    } catch (e) {
-      console.error(e);
-      ui.view("api-fail");
-      if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
-    }
+    return key ? settings[key] : settings;
   }
 
   async function settingsPush(key, value) {

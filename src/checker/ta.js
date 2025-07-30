@@ -29,11 +29,15 @@ try {
     //   storage.set("created", Date.now());
     // }
 
-    await fetch(domain + '/courses?usr=' + storage.get("code"), {
-      method: "GET",
+    await fetch(domain + '/bulk_load?ta=true', {
+      method: "POST",
       headers: {
         "Content-Type": "application/json",
-      }
+      },
+      body: JSON.stringify({
+        usr: storage.get("code"),
+        pwd: storage.get("pwd"),
+      }),
     })
       .then(async (r) => {
         if (!r.ok) {
@@ -41,7 +45,6 @@ try {
             var re = await r.json();
             if (re.error || re.message) {
               ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
-              if ((re.error === "Access denied.") || (re.message === "Access denied.")) return auth.ta(init);
               throw new Error(re.error || re.message);
             } else {
               throw new Error("API error");
@@ -52,8 +55,12 @@ try {
         }
         return await r.json();
       })
-      .then(async c => {
-        courses = c;
+      .then(async bulkLoad => {
+        courses = bulkLoad.courses;
+        segments = bulkLoad.segments;
+        questions = bulkLoad.questions;
+        answers = bulkLoad.answers;
+        responses = bulkLoad.responses;
         if (courses.length === 0) return ui.modal({
           title: 'Enter Password',
           body: `<p>Enter the assigned password for TA seat code <code>${storage.get("code")}</code>.</p>`,
@@ -75,7 +82,7 @@ try {
         await auth.loadAdminSettings(courses);
         if (!noReloadCourse) {
           document.getElementById("course-period-input").innerHTML = "";
-          c.sort((a, b) => a.id - b.id).forEach(course => {
+          courses.sort((a, b) => a.id - b.id).forEach(course => {
             var coursePeriods = JSON.parse(course.periods);
             const option = document.createElement("option");
             option.value = course.id;
@@ -88,147 +95,19 @@ try {
         document.getElementById("filter-segment-input").addEventListener("change", updateResponses);
         document.getElementById("sort-question-input").addEventListener("input", updateResponses);
         document.getElementById("sort-seat-input").addEventListener("input", updateResponses);
-        await fetch(domain + '/segments', {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          }
-        })
-          .then(async (r) => {
-            if (!r.ok) {
-              try {
-                var re = await r.json();
-                if (re.error || re.message) {
-                  ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
-                  throw new Error(re.error || re.message);
-                } else {
-                  throw new Error("API error");
-                }
-              } catch (e) {
-                throw new Error(e.message || "API error");
-              }
-            }
-            return await r.json();
-          })
-          .then(async c => {
-            segments = c;
-            if (document.getElementById("filter-segment-input")) updateCourses();
-            await fetch(domain + '/questions?usr=' + storage.get("code"), {
-              method: "GET",
-              headers: {
-                "Content-Type": "application/json",
-              }
-            })
-              .then(async (r) => {
-                if (!r.ok) {
-                  try {
-                    var re = await r.json();
-                    if (re.error || re.message) {
-                      ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
-                      throw new Error(re.error || re.message);
-                    } else {
-                      throw new Error("API error");
-                    }
-                  } catch (e) {
-                    throw new Error(e.message || "API error");
-                  }
-                }
-                return await r.json();
-              })
-              .then(async q => {
-                questions = q;
-                await fetch(domain + '/answers', {
-                  method: "POST",
-                  headers: {
-                    "Content-Type": "application/json",
-                  },
-                  body: JSON.stringify({
-                    usr: storage.get("code"),
-                    pwd: storage.get("pwd"),
-                  }),
-                })
-                  .then(async (r) => {
-                    if (!r.ok) {
-                      try {
-                        var re = await r.json();
-                        if (re.error || re.message) {
-                          ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
-                          throw new Error(re.error || re.message);
-                        } else {
-                          throw new Error("API error");
-                        }
-                      } catch (e) {
-                        throw new Error(e.message || "API error");
-                      }
-                    }
-                    return await r.json();
-                  })
-                  .then(async a => {
-                    answers = a;
-                    await fetch(domain + '/responses?ta=true', {
-                      method: "POST",
-                      headers: {
-                        "Content-Type": "application/json",
-                      },
-                      body: JSON.stringify({
-                        usr: storage.get("code"),
-                        pwd: storage.get("pwd"),
-                      }),
-                    })
-                      .then(async (r) => {
-                        if (!r.ok) {
-                          try {
-                            var re = await r.json();
-                            if (re.error || re.message) {
-                              ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
-                              throw new Error(re.error || re.message);
-                            } else {
-                              throw new Error("API error");
-                            }
-                          } catch (e) {
-                            throw new Error(e.message || "API error");
-                          }
-                        }
-                        return await r.json();
-                      })
-                      .then(async r => {
-                        responses = r;
-                        if (responses.find(response => String(response.seatCode).includes('xx'))) document.getElementById("checker").classList.add("anonymous");
-                        if (!noReloadCourse) document.getElementById("course-period-input").value = ((ui.defaultCourse !== null) && courses.find(c => String(c.id) === String(ui.defaultCourse))) ? ui.defaultCourse : courses.find(c => JSON.parse(c.periods).includes(Number(String(responses.sort((a, b) => String(a.seatCode)[0] - String(b.seatCode)[0])[0]?.seatCode)[0]))) ? courses.find(c => JSON.parse(c.periods).includes(Number(String(responses.sort((a, b) => String(a.seatCode)[0] - String(b.seatCode)[0])[0]?.seatCode)[0]))).id : 0;
-                        await updateResponses();
-                        active = true;
-                        ui.stopLoader();
-                        ui.toast("Data restored.", 1000, "info", "bi bi-cloud-arrow-down");
-                      })
-                      .catch((e) => {
-                        console.error(e);
-                        ui.view("api-fail");
-                        if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.ta(init);
-                      });
-                  })
-                  .catch((e) => {
-                    console.error(e);
-                    if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
-                    if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.ta(init);
-                  });
-              })
-              .catch((e) => {
-                console.error(e);
-                if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
-                if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.ta(init);
-              });
-          })
-          .catch((e) => {
-            console.error(e);
-            ui.view("api-fail");
-            if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.ta(init);
-          });
+        if (document.getElementById("filter-segment-input")) updateCourses();
+        if (responses.find(response => String(response.seatCode).includes('xx'))) document.getElementById("checker").classList.add("anonymous");
+        if (!noReloadCourse) document.getElementById("course-period-input").value = ((ui.defaultCourse !== null) && courses.find(c => String(c.id) === String(ui.defaultCourse))) ? ui.defaultCourse : courses.find(c => JSON.parse(c.periods).includes(Number(String(responses.sort((a, b) => String(a.seatCode)[0] - String(b.seatCode)[0])[0]?.seatCode)[0]))) ? courses.find(c => JSON.parse(c.periods).includes(Number(String(responses.sort((a, b) => String(a.seatCode)[0] - String(b.seatCode)[0])[0]?.seatCode)[0]))).id : 0;
+        await updateResponses();
+        active = true;
+        ui.stopLoader();
+        ui.toast("Data restored.", 1000, "info", "bi bi-cloud-arrow-down");
+        ui.reloadUnsavedInputs();
       })
       .catch((e) => {
         console.error(e);
         if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.ta(init);
       });
-    ui.reloadUnsavedInputs();
   }
 
   init();

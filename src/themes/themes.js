@@ -45,11 +45,16 @@ export function enableTransitions() {
 export async function syncTheme() {
   const value = storage.get("theme");
   disableTransitions();
-  document.body.setAttribute("data-theme", value);
-  removeCustomTheme();
-  enableTransitions();
-  // Update developer theme input
-  if (document.getElementById("theme-debug")) document.getElementById("theme-debug").value = value;
+  if (value === "custom") {
+    applyCustomTheme();
+    selectedTheme = "";
+  } else {
+    document.body.setAttribute("data-theme", value);
+    removeCustomTheme();
+    enableTransitions();
+    // Update developer theme input
+    if (document.getElementById("theme-debug")) document.getElementById("theme-debug").value = value;
+  }
 }
 
 function copyThemeCSS() {
@@ -67,12 +72,12 @@ function validateThemeCode() {
   const code = document.getElementById("theme-code")?.value;
   const theme = decodeThemeCode(code);
   storage.get("developer") && console.log(theme);
+  updateThemeCode();
   if (theme) {
     Object.assign(customTheme, theme);
     updateEditorFields();
     updateEditorPreview();
   }
-  updateThemeCode();
 }
 
 function updateEditorFields() {
@@ -115,8 +120,15 @@ function updateThemeCode() {
   if (document.getElementById("theme-code")) document.getElementById("theme-code").value = encodeThemeCode(customTheme);
 }
 
+function sortKeys(obj) {
+  return Object.keys(obj).sort().reduce((acc, key) => {
+      acc[key] = obj[key];
+      return acc;
+  }, {});
+}
+
 function encodeThemeCode(theme) {
-  return "VC" + btoa(Object.values(theme).join(","));
+  return "VC" + btoa(Object.values(sortKeys(theme)).join(","));
 }
 
 function decodeThemeCode(code) {
@@ -126,7 +138,7 @@ function decodeThemeCode(code) {
     if (values.length < keys.length) {
       throw new Error();
     }
-    return Object.fromEntries(keys.map((key, i) => [key, values[i]]));
+    return Object.fromEntries(keys.sort().map((key, i) => [key, values[i]]));
   } catch (e) {
     return false;
   }
@@ -158,6 +170,17 @@ export function renderThemesGrid(originalTheme = null) {
       if (document.querySelector('.welcome-container').getAttribute('step') === '11') document.querySelector('.welcome-container').setAttribute("data-theme", originalTheme);
     });
     themesGrid.append(button);
+  });
+}
+
+export function initializeThemeEditor() {
+  document.querySelectorAll("#theme-editor :is(input, select):not(#theme-code)").forEach((input) => {
+    input.addEventListener("input", () => {
+      customTheme[input.name] = input.value;
+      updateEditorPreview();
+      updateThemeCode();
+      updateEditorFields();
+    });
   });
 }
 
@@ -209,18 +232,12 @@ try {
   updateEditorPreview();
   updateThemeCode();
 
-  document.querySelectorAll("#theme-editor :is(input, select)").forEach((input) => {
-    input.addEventListener("input", (e) => {
-      customTheme[e.target.name] = e.target.value;
-      updateEditorPreview();
-      updateThemeCode();
-    });
-  });
-
-  document.getElementById("editor-apply")?.addEventListener("click", () => {
+  document.getElementById("editor-apply")?.addEventListener("click", async () => {
     storage.set("custom-theme", customTheme);
     storage.set("theme", "custom");
     applyCustomTheme();
+    await auth.syncPush("custom-theme");
+    await auth.syncPush("theme");
   });
 
   document.getElementById("editor-reset")?.addEventListener("click", () => {
