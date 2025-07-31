@@ -226,19 +226,21 @@ export function renderExtras() {
     if (!island) return;
     if (island.classList.contains('rendered')) return;
     var textarea = island.querySelector('.description .textarea');
-    var textareaContent = textarea.getAttribute('content');
-    var quill = new Quill(textarea, {
-        readOnly: true,
-        modules: {
-            syntax: true,
-            toolbar: false,
-            fazEmoji: {
-                collection: 'fluent-emoji',
+    if (textarea) {
+        var textareaContent = textarea.getAttribute('content');
+        var quill = new Quill(textarea, {
+            readOnly: true,
+            modules: {
+                syntax: true,
+                toolbar: false,
+                fazEmoji: {
+                    collection: 'fluent-emoji',
+                },
             },
-        },
-        theme: 'snow'
-    });
-    quill.setContents(JSON.parse(textareaContent));
+            theme: 'snow'
+        });
+        quill.setContents(JSON.parse(textareaContent));
+    }
     island.querySelectorAll('img[data-src]:not([src])').forEach(img => img.src = img.getAttribute('data-src'));
     mediumZoom(".island .attachments img", {
         background: "transparent"

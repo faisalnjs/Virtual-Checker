@@ -3,9 +3,12 @@ import * as ui from "/src/modules/ui.js";
 import storage from "/src/modules/storage.js";
 import * as auth from "/src/modules/auth.js";
 import island from "/src/modules/island.js";
+import Element from "/src/modules/element.js";
 
 const domain = ((window.location.hostname.search('check') != -1) || (window.location.hostname.search('127') != -1)) ? 'https://api.check.vssfalcons.com' : `http://${document.domain}:5000`;
 if (window.location.pathname.split('?')[0].endsWith('/admin')) window.location.pathname = '/admin/';
+
+var period = document.getElementById("period-input")?.value;
 
 var courses = [];
 var segments = [];
@@ -20,6 +23,39 @@ try {
   async function init() {
     if (!storage.get("code")) return window.location.href = '/';
     if (!storage.get("pwd")) return auth.ta(init);
+    // Populate seat code finder grid
+    document.getElementById("seat-grid").innerHTML = "";
+    for (let col = 1; col <= 5; col++) {
+      for (let row = 6; row > 0; row--) {
+        period = document.getElementById("period-input").value;
+        const code = period + row.toString() + col.toString();
+        const button = new Element("button", "", {
+          click: () => {
+            document.getElementById("code-input").value = code;
+            ui.view("settings/code");
+          },
+        }).element;
+        document.getElementById("seat-grid").append(button);
+        ui.addTooltip(button, code);
+      }
+    }
+    document.getElementById("period-input").addEventListener("change", () => {
+      document.getElementById("seat-grid").innerHTML = "";
+      for (let col = 1; col <= 5; col++) {
+        for (let row = 6; row > 0; row--) {
+          period = document.getElementById("period-input").value;
+          const code = period + row.toString() + col.toString();
+          const button = new Element("button", "", {
+            click: () => {
+              document.getElementById("code-input").value = code;
+              ui.view("settings/code");
+            },
+          }).element;
+          document.getElementById("seat-grid").append(button);
+          ui.addTooltip(button, code);
+        }
+      }
+    });
     if (document.querySelector('[data-logout]')) document.querySelector('[data-logout]').addEventListener('click', () => auth.logout(init));
 
     // Show clear data fix guide
