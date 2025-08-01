@@ -732,7 +732,7 @@ div.ML__keyboard {
 
 .description {
   width: -webkit-fill-available;
-  max-width: min(100%, 800px);
+  max-width: min(100%, 900px);
 }
 
 .description a {

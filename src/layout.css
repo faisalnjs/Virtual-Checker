@@ -99,7 +99,7 @@ div.spacer {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  width: min(100%, 800px);
+  width: min(100%, 900px);
   gap: 12.5px;
   transition: 0.25s width;
 }
@@ -110,7 +110,7 @@ div.spacer {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  width: min(100%, 800px);
+  width: min(100%, 900px);
   gap: 12.5px;
 }
 
