@@ -283,7 +283,7 @@ try {
             courses.sort((a, b) => a.id - b.id).forEach(course => {
               coursesSelectorString += `<option value="${course.id}" ${(periodCourse === course.id) ? 'selected' : ''}>${course.name}</option>`;
             });
-            elem.innerHTML = `<input type="text" autocomplete="off" id="period-${i}" value="Period ${i}" disabled /><select id="periodCourseSelector" value="${(periodCourse === undefined) ? '' : periodCourse}"><option value="" ${(periodCourse === undefined) ? 'selected' : ''}></option>${coursesSelectorString}</select>${rosters.find(roster => String(roster.period) === String(i)) ? '<button class="fit" style="min-width: 126px !important;" data-view-roster>View Roster</button>' : '<button class="fit" style="min-width: 126px !important;" data-upload-roster>Upload Roster</button>'}`;
+            elem.innerHTML = `<input type="text" autocomplete="off" id="period-${i}" class="small" value="Period ${i}" disabled /><select id="periodCourseSelector" value="${(periodCourse === undefined) ? '' : periodCourse}"><option value="" ${(periodCourse === undefined) ? 'selected' : ''}></option>${coursesSelectorString}</select>${rosters.find(roster => String(roster.period) === String(i)) ? '<button class="fit" style="min-width: 126px !important;" data-view-roster>View Roster</button>' : '<button class="fit" style="min-width: 126px !important;" data-upload-roster>Upload Roster</button>'}`;
             document.querySelector(".course-reorder .reorder").appendChild(elem);
           }
           document.querySelectorAll("[data-view-roster]").forEach(a => a.addEventListener("click", viewRoster));
@@ -916,7 +916,7 @@ try {
             c.sort((a, b) => a.id - b.id).forEach(course => {
               coursesSelectorString += `<option value="${course.id}" ${(periodCourse === course.id) ? 'selected' : ''}>${course.name}</option>`;
             });
-            elem.innerHTML = `<input type="text" autocomplete="off" id="period-${i}" value="Period ${i}" disabled /><select id="periodCourseSelector" value="${(periodCourse === undefined) ? '' : periodCourse}"><option value="" ${(periodCourse === undefined) ? 'selected' : ''}></option>${coursesSelectorString}</select>${rosters.find(r => String(r.period) === String(i)) ? '<button class="fit" style="min-width: 126px !important;" data-view-roster>View Roster</button>' : '<button class="fit" style="min-width: 126px !important;" data-upload-roster>Upload Roster</button>'}`;
+            elem.innerHTML = `<input type="text" autocomplete="off" id="period-${i}" class="small" value="Period ${i}" disabled /><select id="periodCourseSelector" value="${(periodCourse === undefined) ? '' : periodCourse}"><option value="" ${(periodCourse === undefined) ? 'selected' : ''}></option>${coursesSelectorString}</select>${rosters.find(r => String(r.period) === String(i)) ? '<button class="fit" style="min-width: 126px !important;" data-view-roster>View Roster</button>' : '<button class="fit" style="min-width: 126px !important;" data-upload-roster>Upload Roster</button>'}`;
             document.querySelector(".course-reorder .reorder").appendChild(elem);
           }
           document.querySelectorAll("[data-view-roster]").forEach(a => a.addEventListener("click", viewRoster));
