@@ -188,24 +188,28 @@
         const startingQuestionId = urlParams.get('startingQuestionId');
         const startingQuestion = urlParams.get('startingQuestion');
         const period = urlParams.get('period');
-        if (!question && !syllabus && !segment && !period) window.location.href = '/admin';
+        const course = urlParams.get('course');
+        const platform = urlParams.get('platform');
+        if (!question && !syllabus && !segment && !period && !course) window.location.href = '/admin';
         const inputElement = document.querySelector('input[type="file"]');
         const questionElement = document.querySelector('input[type="file"]');
         const domain = ((window.location.hostname.search('check') != -1) || (window.location.hostname.search('127') != -1)) ? 'https://api.check.vssfalcons.com' : `http://${document.domain}:5000`;
-        const server = domain + (question ? '/upload' : segment ? '/speedModeUpload' : syllabus ? '/syllabus' : '/roster');
+        const server = domain + (course ? '/announcement': question ? '/upload' : segment ? '/speedModeUpload' : syllabus ? '/syllabus' : '/roster');
         FilePond.registerPlugin(FilePondPluginFileValidateType, FilePondPluginImagePreview);
         const pond = FilePond.create(inputElement, {
             server,
             credits: false,
             allowMultiple: (question || segment) ? true : false,
             instantUpload: (question || segment) ? false : true,
-            acceptedFileTypes: (question || segment) ? ['image/*'] : syllabus ? ['image/*', 'application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'] : ['text/csv'],
+            acceptedFileTypes: (course || question || segment) ? ['image/*'] : syllabus ? ['image/*', 'application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'] : ['text/csv'],
         });
         pond.on('initfile', (item) => {
             if (question) item.setMetadata('question', question);
             if (segment) item.setMetadata('segment', segment);
             if (syllabus) item.setMetadata('course', syllabus);
             if (period) item.setMetadata('period', period);
+            if (course) item.setMetadata('course', course);
+            if (platform) item.setMetadata('platform', platform);
             if (startingQuestionId && startingQuestion) item.setMetadata('startingQuestionId', startingQuestionId);
             if (startingQuestionId && startingQuestion) item.setMetadata('startingQuestion', startingQuestion);
         });

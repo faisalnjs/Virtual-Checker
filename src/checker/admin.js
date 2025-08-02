@@ -392,6 +392,8 @@ try {
   if (document.querySelector('[data-select-between]')) document.querySelector('[data-select-between]').addEventListener("click", selectBetween);
   if (document.getElementById('rotate-period')) document.getElementById('rotate-period').addEventListener("click", rotatePeriodConfirm);
   if (document.getElementById('export-responses')) document.getElementById('export-responses').addEventListener("click", exportResponses);
+  if (document.querySelector('[data-clicker-announcement-image-upload]')) document.querySelector('[data-clicker-announcement-image-upload]').addEventListener("click", () => renderAnnouncementPond('clicker'));
+  if (document.querySelector('[data-checker-announcement-image-upload]')) document.querySelector('[data-checker-announcement-image-upload]').addEventListener("click", () => renderAnnouncementPond('checker'));
 
   function toggleSelecting() {
     if (!active) return;
@@ -536,6 +538,112 @@ try {
     document.querySelectorAll('.detailed-report.active').forEach(dr => expandedReports.push(dr.id));
     const course = courses.find(c => document.getElementById("course-period-input") ? (String(c.id) === document.getElementById("course-period-input").value) : null);
     if (document.getElementById("course-input") && course) document.getElementById("course-input").value = course.name;
+    document.querySelector('[data-clicker-announcement-image-upload]')?.setAttribute('hidden', '');
+    document.querySelector('[data-clicker-announcement-image-remove]')?.setAttribute('hidden', '');
+    if (document.getElementById('clicker-announcement-content')) document.getElementById('clicker-announcement-content').value = "";
+    if (document.getElementById('clicker-announcement-link')) document.getElementById('clicker-announcement-link').value = "";
+    if (document.getElementById('clicker-announcement-expires')) document.getElementById('clicker-announcement-expires').value = "";
+    document.querySelector('[data-checker-announcement-image-upload]')?.setAttribute('hidden', '');
+    document.querySelector('[data-checker-announcement-image-remove]')?.setAttribute('hidden', '');
+    if (document.getElementById('checker-announcement-content')) document.getElementById('checker-announcement-content').value = "";
+    if (document.getElementById('checker-announcement-link')) document.getElementById('checker-announcement-link').value = "";
+    if (document.getElementById('checker-announcement-expires')) document.getElementById('checker-announcement-expires').value = "";
+    if (course) {
+      if (course.clicker_announcement_image) {
+        document.querySelector('[data-clicker-announcement-image-remove]')?.removeAttribute('hidden');
+        document.querySelector('[data-clicker-announcement-image-remove]')?.addEventListener("click", () => {
+          ui.setUnsavedChanges(true);
+          fetch(domain + '/announcement', {
+            method: "DELETE",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              course_id: course.id,
+              platform: 'clicker',
+            }),
+          })
+            .then(async (r) => {
+              if (!r.ok) {
+                try {
+                  var re = await r.json();
+                  if (re.error || re.message) {
+                    ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+                    throw new Error(re.error || re.message);
+                  } else {
+                    throw new Error("API error");
+                  }
+                } catch (e) {
+                  throw new Error(e.message || "API error");
+                }
+              }
+              return await r.json();
+            })
+            .then(() => {
+              ui.setUnsavedChanges(false);
+              init();
+            })
+            .catch((e) => {
+              console.error(e);
+              ui.view("api-fail");
+              if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
+              pollingOff();
+            });
+        });
+      } else {
+        document.querySelector('[data-clicker-announcement-image-upload]')?.removeAttribute('hidden');
+      }
+      if (course.clicker_announcement_content && document.getElementById('clicker-announcement-content')) document.getElementById('clicker-announcement-content').value = course.clicker_announcement_content;
+      if (course.clicker_announcement_link && document.getElementById('clicker-announcement-link')) document.getElementById('clicker-announcement-link').value = course.clicker_announcement_link;
+      if (course.clicker_announcement_expires && document.getElementById('clicker-announcement-expires')) document.getElementById('clicker-announcement-expires').value = course.clicker_announcement_expires;
+      if (course.checker_announcement_image) {
+        document.querySelector('[data-checker-announcement-image-remove]')?.removeAttribute('hidden');
+        document.querySelector('[data-checker-announcement-image-remove]')?.addEventListener("click", () => {
+          ui.setUnsavedChanges(true);
+          fetch(domain + '/announcement', {
+            method: "DELETE",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              course_id: course.id,
+              platform: 'checker',
+            }),
+          })
+            .then(async (r) => {
+              if (!r.ok) {
+                try {
+                  var re = await r.json();
+                  if (re.error || re.message) {
+                    ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+                    throw new Error(re.error || re.message);
+                  } else {
+                    throw new Error("API error");
+                  }
+                } catch (e) {
+                  throw new Error(e.message || "API error");
+                }
+              }
+              return await r.json();
+            })
+            .then(() => {
+              ui.setUnsavedChanges(false);
+              init();
+            })
+            .catch((e) => {
+              console.error(e);
+              ui.view("api-fail");
+              if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
+              pollingOff();
+            });
+        });
+      } else {
+        document.querySelector('[data-checker-announcement-image-upload]')?.removeAttribute('hidden');
+      }
+      if (course.checker_announcement_content && document.getElementById('checker-announcement-content')) document.getElementById('checker-announcement-content').value = course.checker_announcement_content;
+      if (course.checker_announcement_link && document.getElementById('checker-announcement-link')) document.getElementById('checker-announcement-link').value = course.checker_announcement_link;
+      if (course.checker_announcement_expires && document.getElementById('checker-announcement-expires')) document.getElementById('checker-announcement-expires').value = course.checker_announcement_expires;
+    }
     var c = segments.filter(s => String(s.course) === String(course?.id));
     if (!course && document.querySelector('[data-syllabus-upload]')) document.querySelector('[data-syllabus-upload]').setAttribute('hidden', '');
     if (course && course.syllabus) {
@@ -1006,6 +1114,12 @@ try {
         course: {
           id: document.getElementById("course-period-input").value,
           name: document.getElementById("course-input").value,
+          clicker_announcement_content: document.getElementById('clicker-announcement-content').value || null,
+          clicker_announcement_link: document.getElementById('clicker-announcement-link').value || null,
+          clicker_announcement_expires: document.getElementById('clicker-announcement-expires').value || null,
+          checker_announcement_content: document.getElementById('checker-announcement-content').value || null,
+          checker_announcement_link: document.getElementById('checker-announcement-link').value || null,
+          checker_announcement_expires: document.getElementById('checker-announcement-expires').value || null,
         },
         segments: []
       };
@@ -2551,6 +2665,34 @@ try {
   async function renderSyllabusPond() {
     if (!active) return;
     const url = '/admin/upload?syllabus=' + document.getElementById("course-period-input").value;
+    const width = 600;
+    const height = 150;
+    const left = (window.screen.width / 2) - (width / 2);
+    const top = (window.screen.height / 2) - (height / 2);
+    const windowFeatures = `width=${width},height=${height},resizable=no,scrollbars=no,status=yes,left=${left},top=${top}`;
+    const newWindow = window.open(url, '_blank', windowFeatures);
+    let uploadSuccessful = false;
+    window.addEventListener('message', (event) => {
+      if (event.origin !== (window.location.protocol + '//' + window.location.hostname + (window.location.port ? ':' + window.location.port : ''))) return;
+      if (event.data === 'uploadSuccess') uploadSuccessful = true;
+    }, false);
+    const checkWindowClosed = setInterval(function () {
+      if (newWindow && newWindow.closed) {
+        clearInterval(checkWindowClosed);
+        if (uploadSuccessful) {
+          ui.modeless(`<i class="bi bi-cloud-upload"></i>`, "Uploaded");
+        } else {
+          ui.modeless(`<i class="bi bi-exclamation-triangle"></i>`, "Upload Cancelled");
+        }
+        init();
+      }
+    }, 1000);
+  }
+
+  async function renderAnnouncementPond(platform) {
+    if (!active) return;
+    if (!platform) return;
+    const url = '/admin/upload?course=' + document.getElementById("course-period-input").value + '&platform=' + platform;
     const width = 600;
     const height = 150;
     const left = (window.screen.width / 2) - (width / 2);
