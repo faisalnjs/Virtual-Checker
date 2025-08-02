@@ -2664,6 +2664,7 @@ try {
 
   async function renderSyllabusPond() {
     if (!active) return;
+    await save(null, true);
     const url = '/admin/upload?syllabus=' + document.getElementById("course-period-input").value;
     const width = 600;
     const height = 150;
@@ -2692,6 +2693,7 @@ try {
   async function renderAnnouncementPond(platform) {
     if (!active) return;
     if (!platform) return;
+    await save(null, true);
     const url = '/admin/upload?course=' + document.getElementById("course-period-input").value + '&platform=' + platform;
     const width = 600;
     const height = 150;

@@ -449,12 +449,43 @@ try {
       if (document.getElementById("course-input")) document.getElementById("course-input").value = course.name || "Unknown Course";
       if (document.querySelector('[data-syllabus-download]')) {
         if (course.syllabus) {
-          document.querySelector('[data-syllabus-download]').removeAttribute('hidden', '');
+          document.querySelector('[data-syllabus-download]').removeAttribute('hidden');
           document.querySelector('[data-syllabus-download]').addEventListener('click', () => {
             window.open(course.syllabus, '_blank');
           });
         } else {
           document.querySelector('[data-syllabus-download]').setAttribute('hidden', '');
+        }
+      }
+      if (document.querySelector('.alert')) {
+        if ((course.checker_announcement_image || course.checker_announcement_content || course.checker_announcement_link) && (course.checker_announcement_expires ? new Date(course.checker_announcement_expires) > new Date() : true)) {
+          document.querySelector('.alert').removeAttribute('hidden');
+          if (course.checker_announcement_image) {
+            document.querySelector('.alert img').removeAttribute('hidden');
+            document.querySelector('.alert img').src = course.checker_announcement_image;
+            mediumZoom(document.querySelector('.alert img'), {
+              background: "transparent"
+            });
+          } else {
+            document.querySelector('.alert img').setAttribute('hidden', '');
+          }
+          if (course.checker_announcement_content) {
+            document.querySelector('.alert p').removeAttribute('hidden');
+            document.querySelector('.alert p').innerText = course.checker_announcement_content;
+          } else {
+            document.querySelector('.alert p').setAttribute('hidden', '');
+          }
+          if (course.checker_announcement_link) {
+            document.querySelector('.alert button').removeAttribute('hidden');
+            document.querySelector('.alert button').addEventListener('click', () => {
+              window.open(course.checker_announcement_link, '_blank');
+            });
+          } else {
+            document.querySelector('.alert button').setAttribute('hidden', '');
+            document.querySelector('.alert button').removeEventListener('click', () => { });
+          }
+        } else {
+          document.querySelector('.alert').setAttribute('hidden', '');
         }
       }
       segmentsArray = segmentsArray.filter(s => String(s.course) === String(course.id));
