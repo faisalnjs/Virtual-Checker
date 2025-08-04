@@ -4,6 +4,7 @@ import * as ui from "/src/modules/ui.js";
 import storage from "/src/modules/storage.js";
 import * as auth from "/src/modules/auth.js";
 import Element from "/src/modules/element.js";
+import extendedSchedule from "/src/periods/extendedSchedule.json";
 
 import { autocomplete, uniqueSymbols } from "/src/symbols/symbols.js";
 import { unixToString, unixToTimeString } from "/src/modules/time.js";
@@ -459,7 +460,7 @@ try {
       }
       if (document.querySelector('.alert')) {
         var checker_announcement = JSON.parse(course.checker_announcement || '{}');
-        if ((checker_announcement.image || checker_announcement.title || checker_announcement.content || checker_announcement.link) && (checker_announcement.expires ? new Date(new Date(checker_announcement.expires).setTime(periodRange[1])) > new Date() : true)) {
+        if ((checker_announcement.image || checker_announcement.title || checker_announcement.content || checker_announcement.link) && (checker_announcement.expires ? new Date(`${checker_announcement.expires}T${extendedSchedule[Number(code.slice(0, 1))][1]}:00`) > new Date() : true)) {
           document.querySelector('.alert').removeAttribute('hidden');
           document.querySelector('.alert').classList = `alert ${checker_announcement.layout || ''}`;
           if (checker_announcement.image) {
