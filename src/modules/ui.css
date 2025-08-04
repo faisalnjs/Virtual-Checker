@@ -786,6 +786,8 @@ body:has(.topbar) #checker.horizontal .column:last-child {
 }
 
 .alert {
+  display: flex;
+  flex-direction: row;
   padding: 0.5em 0.75em 0.5em 0.5em;
   border: none;
   border-radius: 0.5rem;

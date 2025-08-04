@@ -458,27 +458,30 @@ try {
         }
       }
       if (document.querySelector('.alert')) {
-        if ((course.checker_announcement_image || course.checker_announcement_content || course.checker_announcement_link) && (course.checker_announcement_expires ? new Date(course.checker_announcement_expires) > new Date() : true)) {
+        var checker_announcement = JSON.parse(course.checker_announcement || '{}');
+        if ((checker_announcement.image || checker_announcement.title || checker_announcement.content || checker_announcement.link) && (checker_announcement.expires ? new Date(checker_announcement.expires) > new Date() : true)) {
           document.querySelector('.alert').removeAttribute('hidden');
-          if (course.checker_announcement_image) {
+          document.querySelector('.alert').classList = `alert ${checker_announcement.layout || ''}`;
+          if (checker_announcement.image) {
             document.querySelector('.alert img').removeAttribute('hidden');
-            document.querySelector('.alert img').src = course.checker_announcement_image;
+            document.querySelector('.alert img').src = checker_announcement.image;
             mediumZoom(document.querySelector('.alert img'), {
               background: "transparent"
             });
           } else {
             document.querySelector('.alert img').setAttribute('hidden', '');
           }
-          if (course.checker_announcement_content) {
+          document.querySelector('.alert h3').innerText = checker_announcement.title || 'Announcement';
+          if (checker_announcement.content) {
             document.querySelector('.alert p').removeAttribute('hidden');
-            document.querySelector('.alert p').innerText = course.checker_announcement_content;
+            document.querySelector('.alert p').innerText = checker_announcement.content;
           } else {
             document.querySelector('.alert p').setAttribute('hidden', '');
           }
-          if (course.checker_announcement_link) {
+          if (checker_announcement.link) {
             document.querySelector('.alert button').removeAttribute('hidden');
             document.querySelector('.alert button').addEventListener('click', () => {
-              window.open(course.checker_announcement_link, '_blank');
+              window.open(checker_announcement.link, '_blank');
             });
           } else {
             document.querySelector('.alert button').setAttribute('hidden', '');

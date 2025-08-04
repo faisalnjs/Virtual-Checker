@@ -496,6 +496,7 @@ div.ML__keyboard {
 
   .rsmall,
   .small,
+  .vsmedium,
   .smedium,
   .medium,
   .mediuml,
@@ -1137,7 +1138,7 @@ body:has(.selecting) #controls-container button:has(.bi-download) {
 hidden,
 [hidden],
 .hidden {
-  display: none;
+  display: none !important;
 }
 
 .toast-container {

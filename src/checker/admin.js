@@ -394,6 +394,8 @@ try {
   if (document.getElementById('export-responses')) document.getElementById('export-responses').addEventListener("click", exportResponses);
   if (document.querySelector('[data-clicker-announcement-image-upload]')) document.querySelector('[data-clicker-announcement-image-upload]').addEventListener("click", () => renderAnnouncementPond('clicker'));
   if (document.querySelector('[data-checker-announcement-image-upload]')) document.querySelector('[data-checker-announcement-image-upload]').addEventListener("click", () => renderAnnouncementPond('checker'));
+  if (document.querySelector('[data-clicker-announcement-clear]')) document.querySelector('[data-clicker-announcement-clear]').addEventListener("click", () => clearAnnouncement('clicker'));
+  if (document.querySelector('[data-checker-announcement-clear]')) document.querySelector('[data-checker-announcement-clear]').addEventListener("click", () => clearAnnouncement('checker'));
 
   function toggleSelecting() {
     if (!active) return;
@@ -540,19 +542,26 @@ try {
     if (document.getElementById("course-input") && course) document.getElementById("course-input").value = course.name;
     document.querySelector('[data-clicker-announcement-image-upload]')?.setAttribute('hidden', '');
     document.querySelector('[data-clicker-announcement-image-remove]')?.setAttribute('hidden', '');
+    if (document.getElementById('clicker-announcement-title')) document.getElementById('clicker-announcement-title').value = "";
     if (document.getElementById('clicker-announcement-content')) document.getElementById('clicker-announcement-content').value = "";
     if (document.getElementById('clicker-announcement-link')) document.getElementById('clicker-announcement-link').value = "";
+    if (document.getElementById('clicker-announcement-layout')) document.getElementById('clicker-announcement-layout').value = "";
     if (document.getElementById('clicker-announcement-expires')) document.getElementById('clicker-announcement-expires').value = "";
     document.querySelector('[data-checker-announcement-image-upload]')?.setAttribute('hidden', '');
     document.querySelector('[data-checker-announcement-image-remove]')?.setAttribute('hidden', '');
+    if (document.getElementById('checker-announcement-title')) document.getElementById('checker-announcement-title').value = "";
     if (document.getElementById('checker-announcement-content')) document.getElementById('checker-announcement-content').value = "";
     if (document.getElementById('checker-announcement-link')) document.getElementById('checker-announcement-link').value = "";
+    if (document.getElementById('checker-announcement-layout')) document.getElementById('checker-announcement-layout').value = "";
     if (document.getElementById('checker-announcement-expires')) document.getElementById('checker-announcement-expires').value = "";
     if (course) {
-      if (course.clicker_announcement_image) {
+      var clicker_announcement = course.clicker_announcement ? JSON.parse(course.clicker_announcement) : {};
+      var checker_announcement = course.checker_announcement ? JSON.parse(course.checker_announcement) : {};
+      if (clicker_announcement.image) {
         document.querySelector('[data-clicker-announcement-image-remove]')?.removeAttribute('hidden');
-        document.querySelector('[data-clicker-announcement-image-remove]')?.addEventListener("click", () => {
+        document.querySelector('[data-clicker-announcement-image-remove]')?.addEventListener("click", async () => {
           ui.setUnsavedChanges(true);
+          await save(null, true);
           fetch(domain + '/announcement', {
             method: "DELETE",
             headers: {
@@ -593,13 +602,16 @@ try {
       } else {
         document.querySelector('[data-clicker-announcement-image-upload]')?.removeAttribute('hidden');
       }
-      if (course.clicker_announcement_content && document.getElementById('clicker-announcement-content')) document.getElementById('clicker-announcement-content').value = course.clicker_announcement_content;
-      if (course.clicker_announcement_link && document.getElementById('clicker-announcement-link')) document.getElementById('clicker-announcement-link').value = course.clicker_announcement_link;
-      if (course.clicker_announcement_expires && document.getElementById('clicker-announcement-expires')) document.getElementById('clicker-announcement-expires').value = course.clicker_announcement_expires;
-      if (course.checker_announcement_image) {
+      if (clicker_announcement.title && document.getElementById('clicker-announcement-title')) document.getElementById('clicker-announcement-title').value = clicker_announcement.title;
+      if (clicker_announcement.content && document.getElementById('clicker-announcement-content')) document.getElementById('clicker-announcement-content').value = clicker_announcement.content;
+      if (clicker_announcement.link && document.getElementById('clicker-announcement-link')) document.getElementById('clicker-announcement-link').value = clicker_announcement.link;
+      if (clicker_announcement.layout && document.getElementById('clicker-announcement-layout')) document.getElementById('clicker-announcement-layout').value = clicker_announcement.layout;
+      if (clicker_announcement.expires && document.getElementById('clicker-announcement-expires')) document.getElementById('clicker-announcement-expires').value = clicker_announcement.expires;
+      if (checker_announcement.image) {
         document.querySelector('[data-checker-announcement-image-remove]')?.removeAttribute('hidden');
-        document.querySelector('[data-checker-announcement-image-remove]')?.addEventListener("click", () => {
+        document.querySelector('[data-checker-announcement-image-remove]')?.addEventListener("click", async () => {
           ui.setUnsavedChanges(true);
+          await save(null, true);
           fetch(domain + '/announcement', {
             method: "DELETE",
             headers: {
@@ -640,9 +652,11 @@ try {
       } else {
         document.querySelector('[data-checker-announcement-image-upload]')?.removeAttribute('hidden');
       }
-      if (course.checker_announcement_content && document.getElementById('checker-announcement-content')) document.getElementById('checker-announcement-content').value = course.checker_announcement_content;
-      if (course.checker_announcement_link && document.getElementById('checker-announcement-link')) document.getElementById('checker-announcement-link').value = course.checker_announcement_link;
-      if (course.checker_announcement_expires && document.getElementById('checker-announcement-expires')) document.getElementById('checker-announcement-expires').value = course.checker_announcement_expires;
+      if (checker_announcement.title && document.getElementById('checker-announcement-title')) document.getElementById('checker-announcement-title').value = checker_announcement.title;
+      if (checker_announcement.content && document.getElementById('checker-announcement-content')) document.getElementById('checker-announcement-content').value = checker_announcement.content;
+      if (checker_announcement.link && document.getElementById('checker-announcement-link')) document.getElementById('checker-announcement-link').value = checker_announcement.link;
+      if (checker_announcement.layout && document.getElementById('checker-announcement-layout')) document.getElementById('checker-announcement-layout').value = checker_announcement.layout;
+      if (checker_announcement.expires && document.getElementById('checker-announcement-expires')) document.getElementById('checker-announcement-expires').value = checker_announcement.expires;
     }
     var c = segments.filter(s => String(s.course) === String(course?.id));
     if (!course && document.querySelector('[data-syllabus-upload]')) document.querySelector('[data-syllabus-upload]').setAttribute('hidden', '');
@@ -1114,12 +1128,22 @@ try {
         course: {
           id: document.getElementById("course-period-input").value,
           name: document.getElementById("course-input").value,
-          clicker_announcement_content: document.getElementById('clicker-announcement-content').value || null,
-          clicker_announcement_link: document.getElementById('clicker-announcement-link').value || null,
-          clicker_announcement_expires: document.getElementById('clicker-announcement-expires').value || null,
-          checker_announcement_content: document.getElementById('checker-announcement-content').value || null,
-          checker_announcement_link: document.getElementById('checker-announcement-link').value || null,
-          checker_announcement_expires: document.getElementById('checker-announcement-expires').value || null,
+          clicker_announcement: {
+            image: JSON.parse(courses.find(c => String(c.id) === String(document.getElementById("course-period-input").value))?.clicker_announcement || '{}')?.image || null,
+            title: document.getElementById('clicker-announcement-title').value || null,
+            content: document.getElementById('clicker-announcement-content').value || null,
+            link: document.getElementById('clicker-announcement-link').value || null,
+            layout: document.getElementById('clicker-announcement-layout').value || null,
+            expires: document.getElementById('clicker-announcement-expires').value || null,
+          },
+          checker_announcement: {
+            image: JSON.parse(courses.find(c => String(c.id) === String(document.getElementById("course-period-input").value))?.checker_announcement || '{}')?.image || null,
+            title: document.getElementById('checker-announcement-title').value || null,
+            content: document.getElementById('checker-announcement-content').value || null,
+            link: document.getElementById('checker-announcement-link').value || null,
+            layout: document.getElementById('checker-announcement-layout').value || null,
+            expires: document.getElementById('checker-announcement-expires').value || null,
+          },
         },
         segments: []
       };
@@ -5670,6 +5694,14 @@ try {
     document.getElementById('check-responses-prompt').value = aiInfo.check_responses_prompt;
     document.getElementById('check-responses-prompt-ending').placeholder = aiInfo.check_responses_prompt_ending;
     document.getElementById('check-responses-prompt-ending').value = aiInfo.check_responses_prompt_ending;
+  }
+
+  function clearAnnouncement(platform) {
+    if (!active) return;
+    if (!platform) return;
+    document.querySelectorAll(`#${platform}-announcement :is(input, select, textarea)`).forEach(input => input.value = "");
+    document.querySelector(`#${platform}-announcement [data-${platform}-announcement-image-remove]:not([hidden])`)?.click();
+    ui.setUnsavedChanges(true);
   }
 } catch (error) {
   if (storage.get("developer")) {
