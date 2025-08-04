@@ -796,7 +796,17 @@ body:has(.topbar) #checker.horizontal .column:last-child {
   gap: 0.75rem;
 }
 
-.alert:has(div p[hidden]) {
+.alert.separate {
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.alert.full {
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.alert:has(> div div p[hidden]) {
   align-items: center;
 }
 
@@ -806,21 +816,28 @@ body:has(.topbar) #checker.horizontal .column:last-child {
   border-radius: 5px;
 }
 
-.alert > i,
-.alert div,
-.alert button {
+.alert.full img {
+  width: 100%;
+  height: auto;
+}
+
+.alert > div {
+  display: flex;
+  flex-direction: row;
+  gap: 0.75rem;
   margin-top: 0.5em;
   margin-bottom: 0.5em;
+  width: -webkit-fill-available;
 }
 
-.alert > i {
-  margin-left: 0.5em;
-}
-
-.alert div {
+.alert > div div {
   display: flex;
   flex-direction: column;
   gap: 0.1rem;
+}
+
+.alert > div > i {
+  margin-left: 0.5em;
 }
 
 .alert button {
