@@ -288,7 +288,7 @@ div[data-color-input] > div[data-color-preview]:hover {
   transition: opacity 0.25s ease-in-out;
   height: fit-content;
   max-height: calc(100vh - 50px);
-  width: calc(((100vw - min(100%, 800px)) / 2) - 75px);
+  width: calc(((100vw - min(100%, 900px)) / 2) - 75px);
   position: fixed;
   top: 25px;
   left: 25px;
@@ -783,4 +783,92 @@ body:has(.topbar) #checker.horizontal .column:last-child {
 
 .ai-manager textarea[disabled] {
   opacity: 0.5;
+}
+
+.alert {
+  display: flex;
+  flex-direction: row;
+  padding: 0.5em 0.75em 0.5em 0.5em;
+  border: none;
+  border-radius: 0.5rem;
+  border-left: 4px solid;
+  background-color: var(--surface-color);
+  gap: 0.75rem;
+  margin-bottom: 0.5em;
+}
+
+.alert.separate {
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.alert.full {
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.alert:has(> div div p[hidden]),
+.alert:has(> div div p[hidden]) > div {
+  align-items: center;
+}
+
+.alert img {
+  width: 150px;
+  height: fit-content;
+  border-radius: 5px;
+}
+
+.alert.separate img {
+  width: 250px;
+}
+
+.alert.full img {
+  width: 100%;
+  height: auto;
+}
+
+.alert > div {
+  display: flex;
+  flex-direction: row;
+  gap: 0.75rem;
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
+  width: -webkit-fill-available;
+  flex-wrap: wrap;
+}
+
+.alert > div div {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.alert > div > i {
+  margin-left: 0.5em;
+}
+
+.alert button {
+  background-color: var(--accent-color);
+  color: var(--accent-text-color);
+  margin-left: auto;
+}
+
+.alert button:hover {
+  background-color: var(--background-color);
+  color: var(--text-color);
+}
+
+@media screen and (max-width: 600px) {
+  .alert {
+    flex-direction: column;
+    padding: 0.5em;
+  }
+
+  .alert > div {
+    margin: 0;
+  }
+
+  .alert button {
+    width: -webkit-fill-available !important;
+  }
 }

@@ -66,7 +66,7 @@
   </div>
   <div id="checker">
     <div class="section">
-      <h1>Courses</h1>
+      <h1>Course</h1>
       <div class="section selector">
         <div class="button-grid inputs">
           <div class="input-group">
@@ -86,6 +86,73 @@
         <div class="button-grid inputs">
           <button data-syllabus-download>Download Syllabus</button>
           <button data-syllabus-remove>Remove Syllabus</button>
+        </div>
+      </div>
+    </div>
+    <div>
+      <h1>Announcements</h1>
+      <div class="section">
+        <div id="clicker-announcement" class="button-grid inputs">
+          <div class="input-group vsmedium">
+            <label>Clicker</label>
+            <button data-clicker-announcement-clear tooltip="Clear Announcement">Clear</button>
+            <label>Image</label>
+            <button data-clicker-announcement-image-upload tooltip="Upload Image">Upload</button>
+            <button data-clicker-announcement-image-remove tooltip="Remove Image">Remove</button>
+          </div>
+          <div class="input-group mediuml">
+            <label for="clicker-announcement-link-title">Link Title</label>
+            <input type="url" autocomplete="off" id="clicker-announcement-link-title" value="" placeholder="Go" />
+            <label for="clicker-announcement-link">Link</label>
+            <input type="url" autocomplete="off" id="clicker-announcement-link" value="" placeholder="https://..." />
+          </div>
+          <div class="input-group">
+            <label for="clicker-announcement-title">Title</label>
+            <input type="url" autocomplete="off" id="clicker-announcement-title" value="" placeholder="Announcement" />
+            <textarea rows="2" autocomplete="off" id="clicker-announcement-content" value=""
+              placeholder="Announcement content"></textarea>
+          </div>
+          <div class="input-group medium">
+            <label for="clicker-announcement-layout">Layout</label>
+            <select id="clicker-announcement-layout">
+              <option value="">Minimal</option>
+              <option value="separate">Image Separate</option>
+              <option value="full">Image Full</option>
+            </select>
+            <label for="clicker-announcement-expires">Expires</label>
+            <input type="date" autocomplete="off" id="clicker-announcement-expires" value="" />
+          </div>
+        </div>
+        <div id="checker-announcement" class="button-grid inputs">
+          <div class="input-group vsmedium">
+            <label>Checker</label>
+            <button data-checker-announcement-clear tooltip="Clear Announcement">Clear</button>
+            <label>Image</label>
+            <button data-checker-announcement-image-upload tooltip="Upload Image">Upload</button>
+            <button data-checker-announcement-image-remove tooltip="Remove Image">Remove</button>
+          </div>
+          <div class="input-group mediuml">
+            <label for="checker-announcement-link-title">Link Title</label>
+            <input type="url" autocomplete="off" id="checker-announcement-link-title" value="" placeholder="Go" />
+            <label for="checker-announcement-link">Link</label>
+            <input type="url" autocomplete="off" id="checker-announcement-link" value="" placeholder="https://..." />
+          </div>
+          <div class="input-group">
+            <label for="checker-announcement-title">Title</label>
+            <input type="url" autocomplete="off" id="checker-announcement-title" value="" placeholder="Announcement" />
+            <textarea rows="2" autocomplete="off" id="checker-announcement-content" value=""
+              placeholder="Announcement content"></textarea>
+          </div>
+          <div class="input-group medium">
+            <label for="checker-announcement-layout">Layout</label>
+            <select id="checker-announcement-layout">
+              <option value="">Minimal</option>
+              <option value="separate">Image Separate</option>
+              <option value="full">Image Full</option>
+            </select>
+            <label for="checker-announcement-expires">Expires</label>
+            <input type="date" autocomplete="off" id="checker-announcement-expires" value="" />
+          </div>
         </div>
       </div>
     </div>
@@ -345,6 +412,8 @@
             class="bi bi-github"></i></a>
         <a href="https://dangoweb.com/?from=virtual-checker" class="icon" tooltip="Cloud Hosting"><i
             class="bi bi-cloud-fill"></i></a>
+        <a href="https://github.com/users/faisalnjs/projects/4" class="icon" tooltip="Project"><i
+            class="bi bi-kanban-fill"></i></a>
       </div>
     </div>
     <div data-modal-page="admin" data-page-title="Admin Settings">

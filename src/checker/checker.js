@@ -4,6 +4,7 @@ import * as ui from "/src/modules/ui.js";
 import storage from "/src/modules/storage.js";
 import * as auth from "/src/modules/auth.js";
 import Element from "/src/modules/element.js";
+import extendedSchedule from "/src/periods/extendedSchedule.json";
 
 import { autocomplete, uniqueSymbols } from "/src/symbols/symbols.js";
 import { unixToString, unixToTimeString } from "/src/modules/time.js";
@@ -449,12 +450,47 @@ try {
       if (document.getElementById("course-input")) document.getElementById("course-input").value = course.name || "Unknown Course";
       if (document.querySelector('[data-syllabus-download]')) {
         if (course.syllabus) {
-          document.querySelector('[data-syllabus-download]').removeAttribute('hidden', '');
+          document.querySelector('[data-syllabus-download]').removeAttribute('hidden');
           document.querySelector('[data-syllabus-download]').addEventListener('click', () => {
             window.open(course.syllabus, '_blank');
           });
         } else {
           document.querySelector('[data-syllabus-download]').setAttribute('hidden', '');
+        }
+      }
+      if (document.querySelector('.alert')) {
+        var checker_announcement = JSON.parse(course.checker_announcement || '{}');
+        if ((checker_announcement.image || checker_announcement.title || checker_announcement.content || checker_announcement.link) && (checker_announcement.expires ? new Date(`${checker_announcement.expires}T${extendedSchedule[Number(code.slice(0, 1))][1]}:00`) > new Date() : true)) {
+          document.querySelector('.alert').removeAttribute('hidden');
+          document.querySelector('.alert').classList = `alert ${checker_announcement.layout || ''}`;
+          if (checker_announcement.image) {
+            document.querySelector('.alert img').removeAttribute('hidden');
+            document.querySelector('.alert img').src = checker_announcement.image;
+            mediumZoom(document.querySelector('.alert img'), {
+              background: "transparent"
+            });
+          } else {
+            document.querySelector('.alert img').setAttribute('hidden', '');
+          }
+          document.querySelector('.alert h3').innerText = checker_announcement.title || 'Announcement';
+          if (checker_announcement.content) {
+            document.querySelector('.alert p').removeAttribute('hidden');
+            document.querySelector('.alert p').innerText = checker_announcement.content;
+          } else {
+            document.querySelector('.alert p').setAttribute('hidden', '');
+          }
+          if (checker_announcement.link) {
+            document.querySelector('.alert button').removeAttribute('hidden');
+            document.querySelector('.alert button').innerHTML = `${checker_announcement.linkTitle || 'Go'} <i class="bi bi-arrow-right-short"></i>`;
+            document.querySelector('.alert button').addEventListener('click', () => {
+              window.open(checker_announcement.link, '_blank');
+            });
+          } else {
+            document.querySelector('.alert button').setAttribute('hidden', '');
+            document.querySelector('.alert button').removeEventListener('click', () => { });
+          }
+        } else {
+          document.querySelector('.alert').setAttribute('hidden', '');
         }
       }
       segmentsArray = segmentsArray.filter(s => String(s.course) === String(course.id));

@@ -68,30 +68,43 @@
     <button square data-toggle-layout tooltip="Switch Layout"><i class="bi bi-app"></i><i
         class="bi bi-layout-sidebar-reverse"></i></button>
     <div class="column">
-      <h1><span class="code" data-modal-view="settings/code">000</span></h1>
-      <div class="button-grid inputs">
-        <div class="input-group">
-          <label for="course-input">Course</label>
-          <div class="space" id="question-container">
-            <input type="text" autocomplete="off" id="course-input" value="Unknown Course" disabled />
+      <div class="input-group">
+        <h1><span class="code" data-modal-view="settings/code">000</span></h1>
+        <div class="button-grid inputs">
+          <div class="input-group">
+            <label for="course-input">Course</label>
+            <div class="space" id="question-container">
+              <input type="text" autocomplete="off" id="course-input" value="Unknown Course" disabled />
+            </div>
+          </div>
+          <div class="input-group">
+            <label for="segment-input">Segment</label>
+            <div class="space" id="question-container">
+              <select id="segment-input"></select>
+            </div>
+          </div>
+          <div class="input-group">
+            <label for="question-input">Question #</label>
+            <div class="space" id="question-container">
+              <select id="question-input"></select>
+            </div>
+          </div>
+          <button square data-prev-question tooltip="Previous Question"><i class="bi bi-arrow-left-short"></i></button>
+          <button square data-next-question tooltip="Next Question"><i class="bi bi-arrow-right-short"></i></button>
+        </div>
+        <button data-syllabus-download hidden>Syllabus</button>
+        <div class="alert" hidden>
+          <img src="" alt="Announcement image">
+          <div>
+            <i class="bi bi-megaphone-fill"></i>
+            <div>
+              <h3>Announcement</h3>
+              <p>No course announcement.</p>
+            </div>
+            <button class="fit" tooltip="Visit Link">Go <i class="bi bi-arrow-right-short"></i></button>
           </div>
         </div>
-        <div class="input-group">
-          <label for="segment-input">Segment</label>
-          <div class="space" id="question-container">
-            <select id="segment-input"></select>
-          </div>
-        </div>
-        <div class="input-group">
-          <label for="question-input">Question #</label>
-          <div class="space" id="question-container">
-            <select id="question-input"></select>
-          </div>
-        </div>
-        <button square data-prev-question tooltip="Previous Question"><i class="bi bi-arrow-left-short"></i></button>
-        <button square data-next-question tooltip="Next Question"><i class="bi bi-arrow-right-short"></i></button>
       </div>
-      <button data-syllabus-download hidden>Syllabus</button>
       <h6 data-segment-due hidden></h6>
       <div id="segment-completed" class="input-group" hidden>
         <i class="bi bi-check2-all"></i>
@@ -133,7 +146,7 @@
               <button data-multiple-choice="e">E</button>
             </div>
             <div id="answer-textarea-container">
-              <textarea rows="4" autocomplete="off" id="answer-input"></textarea>
+              <textarea rows="5" autocomplete="off" id="answer-input"></textarea>
               <p id="answer-suggestion"></p>
             </div>
             <div class="row">
@@ -419,6 +432,8 @@
             class="bi bi-github"></i></a>
         <a href="https://dangoweb.com/?from=virtual-checker" class="icon" tooltip="Cloud Hosting"><i
             class="bi bi-cloud-fill"></i></a>
+        <a href="https://github.com/users/faisalnjs/projects/4" class="icon" tooltip="Project"><i
+            class="bi bi-kanban-fill"></i></a>
       </div>
     </div>
   </dialog>
@@ -453,6 +468,13 @@
   </dialog>
   <dialog data-modal-page="menu" data-page-title="Virtual Checker">
     <div class="menu-icons">
+      <a href="https://click.vssfalcons.com/" tooltip="Virtual Clicker">
+        <svg xmlns="http://www.w3.org/2000/svg" height="1.25em" viewBox="0 0 1024 1024" class="virtual-clicker-logo"
+          style="margin: 0.1em 0;">
+          <path fill="currentColor"
+            d="M189.838,206.009C202.279,201.862 210.44,202.484 217.578,206.052C224.715,209.621 230.493,216.931 235.656,232.419C251.225,279.126 278.027,359.533 299.189,423.017C304.344,438.483 312.472,443.078 322.252,443.078C332.033,443.078 339.718,439.813 345.627,422.086C360.443,377.638 378.763,322.677 396.583,269.218C430.426,167.688 472.963,146.121 567.37,146.121C702.785,146.121 897.037,146.121 984.213,146.121C1007.19,146.121 1013.22,150.77 1018.88,158.617C1024.53,166.463 1025.91,177.048 1020.96,191.878C1003.43,244.493 978.676,318.741 965.135,359.363C958.535,379.162 942.92,390.595 922.051,390.561C867.547,390.472 734.987,390.238 660.22,390.117C626.461,390.062 609.299,402.41 598.623,434.437C585.437,473.995 567.7,527.206 553.255,570.541C547.69,587.236 549.36,603.931 557.708,615.513C566.057,627.096 578.691,633.96 596.163,633.96C665.057,633.96 769.309,633.96 828.841,633.96C841.883,633.96 850.611,638.609 856.266,646.455C861.921,654.301 863.336,664.76 859.639,675.852C842.137,728.356 816.643,804.838 803.139,845.351C797.202,863.16 778.155,877.879 759.383,877.879C688.339,877.879 487.826,877.879 340.593,877.879C241.323,877.879 180.603,838.6 149.211,744.424C101.094,600.075 30.348,387.837 3.648,307.735C-1.509,292.265 -0.672,284.75 2.896,277.613C6.465,270.475 10.977,265.63 28.36,259.835C72.841,245.008 145.357,220.836 189.838,206.009Z" />
+        </svg>
+      </a>
       <a href="/ta/" tooltip="TAs"><i class="bi bi-person-check"></i></a>
       <a href="/admin/" tooltip="Admin"><i class="bi bi-gear-wide-connected"></i></a>
     </div>
