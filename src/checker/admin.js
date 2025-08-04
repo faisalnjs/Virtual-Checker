@@ -5700,12 +5700,17 @@ try {
     document.getElementById('check-responses-prompt-ending').value = aiInfo.check_responses_prompt_ending;
   }
 
-  function clearAnnouncement(platform) {
+  async function clearAnnouncement(platform) {
     if (!active) return;
     if (!platform) return;
-    document.querySelectorAll(`#${platform}-announcement :is(input, select, textarea)`).forEach(input => input.value = "");
-    document.querySelector(`#${platform}-announcement [data-${platform}-announcement-image-remove]:not([hidden])`)?.click();
     ui.setUnsavedChanges(true);
+    document.querySelectorAll(`#${platform}-announcement :is(input, select, textarea)`).forEach(input => input.value = "");
+    if (document.querySelector(`#${platform}-announcement [data-${platform}-announcement-image-remove]:not([hidden])`)) {
+      document.querySelector(`#${platform}-announcement [data-${platform}-announcement-image-remove]:not([hidden])`).click();
+    } else {
+      await save(null);
+      ui.setUnsavedChanges(false);
+    }
   }
 } catch (error) {
   if (storage.get("developer")) {
