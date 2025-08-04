@@ -604,6 +604,7 @@ try {
       }
       if (clicker_announcement.title && document.getElementById('clicker-announcement-title')) document.getElementById('clicker-announcement-title').value = clicker_announcement.title;
       if (clicker_announcement.content && document.getElementById('clicker-announcement-content')) document.getElementById('clicker-announcement-content').value = clicker_announcement.content;
+      if (clicker_announcement.linkTitle && document.getElementById('clicker-announcement-link-title')) document.getElementById('clicker-announcement-link-title').value = clicker_announcement.linkTitle;
       if (clicker_announcement.link && document.getElementById('clicker-announcement-link')) document.getElementById('clicker-announcement-link').value = clicker_announcement.link;
       if (clicker_announcement.layout && document.getElementById('clicker-announcement-layout')) document.getElementById('clicker-announcement-layout').value = clicker_announcement.layout;
       if (clicker_announcement.expires && document.getElementById('clicker-announcement-expires')) document.getElementById('clicker-announcement-expires').value = clicker_announcement.expires;
@@ -654,6 +655,7 @@ try {
       }
       if (checker_announcement.title && document.getElementById('checker-announcement-title')) document.getElementById('checker-announcement-title').value = checker_announcement.title;
       if (checker_announcement.content && document.getElementById('checker-announcement-content')) document.getElementById('checker-announcement-content').value = checker_announcement.content;
+      if (checker_announcement.linkTitle && document.getElementById('checker-announcement-link-title')) document.getElementById('checker-announcement-link-title').value = checker_announcement.linkTitle;
       if (checker_announcement.link && document.getElementById('checker-announcement-link')) document.getElementById('checker-announcement-link').value = checker_announcement.link;
       if (checker_announcement.layout && document.getElementById('checker-announcement-layout')) document.getElementById('checker-announcement-layout').value = checker_announcement.layout;
       if (checker_announcement.expires && document.getElementById('checker-announcement-expires')) document.getElementById('checker-announcement-expires').value = checker_announcement.expires;
@@ -1132,6 +1134,7 @@ try {
             image: JSON.parse(courses.find(c => String(c.id) === String(document.getElementById("course-period-input").value))?.clicker_announcement || '{}')?.image || null,
             title: document.getElementById('clicker-announcement-title').value || null,
             content: document.getElementById('clicker-announcement-content').value || null,
+            linkTitle: document.getElementById('clicker-announcement-link-title').value || null,
             link: document.getElementById('clicker-announcement-link').value || null,
             layout: document.getElementById('clicker-announcement-layout').value || null,
             expires: document.getElementById('clicker-announcement-expires').value || null,
@@ -1140,6 +1143,7 @@ try {
             image: JSON.parse(courses.find(c => String(c.id) === String(document.getElementById("course-period-input").value))?.checker_announcement || '{}')?.image || null,
             title: document.getElementById('checker-announcement-title').value || null,
             content: document.getElementById('checker-announcement-content').value || null,
+            linkTitle: document.getElementById('checker-announcement-link-title').value || null,
             link: document.getElementById('checker-announcement-link').value || null,
             layout: document.getElementById('checker-announcement-layout').value || null,
             expires: document.getElementById('checker-announcement-expires').value || null,

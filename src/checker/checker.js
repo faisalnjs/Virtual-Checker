@@ -480,6 +480,7 @@ try {
           }
           if (checker_announcement.link) {
             document.querySelector('.alert button').removeAttribute('hidden');
+            document.querySelector('.alert button').innerHTML = `${checker_announcement.linkTitle || 'Go'} <i class="bi bi-arrow-right-short"></i>`;
             document.querySelector('.alert button').addEventListener('click', () => {
               window.open(checker_announcement.link, '_blank');
             });
