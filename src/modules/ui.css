@@ -794,6 +794,7 @@ body:has(.topbar) #checker.horizontal .column:last-child {
   border-left: 4px solid;
   background-color: var(--surface-color);
   gap: 0.75rem;
+  margin-bottom: 0.5em;
 }
 
 .alert.separate {
@@ -806,7 +807,8 @@ body:has(.topbar) #checker.horizontal .column:last-child {
   gap: 0.6rem;
 }
 
-.alert:has(> div div p[hidden]) {
+.alert:has(> div div p[hidden]),
+.alert:has(> div div p[hidden]) > div {
   align-items: center;
 }
 
@@ -814,6 +816,10 @@ body:has(.topbar) #checker.horizontal .column:last-child {
   width: 150px;
   height: fit-content;
   border-radius: 5px;
+}
+
+.alert.separate img {
+  width: 250px;
 }
 
 .alert.full img {
@@ -828,6 +834,7 @@ body:has(.topbar) #checker.horizontal .column:last-child {
   margin-top: 0.5em;
   margin-bottom: 0.5em;
   width: -webkit-fill-available;
+  flex-wrap: wrap;
 }
 
 .alert > div div {
@@ -849,4 +856,19 @@ body:has(.topbar) #checker.horizontal .column:last-child {
 .alert button:hover {
   background-color: var(--background-color);
   color: var(--text-color);
+}
+
+@media screen and (max-width: 600px) {
+  .alert {
+    flex-direction: column;
+    padding: 0.5em;
+  }
+
+  .alert > div {
+    margin: 0;
+  }
+
+  .alert button {
+    width: -webkit-fill-available !important;
+  }
 }
