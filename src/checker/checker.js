@@ -459,7 +459,7 @@ try {
       }
       if (document.querySelector('.alert')) {
         var checker_announcement = JSON.parse(course.checker_announcement || '{}');
-        if ((checker_announcement.image || checker_announcement.title || checker_announcement.content || checker_announcement.link) && (checker_announcement.expires ? new Date(checker_announcement.expires) > new Date() : true)) {
+        if ((checker_announcement.image || checker_announcement.title || checker_announcement.content || checker_announcement.link) && (checker_announcement.expires ? new Date(new Date(checker_announcement.expires).setTime(periodRange[1])) > new Date() : true)) {
           document.querySelector('.alert').removeAttribute('hidden');
           document.querySelector('.alert').classList = `alert ${checker_announcement.layout || ''}`;
           if (checker_announcement.image) {
