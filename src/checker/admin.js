@@ -1873,12 +1873,12 @@ try {
 
   async function removeImage(event) {
     if (!active) return;
-    await save(null, true);
     const element = event.target;
     const rect = element.getBoundingClientRect();
     const clickYRelativeToElement = event.clientY - rect.top;
     const distanceFromBottom = rect.height - clickYRelativeToElement;
     if (distanceFromBottom <= 26) {
+      await save(null, true);
       ui.setUnsavedChanges(true);
       await fetch(domain + '/upload', {
         method: "DELETE",
