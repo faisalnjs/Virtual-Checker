@@ -46,7 +46,7 @@ export default function spawnIsland(element = null, source = null, dataType = 'q
     if (source) islandSource = source;
     if (source2) islandSource2 = source2;
     if (source3) islandSource3 = source3;
-    island.removeAttribute('rendered');
+    island.classList.remove('rendered');
     island.setAttribute('datatype', dataType);
     island.setAttribute('sourceid', String(data.sourceId || ''));
     if (data.id) {

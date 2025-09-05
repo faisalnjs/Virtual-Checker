@@ -146,7 +146,8 @@ select {
 }
 
 input:disabled,
-select:disabled {
+select:disabled,
+textarea:disabled {
   opacity: 0.75;
   cursor: not-allowed;
   overflow: auto;
@@ -154,7 +155,8 @@ select:disabled {
 }
 
 input.disabled:disabled,
-select.disabled:disabled {
+select.disabled:disabled,
+textarea.disabled:disabled {
   opacity: 0.5;
 }
 
