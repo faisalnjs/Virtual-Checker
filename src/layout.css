@@ -459,3 +459,27 @@ label:has(i) {
 #checker.horizontal [data-toggle-layout] .bi-layout-sidebar-reverse {
   display: none;
 }
+
+.awaitingResponses .button-grid,
+.trendingResponses .button-grid,
+.responses .button-grid {
+  align-items: stretch;
+}
+
+.awaitingResponses input,
+.awaitingResponses button[square],
+.trendingResponses input,
+.trendingResponses button[square],
+.responses input,
+.responses button[square] {
+  height: auto;
+}
+
+.awaitingResponses textarea,
+.trendingResponses textarea,
+.responses textarea {
+  resize: vertical;
+  height: auto;
+  min-height: 2.5em;
+  width: -webkit-fill-available;
+}
