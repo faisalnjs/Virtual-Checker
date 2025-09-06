@@ -509,13 +509,14 @@ body:has(.welcome-container.active) {
 }
 
 .welcome-container .themes-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
   gap: 5px;
 }
 
 .welcome-container .themes-grid button {
-  min-width: fit-content;
+  min-width: min(250px, 100%);
   color: var(--text-color);
   background-color: var(--surface-color);
 }
@@ -705,13 +706,17 @@ body:has(.topbar) {
 }
 
 body:has(.topbar) .island {
-  transition: 0.25s top, 0.25s max-height;
+  transition:
+    0.25s top,
+    0.25s max-height;
 }
 
 :root:hover:has(.topbar) .island {
   max-height: calc(100vh - 80px);
   top: 58px;
-  transition: 0.25s top, 0.25s max-height;
+  transition:
+    0.25s top,
+    0.25s max-height;
 }
 
 body:has(.topbar) #checker.horizontal .column:last-child {
