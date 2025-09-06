@@ -814,7 +814,7 @@ var originalTheme = storage.get("theme");
 
 document.querySelectorAll('[data-welcome]').forEach(a => a.addEventListener('click', launchWelcome));
 
-export async function launchWelcome() {
+export async function launchWelcome(returnFunction = null) {
   view();
   if (welcomeContainer) welcomeContainer.remove();
   if (welcomeTimeouts.length) clearWelcomeTimeouts();
@@ -919,6 +919,7 @@ export async function launchWelcome() {
     await auth.syncPush("theme");
     unsavedChanges = false;
     removeWelcome();
+    if (returnFunction) returnFunction();
   });
   welcomeContainer.querySelectorAll('#theme-preview').forEach(a => a.addEventListener('click', () => {
     setLayout(a.classList.toString().replaceAll('selected', '').trim());

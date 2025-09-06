@@ -480,6 +480,6 @@ label:has(i) {
 .responses textarea {
   resize: vertical;
   height: auto;
-  min-height: 2.5em;
+  min-height: 2.2em;
   width: -webkit-fill-available;
 }
