@@ -18,6 +18,7 @@ var responses = [];
 var active = false;
 var timestamps = false;
 var noReloadCourse = false;
+var lastMarkedQuestion = {};
 
 try {
   async function init() {
@@ -606,7 +607,7 @@ try {
       input: {
         type: 'text',
         placeholder: 'Take the derivative of x^2 before multiplying.',
-        defaultValue: '',
+        defaultValue: (Object.keys(lastMarkedQuestion).length && (String(lastMarkedQuestion.question_id) === this.parentElement.querySelector('#response-question-id-input').value)) ? lastMarkedQuestion.reason : '',
       },
       buttons: [
         {
@@ -661,6 +662,11 @@ try {
       .then(() => {
         ui.setUnsavedChanges(false);
         ui.toast("Successfully updated status.", 3000, "success", "bi bi-check-lg");
+        lastMarkedQuestion = {
+          question_id: e.parentElement.querySelector('#response-question-id-input').value,
+          single_response: e.parentElement.querySelector('#response-id-input').value,
+          reason: reason
+        };
         noReloadCourse = true;
         init();
       })
