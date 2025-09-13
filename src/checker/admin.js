@@ -35,6 +35,11 @@ var rosters = [];
 var aiInfo = {};
 var settings = [];
 var lastMarkedQuestion = {};
+var pagination = {
+  awaitingResponses: { page: 0, perPage: 50 },
+  trendingResponses: { page: 0, perPage: 50 },
+  responses: { page: 0, perPage: 50 },
+};
 
 var draggableQuestionList = null;
 var draggableSegmentReorder = null;
@@ -1955,6 +1960,13 @@ try {
       });
     var seatCodes = [];
     responses1.forEach(r => {
+      var withinPaginationBounds = false;
+      if (((r.status === 'Invalid Format') || (r.status === 'Unknown, Recorded')) && document.querySelector('.awaitingResponses .section')) {
+        withinPaginationBounds = (responses1.filter(response => ((response.status === 'Invalid Format') || (response.status === 'Unknown, Recorded')) && document.querySelector('.awaitingResponses .section')).indexOf(r) >= pagination.awaitingResponses.page * pagination.awaitingResponses.perPage) && (responses1.filter(response => ((response.status === 'Invalid Format') || (response.status === 'Unknown, Recorded')) && document.querySelector('.awaitingResponses .section')).indexOf(r) < (pagination.awaitingResponses.page * pagination.awaitingResponses.perPage) + pagination.awaitingResponses.perPage);
+      } else if (document.querySelector('.responses .section')) {
+        withinPaginationBounds = (responses1.filter(response => !((response.status === 'Invalid Format') || (response.status === 'Unknown, Recorded')) && document.querySelector('.awaitingResponses .section')).indexOf(r) >= pagination.responses.page * pagination.responses.perPage) && (responses1.filter(response => !((response.status === 'Invalid Format') || (response.status === 'Unknown, Recorded')) && document.querySelector('.awaitingResponses .section')).indexOf(r) < (pagination.responses.page * pagination.responses.perPage) + pagination.responses.perPage);
+      }
+      if (!withinPaginationBounds) return;
       if (document.querySelector('.responses .section') || document.querySelector('.awaitingResponses .section')) {
         var responseString = r.response;
         var isMatrix = null;
