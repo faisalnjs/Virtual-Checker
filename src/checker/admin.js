@@ -1959,14 +1959,7 @@ try {
         return b.id - a.id;
       });
     var seatCodes = [];
-    responses1.forEach(r => {
-      var withinPaginationBounds = false;
-      if (((r.status === 'Invalid Format') || (r.status === 'Unknown, Recorded')) && document.querySelector('.awaitingResponses .section')) {
-        withinPaginationBounds = (responses1.filter(response => ((response.status === 'Invalid Format') || (response.status === 'Unknown, Recorded')) && document.querySelector('.awaitingResponses .section')).indexOf(r) >= pagination.awaitingResponses.page * pagination.awaitingResponses.perPage) && (responses1.filter(response => ((response.status === 'Invalid Format') || (response.status === 'Unknown, Recorded')) && document.querySelector('.awaitingResponses .section')).indexOf(r) < (pagination.awaitingResponses.page * pagination.awaitingResponses.perPage) + pagination.awaitingResponses.perPage);
-      } else if (document.querySelector('.responses .section')) {
-        withinPaginationBounds = (responses1.filter(response => !((response.status === 'Invalid Format') || (response.status === 'Unknown, Recorded')) && document.querySelector('.awaitingResponses .section')).indexOf(r) >= pagination.responses.page * pagination.responses.perPage) && (responses1.filter(response => !((response.status === 'Invalid Format') || (response.status === 'Unknown, Recorded')) && document.querySelector('.awaitingResponses .section')).indexOf(r) < (pagination.responses.page * pagination.responses.perPage) + pagination.responses.perPage);
-      }
-      if (!withinPaginationBounds) return;
+    responses1.filter(r => (((r.status === 'Invalid Format') || (r.status === 'Unknown, Recorded')) && document.querySelector('.awaitingResponses .section')) ? ((responses1.filter(response => ((response.status === 'Invalid Format') || (response.status === 'Unknown, Recorded')) && document.querySelector('.awaitingResponses .section')).indexOf(r) >= pagination.awaitingResponses.page * pagination.awaitingResponses.perPage) && (responses1.filter(response => ((response.status === 'Invalid Format') || (response.status === 'Unknown, Recorded')) && document.querySelector('.awaitingResponses .section')).indexOf(r) < (pagination.awaitingResponses.page * pagination.awaitingResponses.perPage) + pagination.awaitingResponses.perPage)) : (document.querySelector('.responses .section') ? ((responses1.filter(response => !((response.status === 'Invalid Format') || (response.status === 'Unknown, Recorded')) && document.querySelector('.awaitingResponses .section')).indexOf(r) >= pagination.responses.page * pagination.responses.perPage) && (responses1.filter(response => !((response.status === 'Invalid Format') || (response.status === 'Unknown, Recorded')) && document.querySelector('.awaitingResponses .section')).indexOf(r) < (pagination.responses.page * pagination.responses.perPage) + pagination.responses.perPage)) : false)).forEach(r => {
       if (document.querySelector('.responses .section') || document.querySelector('.awaitingResponses .section')) {
         var responseString = r.response;
         var isMatrix = null;
