@@ -360,7 +360,9 @@ try {
   document.getElementById("code-input")?.addEventListener("keydown", (e) => {
     if (e.key == "Enter") {
       e.preventDefault();
-      saveCode();
+      setTimeout(() => {
+        saveCode();
+      }, 100);
     }
   });
 
@@ -384,9 +386,9 @@ try {
               class: 'cancel-button',
               onclick: () => {
                 ui.view("");
-                document.getElementById("code-input").focus();
                 ui.setUnsavedChanges(true);
                 ui.view("settings/code");
+                document.getElementById("code-input").focus();
               }
             },
             {

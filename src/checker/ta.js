@@ -176,7 +176,9 @@ try {
   document.getElementById("code-input")?.addEventListener("keydown", (e) => {
     if (e.key == "Enter") {
       e.preventDefault();
-      saveCode();
+      setTimeout(() => {
+        saveCode();
+      }, 100);
     }
   });
 
