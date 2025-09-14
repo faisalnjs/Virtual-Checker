@@ -329,6 +329,7 @@ div.spacer {
   overflow: hidden;
   text-overflow: ellipsis;
   margin-bottom: 10px;
+  line-height: normal;
 }
 
 .history-feed > button > p:empty {
