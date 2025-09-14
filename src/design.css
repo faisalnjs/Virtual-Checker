@@ -34,7 +34,7 @@
 
 ::-webkit-scrollbar-thumb {
   border-radius: 0.5rem;
-  border: 0.25rem solid transparent;
+  border: 0.1px solid transparent;
   background-color: var(--surface-color);
   background-clip: content-box;
 }
@@ -1286,7 +1286,9 @@ hidden,
 
 .color-box {
   height: 15px;
+  min-height: 15px;
   width: 15px;
+  min-width: 15px;
   border: 1px solid var(--surface-color);
   border-radius: 100%;
 }
@@ -1379,7 +1381,7 @@ hidden,
   display: none;
   align-items: center;
   justify-content: space-between;
-  flex-wrap: wrap;
+  /* flex-wrap: wrap; */
   gap: 10px;
   width: -webkit-fill-available;
 }
@@ -1396,7 +1398,7 @@ hidden,
   display: flex;
   align-items: center;
   justify-content: space-between;
-  flex-wrap: wrap;
+  /* flex-wrap: wrap; */
   gap: 10px;
   width: -webkit-fill-available;
 }
