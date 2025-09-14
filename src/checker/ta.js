@@ -664,6 +664,7 @@ try {
         type: 'text',
         placeholder: 'Take the derivative of x^2 before multiplying.',
         defaultValue: (Object.keys(lastMarkedQuestion).length && (String(lastMarkedQuestion.question_id) === this.parentElement.querySelector('#response-question-id-input').value)) ? lastMarkedQuestion.reason : '',
+        selectAll: true,
       },
       buttons: [
         {

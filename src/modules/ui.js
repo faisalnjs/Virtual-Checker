@@ -63,7 +63,7 @@ export function modal(options) {
     }
     input.placeholder = options.input.placeholder || "";
     if (options.input.defaultValue) input.value = options.input.defaultValue || "";
-    input.className = "dialog-input";
+    input.className = `dialog-input${options.input.selectAll ? " selectAll" : ""}`;
     input.min = options.input.min || "";
     input.max = options.input.max || "";
     if (options.input.required) input.required = options.input.required;
@@ -92,7 +92,7 @@ export function modal(options) {
       }
       inputElement.placeholder = input.placeholder || "";
       if (input.defaultValue) inputElement.value = input.defaultValue || "";
-      inputElement.className = "dialog-input";
+      inputElement.className = `dialog-input${input.selectAll ? " selectAll" : ""}`;
       inputElement.min = input.min || "";
       inputElement.max = input.max || "";
       if (input.required) inputElement.required = input.required;
@@ -102,6 +102,8 @@ export function modal(options) {
   }
 
   document.body.append(dialog);
+
+  if (options.input?.selectAll || options.inputs?.find(input => input.selectAll)) dialog.querySelector(".dialog-input.selectAll")?.select();
 
   if (options.buttonGroups && options.buttonGroups.length > 0) {
     options.buttonGroups.forEach(buttonGroup => {

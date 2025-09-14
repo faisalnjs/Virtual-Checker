@@ -101,12 +101,16 @@ div.spacer {
   justify-content: center;
   width: min(100%, 900px);
   gap: 12.5px;
-  transition: 0.25s width;
+  transition: 0.25s width, 0.25s align-self;
 }
 
 #checker:has(.responses) {
   width: min(100%, 1000px);
+}
+
+body:has(.island.visible) #checker {
   align-self: flex-end;
+  transition: 0.25s width, 0.25s align-self;
 }
 
 #checker .column {
