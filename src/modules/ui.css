@@ -371,6 +371,10 @@ div[data-color-input] > div[data-color-preview]:hover {
   transition: opacity 0.25s ease-in-out;
 }
 
+.island:not(.visible) {
+  pointer-events: none;
+}
+
 .island h5 {
   font-size: 1.25rem;
 }

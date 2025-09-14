@@ -771,7 +771,6 @@ try {
           } else {
             document.querySelector('.section:has(> .segment-reports)').removeAttribute('hidden');
             var segmentResponses = [];
-            var detailedReport = '';
             JSON.parse(segment.question_ids).filter(q => questions.find(q1 => String(q1.id) === String(q.id))?.number.startsWith(document.getElementById("sort-question-input")?.value)).forEach(q => {
               var question = questions.find(q1 => String(q1.id) === String(q.id));
               if (!question) return;
@@ -782,7 +781,6 @@ try {
               } else if (document.querySelector('#filter-report-responses [aria-selected="true"]').getAttribute('data-value') === 'last') {
                 questionResponses = questionResponses.filter(r => r.id === Math.max(...questionResponses.filter(r1 => r1.seatCode === r.seatCode && r1.question_id === r.question_id).map(r1 => r1.id)));
               }
-              var detailedReport1 = '';
               switch (document.querySelector('#sort-report-responses [aria-selected="true"]').getAttribute('data-value')) {
                 case 'seatCode':
                   questionResponses = questionResponses.sort((a, b) => a.seatCode - b.seatCode);
@@ -805,70 +803,8 @@ try {
                   break;
               }
               questionResponses.forEach(r => {
-                var name = "Unknown";
-                if (document.getElementById('useRoster').checked) {
-                  var roster = rosters.find(roster => roster.period === Number(String(r.seatCode)[0]));
-                  if (roster) {
-                    var student = JSON.parse(roster.data).find(student => String(student.seatCode) === String(r.seatCode));
-                    if (student) name = `${student.last}, ${student.first}`;
-                  }
-                }
-                const currentDate = new Date(r.timestamp);
-                var timeTaken = "N/A";
-                const sameSeatCodeResponses = responses
-                  .filter(r => courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value) ? JSON.parse(courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value)?.periods).includes(Number(String(r.seatCode)[0])) : false)
-                  .filter(r => document.getElementById("filter-segment-input")?.value ? (String(segments.find(s => (String(s.id) === String(r.segment)) && (courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value) ? (String(s.course) === String(courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value).id)) : true)) ? (segments.find(s => (String(s.id) === String(r.segment)) && (courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value) ? (String(s.course) === String(courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value).id)) : true)).id || r.segment) : (segments.find(s => (courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value) ? (String(s.course) === String(courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value).id)) : false) && JSON.parse(s.question_ids || [])?.find(q => String(q.id) === String(r.question_id)))?.id || '-')) === document.getElementById("filter-segment-input").value) : true)
-                  .filter(r => questions.find(q => String(q.id) === String(r.question_id))?.number.startsWith(document.getElementById("sort-question-input")?.value))
-                  .filter(r => String(r.seatCode).startsWith(document.getElementById("sort-seat-input")?.value))
-                  .sort((a, b) => {
-                    if (a.flagged && !b.flagged) return -1;
-                    if (!a.flagged && b.flagged) return 1;
-                    return b.id - a.id;
-                  })
-                  .filter(a => a.seatCode === r.seatCode)
-                  .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-                const lastResponseIndex = sameSeatCodeResponses.findIndex(a => new Date(a.timestamp) >= currentDate) - 1;
-                const lastResponse = lastResponseIndex >= 0 ? sameSeatCodeResponses[lastResponseIndex] : null;
-                let timeDifference;
-                if (lastResponse) {
-                  timeDifference = calculateTimeDifference(currentDate, lastResponse.timestamp);
-                  timeTaken = formatTimeDifference(timeDifference);
-                }
-                detailedReport1 += `<div class="detailed-report-question">
-                  <div class="color">
-                    <span class="color-box ${(r.status === 'Correct') ? 'correct' : (r.status === 'Incorrect') ? 'incorrect' : r.status.includes('Recorded') ? 'waiting' : 'other'}"></span>
-                    <span class="color-name">${document.getElementById('useRoster').checked ? `${name} (${r.seatCode})` : r.seatCode}<p class="showonhover"> (${time.unixToString(r.timestamp)})</p>: ${escapeHTML(r.response)}</span>
-                  </div>
-                  <div class="color">
-                    <span class="color-name">${timeTaken}</span>
-                    <span class="color-box ${(r.status === 'Correct') ? 'correct' : (r.status === 'Incorrect') ? 'incorrect' : r.status.includes('Recorded') ? 'waiting' : 'other'}"></span>
-                  </div>
-                </div>`;
                 segmentResponses.push(r);
               });
-              var total = questionResponses.length || 1;
-              var unansweredStudentsCount = 0;
-              if (document.getElementById('useRoster').checked && (document.querySelector('#filter-report-responses [aria-selected="true"]').getAttribute('data-value') !== 'all') && !document.getElementById('hideUnanswered').checked) {
-                var courseRosters = rosters.filter(roster => JSON.parse(courses.find(course => String(course.id) === document.getElementById("course-period-input").value)?.periods).includes(Number(String(roster.period))));
-                var totalRosterStudents = [...new Set(courseRosters.flatMap(a => JSON.parse(a.data).map(b => Number(b.seatCode))))];
-                if (totalRosterStudents.length) {
-                  var answeredStudentsCount = [...new Set(questionResponses.flatMap(a => a.seatCode).filter(x => totalRosterStudents.includes(x)))].length;
-                  unansweredStudentsCount = totalRosterStudents.length - answeredStudentsCount;
-                  total = questionResponses.length + unansweredStudentsCount;
-                }
-              }
-              detailedReport += `<div class="detailed-report-question"${(questionResponses.length != 0) ? ` report="segment-question-${q.id}"` : ''}>
-                <b>Question ${question.number} (${questionResponses.length} Response${(questionResponses.length != 1) ? 's' : ''})</b>
-                <div class="barcount-wrapper">
-                  ${(questionResponses.filter(r => r.status === 'Correct').length != 0) ? `<div class="barcount correct" style="width: calc(${questionResponses.filter(r => r.status === 'Correct').length / total} * 100%)">${questionResponses.filter(r => r.status === 'Correct').length}</div>` : ''}
-                  ${((questionResponses.filter(r => ((r.status !== 'Correct') && (r.status !== 'Incorrect') && !r.status.includes('Recorded'))).length + unansweredStudentsCount) != 0) ? `<div class="barcount other" style="width: calc(${(questionResponses.filter(r => ((r.status !== 'Correct') && (r.status !== 'Incorrect') && !r.status.includes('Recorded'))).length + unansweredStudentsCount) / total} * 100%)">${questionResponses.filter(r => ((r.status !== 'Correct') && (r.status !== 'Incorrect') && !r.status.includes('Recorded'))).length + unansweredStudentsCount}</div>` : ''}
-                  ${(questionResponses.filter(r => r.status.includes('Recorded')).length != 0) ? `<div class="barcount waiting" style="width: calc(${questionResponses.filter(r => r.status.includes('Recorded')).length / total} * 100%)">${questionResponses.filter(r => r.status.includes('Recorded')).length}</div>` : ''}
-                  ${(questionResponses.filter(r => r.status === 'Incorrect').length != 0) ? `<div class="barcount incorrect" style="width: calc(${questionResponses.filter(r => r.status === 'Incorrect').length / total} * 100%)">${questionResponses.filter(r => r.status === 'Incorrect').length}</div>` : ''}
-                </div>
-              </div>
-              ${(questionResponses.length != 0) ? `<div class="section detailed-report" id="segment-question-${q.id}">
-                ${detailedReport1}
-              </div>` : ''}`;
             });
             var total = segmentResponses.length || 1;
             var unansweredStudentsCount = 0;
@@ -891,7 +827,7 @@ try {
               </div>
             </div>
             ${(JSON.parse(segment.question_ids).length != 0) ? `<div class="section detailed-report" id="segment-${segment.id}">
-              ${detailedReport}
+              ${'Rendering...'}
             </div>` : ''}`;
           }
         });
@@ -2196,7 +2132,6 @@ try {
           break;
       }
       sortedSeatCodes.forEach(seatCode => {
-        var detailedReport = '';
         var seatCodeResponses = seatCode.responses.sort((a, b) => a.timestamp - b.timestamp);
         if (document.getElementById('hideIncorrectAttempts').checked) seatCodeResponses = seatCodeResponses.filter((r, index, self) => r.status === 'Correct' || !self.some(other => other.question_id === r.question_id && other.status === 'Correct'));
         if (document.querySelector('#filter-report-responses [aria-selected="true"]').getAttribute('data-value') === 'first') {
@@ -2204,39 +2139,6 @@ try {
         } else if (document.querySelector('#filter-report-responses [aria-selected="true"]').getAttribute('data-value') === 'last') {
           seatCodeResponses = seatCodeResponses.filter(r => r.id === Math.max(...seatCodeResponses.filter(r1 => r1.seatCode === r.seatCode && r1.question_id === r.question_id).map(r1 => r1.id)));
         }
-        seatCodeResponses.forEach(r => {
-          const currentDate = new Date(r.timestamp);
-          var timeTaken = "N/A";
-          const sameSeatCodeResponses = responses
-            .filter(r => courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value) ? JSON.parse(courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value)?.periods).includes(Number(String(r.seatCode)[0])) : false)
-            .filter(r => document.getElementById("filter-segment-input")?.value ? (String(segments.find(s => (String(s.id) === String(r.segment)) && (courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value) ? (String(s.course) === String(courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value).id)) : true)) ? (segments.find(s => (String(s.id) === String(r.segment)) && (courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value) ? (String(s.course) === String(courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value).id)) : true)).id || r.segment) : (segments.find(s => (courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value) ? (String(s.course) === String(courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value).id)) : false) && JSON.parse(s.question_ids || [])?.find(q => String(q.id) === String(r.question_id)))?.id || '-')) === document.getElementById("filter-segment-input").value) : true)
-            .filter(r => questions.find(q => String(q.id) === String(r.question_id))?.number.startsWith(document.getElementById("sort-question-input")?.value))
-            .filter(r => String(r.seatCode).startsWith(document.getElementById("sort-seat-input")?.value))
-            .sort((a, b) => {
-              if (a.flagged && !b.flagged) return -1;
-              if (!a.flagged && b.flagged) return 1;
-              return b.id - a.id;
-            })
-            .filter(a => a.seatCode === r.seatCode)
-            .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-          const lastResponseIndex = sameSeatCodeResponses.findIndex(a => new Date(a.timestamp) >= currentDate) - 1;
-          const lastResponse = lastResponseIndex >= 0 ? sameSeatCodeResponses[lastResponseIndex] : null;
-          let timeDifference;
-          if (lastResponse) {
-            timeDifference = calculateTimeDifference(currentDate, lastResponse.timestamp);
-            timeTaken = formatTimeDifference(timeDifference);
-          }
-          detailedReport += questions.find(q => String(q.id) === String(r.question_id))?.number ? `<div class="detailed-report-question">
-            <div class="color">
-              <span class="color-box ${(r.status === 'Correct') ? 'correct' : (r.status === 'Incorrect') ? 'incorrect' : r.status.includes('Recorded') ? 'waiting' : 'other'}"></span>
-              <span class="color-name">Segment ${segments.find(s => String(s.id) === String(r.segment))?.number || r.segment} #${questions.find(q => String(q.id) === String(r.question_id))?.number}<p class="showonhover"> (${time.unixToString(r.timestamp)})</p>: ${escapeHTML(r.response)}</span>
-            </div>
-            <div class="color">
-              <span class="color-name">${timeTaken}</span>
-              <span class="color-box ${(r.status === 'Correct') ? 'correct' : (r.status === 'Incorrect') ? 'incorrect' : r.status.includes('Recorded') ? 'waiting' : 'other'}"></span>
-            </div>
-          </div>` : '';
-        });
         var name = "Unknown";
         if (document.getElementById('useRoster').checked) {
           var roster = rosters.find(roster => roster.period === Number(String(seatCode.code)[0]));
@@ -2260,7 +2162,7 @@ try {
         seatCodeDetailedReport.classList = 'seat-code-report';
         seatCodeDetailedReport.setAttribute('report', `seat-code-${seatCode.code}`);
         seatCodeDetailedReport.innerHTML = `<div class="section detailed-report" id="seat-code-${seatCode.code}">
-          ${detailedReport}
+          ${'Rendering...'}
         </div>`;
         document.querySelector('.seat-code-reports').appendChild(seatCodeDetailedReport);
       });
@@ -3030,9 +2932,10 @@ try {
     ui.reloadUnsavedInputs();
   }
 
-  function toggleDetailedReport() {
+  async function toggleDetailedReport() {
     if (!active || !this.getAttribute('report') || !document.getElementById(this.getAttribute('report'))) return;
     document.getElementById(this.getAttribute('report')).classList.toggle('active');
+    await renderDetailedReport(this.getAttribute('report'));
     syncExpandAllReportsButton();
   }
 
@@ -3056,24 +2959,206 @@ try {
     var openReports = document.querySelectorAll('.detailed-report.active');
     reports.forEach(report => {
       (openReports.length > 0) ? report.classList.remove('active') : report.classList.add('active');
+      renderDetailedReport(report.id);
     });
     syncExpandAllReportsButton();
   }
 
-  function updateQuestionReports() {
-    expandedReports = [];
-    document.querySelectorAll('.detailed-report.active').forEach(dr => expandedReports.push(dr.id));
-    if (!document.querySelector('.question-reports') || (questions.length === 0)) return;
-    document.querySelector('.question-reports').innerHTML = '';
-    const course = courses.find(c => document.getElementById("course-period-input") ? (String(c.id) === document.getElementById("course-period-input").value) : null);
-    var courseQuestions = [];
-    segments.filter(s => String(s.course) === String(course?.id)).filter(s => document.getElementById("filter-segment-input")?.value ? (String(s.id) === document.getElementById("filter-segment-input").value) : true).forEach(segment => {
-      JSON.parse(segment.question_ids).filter(q => questions.find(q1 => String(q1.id) === String(q.id))?.number.startsWith(document.getElementById("sort-question-input")?.value)).forEach(questionId => {
-        const question = questions.find(q => String(q.id) === String(questionId.id));
-        if (question) courseQuestions.push(question);
+  function renderDetailedReport(reportSlug) {
+    const detailedReportElement = document.getElementById(reportSlug);
+    if (!active || !reportSlug || !detailedReportElement || (detailedReportElement.innerText !== 'Rendering...')) return;
+    var detailedReport = '';
+    console.log('Rendering detailed report for', reportSlug);
+    if (reportSlug.startsWith('seat-code-')) {
+      var responses1 = responses
+        .filter(r => courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value) ? JSON.parse(courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value)?.periods).includes(Number(String(r.seatCode)[0])) : false)
+        .filter(r => document.getElementById("filter-segment-input")?.value ? (String(segments.find(s => (String(s.id) === String(r.segment)) && (courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value) ? (String(s.course) === String(courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value).id)) : true)) ? (segments.find(s => (String(s.id) === String(r.segment)) && (courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value) ? (String(s.course) === String(courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value).id)) : true)).id || r.segment) : (segments.find(s => (courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value) ? (String(s.course) === String(courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value).id)) : false) && JSON.parse(s.question_ids || [])?.find(q => String(q.id) === String(r.question_id)))?.id || '-')) === document.getElementById("filter-segment-input").value) : true)
+        .filter(r => questions.find(q => String(q.id) === String(r.question_id))?.number.startsWith(document.getElementById("sort-question-input")?.value))
+        .filter(r => String(r.seatCode).startsWith(document.getElementById("sort-seat-input")?.value))
+        .sort((a, b) => {
+          if (a.flagged && !b.flagged) return -1;
+          if (!a.flagged && b.flagged) return 1;
+          return b.id - a.id;
+        });
+      var seatCodes = [];
+      responses1.forEach(r => {
+        if (document.querySelector('.seat-code-reports')) {
+          if (seatCodes.find(seatCode => seatCode.code === r.seatCode)) {
+            const seatCode = seatCodes.find(seatCode => seatCode.code === r.seatCode);
+            if (r.status === 'Correct') {
+              seatCode.correct++;
+            } else if (r.status === 'Incorrect') {
+              seatCode.incorrect++;
+            } else if (r.status.includes('Recorded')) {
+              seatCode.waiting++;
+            } else {
+              seatCode.other++;
+            }
+            seatCode.total++;
+            seatCode.responses.push(r);
+          } else {
+            seatCodes.push({
+              code: r.seatCode,
+              correct: (r.status === 'Correct') ? 1 : 0,
+              incorrect: (r.status === 'Incorrect') ? 1 : 0,
+              other: ((r.status !== 'Correct') && (r.status !== 'Incorrect') && !r.status.includes('Recorded')) ? 1 : 0,
+              waiting: r.status.includes('Recorded') ? 1 : 0,
+              total: 1,
+              responses: [r],
+            });
+          }
+        }
       });
-    });
-    courseQuestions.filter(q => q.number.startsWith(document.getElementById("sort-question-input")?.value)).sort((a, b) => document.getElementById("filter-segment-input")?.value ? 0 : (a.id - b.id)).forEach(question => {
+      var seatCode = seatCodes.find(s => ('seat-code-' + s.code) === reportSlug);
+      var seatCodeResponses = seatCode.responses.sort((a, b) => a.timestamp - b.timestamp);
+      if (document.getElementById('hideIncorrectAttempts').checked) seatCodeResponses = seatCodeResponses.filter((r, index, self) => r.status === 'Correct' || !self.some(other => other.question_id === r.question_id && other.status === 'Correct'));
+      if (document.querySelector('#filter-report-responses [aria-selected="true"]').getAttribute('data-value') === 'first') {
+        seatCodeResponses = seatCodeResponses.filter(r => r.id === Math.min(...seatCodeResponses.filter(r1 => r1.seatCode === r.seatCode && r1.question_id === r.question_id).map(r1 => r1.id)));
+      } else if (document.querySelector('#filter-report-responses [aria-selected="true"]').getAttribute('data-value') === 'last') {
+        seatCodeResponses = seatCodeResponses.filter(r => r.id === Math.max(...seatCodeResponses.filter(r1 => r1.seatCode === r.seatCode && r1.question_id === r.question_id).map(r1 => r1.id)));
+      }
+      seatCodeResponses.forEach(r => {
+        const currentDate = new Date(r.timestamp);
+        var timeTaken = "N/A";
+        const sameSeatCodeResponses = responses
+          .filter(r => courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value) ? JSON.parse(courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value)?.periods).includes(Number(String(r.seatCode)[0])) : false)
+          .filter(r => document.getElementById("filter-segment-input")?.value ? (String(segments.find(s => (String(s.id) === String(r.segment)) && (courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value) ? (String(s.course) === String(courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value).id)) : true)) ? (segments.find(s => (String(s.id) === String(r.segment)) && (courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value) ? (String(s.course) === String(courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value).id)) : true)).id || r.segment) : (segments.find(s => (courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value) ? (String(s.course) === String(courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value).id)) : false) && JSON.parse(s.question_ids || [])?.find(q => String(q.id) === String(r.question_id)))?.id || '-')) === document.getElementById("filter-segment-input").value) : true)
+          .filter(r => questions.find(q => String(q.id) === String(r.question_id))?.number.startsWith(document.getElementById("sort-question-input")?.value))
+          .filter(r => String(r.seatCode).startsWith(document.getElementById("sort-seat-input")?.value))
+          .sort((a, b) => {
+            if (a.flagged && !b.flagged) return -1;
+            if (!a.flagged && b.flagged) return 1;
+            return b.id - a.id;
+          })
+          .filter(a => a.seatCode === r.seatCode)
+          .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+        const lastResponseIndex = sameSeatCodeResponses.findIndex(a => new Date(a.timestamp) >= currentDate) - 1;
+        const lastResponse = lastResponseIndex >= 0 ? sameSeatCodeResponses[lastResponseIndex] : null;
+        let timeDifference;
+        if (lastResponse) {
+          timeDifference = calculateTimeDifference(currentDate, lastResponse.timestamp);
+          timeTaken = formatTimeDifference(timeDifference);
+        }
+        detailedReport += questions.find(q => String(q.id) === String(r.question_id))?.number ? `<div class="detailed-report-question">
+          <div class="color">
+            <span class="color-box ${(r.status === 'Correct') ? 'correct' : (r.status === 'Incorrect') ? 'incorrect' : r.status.includes('Recorded') ? 'waiting' : 'other'}"></span>
+            <span class="color-name">Segment ${segments.find(s => String(s.id) === String(r.segment))?.number || r.segment} #${questions.find(q => String(q.id) === String(r.question_id))?.number}<p class="showonhover"> (${time.unixToString(r.timestamp)})</p>: ${escapeHTML(r.response)}</span>
+          </div>
+          <div class="color">
+            <span class="color-name">${timeTaken}</span>
+            <span class="color-box ${(r.status === 'Correct') ? 'correct' : (r.status === 'Incorrect') ? 'incorrect' : r.status.includes('Recorded') ? 'waiting' : 'other'}"></span>
+          </div>
+        </div>` : '';
+      });
+    } else if (reportSlug.startsWith('segment-')) {
+      var segment = segments.find(s => String(s.id) === reportSlug.split('segment-')[1]);
+      JSON.parse(segment.question_ids).filter(q => questions.find(q1 => String(q1.id) === String(q.id))?.number.startsWith(document.getElementById("sort-question-input")?.value)).forEach(q => {
+        var question = questions.find(q1 => String(q1.id) === String(q.id));
+        if (!question) return;
+        var questionResponses = responses.filter(seatCode => JSON.parse(courses.find(course => String(course.id) === document.getElementById("course-period-input").value).periods).includes(Number(String(seatCode.seatCode)[0]))).filter(r => String(r.segment) === String(segment.id)).filter(r => r.question_id === question.id).filter(r => String(r.seatCode).startsWith(document.getElementById("sort-seat-input")?.value));
+        if (document.getElementById('hideIncorrectAttempts').checked) questionResponses = questionResponses.filter((r, index, self) => r.status === 'Correct' || !self.some(other => other.question_id === r.question_id && other.status === 'Correct'));
+        if (document.querySelector('#filter-report-responses [aria-selected="true"]').getAttribute('data-value') === 'first') {
+          questionResponses = questionResponses.filter(r => r.id === Math.min(...questionResponses.filter(r1 => r1.seatCode === r.seatCode && r1.question_id === r.question_id).map(r1 => r1.id)));
+        } else if (document.querySelector('#filter-report-responses [aria-selected="true"]').getAttribute('data-value') === 'last') {
+          questionResponses = questionResponses.filter(r => r.id === Math.max(...questionResponses.filter(r1 => r1.seatCode === r.seatCode && r1.question_id === r.question_id).map(r1 => r1.id)));
+        }
+        var detailedReport1 = '';
+        switch (document.querySelector('#sort-report-responses [aria-selected="true"]').getAttribute('data-value')) {
+          case 'seatCode':
+            questionResponses = questionResponses.sort((a, b) => a.seatCode - b.seatCode);
+            break;
+          case 'studentName':
+            questionResponses = questionResponses.sort((a, b) => {
+              var nameA = "Unknown";
+              var nameB = "Unknown";
+              if (document.getElementById('useRoster').checked) {
+                var roster = rosters.find(roster => roster.period === Number(String(a.seatCode)[0]));
+                if (roster) {
+                  var studentA = JSON.parse(roster.data).find(student => String(student.seatCode) === String(a.seatCode));
+                  if (studentA) nameA = `${studentA.last}, ${studentA.first}`;
+                  var studentB = JSON.parse(roster.data).find(student => String(student.seatCode) === String(b.seatCode));
+                  if (studentB) nameB = `${studentB.last}, ${studentB.first}`;
+                }
+              }
+              return nameA.localeCompare(nameB);
+            });
+            break;
+        }
+        questionResponses.forEach(r => {
+          var name = "Unknown";
+          if (document.getElementById('useRoster').checked) {
+            var roster = rosters.find(roster => roster.period === Number(String(r.seatCode)[0]));
+            if (roster) {
+              var student = JSON.parse(roster.data).find(student => String(student.seatCode) === String(r.seatCode));
+              if (student) name = `${student.last}, ${student.first}`;
+            }
+          }
+          const currentDate = new Date(r.timestamp);
+          var timeTaken = "N/A";
+          const sameSeatCodeResponses = responses
+            .filter(r => courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value) ? JSON.parse(courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value)?.periods).includes(Number(String(r.seatCode)[0])) : false)
+            .filter(r => document.getElementById("filter-segment-input")?.value ? (String(segments.find(s => (String(s.id) === String(r.segment)) && (courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value) ? (String(s.course) === String(courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value).id)) : true)) ? (segments.find(s => (String(s.id) === String(r.segment)) && (courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value) ? (String(s.course) === String(courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value).id)) : true)).id || r.segment) : (segments.find(s => (courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value) ? (String(s.course) === String(courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value).id)) : false) && JSON.parse(s.question_ids || [])?.find(q => String(q.id) === String(r.question_id)))?.id || '-')) === document.getElementById("filter-segment-input").value) : true)
+            .filter(r => questions.find(q => String(q.id) === String(r.question_id))?.number.startsWith(document.getElementById("sort-question-input")?.value))
+            .filter(r => String(r.seatCode).startsWith(document.getElementById("sort-seat-input")?.value))
+            .sort((a, b) => {
+              if (a.flagged && !b.flagged) return -1;
+              if (!a.flagged && b.flagged) return 1;
+              return b.id - a.id;
+            })
+            .filter(a => a.seatCode === r.seatCode)
+            .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+          const lastResponseIndex = sameSeatCodeResponses.findIndex(a => new Date(a.timestamp) >= currentDate) - 1;
+          const lastResponse = lastResponseIndex >= 0 ? sameSeatCodeResponses[lastResponseIndex] : null;
+          let timeDifference;
+          if (lastResponse) {
+            timeDifference = calculateTimeDifference(currentDate, lastResponse.timestamp);
+            timeTaken = formatTimeDifference(timeDifference);
+          }
+          detailedReport1 += `<div class="detailed-report-question">
+                  <div class="color">
+                    <span class="color-box ${(r.status === 'Correct') ? 'correct' : (r.status === 'Incorrect') ? 'incorrect' : r.status.includes('Recorded') ? 'waiting' : 'other'}"></span>
+                    <span class="color-name">${document.getElementById('useRoster').checked ? `${name} (${r.seatCode})` : r.seatCode}<p class="showonhover"> (${time.unixToString(r.timestamp)})</p>: ${escapeHTML(r.response)}</span>
+                  </div>
+                  <div class="color">
+                    <span class="color-name">${timeTaken}</span>
+                    <span class="color-box ${(r.status === 'Correct') ? 'correct' : (r.status === 'Incorrect') ? 'incorrect' : r.status.includes('Recorded') ? 'waiting' : 'other'}"></span>
+                  </div>
+                </div>`;
+        });
+        var total = questionResponses.length || 1;
+        var unansweredStudentsCount = 0;
+        if (document.getElementById('useRoster').checked && (document.querySelector('#filter-report-responses [aria-selected="true"]').getAttribute('data-value') !== 'all') && !document.getElementById('hideUnanswered').checked) {
+          var courseRosters = rosters.filter(roster => JSON.parse(courses.find(course => String(course.id) === document.getElementById("course-period-input").value)?.periods).includes(Number(String(roster.period))));
+          var totalRosterStudents = [...new Set(courseRosters.flatMap(a => JSON.parse(a.data).map(b => Number(b.seatCode))))];
+          if (totalRosterStudents.length) {
+            var answeredStudentsCount = [...new Set(questionResponses.flatMap(a => a.seatCode).filter(x => totalRosterStudents.includes(x)))].length;
+            unansweredStudentsCount = totalRosterStudents.length - answeredStudentsCount;
+            total = questionResponses.length + unansweredStudentsCount;
+          }
+        }
+        detailedReport += `<div class="detailed-report-question"${(questionResponses.length != 0) ? ` report="segment-question-${q.id}"` : ''}>
+          <b>Question ${question.number} (${questionResponses.length} Response${(questionResponses.length != 1) ? 's' : ''})</b>
+          <div class="barcount-wrapper">
+            ${(questionResponses.filter(r => r.status === 'Correct').length != 0) ? `<div class="barcount correct" style="width: calc(${questionResponses.filter(r => r.status === 'Correct').length / total} * 100%)">${questionResponses.filter(r => r.status === 'Correct').length}</div>` : ''}
+            ${((questionResponses.filter(r => ((r.status !== 'Correct') && (r.status !== 'Incorrect') && !r.status.includes('Recorded'))).length + unansweredStudentsCount) != 0) ? `<div class="barcount other" style="width: calc(${(questionResponses.filter(r => ((r.status !== 'Correct') && (r.status !== 'Incorrect') && !r.status.includes('Recorded'))).length + unansweredStudentsCount) / total} * 100%)">${questionResponses.filter(r => ((r.status !== 'Correct') && (r.status !== 'Incorrect') && !r.status.includes('Recorded'))).length + unansweredStudentsCount}</div>` : ''}
+            ${(questionResponses.filter(r => r.status.includes('Recorded')).length != 0) ? `<div class="barcount waiting" style="width: calc(${questionResponses.filter(r => r.status.includes('Recorded')).length / total} * 100%)">${questionResponses.filter(r => r.status.includes('Recorded')).length}</div>` : ''}
+            ${(questionResponses.filter(r => r.status === 'Incorrect').length != 0) ? `<div class="barcount incorrect" style="width: calc(${questionResponses.filter(r => r.status === 'Incorrect').length / total} * 100%)">${questionResponses.filter(r => r.status === 'Incorrect').length}</div>` : ''}
+          </div>
+        </div>
+        ${(questionResponses.length != 0) ? `<div class="section detailed-report" id="segment-question-${q.id}">
+          ${detailedReport1}
+        </div>` : ''}`;
+      });
+    } else if (reportSlug.startsWith('question-')) {
+      const course = courses.find(c => document.getElementById("course-period-input") ? (String(c.id) === document.getElementById("course-period-input").value) : null);
+      var courseQuestions = [];
+      segments.filter(s => String(s.course) === String(course?.id)).filter(s => document.getElementById("filter-segment-input")?.value ? (String(s.id) === document.getElementById("filter-segment-input").value) : true).forEach(segment => {
+        JSON.parse(segment.question_ids).filter(q => questions.find(q1 => String(q1.id) === String(q.id))?.number.startsWith(document.getElementById("sort-question-input")?.value)).forEach(questionId => {
+          const question = questions.find(q => String(q.id) === String(questionId.id));
+          if (question) courseQuestions.push(question);
+        });
+      });
+      var question = courseQuestions.find(q => ('question-' + q.id) === reportSlug);
       var questionResponses = responses.filter(r => r.question_id === question.id).filter(r => JSON.parse(courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value).periods).includes(Number(String(r.seatCode)[0]))).filter(r => String(r.seatCode).startsWith(document.getElementById("sort-seat-input")?.value));
       if (document.getElementById('hideIncorrectAttempts').checked) questionResponses = questionResponses.filter((r, index, self) => r.status === 'Correct' || !self.some(other => other.question_id === r.question_id && other.status === 'Correct'));
       if (document.querySelector('#filter-report-responses [aria-selected="true"]').getAttribute('data-value') === 'first') {
@@ -3081,7 +3166,6 @@ try {
       } else if (document.querySelector('#filter-report-responses [aria-selected="true"]').getAttribute('data-value') === 'last') {
         questionResponses = questionResponses.filter(r => r.id === Math.max(...questionResponses.filter(r1 => r1.seatCode === r.seatCode && r1.question_id === r.question_id).map(r1 => r1.id)));
       }
-      var detailedReport = '';
       switch (document.querySelector('#sort-report-responses [aria-selected="true"]').getAttribute('data-value')) {
         case 'seatCode':
           questionResponses = questionResponses.sort((a, b) => a.seatCode - b.seatCode);
@@ -3144,6 +3228,53 @@ try {
           </div>
         </div>`
       });
+    }
+    detailedReportElement.innerHTML = detailedReport || 'Failed to render.';
+    document.querySelectorAll('[report]').forEach(a => a.addEventListener('click', toggleDetailedReport));
+  }
+
+  function updateQuestionReports() {
+    expandedReports = [];
+    document.querySelectorAll('.detailed-report.active').forEach(dr => expandedReports.push(dr.id));
+    if (!document.querySelector('.question-reports') || (questions.length === 0)) return;
+    document.querySelector('.question-reports').innerHTML = '';
+    const course = courses.find(c => document.getElementById("course-period-input") ? (String(c.id) === document.getElementById("course-period-input").value) : null);
+    var courseQuestions = [];
+    segments.filter(s => String(s.course) === String(course?.id)).filter(s => document.getElementById("filter-segment-input")?.value ? (String(s.id) === document.getElementById("filter-segment-input").value) : true).forEach(segment => {
+      JSON.parse(segment.question_ids).filter(q => questions.find(q1 => String(q1.id) === String(q.id))?.number.startsWith(document.getElementById("sort-question-input")?.value)).forEach(questionId => {
+        const question = questions.find(q => String(q.id) === String(questionId.id));
+        if (question) courseQuestions.push(question);
+      });
+    });
+    courseQuestions.filter(q => q.number.startsWith(document.getElementById("sort-question-input")?.value)).sort((a, b) => document.getElementById("filter-segment-input")?.value ? 0 : (a.id - b.id)).forEach(question => {
+      var questionResponses = responses.filter(r => r.question_id === question.id).filter(r => JSON.parse(courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value).periods).includes(Number(String(r.seatCode)[0]))).filter(r => String(r.seatCode).startsWith(document.getElementById("sort-seat-input")?.value));
+      if (document.getElementById('hideIncorrectAttempts').checked) questionResponses = questionResponses.filter((r, index, self) => r.status === 'Correct' || !self.some(other => other.question_id === r.question_id && other.status === 'Correct'));
+      if (document.querySelector('#filter-report-responses [aria-selected="true"]').getAttribute('data-value') === 'first') {
+        questionResponses = questionResponses.filter(r => r.id === Math.min(...questionResponses.filter(r1 => r1.seatCode === r.seatCode && r1.question_id === r.question_id).map(r1 => r1.id)));
+      } else if (document.querySelector('#filter-report-responses [aria-selected="true"]').getAttribute('data-value') === 'last') {
+        questionResponses = questionResponses.filter(r => r.id === Math.max(...questionResponses.filter(r1 => r1.seatCode === r.seatCode && r1.question_id === r.question_id).map(r1 => r1.id)));
+      }
+      switch (document.querySelector('#sort-report-responses [aria-selected="true"]').getAttribute('data-value')) {
+        case 'seatCode':
+          questionResponses = questionResponses.sort((a, b) => a.seatCode - b.seatCode);
+          break;
+        case 'studentName':
+          questionResponses = questionResponses.sort((a, b) => {
+            var nameA = "Unknown";
+            var nameB = "Unknown";
+            if (document.getElementById('useRoster').checked) {
+              var roster = rosters.find(roster => roster.period === Number(String(a.seatCode)[0]));
+              if (roster) {
+                var studentA = JSON.parse(roster.data).find(student => String(student.seatCode) === String(a.seatCode));
+                if (studentA) nameA = `${studentA.last}, ${studentA.first}`;
+                var studentB = JSON.parse(roster.data).find(student => String(student.seatCode) === String(b.seatCode));
+                if (studentB) nameB = `${studentB.last}, ${studentB.first}`;
+              }
+            }
+            return nameA.localeCompare(nameB);
+          });
+          break;
+      }
       var total = questionResponses.length || 1;
       var unansweredStudentsCount = 0;
       if (document.getElementById('useRoster').checked && (document.querySelector('#filter-report-responses [aria-selected="true"]').getAttribute('data-value') !== 'all') && !document.getElementById('hideUnanswered').checked) {
@@ -3165,7 +3296,7 @@ try {
         </div>
       </div>
       ${(questionResponses.length != 0) ? `<div class="section detailed-report" id="question-${question.id}">
-        ${detailedReport}
+        ${'Rendering...'}
       </div>` : ''}`;
     });
     expandedReports.forEach(er => {
