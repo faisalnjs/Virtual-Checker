@@ -104,6 +104,11 @@ div.spacer {
   transition: 0.25s width;
 }
 
+#checker:has(.responses) {
+  width: min(100%, 1000px);
+  align-self: flex-end;
+}
+
 #checker .column {
   flex: 1;
   align-self: center;
