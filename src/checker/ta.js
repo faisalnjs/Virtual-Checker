@@ -176,7 +176,9 @@ try {
   document.getElementById("code-input")?.addEventListener("keydown", (e) => {
     if (e.key == "Enter") {
       e.preventDefault();
-      saveCode();
+      setTimeout(() => {
+        saveCode();
+      }, 100);
     }
   });
 
@@ -286,7 +288,14 @@ try {
     pagination.responses.total = responses1.filter(r => !((r.status === 'Invalid Format') || (r.status === 'Unknown, Recorded')) && document.querySelector('.responses .section')).length;
     if (document.querySelector('.awaitingResponses #current-page')) document.querySelector('.awaitingResponses #current-page').innerText = `Page ${pagination.awaitingResponses.page + 1} of ${Math.ceil(pagination.awaitingResponses.total / pagination.awaitingResponses.perPage)}`;
     if (document.querySelector('.responses #current-page')) document.querySelector('.responses #current-page').innerText = `Page ${pagination.responses.page + 1} of ${Math.ceil(pagination.responses.total / pagination.responses.perPage)}`;
-    responses1.filter(r => (((r.status === 'Invalid Format') || (r.status === 'Unknown, Recorded')) && document.querySelector('.awaitingResponses .section')) ? ((responses1.filter(response => ((response.status === 'Invalid Format') || (response.status === 'Unknown, Recorded')) && document.querySelector('.awaitingResponses .section')).indexOf(r) >= pagination.awaitingResponses.page * pagination.awaitingResponses.perPage) && (responses1.filter(response => ((response.status === 'Invalid Format') || (response.status === 'Unknown, Recorded')) && document.querySelector('.awaitingResponses .section')).indexOf(r) < (pagination.awaitingResponses.page * pagination.awaitingResponses.perPage) + pagination.awaitingResponses.perPage)) : (document.querySelector('.responses .section') ? ((responses1.filter(response => !((response.status === 'Invalid Format') || (response.status === 'Unknown, Recorded')) && document.querySelector('.awaitingResponses .section')).indexOf(r) >= pagination.responses.page * pagination.responses.perPage) && (responses1.filter(response => !((response.status === 'Invalid Format') || (response.status === 'Unknown, Recorded')) && document.querySelector('.awaitingResponses .section')).indexOf(r) < (pagination.responses.page * pagination.responses.perPage) + pagination.responses.perPage)) : false)).forEach(r => {
+    const awaitingSection = document.querySelector('.awaitingResponses .section');
+    const responsesSection = document.querySelector('.responses .section');
+    const awaitingResponses = responses1.filter(r => (r.status === 'Invalid Format' || r.status === 'Unknown, Recorded'));
+    const normalResponses = responses1.filter(r => !(r.status === 'Invalid Format' || r.status === 'Unknown, Recorded'));
+    const awaitingPageResponses = awaitingSection ? awaitingResponses.slice(pagination.awaitingResponses.page * pagination.awaitingResponses.perPage, (pagination.awaitingResponses.page + 1) * pagination.awaitingResponses.perPage) : [];
+    const responsesPageResponses = responsesSection ? normalResponses.slice(pagination.responses.page * pagination.responses.perPage, (pagination.responses.page + 1) * pagination.responses.perPage) : [];
+    var responses2 = awaitingSection ? awaitingPageResponses : (responsesSection ? responsesPageResponses : []);
+    responses2.forEach(r => {
       var responseString = r.response;
       var isMatrix = null;
       if (responseString.includes('[[')) {
