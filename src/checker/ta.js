@@ -19,6 +19,10 @@ var active = false;
 var timestamps = false;
 var noReloadCourse = false;
 var lastMarkedQuestion = {};
+var pagination = {
+  awaitingResponses: { page: 0, perPage: 50 },
+  responses: { page: 0, perPage: 50 },
+};
 
 try {
   async function init() {
@@ -160,6 +164,9 @@ try {
     return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
   }
 
+  document.querySelectorAll('#previous-page-button').forEach(a => a.addEventListener("click", () => previousPage(a)));
+  document.querySelectorAll('#next-page-button').forEach(a => a.addEventListener("click", () => nextPage(a)));
+
   // Limit seat code input to integers
   document.getElementById("code-input")?.addEventListener("input", (e) => {
     e.target.value = parseInt(e.target.value) || "";
@@ -275,7 +282,11 @@ try {
         if (!a.flagged && b.flagged) return 1;
         return b.id - a.id;
       });
-    responses1.forEach(r => {
+    pagination.awaitingResponses.total = responses1.filter(r => ((r.status === 'Invalid Format') || (r.status === 'Unknown, Recorded')) && document.querySelector('.awaitingResponses .section')).length;
+    pagination.responses.total = responses1.filter(r => !((r.status === 'Invalid Format') || (r.status === 'Unknown, Recorded')) && document.querySelector('.responses .section')).length;
+    if (document.querySelector('.awaitingResponses #current-page')) document.querySelector('.awaitingResponses #current-page').innerText = `Page ${pagination.awaitingResponses.page + 1} of ${Math.ceil(pagination.awaitingResponses.total / pagination.awaitingResponses.perPage)}`;
+    if (document.querySelector('.responses #current-page')) document.querySelector('.responses #current-page').innerText = `Page ${pagination.responses.page + 1} of ${Math.ceil(pagination.responses.total / pagination.responses.perPage)}`;
+    responses1.filter(r => (((r.status === 'Invalid Format') || (r.status === 'Unknown, Recorded')) && document.querySelector('.awaitingResponses .section')) ? ((responses1.filter(response => ((response.status === 'Invalid Format') || (response.status === 'Unknown, Recorded')) && document.querySelector('.awaitingResponses .section')).indexOf(r) >= pagination.awaitingResponses.page * pagination.awaitingResponses.perPage) && (responses1.filter(response => ((response.status === 'Invalid Format') || (response.status === 'Unknown, Recorded')) && document.querySelector('.awaitingResponses .section')).indexOf(r) < (pagination.awaitingResponses.page * pagination.awaitingResponses.perPage) + pagination.awaitingResponses.perPage)) : (document.querySelector('.responses .section') ? ((responses1.filter(response => !((response.status === 'Invalid Format') || (response.status === 'Unknown, Recorded')) && document.querySelector('.awaitingResponses .section')).indexOf(r) >= pagination.responses.page * pagination.responses.perPage) && (responses1.filter(response => !((response.status === 'Invalid Format') || (response.status === 'Unknown, Recorded')) && document.querySelector('.awaitingResponses .section')).indexOf(r) < (pagination.responses.page * pagination.responses.perPage) + pagination.responses.perPage)) : false)).forEach(r => {
       var responseString = r.response;
       var isMatrix = null;
       if (responseString.includes('[[')) {
@@ -744,6 +755,25 @@ try {
         },
       ],
     });
+  }
+
+  function previousPage(paginationSection) {
+    const group = Array.from(paginationSection.parentElement.parentElement.classList).find(a => Object.keys(pagination).includes(a));
+    if (!group) return;
+    pagination[group].page = pagination[group].page - 1;
+    updateResponses();
+    paginationSection.getElementById('current-page').innerText = `Page ${pagination[group].page + 1} of ${Math.ceil(pagination[group].total / pagination[group].perPage)}`;
+    paginationSection.getElementById('next-page').disabled = false;
+    paginationSection.getElementById('previous-page').disabled = (pagination[group].page - 1 < 0) ? true : false;
+  }
+
+  function nextPage(paginationSection) {
+    const group = Array.from(paginationSection.parentElement.parentElement.classList).find(a => Object.keys(pagination).includes(a));
+    if (!group) return;
+    pagination[group].page = pagination[group].page + 1;
+    updateResponses();
+    paginationSection.getElementById('current-page').innerText = `Page ${pagination[group].page + 1} of ${Math.ceil(pagination[group].total / pagination[group].perPage)}`;
+    paginationSection.getElementById('next-page').disabled = (pagination[group].page + 1 >= Math.ceil(pagination[group].total / pagination[group].perPage)) ? true : false;
   }
 } catch (error) {
   if (storage.get("developer")) {
