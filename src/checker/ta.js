@@ -294,8 +294,8 @@ try {
     const normalResponses = responses1.filter(r => !(r.status === 'Invalid Format' || r.status === 'Unknown, Recorded'));
     const awaitingPageResponses = awaitingSection ? awaitingResponses.slice(pagination.awaitingResponses.page * pagination.awaitingResponses.perPage, (pagination.awaitingResponses.page + 1) * pagination.awaitingResponses.perPage) : [];
     const responsesPageResponses = responsesSection ? normalResponses.slice(pagination.responses.page * pagination.responses.perPage, (pagination.responses.page + 1) * pagination.responses.perPage) : [];
-    var responses2 = awaitingSection ? awaitingPageResponses : (responsesSection ? responsesPageResponses : []);
-    responses2.forEach(r => {
+    var pageResponses = [...awaitingPageResponses, ...responsesPageResponses];
+    pageResponses.forEach(r => {
       var responseString = r.response;
       var isMatrix = null;
       if (responseString.includes('[[')) {
@@ -776,9 +776,9 @@ try {
     if (!group) return;
     pagination[group].page = pagination[group].page - 1;
     updateResponses();
-    paginationSection.getElementById('current-page').innerText = `Page ${pagination[group].page + 1} of ${Math.ceil(pagination[group].total / pagination[group].perPage)}`;
-    paginationSection.getElementById('next-page').disabled = false;
-    paginationSection.getElementById('previous-page').disabled = (pagination[group].page - 1 < 0) ? true : false;
+    paginationSection.parentElement.querySelector('#current-page').innerText = `Page ${pagination[group].page + 1} of ${Math.ceil(pagination[group].total / pagination[group].perPage)}`;
+    paginationSection.parentElement.querySelector('#next-page-button').disabled = false;
+    paginationSection.parentElement.querySelector('#previous-page-button').disabled = (pagination[group].page - 1 < 0) ? true : false;
   }
 
   function nextPage(paginationSection) {
@@ -786,8 +786,10 @@ try {
     if (!group) return;
     pagination[group].page = pagination[group].page + 1;
     updateResponses();
-    paginationSection.getElementById('current-page').innerText = `Page ${pagination[group].page + 1} of ${Math.ceil(pagination[group].total / pagination[group].perPage)}`;
-    paginationSection.getElementById('next-page').disabled = (pagination[group].page + 1 >= Math.ceil(pagination[group].total / pagination[group].perPage)) ? true : false;
+    console.log(paginationSection)
+    paginationSection.parentElement.querySelector('#current-page').innerText = `Page ${pagination[group].page + 1} of ${Math.ceil(pagination[group].total / pagination[group].perPage)}`;
+    paginationSection.parentElement.querySelector('#next-page-button').disabled = (pagination[group].page + 1 >= Math.ceil(pagination[group].total / pagination[group].perPage)) ? true : false;
+    paginationSection.parentElement.querySelector('#previous-page-button').disabled = false;
   }
 } catch (error) {
   if (storage.get("developer")) {
