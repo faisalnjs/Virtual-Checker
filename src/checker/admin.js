@@ -1895,7 +1895,6 @@ try {
         if (!a.flagged && b.flagged) return 1;
         return b.id - a.id;
       });
-    var seatCodes = [];
     pagination.awaitingResponses.total = responses1.filter(r => ((r.status === 'Invalid Format') || (r.status === 'Unknown, Recorded')) && document.querySelector('.awaitingResponses .section')).length;
     pagination.responses.total = responses1.filter(r => !((r.status === 'Invalid Format') || (r.status === 'Unknown, Recorded')) && document.querySelector('.responses .section')).length;
     if (document.querySelector('.awaitingResponses #current-page')) document.querySelector('.awaitingResponses #current-page').innerText = `Page ${pagination.awaitingResponses.page + 1} of ${Math.ceil(pagination.awaitingResponses.total / pagination.awaitingResponses.perPage)}`;
@@ -1906,8 +1905,8 @@ try {
     const normalResponses = responses1.filter(r => !(r.status === 'Invalid Format' || r.status === 'Unknown, Recorded'));
     const awaitingPageResponses = awaitingSection ? awaitingResponses.slice(pagination.awaitingResponses.page * pagination.awaitingResponses.perPage, (pagination.awaitingResponses.page + 1) * pagination.awaitingResponses.perPage) : [];
     const responsesPageResponses = responsesSection ? normalResponses.slice(pagination.responses.page * pagination.responses.perPage, (pagination.responses.page + 1) * pagination.responses.perPage) : [];
-    var responses2 = awaitingSection ? awaitingPageResponses : (responsesSection ? responsesPageResponses : []);
-    responses2.forEach(r => {
+    var pageResponses = [...awaitingPageResponses, ...responsesPageResponses];
+    pageResponses.forEach(r => {
       if (document.querySelector('.responses .section') || document.querySelector('.awaitingResponses .section')) {
         var responseString = r.response;
         var isMatrix = null;
@@ -2042,35 +2041,36 @@ try {
         });
       }
     });
-    responses1.forEach(r => {
-      if (document.querySelector('.seat-code-reports')) {
-        if (seatCodes.find(seatCode => seatCode.code === r.seatCode)) {
-          const seatCode = seatCodes.find(seatCode => seatCode.code === r.seatCode);
-          if (r.status === 'Correct') {
-            seatCode.correct++;
-          } else if (r.status === 'Incorrect') {
-            seatCode.incorrect++;
-          } else if (r.status.includes('Recorded')) {
-            seatCode.waiting++;
-          } else {
-            seatCode.other++;
-          }
-          seatCode.total++;
-          seatCode.responses.push(r);
-        } else {
-          seatCodes.push({
-            code: r.seatCode,
-            correct: (r.status === 'Correct') ? 1 : 0,
-            incorrect: (r.status === 'Incorrect') ? 1 : 0,
-            other: ((r.status !== 'Correct') && (r.status !== 'Incorrect') && !r.status.includes('Recorded')) ? 1 : 0,
-            waiting: r.status.includes('Recorded') ? 1 : 0,
-            total: 1,
-            responses: [r],
-          });
-        }
-      }
-    });
     if (document.querySelector('.seat-code-reports')) {
+      var seatCodes = [];
+      responses1.forEach(r => {
+        if (document.querySelector('.seat-code-reports')) {
+          if (seatCodes.find(seatCode => seatCode.code === r.seatCode)) {
+            const seatCode = seatCodes.find(seatCode => seatCode.code === r.seatCode);
+            if (r.status === 'Correct') {
+              seatCode.correct++;
+            } else if (r.status === 'Incorrect') {
+              seatCode.incorrect++;
+            } else if (r.status.includes('Recorded')) {
+              seatCode.waiting++;
+            } else {
+              seatCode.other++;
+            }
+            seatCode.total++;
+            seatCode.responses.push(r);
+          } else {
+            seatCodes.push({
+              code: r.seatCode,
+              correct: (r.status === 'Correct') ? 1 : 0,
+              incorrect: (r.status === 'Incorrect') ? 1 : 0,
+              other: ((r.status !== 'Correct') && (r.status !== 'Incorrect') && !r.status.includes('Recorded')) ? 1 : 0,
+              waiting: r.status.includes('Recorded') ? 1 : 0,
+              total: 1,
+              responses: [r],
+            });
+          }
+        }
+      });
       var sortedSeatCodes = seatCodes.filter(seatCode => JSON.parse(courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value).periods).includes(Number(String(seatCode.code)[0])));
       if (document.getElementById('useRoster').checked) {
         var currentCourseRosters = rosters.filter(roster => JSON.parse(courses.find(course => String(course.id) === document.getElementById("course-period-input").value)?.periods).includes(Number(String(roster.period))));
@@ -5933,9 +5933,9 @@ try {
     if (!group) return;
     pagination[group].page = pagination[group].page - 1;
     updateResponses();
-    paginationSection.getElementById('current-page').innerText = `Page ${pagination[group].page + 1} of ${Math.ceil(pagination[group].total / pagination[group].perPage)}`;
-    paginationSection.getElementById('next-page').disabled = false;
-    paginationSection.getElementById('previous-page').disabled = (pagination[group].page - 1 < 0) ? true : false;
+    paginationSection.parentElement.querySelector('#current-page').innerText = `Page ${pagination[group].page + 1} of ${Math.ceil(pagination[group].total / pagination[group].perPage)}`;
+    paginationSection.parentElement.querySelector('#next-page-button').disabled = false;
+    paginationSection.parentElement.querySelector('#previous-page-button').disabled = (pagination[group].page - 1 < 0) ? true : false;
   }
 
   function nextPage(paginationSection) {
@@ -5943,8 +5943,10 @@ try {
     if (!group) return;
     pagination[group].page = pagination[group].page + 1;
     updateResponses();
-    paginationSection.getElementById('current-page').innerText = `Page ${pagination[group].page + 1} of ${Math.ceil(pagination[group].total / pagination[group].perPage)}`;
-    paginationSection.getElementById('next-page').disabled = (pagination[group].page + 1 >= Math.ceil(pagination[group].total / pagination[group].perPage)) ? true : false;
+    console.log(paginationSection)
+    paginationSection.parentElement.querySelector('#current-page').innerText = `Page ${pagination[group].page + 1} of ${Math.ceil(pagination[group].total / pagination[group].perPage)}`;
+    paginationSection.parentElement.querySelector('#next-page-button').disabled = (pagination[group].page + 1 >= Math.ceil(pagination[group].total / pagination[group].perPage)) ? true : false;
+    paginationSection.parentElement.querySelector('#previous-page-button').disabled = false;
   }
 } catch (error) {
   if (storage.get("developer")) {
