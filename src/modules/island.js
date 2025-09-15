@@ -24,6 +24,7 @@ export default function spawnIsland(element = null, source = null, dataType = 'q
     } else {
         hideIslandTimeout = setTimeout(() => {
             if (document.querySelector('.island:hover')) return;
+            if (Array.from(document.querySelectorAll('dialog')).find(dialog => dialog.querySelector('h2')?.innerText === 'Add Reason')) return;
             document.querySelectorAll('.island-extends').forEach(a => a.classList.remove('island-extends'));
             var island = document.querySelector('.island');
             if (island) island.classList.remove('visible');

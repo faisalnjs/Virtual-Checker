@@ -786,7 +786,6 @@ try {
     if (!group) return;
     pagination[group].page = pagination[group].page + 1;
     updateResponses();
-    console.log(paginationSection)
     paginationSection.parentElement.querySelector('#current-page').innerText = `Page ${pagination[group].page + 1} of ${Math.ceil(pagination[group].total / pagination[group].perPage)}`;
     paginationSection.parentElement.querySelector('#next-page-button').disabled = (pagination[group].page + 1 >= Math.ceil(pagination[group].total / pagination[group].perPage)) ? true : false;
     paginationSection.parentElement.querySelector('#previous-page-button').disabled = false;
