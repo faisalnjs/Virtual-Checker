@@ -1324,9 +1324,11 @@ try {
           var selectedSegment = segments.find(segment => String(segment.id) === document.getElementById("filter-segment-input").value);
           if (selectedSegment) filteredQuestions = filteredQuestions.filter(q => JSON.parse(selectedSegment.question_ids).find(qId => String(qId.id) === String(q.id)));
         }
+        if (this && (this.id === 'filter-segment-input')) pagination.questions.page = 0;
         pagination.questions.total = filteredQuestions.length;
         if (document.querySelector('.questions #current-page')) document.querySelector('.questions #current-page').innerText = `Page ${pagination.questions.page + 1} of ${Math.ceil(pagination.questions.total / pagination.questions.perPage)}`;
         var currentPageQuestions = filteredQuestions.slice(pagination.questions.page * pagination.questions.perPage, (pagination.questions.page + 1) * pagination.questions.perPage);
+        syncPagination();
         renderedEditors = {};
         if (active) {
           Array.from(document.querySelector('.questions .section').children).forEach(rq => {
@@ -1915,10 +1917,15 @@ try {
         if (!a.flagged && b.flagged) return 1;
         return b.id - a.id;
       });
+    if (this && ((this.id === 'course-period-input') || (this.id === 'filter-segment-input') || (this.id === 'sort-question-input') || (this.id === 'sort-seat-input'))) {
+      pagination.awaitingResponses.page = 0;
+      pagination.responses.page = 0;
+    }
     pagination.awaitingResponses.total = responses1.filter(r => ((r.status === 'Invalid Format') || (r.status === 'Unknown, Recorded')) && document.querySelector('.awaitingResponses .section')).length;
     pagination.responses.total = responses1.filter(r => !((r.status === 'Invalid Format') || (r.status === 'Unknown, Recorded')) && document.querySelector('.responses .section')).length;
     if (document.querySelector('.awaitingResponses #current-page')) document.querySelector('.awaitingResponses #current-page').innerText = `Page ${pagination.awaitingResponses.page + 1} of ${Math.ceil(pagination.awaitingResponses.total / pagination.awaitingResponses.perPage)}`;
     if (document.querySelector('.responses #current-page')) document.querySelector('.responses #current-page').innerText = `Page ${pagination.responses.page + 1} of ${Math.ceil(pagination.responses.total / pagination.responses.perPage)}`;
+    syncPagination();
     const awaitingSection = document.querySelector('.awaitingResponses .section');
     const responsesSection = document.querySelector('.responses .section');
     const awaitingResponses = responses1.filter(r => (r.status === 'Invalid Format' || r.status === 'Unknown, Recorded'));
@@ -5450,7 +5457,6 @@ try {
   }
 
   function viewRoster() {
-    console.log(rosters)
     if (!this || !this.parentElement || !this.parentElement.querySelector('input').id) return;
     const roster = rosters.find(roster => String(roster.period) === this.parentElement.querySelector('input').id.split('period-')[1]);
     var rosterDataString = '';
@@ -5815,7 +5821,7 @@ try {
     const questionTitle = this.parentElement.parentElement.querySelector('#question-text-input')?.value;
     const questionDescription = renderedEditors[Number(questionId)].getText().replaceAll('\\n', ' ').replaceAll('  ', ' ').trim() || null;
     const questionImages = [...new Set(JSON.parse(questions.find(q => String(q.id) === questionId).images))];
-    console.log(questionTitle, questionDescription, questionImages);
+    // console.log(questionTitle, questionDescription, questionImages);
     ui.setUnsavedChanges(true);
     if (questionImages.length || questionDescription) {
       ui.startLoader();
@@ -5974,6 +5980,18 @@ try {
     paginationSection.parentElement.querySelector('#current-page').innerText = `Page ${pagination[group].page + 1} of ${Math.ceil(pagination[group].total / pagination[group].perPage)}`;
     paginationSection.parentElement.querySelector('#next-page-button').disabled = (pagination[group].page + 1 >= Math.ceil(pagination[group].total / pagination[group].perPage)) ? true : false;
     paginationSection.parentElement.querySelector('#previous-page-button').disabled = false;
+  }
+
+  function syncPagination() {
+    Object.keys(pagination).forEach(group => {
+      if (document.querySelector(`.${group} .pagination`)) {
+        document.querySelectorAll(`.${group} .pagination`).forEach(paginationSection => {
+          paginationSection.parentElement.querySelector('#current-page').innerText = `Page ${pagination[group].page + 1} of ${Math.ceil(pagination[group].total / pagination[group].perPage)}`;
+          paginationSection.parentElement.querySelector('#next-page-button').disabled = (pagination[group].page + 1 >= Math.ceil(pagination[group].total / pagination[group].perPage)) ? true : false;
+          paginationSection.parentElement.querySelector('#previous-page-button').disabled = (pagination[group].page - 1 < 0) ? true : false;
+        });
+      }
+    });
   }
 } catch (error) {
   if (storage.get("developer")) {
