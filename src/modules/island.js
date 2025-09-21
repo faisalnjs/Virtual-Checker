@@ -71,7 +71,7 @@ export default function spawnIsland(element = null, source = null, dataType = 'q
             island.appendChild(subtitle);
         }
     }
-    if (data.description && data.description.includes('ops') && (data.description != '{"ops":[{"insert":"\\n"}]}') && JSON.parse(data.description)) {
+    if (data.description && data.description.includes('ops') && (data.description != '{"ops":[{"insert":"\\n"}]}') && JSON.parse(data.description.replaceAll(/\s/g, ''))) {
         var description = document.createElement('div');
         description.classList = 'description extra hidden';
         var textarea = document.createElement('div');
