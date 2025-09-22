@@ -38,7 +38,8 @@ export default function spawnIsland(element = null, source = null, dataType = 'q
         document.body.appendChild(island);
     }
     if (Object.keys(data).length === 0) return island.classList.remove('visible');
-    if (island.offsetWidth < 250) return island.classList.remove('visible');
+    if (window.innerWidth < 1400) return island.classList.remove('visible');
+    if (document.querySelector('.questions .section.expanded')) return island.classList.remove('visible');
     if (data.id) {
         if (lastIslandSourceId && (data.sourceId === lastIslandSourceId)) return island.classList.add('visible');
         lastIslandSourceId = data.id;
@@ -71,7 +72,7 @@ export default function spawnIsland(element = null, source = null, dataType = 'q
             island.appendChild(subtitle);
         }
     }
-    if (data.description && data.description.includes('ops') && (data.description != '{"ops":[{"insert":"\\n"}]}') && JSON.parse(data.description)) {
+    if (data.description && data.description.includes('ops') && (data.description != '{"ops":[{"insert":"\\n"}]}') && JSON.parse(data.description.replaceAll(/\s/g, ''))) {
         var description = document.createElement('div');
         description.classList = 'description extra hidden';
         var textarea = document.createElement('div');
