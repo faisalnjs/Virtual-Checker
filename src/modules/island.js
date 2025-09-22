@@ -38,7 +38,8 @@ export default function spawnIsland(element = null, source = null, dataType = 'q
         document.body.appendChild(island);
     }
     if (Object.keys(data).length === 0) return island.classList.remove('visible');
-    if (island.offsetWidth < 250) return island.classList.remove('visible');
+    if (window.innerWidth < 1400) return island.classList.remove('visible');
+    if (document.querySelector('.questions .section.expanded')) return island.classList.remove('visible');
     if (data.id) {
         if (lastIslandSourceId && (data.sourceId === lastIslandSourceId)) return island.classList.add('visible');
         lastIslandSourceId = data.id;

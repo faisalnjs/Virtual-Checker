@@ -768,6 +768,7 @@ div.ML__keyboard {
 .description .ql-toolbar .ql-fill {
   fill: var(--text-color) !important;
 }
+
 .description .ql-toolbar button:hover,
 .description .ql-toolbar button:hover .ql-picker-label,
 .description .ql-toolbar .ql-active .ql-picker-label {
@@ -1105,6 +1106,7 @@ body:has(.selecting) [data-unflag-response] {
 body:has(.selecting) #controls-container button:has(.bi-download) {
   display: none;
 }
+
 .section:not(:has(.expanded)) {
   gap: 7.5px;
   transition: 0.25s gap var(--easing);
@@ -1122,6 +1124,10 @@ body:has(.selecting) #controls-container button:has(.bi-download) {
 }
 
 .questions .section:has(.expanded) .section[id]:not(.expanded) {
+  display: none;
+}
+
+.questions:has(.section.expanded) .pagination {
   display: none;
 }
 
