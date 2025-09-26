@@ -42,6 +42,7 @@ var pagination = {
 };
 var questionsToDelete = [];
 var keepSegment = null;
+var fromAwaitingScoring = false;
 
 var draggableQuestionList = null;
 var draggableSegmentReorder = null;
@@ -2332,6 +2333,11 @@ try {
     document.querySelectorAll('[data-edit-reason]').forEach(a => a.addEventListener('click', editReason));
     document.querySelectorAll('[report]').forEach(a => a.addEventListener('click', toggleDetailedReport));
     document.querySelectorAll('[data-select]').forEach(a => a.addEventListener('click', toggleSelected));
+    if (fromAwaitingScoring && !awaitingResponses.length && document.getElementById("filter-segment-input")) {
+      document.getElementById("filter-segment-input").value = '';
+      fromAwaitingScoring = false;
+      updateResponses();
+    }
     if (!loadedSegmentEditor && !loadedSegmentCreator) ui.setUnsavedChanges(false);
     ui.reloadUnsavedInputs();
   }
@@ -2485,6 +2491,7 @@ try {
         ui.toast("Successfully updated status.", 3000, "success", "bi bi-check-lg");
         noReloadCourse = true;
         keepSegment = document.getElementById("filter-segment-input").value;
+        fromAwaitingScoring = (document.querySelector('.awaitingResponses .section') && Array.from(document.querySelector('.awaitingResponses .section').children).includes(this.parentElement)) ? true : false;
         init();
       })
       .catch((e) => {
@@ -2566,6 +2573,7 @@ try {
         };
         noReloadCourse = true;
         keepSegment = document.getElementById("filter-segment-input").value;
+        fromAwaitingScoring = (document.querySelector('.awaitingResponses .section') && Array.from(document.querySelector('.awaitingResponses .section').children).includes(e.parentElement)) ? true : false;
         init();
       })
       .catch((e) => {
