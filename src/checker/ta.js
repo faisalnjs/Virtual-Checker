@@ -23,6 +23,8 @@ var pagination = {
   awaitingResponses: { page: 0, perPage: 50 },
   responses: { page: 0, perPage: 50 },
 };
+var keepSegment = null;
+var fromAwaitingScoring = false;
 
 try {
   async function init() {
@@ -265,6 +267,8 @@ try {
       filteredSegments.forEach(segment => {
         document.getElementById("filter-segment-input").innerHTML += `<option value="${segment.id}" ${(document.location.search.split('?segment=')[1] && (document.location.search.split('?segment=')[1] === String(segment.id))) ? 'selected' : ''}>${segment.number} - ${segment.name}${segment.due ? ` (Due ${new Date(`${segment.due}T00:00:00`).toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })})` : ''}</option>`;
       });
+      if (keepSegment) document.getElementById("filter-segment-input").value = keepSegment;
+      keepSegment = null;
     }
   }
 
@@ -508,6 +512,11 @@ try {
     document.querySelectorAll('[data-flag-response]').forEach(a => a.addEventListener('click', flagResponse));
     document.querySelectorAll('[data-unflag-response]').forEach(a => a.addEventListener('click', unflagResponse));
     document.querySelectorAll('[data-edit-reason]').forEach(a => a.addEventListener('click', editReason));
+    if (fromAwaitingScoring && !awaitingResponses.length && document.getElementById("filter-segment-input")) {
+      document.getElementById("filter-segment-input").value = '';
+      fromAwaitingScoring = false;
+      updateResponses();
+    }
     ui.setUnsavedChanges(false);
     ui.reloadUnsavedInputs();
   }
@@ -660,6 +669,8 @@ try {
         ui.setUnsavedChanges(false);
         ui.toast("Successfully updated status.", 3000, "success", "bi bi-check-lg");
         noReloadCourse = true;
+        keepSegment = document.getElementById("filter-segment-input").value;
+        fromAwaitingScoring = (document.querySelector('.awaitingResponses .section') && Array.from(document.querySelector('.awaitingResponses .section').children).includes(this.parentElement)) ? true : false;
         init();
       })
       .catch((e) => {
@@ -739,6 +750,8 @@ try {
           reason: reason
         };
         noReloadCourse = true;
+        keepSegment = document.getElementById("filter-segment-input").value;
+        fromAwaitingScoring = (document.querySelector('.awaitingResponses .section') && Array.from(document.querySelector('.awaitingResponses .section').children).includes(e.parentElement)) ? true : false;
         init();
       })
       .catch((e) => {
