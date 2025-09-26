@@ -546,6 +546,7 @@ try {
       });
       coursesArchivesList.querySelectorAll('[data-restore-item]').forEach(item => item.addEventListener('click', unarchiveModal));
     }
+    if (document.getElementById("export-report-course")) updateExportReportCourses();
   }
 
   function updateSegments() {
@@ -4031,6 +4032,7 @@ try {
       option.innerHTML = course.name;
       document.getElementById("export-report-course").appendChild(option);
     });
+    document.getElementById("export-report-course").value = document.getElementById("course-period-input").value;
   }
 
   async function exportReport() {
