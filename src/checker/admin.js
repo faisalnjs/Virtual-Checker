@@ -41,6 +41,7 @@ var pagination = {
   questions: { page: 0, perPage: 50 },
 };
 var questionsToDelete = [];
+var keepSegment = null;
 
 var draggableQuestionList = null;
 var draggableSegmentReorder = null;
@@ -498,6 +499,8 @@ try {
       filteredSegments.forEach(segment => {
         document.getElementById("filter-segment-input").innerHTML += `<option value="${segment.id}" ${(document.location.search.split('?segment=')[1] && (document.location.search.split('?segment=')[1] === String(segment.id))) ? 'selected' : ''}>${segment.number} - ${segment.name}${segment.due ? ` (Due ${new Date(`${segment.due}T00:00:00`).toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })})` : ''}</option>`;
       });
+      if (keepSegment) document.getElementById("filter-segment-input").value = keepSegment;
+      keepSegment = null;
     }
     const coursesArchiveTab = document.querySelector('[data-archive-type="courses"]');
     if (coursesArchiveTab) {
@@ -2481,6 +2484,7 @@ try {
         ui.setUnsavedChanges(false);
         ui.toast("Successfully updated status.", 3000, "success", "bi bi-check-lg");
         noReloadCourse = true;
+        keepSegment = document.getElementById("filter-segment-input").value;
         init();
       })
       .catch((e) => {
@@ -2561,6 +2565,7 @@ try {
           reason: reason
         };
         noReloadCourse = true;
+        keepSegment = document.getElementById("filter-segment-input").value;
         init();
       })
       .catch((e) => {

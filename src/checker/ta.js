@@ -23,6 +23,7 @@ var pagination = {
   awaitingResponses: { page: 0, perPage: 50 },
   responses: { page: 0, perPage: 50 },
 };
+var keepSegment = null;
 
 try {
   async function init() {
@@ -265,6 +266,8 @@ try {
       filteredSegments.forEach(segment => {
         document.getElementById("filter-segment-input").innerHTML += `<option value="${segment.id}" ${(document.location.search.split('?segment=')[1] && (document.location.search.split('?segment=')[1] === String(segment.id))) ? 'selected' : ''}>${segment.number} - ${segment.name}${segment.due ? ` (Due ${new Date(`${segment.due}T00:00:00`).toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })})` : ''}</option>`;
       });
+      if (keepSegment) document.getElementById("filter-segment-input").value = keepSegment;
+      keepSegment = null;
     }
   }
 
@@ -660,6 +663,7 @@ try {
         ui.setUnsavedChanges(false);
         ui.toast("Successfully updated status.", 3000, "success", "bi bi-check-lg");
         noReloadCourse = true;
+        keepSegment = document.getElementById("filter-segment-input").value;
         init();
       })
       .catch((e) => {
@@ -739,6 +743,7 @@ try {
           reason: reason
         };
         noReloadCourse = true;
+        keepSegment = document.getElementById("filter-segment-input").value;
         init();
       })
       .catch((e) => {
