@@ -305,16 +305,19 @@ try {
 
   var seasonalTheme = "";
   var seasonalEmoji = "";
+  var seasonalName = "";
 
   if ((Date.now() < new Date(`${new Date().getFullYear()}-10-31`).getTime()) && (Date.now() > new Date(`${new Date().getFullYear()}-10-23`).getTime())) {
+    seasonalName = "Halloween";
     seasonalTheme = "halloween";
     seasonalEmoji = "🎃";
   } else if ((Date.now() < new Date(`${new Date().getFullYear()}-12-25`).getTime()) && (Date.now() > new Date(`${new Date().getFullYear()}-12-01`).getTime())) {
+    seasonalName = "Festive";
     seasonalTheme = "festive";
     seasonalEmoji = "🎄";
   }
 
-  if ((seasonalTheme != "") && (seasonalEmoji != "")) {
+  if ((seasonalTheme != "") && (seasonalEmoji != "") && (seasonalName != "")) {
     var seasonalThemeButton = document.createElement("button");
     seasonalThemeButton.className = "icon";
     seasonalThemeButton.onclick = function () {
@@ -324,6 +327,7 @@ try {
       storage.set("theme", seasonalTheme);
     };
     seasonalThemeButton.innerHTML = seasonalEmoji;
+    seasonalThemeButton.setAttribute("tooltip", `${seasonalName} Theme (Limited Time)`);
     document.getElementById("controls-container")?.appendChild(seasonalThemeButton);
   }
 } catch (error) {
