@@ -1409,6 +1409,10 @@ hidden,
   width: -webkit-fill-available;
 }
 
+.detailed-report-question .color:last-of-type .color-name {
+  min-width: max-content;
+}
+
 .checkboxGroup {
   display: flex;
   flex-direction: row;

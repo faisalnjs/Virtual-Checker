@@ -327,7 +327,12 @@ try {
         if (!polling) ui.toast("Data restored.", 1000, "info", "bi bi-cloud-arrow-down");
         if (polling && (expandedReports.length > 0)) {
           expandedReports.forEach(er => {
-            if (document.getElementById(er)) document.getElementById(er).classList.add('active');
+            if (document.getElementById(er)) {
+              document.getElementById(er).classList.remove('active');
+              setTimeout(() => {
+                document.getElementById(er).click();
+              }, 1000);
+            }
           });
         }
         if (document.getElementById("course-period-input") && !loadedSegmentEditor && !loadedSegmentCreator && !noReloadCourse) {
@@ -910,7 +915,12 @@ try {
       segmentsArchivesList.querySelectorAll('[data-restore-item]').forEach(item => item.addEventListener('click', unarchiveModal));
     }
     expandedReports.forEach(er => {
-      if (document.getElementById(er)) document.getElementById(er).classList.add('active');
+      if (document.getElementById(er)) {
+        document.getElementById(er).classList.remove('active');
+        setTimeout(() => {
+          document.getElementById(er).click();
+        }, 1000);
+      }
     });
     document.querySelectorAll('[data-add-segment-input]').forEach(a => a.addEventListener('click', addSegment));
     document.querySelectorAll('[data-remove-segment-input]').forEach(a => a.addEventListener('click', removeSegment));
@@ -2325,7 +2335,12 @@ try {
       responsesArchivesList.querySelectorAll('[data-restore-item]').forEach(item => item.addEventListener('click', unarchiveModal));
     }
     expandedReports.forEach(er => {
-      if (document.getElementById(er)) document.getElementById(er).classList.add('active');
+      if (document.getElementById(er)) {
+        document.getElementById(er).classList.remove('active');
+        setTimeout(() => {
+          document.getElementById(er).click();
+        }, 1000);
+      }
     });
     document.querySelectorAll('#mark-correct-button').forEach(a => a.addEventListener('click', markCorrect));
     document.querySelectorAll('#mark-incorrect-button').forEach(a => a.addEventListener('click', markIncorrect));
@@ -3080,7 +3095,7 @@ try {
         detailedReport += questions.find(q => String(q.id) === String(r.question_id))?.number ? `<div class="detailed-report-question">
           <div class="color">
             <span class="color-box ${(r.status === 'Correct') ? 'correct' : (r.status === 'Incorrect') ? 'incorrect' : r.status.includes('Recorded') ? 'waiting' : 'other'}"></span>
-            <span class="color-name">Segment ${segments.find(s => String(s.id) === String(r.segment))?.number || r.segment} #${questions.find(q => String(q.id) === String(r.question_id))?.number}<p class="showonhover"> (${time.unixToString(r.timestamp)})</p>: ${escapeHTML(r.response)}</span>
+            <span class="color-name">Segment ${segments.find(s => String(s.id) === String(r.segment))?.number || segments.find(s => s.question_ids.includes(String(r.question_id)))?.number || r.segment} #${questions.find(q => String(q.id) === String(r.question_id))?.number}<p class="showonhover"> (${time.unixToString(r.timestamp)})</p>: ${escapeHTML(r.response)}</span>
           </div>
           <div class="color">
             <span class="color-name">${timeTaken}</span>
@@ -3338,7 +3353,12 @@ try {
       </div>` : ''}`;
     });
     expandedReports.forEach(er => {
-      if (document.getElementById(er)) document.getElementById(er).classList.add('active');
+      if (document.getElementById(er)) {
+        document.getElementById(er).classList.remove('active');
+        setTimeout(() => {
+          document.getElementById(er).click();
+        }, 1000);
+      }
     });
     document.querySelectorAll('[report]').forEach(a => a.addEventListener('click', toggleDetailedReport));
     if (!loadedSegmentEditor && !loadedSegmentCreator) ui.setUnsavedChanges(false);
