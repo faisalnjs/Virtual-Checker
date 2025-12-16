@@ -346,6 +346,8 @@ export function show(dialog, title, buttons, actions, blur, effects = true) {
     dialog.setAttribute("data-open", "");
   }
 
+  dialog.querySelector('input')?.select();
+
   dialog.addEventListener("cancel", (e) => {
     e.preventDefault();
     close();
