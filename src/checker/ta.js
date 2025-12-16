@@ -80,6 +80,7 @@ try {
       body: JSON.stringify({
         usr: storage.get("code"),
         pwd: storage.get("pwd"),
+        fields: ["courses", "segments", "questions", "answers", "responses"]
       }),
     })
       .then(async (r) => {

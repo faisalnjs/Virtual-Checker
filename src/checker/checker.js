@@ -436,7 +436,7 @@ try {
       const bulkLoadResponse = await fetch(`${domain}/bulk_load`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({}),
+        body: JSON.stringify({ fields: ["courses", "segments", "questions", "settings"] }),
       });
       const bulkLoad = await bulkLoadResponse.json();
       courses = bulkLoad.courses;

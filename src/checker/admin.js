@@ -61,6 +61,35 @@ try {
     //   storage.set("created", Date.now());
     // }
 
+    function getAdminFields() {
+      switch ((window.location.pathname.split('/admin/')[1] || '').split('?')[0].split('/')[0]) {
+        case 'editor':
+          return ["courses", "segments", "questions", "settings"];
+        case 'users':
+          return ["users", "courses"];
+        case 'logs':
+          return ["logs"];
+        case 'backups':
+          return ["backups"];
+        case 'passwords':
+          return ["passwords"];
+        case 'questions':
+          return ["questions", "answers", "segments", "courses"];
+        case 'responses':
+          return ["responses", "courses", "segments", "questions", "answers"];
+        case 'reports':
+          return ["responses", "courses", "segments", "questions"];
+        case 'archive':
+          return ["archive"];
+        case 'courses':
+          return ["courses", "segments", "rosters"];
+        case 'upload':
+          return ["courses"];
+        default:
+          return ["courses", "segments", "questions", "settings", "ai"];
+      }
+    }
+
     await fetch(domain + '/bulk_load', {
       method: "POST",
       headers: {
@@ -69,6 +98,7 @@ try {
       body: JSON.stringify({
         usr: storage.get("usr"),
         pwd: storage.get("pwd"),
+        fields: getAdminFields()
       }),
     })
       .then(async (r) => {
@@ -88,19 +118,19 @@ try {
         return await r.json();
       })
       .then(async bulkLoad => {
-        courses = bulkLoad.courses;
-        segments = bulkLoad.segments;
-        questions = bulkLoad.questions;
-        var users = bulkLoad.users;
-        logs = bulkLoad.logs;
-        aiInfo = bulkLoad.ai;
-        var passwords = bulkLoad.passwords;
-        var backups = bulkLoad.backups;
-        var archive = bulkLoad.archive;
-        rosters = bulkLoad.rosters;
-        answers = bulkLoad.answers;
-        responses = bulkLoad.responses;
-        settings = bulkLoad.settings;
+        courses = bulkLoad.courses || [];
+        segments = bulkLoad.segments || [];
+        questions = bulkLoad.questions || [];
+        var users = bulkLoad.users || [];
+        logs = bulkLoad.logs || [];
+        aiInfo = bulkLoad.ai || {};
+        var passwords = bulkLoad.passwords || [];
+        var backups = bulkLoad.backups || [];
+        var archive = bulkLoad.archive || {};
+        rosters = bulkLoad.rosters || [];
+        answers = bulkLoad.answers || [];
+        responses = bulkLoad.responses || [];
+        settings = bulkLoad.settings || {};
         if (document.querySelector('.users')) {
           if (document.getElementById('add-user-button')) document.getElementById('add-user-button').addEventListener('click', addUserModal);
 
