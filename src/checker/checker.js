@@ -377,7 +377,7 @@ try {
     if (regex.test(input)) {
       if (input.includes('0')) {
         ui.view("");
-        ui.modal({
+        var reservedSeatCodeModal = ui.modal({
           title: 'Reserved Seat Code',
           body: '<p>An invalid seat code was entered. Are you sure you want to use this code?</p>',
           buttons: [
@@ -408,6 +408,7 @@ try {
             },
           ],
         });
+        reservedSeatCodeModal.querySelector('.submit-button').focus();
       } else {
         // Close all modals
         ui.view("");
@@ -436,7 +437,7 @@ try {
       const bulkLoadResponse = await fetch(`${domain}/bulk_load`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({}),
+        body: JSON.stringify({ fields: ["courses", "segments", "questions", "settings"] }),
       });
       const bulkLoad = await bulkLoadResponse.json();
       courses = bulkLoad.courses;

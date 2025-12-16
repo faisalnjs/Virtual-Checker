@@ -61,6 +61,35 @@ try {
     //   storage.set("created", Date.now());
     // }
 
+    function getAdminFields() {
+      switch ((window.location.pathname.split('/admin/')[1] || '').split('?')[0].split('/')[0]) {
+        case 'editor':
+          return ["courses", "segments", "questions", "settings"];
+        case 'users':
+          return ["users", "courses"];
+        case 'logs':
+          return ["logs"];
+        case 'backups':
+          return ["backups"];
+        case 'passwords':
+          return ["passwords"];
+        case 'questions':
+          return ["questions", "answers", "segments", "courses"];
+        case 'responses':
+          return ["responses", "courses", "segments", "questions", "answers"];
+        case 'reports':
+          return ["responses", "courses", "segments", "questions"];
+        case 'archive':
+          return ["archive"];
+        case 'courses':
+          return ["courses", "segments", "rosters"];
+        case 'upload':
+          return ["courses"];
+        default:
+          return ["courses", "segments", "questions", "settings", "ai"];
+      }
+    }
+
     await fetch(domain + '/bulk_load', {
       method: "POST",
       headers: {
@@ -69,6 +98,7 @@ try {
       body: JSON.stringify({
         usr: storage.get("usr"),
         pwd: storage.get("pwd"),
+        fields: getAdminFields()
       }),
     })
       .then(async (r) => {
@@ -88,19 +118,19 @@ try {
         return await r.json();
       })
       .then(async bulkLoad => {
-        courses = bulkLoad.courses;
-        segments = bulkLoad.segments;
-        questions = bulkLoad.questions;
-        var users = bulkLoad.users;
-        logs = bulkLoad.logs;
-        aiInfo = bulkLoad.ai;
-        var passwords = bulkLoad.passwords;
-        var backups = bulkLoad.backups;
-        var archive = bulkLoad.archive;
-        rosters = bulkLoad.rosters;
-        answers = bulkLoad.answers;
-        responses = bulkLoad.responses;
-        settings = bulkLoad.settings;
+        courses = bulkLoad.courses || [];
+        segments = bulkLoad.segments || [];
+        questions = bulkLoad.questions || [];
+        var users = bulkLoad.users || [];
+        logs = bulkLoad.logs || [];
+        aiInfo = bulkLoad.ai || {};
+        var passwords = bulkLoad.passwords || [];
+        var backups = bulkLoad.backups || [];
+        var archive = bulkLoad.archive || {};
+        rosters = bulkLoad.rosters || [];
+        answers = bulkLoad.answers || [];
+        responses = bulkLoad.responses || [];
+        settings = bulkLoad.settings || {};
         if (document.querySelector('.users')) {
           if (document.getElementById('add-user-button')) document.getElementById('add-user-button').addEventListener('click', addUserModal);
 
@@ -327,7 +357,12 @@ try {
         if (!polling) ui.toast("Data restored.", 1000, "info", "bi bi-cloud-arrow-down");
         if (polling && (expandedReports.length > 0)) {
           expandedReports.forEach(er => {
-            if (document.getElementById(er)) document.getElementById(er).classList.add('active');
+            if (document.getElementById(er)) {
+              document.getElementById(er).classList.remove('active');
+              setTimeout(() => {
+                document.getElementById(er).click();
+              }, 1000);
+            }
           });
         }
         if (document.getElementById("course-period-input") && !loadedSegmentEditor && !loadedSegmentCreator && !noReloadCourse) {
@@ -546,6 +581,7 @@ try {
       });
       coursesArchivesList.querySelectorAll('[data-restore-item]').forEach(item => item.addEventListener('click', unarchiveModal));
     }
+    if (document.getElementById("export-report-course")) updateExportReportCourses();
   }
 
   function updateSegments() {
@@ -909,7 +945,12 @@ try {
       segmentsArchivesList.querySelectorAll('[data-restore-item]').forEach(item => item.addEventListener('click', unarchiveModal));
     }
     expandedReports.forEach(er => {
-      if (document.getElementById(er)) document.getElementById(er).classList.add('active');
+      if (document.getElementById(er)) {
+        document.getElementById(er).classList.remove('active');
+        setTimeout(() => {
+          document.getElementById(er).click();
+        }, 1000);
+      }
     });
     document.querySelectorAll('[data-add-segment-input]').forEach(a => a.addEventListener('click', addSegment));
     document.querySelectorAll('[data-remove-segment-input]').forEach(a => a.addEventListener('click', removeSegment));
@@ -2324,7 +2365,12 @@ try {
       responsesArchivesList.querySelectorAll('[data-restore-item]').forEach(item => item.addEventListener('click', unarchiveModal));
     }
     expandedReports.forEach(er => {
-      if (document.getElementById(er)) document.getElementById(er).classList.add('active');
+      if (document.getElementById(er)) {
+        document.getElementById(er).classList.remove('active');
+        setTimeout(() => {
+          document.getElementById(er).click();
+        }, 1000);
+      }
     });
     document.querySelectorAll('#mark-correct-button').forEach(a => a.addEventListener('click', markCorrect));
     document.querySelectorAll('#mark-incorrect-button').forEach(a => a.addEventListener('click', markIncorrect));
@@ -3079,7 +3125,7 @@ try {
         detailedReport += questions.find(q => String(q.id) === String(r.question_id))?.number ? `<div class="detailed-report-question">
           <div class="color">
             <span class="color-box ${(r.status === 'Correct') ? 'correct' : (r.status === 'Incorrect') ? 'incorrect' : r.status.includes('Recorded') ? 'waiting' : 'other'}"></span>
-            <span class="color-name">Segment ${segments.find(s => String(s.id) === String(r.segment))?.number || r.segment} #${questions.find(q => String(q.id) === String(r.question_id))?.number}<p class="showonhover"> (${time.unixToString(r.timestamp)})</p>: ${escapeHTML(r.response)}</span>
+            <span class="color-name">Segment ${segments.find(s => String(s.id) === String(r.segment))?.number || segments.find(s => s.question_ids.includes(String(r.question_id)))?.number || r.segment} #${questions.find(q => String(q.id) === String(r.question_id))?.number}<p class="showonhover"> (${time.unixToString(r.timestamp)})</p>: ${escapeHTML(r.response)}</span>
           </div>
           <div class="color">
             <span class="color-name">${timeTaken}</span>
@@ -3337,7 +3383,12 @@ try {
       </div>` : ''}`;
     });
     expandedReports.forEach(er => {
-      if (document.getElementById(er)) document.getElementById(er).classList.add('active');
+      if (document.getElementById(er)) {
+        document.getElementById(er).classList.remove('active');
+        setTimeout(() => {
+          document.getElementById(er).click();
+        }, 1000);
+      }
     });
     document.querySelectorAll('[report]').forEach(a => a.addEventListener('click', toggleDetailedReport));
     if (!loadedSegmentEditor && !loadedSegmentCreator) ui.setUnsavedChanges(false);
@@ -4031,6 +4082,7 @@ try {
       option.innerHTML = course.name;
       document.getElementById("export-report-course").appendChild(option);
     });
+    document.getElementById("export-report-course").value = document.getElementById("course-period-input").value;
   }
 
   async function exportReport() {

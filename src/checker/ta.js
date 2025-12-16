@@ -80,6 +80,7 @@ try {
       body: JSON.stringify({
         usr: storage.get("code"),
         pwd: storage.get("pwd"),
+        fields: ["courses", "segments", "questions", "answers", "responses"]
       }),
     })
       .then(async (r) => {
@@ -195,7 +196,7 @@ try {
     if (regex.test(input)) {
       if (input.includes('0')) {
         ui.view("");
-        ui.modal({
+        var reservedSeatCodeModal = ui.modal({
           title: 'Reserved Seat Code',
           body: '<p>An invalid seat code was entered. Are you sure you want to use this code?</p>',
           buttons: [
@@ -226,6 +227,7 @@ try {
             },
           ],
         });
+        reservedSeatCodeModal.querySelector('.submit-button').focus();
       } else {
         // Close all modals
         ui.view("");

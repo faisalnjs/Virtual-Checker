@@ -346,6 +346,8 @@ export function show(dialog, title, buttons, actions, blur, effects = true) {
     dialog.setAttribute("data-open", "");
   }
 
+  dialog.querySelector('input')?.select();
+
   dialog.addEventListener("cancel", (e) => {
     e.preventDefault();
     close();
@@ -913,6 +915,7 @@ export async function launchWelcome(returnFunction = null) {
   document.body.appendChild(welcomeContainer);
   welcomeContainer.querySelectorAll('[data-skip]').forEach(a => a.addEventListener('click', () => {
     removeWelcome();
+    if (returnFunction) returnFunction();
   }));
   welcomeContainer.querySelectorAll('[data-next]').forEach(a => a.addEventListener('click', () => {
     toWelcomeSlide(Number(welcomeContainer.getAttribute('step')) + 1);
