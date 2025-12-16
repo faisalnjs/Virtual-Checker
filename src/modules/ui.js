@@ -915,6 +915,7 @@ export async function launchWelcome(returnFunction = null) {
   document.body.appendChild(welcomeContainer);
   welcomeContainer.querySelectorAll('[data-skip]').forEach(a => a.addEventListener('click', () => {
     removeWelcome();
+    if (returnFunction) returnFunction();
   }));
   welcomeContainer.querySelectorAll('[data-next]').forEach(a => a.addEventListener('click', () => {
     toWelcomeSlide(Number(welcomeContainer.getAttribute('step')) + 1);
