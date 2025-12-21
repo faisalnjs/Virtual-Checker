@@ -146,6 +146,11 @@ try {
         active = true;
         ui.stopLoader();
         ui.toast("Data restored.", 1000, "info", "bi bi-cloud-arrow-down");
+        document.getElementById("filter-segment-input").addEventListener("change", () => {
+          document.getElementById("sort-question-input").value = "";
+          const event = new Event('input', { bubbles: true });
+          document.getElementById("sort-question-input").dispatchEvent(event);
+        });
         ui.reloadUnsavedInputs();
       })
       .catch((e) => {

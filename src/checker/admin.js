@@ -376,7 +376,7 @@ try {
           document.getElementById("sort-question-input").value = "";
           const event = new Event('input', { bubbles: true });
           document.getElementById("sort-question-input").dispatchEvent(event);
-        })
+        });
         ui.reloadUnsavedInputs();
       })
       .catch((e) => {
