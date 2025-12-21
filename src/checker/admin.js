@@ -372,6 +372,11 @@ try {
           updateSegments();
         }
         if (document.getElementById("sort-segments-types")) document.getElementById("sort-segments-types").value = await getSettings('sort-segments');
+        if (document.getElementById("filter-segment-input") && document.getElementById("sort-question-input")) document.getElementById("filter-segment-input").addEventListener("change", () => {
+          document.getElementById("sort-question-input").value = "";
+          const event = new Event('input', { bubbles: true });
+          document.getElementById("sort-question-input").dispatchEvent(event);
+        })
         ui.reloadUnsavedInputs();
       })
       .catch((e) => {
