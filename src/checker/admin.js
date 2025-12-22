@@ -2079,7 +2079,7 @@ try {
           document.querySelector('.responses .section .button-grid:last-child #response-question-input').addEventListener('click', (e) => {
             if (e.target.getAttribute('data-question')) {
               if (e.target.getAttribute('data-segment')) document.getElementById("filter-segment-input").value = e.target.getAttribute('data-segment');
-              document.getElementById("sort-question-input").value = e.target.getAttribute('data-question');
+              document.getElementById("sort-question-input").value = `"${e.target.getAttribute('data-question')}"`;
               updateResponses();
             }
           });
@@ -2096,7 +2096,7 @@ try {
           document.querySelector('.awaitingResponses .section .button-grid:last-child #response-question-input').addEventListener('click', (e) => {
             if (e.target.getAttribute('data-question')) {
               if (e.target.getAttribute('data-segment')) document.getElementById("filter-segment-input").value = e.target.getAttribute('data-segment');
-              document.getElementById("sort-question-input").value = e.target.getAttribute('data-question');
+              document.getElementById("sort-question-input").value = `"${e.target.getAttribute('data-question')}"`;
               updateResponses();
             }
           });
@@ -2308,7 +2308,7 @@ try {
       document.querySelector('.trendingResponses .section .button-grid:last-child #response-question-input').addEventListener('click', (e) => {
         if (e.target.getAttribute('data-question')) {
           if (e.target.getAttribute('data-segment')) document.getElementById("filter-segment-input").value = e.target.getAttribute('data-segment');
-          document.getElementById("sort-question-input").value = e.target.getAttribute('data-question');
+          document.getElementById("sort-question-input").value = `"${e.target.getAttribute('data-question')}"`;
           updateResponses();
         }
       });
