@@ -384,7 +384,7 @@ try {
             lists: [
               {
                 title: 'Correct Answers',
-                items: answers.find(a => a.id === question.id).correct_answers
+                items: answers.find(a => a.id === question.id)?.correct_answers
               },
               {
                 title: 'Incorrect Answers',

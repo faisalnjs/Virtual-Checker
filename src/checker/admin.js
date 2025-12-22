@@ -64,7 +64,7 @@ try {
     function getAdminFields() {
       switch ((window.location.pathname.split('/admin/')[1] || '').split('?')[0].split('/')[0]) {
         case 'editor':
-          return ["courses", "segments", "questions", "settings"];
+          return ["courses", "segments", "questions", "answers", "settings"];
         case 'users':
           return ["users", "courses"];
         case 'logs':
@@ -1418,11 +1418,11 @@ try {
                 lists: [
                   {
                     title: 'Correct Answers',
-                    items: answers.find(a => a.id === question.id).correct_answers
+                    items: answers.find(a => a.id === question.id)?.correct_answers
                   },
                   {
                     title: 'Incorrect Answers',
-                    items: answers.find(a => a.id === question.id).incorrect_answers
+                    items: answers.find(a => a.id === question.id)?.incorrect_answers
                   },
                 ],
               }, answers);
@@ -2054,11 +2054,11 @@ try {
               lists: [
                 {
                   title: 'Correct Answers',
-                  items: answers.find(a => a.id === question.id).correct_answers
+                  items: answers.find(a => a.id === question.id)?.correct_answers
                 },
                 {
                   title: 'Incorrect Answers',
-                  items: answers.find(a => a.id === question.id).incorrect_answers
+                  items: answers.find(a => a.id === question.id)?.incorrect_answers
                 },
               ],
               activeItem: responseString,
@@ -2284,11 +2284,11 @@ try {
             lists: [
               {
                 title: 'Correct Answers',
-                items: answers.find(a => a.id === question.id).correct_answers
+                items: answers.find(a => a.id === question.id)?.correct_answers
               },
               {
                 title: 'Incorrect Answers',
-                items: answers.find(a => a.id === question.id).incorrect_answers
+                items: answers.find(a => a.id === question.id)?.incorrect_answers
               },
             ],
             activeItem: responseString,
@@ -3442,11 +3442,11 @@ try {
             lists: [
               {
                 title: 'Correct Answers',
-                items: answers.find(a => a.id === question.id).correct_answers
+                items: answers.find(a => a.id === question.id)?.correct_answers
               },
               {
                 title: 'Incorrect Answers',
-                items: answers.find(a => a.id === question.id).incorrect_answers
+                items: answers.find(a => a.id === question.id)?.incorrect_answers
               },
             ],
           }, answers);
@@ -3487,11 +3487,11 @@ try {
             lists: [
               {
                 title: 'Correct Answers',
-                items: answers.find(a => a.id === question.id).correct_answers
+                items: answers.find(a => a.id === question.id)?.correct_answers
               },
               {
                 title: 'Incorrect Answers',
-                items: answers.find(a => a.id === question.id).incorrect_answers
+                items: answers.find(a => a.id === question.id)?.incorrect_answers
               },
             ],
           }, answers);
@@ -3532,11 +3532,11 @@ try {
             lists: [
               {
                 title: 'Correct Answers',
-                items: answers.find(a => a.id === question.id).correct_answers
+                items: answers.find(a => a.id === question.id)?.correct_answers
               },
               {
                 title: 'Incorrect Answers',
-                items: answers.find(a => a.id === question.id).incorrect_answers
+                items: answers.find(a => a.id === question.id)?.incorrect_answers
               },
             ],
           }, answers);
