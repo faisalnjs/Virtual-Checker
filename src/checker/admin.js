@@ -345,7 +345,7 @@ try {
         if (document.getElementById("speed-mode-starting-question")) updateSpeedModeStartingQuestion();
         if (document.querySelector('.questions.section')) updateQuestions();
         if (document.getElementById("course-period-input") && !loadedSegmentEditor && !loadedSegmentCreator && !noReloadCourse) {
-          document.getElementById("course-period-input").value = ((ui.defaultCourse !== null) && courses.find(c => String(c.id) === String(ui.defaultCourse))) ? ui.defaultCourse : courses.find(c => responses.some(r => JSON.parse(c.periods).includes(Number(String(r.seatCode)[0])))) ? courses.find(c => responses.some(r => JSON.parse(c.periods).includes(Number(String(r.seatCode)[0])))).id : courses.sort((a, b) => a.id - b.id)[0]?.id;
+          document.getElementById("course-period-input").value = (storage.get('period') && courses.find(c => String(c.id) === String(storage.get('period')))) ? storage.get('period') : (((ui.defaultCourse !== null) && courses.find(c => String(c.id) === String(ui.defaultCourse))) ? ui.defaultCourse : courses.find(c => responses.some(r => JSON.parse(c.periods).includes(Number(String(r.seatCode)[0])))) ? courses.find(c => responses.some(r => JSON.parse(c.periods).includes(Number(String(r.seatCode)[0])))).id : courses.sort((a, b) => a.id - b.id)[0]?.id);
           await updateResponses();
         }
         if (noReloadCourse) await updateResponses();
@@ -377,6 +377,9 @@ try {
           const event = new Event('input', { bubbles: true });
           document.getElementById("sort-question-input").dispatchEvent(event);
         });
+        if (document.getElementById("course-period-input")) document.getElementById("course-period-input").addEventListener("change", () => {
+          storage.set('period', document.getElementById("course-period-input").value);
+        });
         ui.reloadUnsavedInputs();
       })
       .catch((e) => {
@@ -400,7 +403,6 @@ try {
     return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
   }
 
-  if (document.getElementById("course-period-input")) document.getElementById("course-period-input").addEventListener("change", updateSegments);
   if (document.querySelector('[data-select-multiple]')) document.querySelector('[data-select-multiple]').addEventListener("click", toggleSelecting);
   if (document.querySelector('[data-delete-multiple]')) document.querySelector('[data-delete-multiple]').addEventListener("click", deleteMultiple);
   if (document.querySelector('[data-polling]')) document.querySelector('[data-polling]').addEventListener("click", togglePolling);
