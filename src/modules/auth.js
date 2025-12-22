@@ -725,6 +725,7 @@ export async function loadAdminSettings(courses) {
                         return await r.json();
                     })
                     .then(() => {
+                        storage.delete('period');
                         ui.setUnsavedChanges(false);
                         ui.toast("Successfully saved settings.", 3000, "success", "bi bi-check-lg");
                     })
