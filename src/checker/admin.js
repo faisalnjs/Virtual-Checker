@@ -1182,6 +1182,7 @@ try {
           segment: segments.find(s => allSegmentsQuestionIsIn[0] && (allSegmentsQuestionIsIn[0].id === s.id))?.id ? Number(segments.find(s => allSegmentsQuestionIsIn[0] && (allSegmentsQuestionIsIn[0].id === s.id))?.id) : null,
           correctAnswers: answers.find(a => a.id === q.id)?.correct_answers || [],
           incorrectAnswers: answers.find(a => a.id === q.id)?.incorrect_answers || [],
+          modifiedAnswers: false,
         };
       });
       Array.from(document.querySelectorAll('.questions .section .section'))
@@ -1205,8 +1206,25 @@ try {
             };
           });
           newQuestions.find(q => String(q.id) === question.id.split('-')[1]).latex = question.querySelector('[data-toggle-latex] i').classList.contains('bi-calculator-fill');
+          if (question.getAttribute('modified')) newQuestions.find(q => String(q.id) === question.id.split('-')[1]).modifiedAnswers = true;
         });
-      updatedInfo.questions = newQuestions;
+      var editedQuestions = [];
+      newQuestions.forEach(q => {
+        var original = questions.find(orig => String(orig.id) === String(q.id)) || {};
+        var changed = false;
+        if (String(original.number || '') !== String(q.number || '')) changed = true;
+        if (String(segments.find(s => JSON.parse(s.question_ids).find(qId => String(qId.id) === String(q.id)))?.id || '') !== String(q.segment || '')) changed = true;
+        if (String((original.question || '').trim()) !== String((q.question || '').trim())) changed = true;
+        if (JSON.stringify(JSON.parse(original.images || '[]')) !== JSON.stringify((typeof q.images === 'object') ? (q.images || []) : JSON.parse(q.images || '[]'))) changed = true;
+        if (q.modifiedAnswers) changed = true;
+        if (original.latex != q.latex) changed = true;
+        if (original.description !== q.description) changed = true;
+        if ((!q.id && (String(q.id) !== '0')) || !String(q.id).match(/^\d+$/)) changed = true;
+        if (changed) editedQuestions.push(q);
+      });
+      updatedInfo.questions = editedQuestions;
+      updatedInfo.deleted_questions = questionsToDelete;
+      updatedInfo.edited_only = true;
     } else if (document.querySelector('.ai-manager')) {
       updatedInfo = {
         ai: {
@@ -1546,12 +1564,14 @@ try {
           incorrectAnswers.innerHTML = `<b>Incorrect Answers</b><div class="section incorrectAnswers">${incorrectAnswersString}<button data-add-incorrect-answer-input>Add Incorrect Answer</button></div>`;
           question.appendChild(incorrectAnswers);
           document.querySelector('.questions .section').appendChild(question);
+          question.querySelectorAll('#question-correct-answer-input, #question-incorrect-answer-input, #question-incorrect-answer-reason-input').forEach(questionAnswerInput => questionAnswerInput.addEventListener('change', () => {
+            question.setAttribute('modified', 'true');
+          }));
         });
         var addQuestionButton = document.createElement('button');
         addQuestionButton.setAttribute('data-add-question-input', '');
         addQuestionButton.innerText = "Add Question";
         document.querySelector('.questions .section').appendChild(addQuestionButton);
-
       }
     } else {
       if (document.querySelector('.questions .section')) document.querySelector('.questions .section').innerHTML = '<button data-add-question-input>Add Question</button>';
@@ -1691,6 +1711,7 @@ try {
     input.className = "button-grid inputs";
     input.innerHTML = `<input type="text" autocomplete="off" id="question-correct-answer-input" value="" placeholder="Answer" /><button data-remove-correct-answer-input square><i class="bi bi-dash"></i></button>`;
     this.parentElement.insertBefore(input, this);
+    this.parentElement.parentElement.parentElement.setAttribute('modified', 'true');
     document.querySelectorAll('[data-add-correct-answer-input]').forEach(a => a.addEventListener('click', addCorrectAnswer));
     document.querySelectorAll('[data-remove-correct-answer-input]').forEach(a => a.addEventListener('click', removeCorrectAnswer));
     ui.reloadUnsavedInputs();
@@ -1702,6 +1723,7 @@ try {
     input.className = "button-grid inputs";
     input.innerHTML = `<input type="text" autocomplete="off" id="question-incorrect-answer-input" value="" placeholder="Answer" /><input type="text" autocomplete="off" id="question-incorrect-answer-reason-input" value="" placeholder="Reason" /><button data-remove-incorrect-answer-input square><i class="bi bi-dash"></i></button>`;
     this.parentElement.insertBefore(input, this);
+    this.parentElement.parentElement.parentElement.setAttribute('modified', 'true');
     document.querySelectorAll('[data-add-incorrect-answer-input]').forEach(a => a.addEventListener('click', addIncorrectAnswer));
     document.querySelectorAll('[data-remove-incorrect-answer-input]').forEach(a => a.addEventListener('click', removeIncorrectAnswer));
     ui.reloadUnsavedInputs();
@@ -1709,12 +1731,14 @@ try {
 
   function removeCorrectAnswer() {
     if (!active) return;
+    this.parentElement.parentElement.parentElement.parentElement.setAttribute('modified', 'true');
     this.parentElement.remove();
     ui.setUnsavedChanges(true);
   }
 
   function removeIncorrectAnswer() {
     if (!active) return;
+    this.parentElement.parentElement.parentElement.parentElement.setAttribute('modified', 'true');
     this.parentElement.remove();
     ui.setUnsavedChanges(true);
   }
@@ -5938,6 +5962,7 @@ try {
               input.innerHTML = `<input type="text" autocomplete="off" id="question-incorrect-answer-input" value="${escapeHTML(answer.answer)}" placeholder="Answer" /><input type="text" autocomplete="off" id="question-incorrect-answer-reason-input" value="${escapeHTML(answer.reason)}" placeholder="Reason" /><button data-remove-incorrect-answer-input square><i class="bi bi-dash"></i></button>`;
               this.parentElement.parentElement.querySelector('.incorrectAnswers').insertBefore(input, this.parentElement.parentElement.querySelector('.incorrectAnswers').children[this.parentElement.parentElement.querySelector('.incorrectAnswers').children.length - 1]);
             });
+            if (aiCorrectAnswers.length || aiIncorrectAnswers.length) this.parentElement.parentElement.setAttribute('modified', 'true');
             document.querySelectorAll('[data-add-correct-answer-input]').forEach(a => a.addEventListener('click', addCorrectAnswer));
             document.querySelectorAll('[data-remove-correct-answer-input]').forEach(a => a.addEventListener('click', removeCorrectAnswer));
             document.querySelectorAll('[data-add-incorrect-answer-input]').forEach(a => a.addEventListener('click', addIncorrectAnswer));
