@@ -1903,7 +1903,7 @@ try {
     let uploadSuccessful = false;
     window.addEventListener('message', (event) => {
       if (event.origin !== (window.location.protocol + '//' + window.location.hostname + (window.location.port ? ':' + window.location.port : ''))) return;
-      if (event.data === 'uploadSuccess') uploadSuccessful = true;
+      if (event.data.startsWith('uploadSuccess')) uploadSuccessful = true;
     }, false);
     const checkWindowClosed = setInterval(function () {
       if (newWindow && newWindow.closed) {
@@ -2752,7 +2752,7 @@ try {
 
   async function renderSpeedPond(segment = 0, startingQuestionId, startingQuestion) {
     if (!active) return;
-    const url = `/admin/upload?segment=${segment}${(startingQuestionId && startingQuestion) ? `&startingQuestionId=${startingQuestionId}&startingQuestion=${startingQuestion}` : ''}`;
+    const url = `/admin/upload?segment=${segment}${(startingQuestionId && startingQuestion) ? `&startingQuestionId=${startingQuestionId}&startingQuestion=${startingQuestion}` : ''}&w=${window.outerWidth}&h=${window.outerHeight}&t=${window.screenY}&l=${window.screenX}`;
     const width = 600;
     const height = 600;
     const left = (window.screen.width / 2) - (width / 2);
@@ -2760,24 +2760,30 @@ try {
     const windowFeatures = `width=${width},height=${height},resizable=no,scrollbars=no,status=yes,left=${left},top=${top}`;
     const newWindow = window.open(url, '_blank', windowFeatures);
     let uploadSuccessful = false;
+    let endingQuestionId = startingQuestionId || null;
+    let endingQuestion = startingQuestion || null;
     window.addEventListener('message', (event) => {
       if (event.origin !== (window.location.protocol + '//' + window.location.hostname + (window.location.port ? ':' + window.location.port : ''))) return;
-      if (event.data === 'uploadSuccess') uploadSuccessful = true;
+      if (event.data.startsWith('uploadSuccess')) {
+        uploadSuccessful = true;
+      } else {
+        [endingQuestionId, endingQuestion] = event.data.split('+');
+      }
     }, false);
     const checkWindowClosed = setInterval(async function () {
       if (newWindow && newWindow.closed) {
         clearInterval(checkWindowClosed);
         if (uploadSuccessful) {
           ui.modeless(`<i class="bi bi-cloud-upload"></i>`, "Uploaded");
-          if (startingQuestionId && startingQuestion) {
-            renderSpeedPond(segment, Number(startingQuestionId) + 1, startingQuestion.replace(/(\d+)([a-z]*)$/, (match, num, suffix) => {
+          if (endingQuestionId && endingQuestion) {
+            renderSpeedPond(segment, Number(endingQuestionId) + 1, endingQuestion.replace(/(\d+)([a-z]*)$/, (match, num, suffix) => {
               return !suffix ? (parseInt(num, 10) + 1).toString() : ((suffix === 'z') ? ((parseInt(num, 10) + 1) + 'a') : (num + String.fromCharCode(suffix.charCodeAt(0) + 1)));
             }));
           } else {
             renderSpeedPond(segment);
           }
           await init();
-          if ((segment === 0) && startingQuestionId) addExistingQuestion(startingQuestionId);
+          if ((segment === 0) && endingQuestionId) addExistingQuestion(endingQuestionId);
         } else {
           init();
         }
@@ -2791,7 +2797,7 @@ try {
     await save(null, true);
     const url = '/admin/upload?syllabus=' + document.getElementById("course-period-input").value;
     const width = 600;
-    const height = 150;
+    const height = 217;
     const left = (window.screen.width / 2) - (width / 2);
     const top = (window.screen.height / 2) - (height / 2);
     const windowFeatures = `width=${width},height=${height},resizable=no,scrollbars=no,status=yes,left=${left},top=${top}`;
@@ -2799,7 +2805,7 @@ try {
     let uploadSuccessful = false;
     window.addEventListener('message', (event) => {
       if (event.origin !== (window.location.protocol + '//' + window.location.hostname + (window.location.port ? ':' + window.location.port : ''))) return;
-      if (event.data === 'uploadSuccess') uploadSuccessful = true;
+      if (event.data.startsWith('uploadSuccess')) uploadSuccessful = true;
     }, false);
     const checkWindowClosed = setInterval(function () {
       if (newWindow && newWindow.closed) {
@@ -2820,7 +2826,7 @@ try {
     await save(null, true);
     const url = '/admin/upload?course=' + document.getElementById("course-period-input").value + '&platform=' + platform;
     const width = 600;
-    const height = 150;
+    const height = 217;
     const left = (window.screen.width / 2) - (width / 2);
     const top = (window.screen.height / 2) - (height / 2);
     const windowFeatures = `width=${width},height=${height},resizable=no,scrollbars=no,status=yes,left=${left},top=${top}`;
@@ -2828,7 +2834,7 @@ try {
     let uploadSuccessful = false;
     window.addEventListener('message', (event) => {
       if (event.origin !== (window.location.protocol + '//' + window.location.hostname + (window.location.port ? ':' + window.location.port : ''))) return;
-      if (event.data === 'uploadSuccess') uploadSuccessful = true;
+      if (event.data.startsWith('uploadSuccess')) uploadSuccessful = true;
     }, false);
     const checkWindowClosed = setInterval(function () {
       if (newWindow && newWindow.closed) {
@@ -5610,7 +5616,7 @@ try {
     if (!period) return;
     const url = '/admin/upload?period=' + period;
     const width = 600;
-    const height = 150;
+    const height = 217;
     const left = (window.screen.width / 2) - (width / 2);
     const top = (window.screen.height / 2) - (height / 2);
     const windowFeatures = `width=${width},height=${height},resizable=no,scrollbars=no,status=yes,left=${left},top=${top}`;
@@ -5618,7 +5624,7 @@ try {
     let uploadSuccessful = false;
     window.addEventListener('message', (event) => {
       if (event.origin !== (window.location.protocol + '//' + window.location.hostname + (window.location.port ? ':' + window.location.port : ''))) return;
-      if (event.data === 'uploadSuccess') uploadSuccessful = true;
+      if (event.data.startsWith('uploadSuccess')) uploadSuccessful = true;
     }, false);
     const checkWindowClosed = setInterval(function () {
       if (newWindow && newWindow.closed) {

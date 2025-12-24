@@ -35,12 +35,24 @@
             font-family: "Figtree", sans-serif;
         }
 
+        .uploaders {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 7.5px;
+        }
+
+        .uploader:not(:only-child) {
+            border: 2px solid dodgerblue;
+            padding: 7.5px;
+        }
+
         button#paste,
         button#submit,
         button#exit,
         button#add-answers,
         button#remove-answers,
-        button#ai {
+        button#ai,
+        button#copy {
             background: var(--accent-color, dodgerblue);
             width: -webkit-fill-available;
             border: 1px solid 1px solid var(--accent-color, aliceblue);
@@ -54,7 +66,8 @@
         }
 
         button#add-answers,
-        button#remove-answers {
+        button#remove-answers,
+        button#copy {
             background: var(--surface-color, #efefef);
             color: var(--text-color, black);
         }
@@ -64,7 +77,8 @@
         button#exit:hover,
         button#add-answers:hover,
         button#remove-answers:hover,
-        button#ai:hover {
+        button#ai:hover,
+        button#copy:hover {
             opacity: 0.75;
         }
 
@@ -106,7 +120,8 @@
         }
 
         .input-group:not(.row),
-        .input-group:has(#ai) {
+        .input-group:has(#ai),
+        .input-group:has([data-question-number]) {
             margin-bottom: 0.5em;
         }
 
@@ -129,35 +144,24 @@
             margin-top: 1em;
             max-width: unset;
         }
+
+        .input-group:has([data-question-number]) {
+            gap: 0;
+        }
+
+        [data-question-number] {
+            background: transparent !important;
+            padding: 0 !important;
+            font-weight: bold !important;
+            height: -webkit-fill-available !important;
+            min-height: unset !important;
+            padding-left: 5px !important;
+        }
     </style>
 </head>
 
 <body>
-    <div class="input-group row">
-        <input type="text" placeholder="Question Text" />
-        <button square id="add-answers" onclick="addAnswers()"><i class="bi bi-plus"></i></button>
-        <button square id="remove-answers" onclick="removeAnswers()"><i class="bi bi-dash"></i></button>
-        <button square id="ai" onclick="ai()"><i class="bi bi-openai"></i></button>
-    </div>
-    <div id="correct-answers" class="input-group">
-        <input type="text" data-correct-answer placeholder="Correct Answer" />
-        <input type="text" data-correct-answer placeholder="Correct Answer" />
-    </div>
-    <div id="incorrect-answers" class="input-group">
-        <div class="input-group row" data-incorrect-answer>
-            <input type="text" placeholder="Incorrect Answer" />
-            <input type="text" data-incorrect-answer-reason placeholder="Reason" />
-        </div>
-        <div class="input-group row" data-incorrect-answer>
-            <input type="text" placeholder="Incorrect Answer" />
-            <input type="text" data-incorrect-answer-reason placeholder="Reason" />
-        </div>
-    </div>
-    <input type="file" />
-    <button id="paste" onclick="paste()">Paste</button>
-    <div class="description"></div>
-    <button id="submit" onclick="submit()">Create</button>
-    <button id="exit" onclick="exit()">Close & Next Question</button>
+    <div class="uploaders"></div>
     <div id="loader">
         <svg xmlns="http://www.w3.org/2000/svg" height="2.5em" viewBox="0 0 1041 732" fill="none"
             class="virtual-checker-logo">
@@ -180,206 +184,35 @@
     <script src="https://unpkg.com/faz-quill-emoji@0.1.3"></script>
     <script src="../src/modules/storage.js" type="module"></script>
     <script src="../src/themes/themes.js" type="module"></script>
-    <script>
+    <script src="../src/modules/ui.js" type="module"></script>
+    <script type="module">
+        import * as ui from "/src/modules/ui.js";
+        import storage from "/src/modules/storage.js";
         const urlParams = new URLSearchParams(window.location.search);
         const question = urlParams.get('question');
         const syllabus = urlParams.get('syllabus');
         const segment = urlParams.get('segment');
-        const startingQuestionId = urlParams.get('startingQuestionId');
-        const startingQuestion = urlParams.get('startingQuestion');
+        var startingQuestionId = urlParams.get('startingQuestionId');
+        var startingQuestion = urlParams.get('startingQuestion');
         const period = urlParams.get('period');
         const course = urlParams.get('course');
         const platform = urlParams.get('platform');
+        const originalWindowWidth = urlParams.get('w');
+        const originalWindowHeight = urlParams.get('h');
+        const originalWindowY = urlParams.get('t');
+        const originalWindowX = urlParams.get('l');
+        const allowMultiple = startingQuestion && startingQuestionId && originalWindowHeight && originalWindowY && originalWindowX;
         if (!question && !syllabus && !segment && !period && !course) window.location.href = '/admin';
-        const inputElement = document.querySelector('input[type="file"]');
-        const questionElement = document.querySelector('input[type="file"]');
         const domain = ((window.location.hostname.search('check') != -1) || (window.location.hostname.search('127') != -1)) ? 'https://api.check.vssfalcons.com' : `http://${document.domain}:5000`;
-        const server = domain + (course ? '/announcement': question ? '/upload' : segment ? '/speedModeUpload' : syllabus ? '/syllabus' : '/roster');
+        const server = domain + (course ? '/announcement' : question ? '/upload' : segment ? '/speedModeUpload' : syllabus ? '/syllabus' : '/roster');
         FilePond.registerPlugin(FilePondPluginFileValidateType, FilePondPluginImagePreview);
-        const pond = FilePond.create(inputElement, {
-            server,
-            credits: false,
-            allowMultiple: (question || segment) ? true : false,
-            instantUpload: (question || segment) ? false : true,
-            acceptedFileTypes: (course || question || segment) ? ['image/*'] : syllabus ? ['image/*', 'application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'] : ['text/csv'],
-        });
-        pond.on('initfile', (item) => {
-            if (question) item.setMetadata('question', question);
-            if (segment) item.setMetadata('segment', segment);
-            if (syllabus) item.setMetadata('course', syllabus);
-            if (period) item.setMetadata('period', period);
-            if (course) item.setMetadata('course', course);
-            if (platform) item.setMetadata('platform', platform);
-            if (startingQuestionId && startingQuestion) item.setMetadata('startingQuestionId', startingQuestionId);
-            if (startingQuestionId && startingQuestion) item.setMetadata('startingQuestion', startingQuestion);
-        });
-        pond.on('processfilestart', (file) => {
-            if (startingQuestionId && startingQuestion && !file.getMetadata('title')) {
-                file.setMetadata('title', document.querySelectorAll('input[type="text"]')[0].value || startingQuestion);
-                file.setMetadata('correctAnswers', JSON.stringify([...document.querySelectorAll('[data-correct-answer]')].map(a => a.value).filter(Boolean) || []));
-                file.setMetadata('incorrectAnswers', JSON.stringify([...document.querySelectorAll('[data-incorrect-answer]')].map(a => {
-                    return { 'answer': a.querySelector('input').value, 'reason': a.querySelector('input[data-incorrect-answer-reason]').value };
-                }).filter(a => a.answer !== '' && a.reason !== '') || []));
-                file.setMetadata('description', JSON.stringify(quill.getContents()) || '{"ops":[{"insert":"\n"}]}');
-                pond.processFile(file);
-            };
-        });
-        pond.on('processfiles', (error, file) => {
-            if (error) return;
-            window.opener.postMessage('uploadSuccess', window.location.protocol + '//' + window.location.hostname + (window.location.port ? ':' + window.location.port : ''));
-            setTimeout(() => {
-                window.close();
-            }, 500);
-        });
-        if (!navigator.clipboard) document.getElementById("paste").remove();
-        async function paste() {
-            var items = await navigator.clipboard.read();
-            if (!items) return;
-            items = items.filter(item => item.types.find(type => type.startsWith('image/')));
-            const item = items[0];
-            if (!item) return;
-            pond.addFile(await item.getType(item.types.filter(type => type.startsWith('image/'))[0]));
+        function startLoader() {
+            const loader = uploader.querySelector('#loader');
+            if (loader) loader.classList.add('active');
         };
-        var quill = null;
-        if (!startingQuestionId || !startingQuestion) {
-            document.querySelectorAll('.input-group').forEach(e => e.remove());
-            document.querySelector('.description').remove();
-            document.getElementById('submit').remove();
-            document.getElementById('exit').remove();
-        } else {
-            var textareaContainer = document.querySelector('.description')
-            var toolbar = document.createElement('div');
-            toolbar.innerHTML = `<div id="toolbar-container">
-                <span class="ql-formats">
-                <select class="ql-font" tooltip="Font"></select>
-                <select class="ql-size" tooltip="Text Size"></select>
-                </span>
-                <span class="ql-formats">
-                <button class="ql-bold" tooltip="Bold"></button>
-                <button class="ql-italic" tooltip="Italic"></button>
-                <button class="ql-underline" tooltip="Underline"></button>
-                <button class="ql-strike" tooltip="Strikethrough"></button>
-                <button class="ql-faz-emoji" tooltip="Emoji"></button>
-                </span>
-                <span class="ql-formats">
-                <select class="ql-color" tooltip="Text Color"></select>
-                <select class="ql-background" tooltip="Highlight"></select>
-                </span>
-                <span class="ql-formats">
-                <button class="ql-script" value="sub" tooltip="Subscript"></button>
-                <button class="ql-script" value="super" tooltip="Superscript"></button>
-                </span>
-                <span class="ql-formats">
-                <button class="ql-header" value="1" tooltip="Heading"></button>
-                <button class="ql-header" value="2" tooltip="Subheading"></button>
-                <button class="ql-blockquote" tooltip="Blockquote"></button>
-                <button class="ql-code-block" tooltip="Code Block"></button>
-                </span>
-                <span class="ql-formats">
-                <button class="ql-list" value="ordered" tooltip="Number List"></button>
-                <button class="ql-list" value="bullet" tooltip="Bullet List"></button>
-                <button class="ql-indent" value="-1" tooltip="Remove Indent"></button>
-                <button class="ql-indent" value="+1" tooltip="Indent"></button>
-                </span>
-                <span class="ql-formats">
-                <button class="ql-direction" value="rtl" tooltip="Text Direction"></button>
-                <select class="ql-align" tooltip="Alignment"></select>
-                </span>
-                <span class="ql-formats">
-                <button class="ql-link" tooltip="Link"></button>
-                <button class="ql-image" tooltip="Image"></button>
-                <button class="ql-video" tooltip="Video"></button>
-                <button class="ql-formula" tooltip="LaTeX"></button>
-                </span>
-                <span class="ql-formats">
-                <button class="ql-clean" tooltip="Clear Formatting"></button>
-                <button data-clear-rich-content tooltip="Clear Description"><i class="bi bi-x-lg"></i></button>
-                </span>
-                <span class="ql-formats">
-                <button data-export-rich-content tooltip="Export To Clipboard"><i class="bi bi-clipboard-fill"></i></button>
-                <button data-import-rich-content tooltip="Import From Clipboard"><i class="bi bi-clipboard-plus-fill"></i></button>
-                </span>
-                <span class="ql-formats">
-                <button data-undo-rich-content tooltip="Undo"><i class="bi bi-arrow-counterclockwise"></i></button>
-                <button data-redo-rich-content tooltip="Redo"><i class="bi bi-arrow-clockwise"></i></button>
-                </span>
-            </div>`;
-            textareaContainer.appendChild(toolbar);
-            var textarea = document.createElement('div');
-            textareaContainer.appendChild(textarea);
-            quill = new Quill(textarea, {
-                modules: {
-                    syntax: true,
-                    toolbar,
-                    fazEmoji: {
-                        collection: 'fluent-emoji',
-                    },
-                },
-                placeholder: 'Add some written content to your question...',
-                theme: 'snow'
-            });
-            quill.on('text-change', (delta) => {
-                var pastedLatex = delta.ops.find(op => Object.keys(op).includes('insert'))?.insert;
-                if (pastedLatex && (typeof pastedLatex === 'string')) {
-                    const latexMatches = [...pastedLatex.matchAll(/(\$\$(.+?)\$\$)|(?<!\\)\$(.+?)(?<!\\)\$/gs)];
-                    latexMatches.forEach(match => {
-                        const fullMatch = match[0];
-                        const innerLatex = match[2] || match[3];
-                        const index = pastedLatex.indexOf(fullMatch);
-                        quill.deleteText(quill.getSelection(true)?.index + index, fullMatch.length);
-                        quill.insertEmbed(quill.getSelection(true)?.index + index, 'formula', innerLatex);
-                        pastedLatex = pastedLatex.replace(fullMatch, ' ');
-                    });
-                    pastedLatex = pastedLatex.replace(/(?<!\\)\$/g, '');
-                }
-            });
-        };
-        var submitSuccess = false;
-        async function submit() {
-            if (pond.getFiles().length != 0) {
-                pond.processFiles();
-            } else {
-                await fetch(server, {
-                    method: 'POST',
-                    body: JSON.stringify({
-                        question: question || null,
-                        segment: segment || null,
-                        course: syllabus || null,
-                        period: period || null,
-                        startingQuestionId: startingQuestionId || null,
-                        startingQuestion: startingQuestion || null,
-                        description: JSON.stringify(quill.getContents()) || '{"ops":[{"insert":"\n"}]}',
-                        title: document.querySelectorAll('input[type="text"]')[0].value || startingQuestion,
-                        correctAnswers: [...document.querySelectorAll('[data-correct-answer]')].map(a => a.value).filter(Boolean) || [],
-                        incorrectAnswers: [...document.querySelectorAll('[data-incorrect-answer]')].map(a => {
-                            return { 'answer': a.querySelector('input').value, 'reason': a.querySelector('input[data-incorrect-answer-reason]').value };
-                        }).filter(a => a.answer !== '' && a.reason !== '') || [],
-                    }),
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                })
-                    .then(res => res.json())
-                    .then(data => {
-                        if (data.error) {
-                            submitSuccess = false;
-                            document.getElementById('exit').classList.add('error');
-                            setTimeout(() => {
-                                document.getElementById('exit').classList.remove('error');
-                            }, 2000);
-                            alert(data.error);
-                        } else {
-                            submitSuccess = true;
-                            document.getElementById('submit').innerText = 'Success';
-                            document.getElementById('submit').classList.add('success');
-                            document.getElementById('exit').style.display = 'block';
-                            setTimeout(() => {
-                                document.getElementById('submit').innerText = 'Save';
-                                document.getElementById('submit').classList.remove('success');
-                            }, 2000);
-                        };
-                    });
-            };
+        function stopLoader() {
+            const loader = uploader.querySelector('#loader');
+            if (loader) loader.classList.remove('active');
         };
         async function exit() {
             window.opener.postMessage('uploadSuccess', window.location.protocol + '//' + window.location.hostname + (window.location.port ? ':' + window.location.port : ''));
@@ -387,132 +220,397 @@
                 window.close();
             }, 500);
         };
-        function startLoader() {
-            const loader = document.getElementById("loader");
-            if (loader) loader.classList.add("active");
-        };
-        function stopLoader() {
-            const loader = document.getElementById("loader");
-            if (loader) loader.classList.remove("active");
-        };
-        function addAnswers() {
-            const input = document.createElement('input');
-            input.type = 'text';
-            input.placeholder = 'Correct Answer';
-            input.setAttribute('data-correct-answer', '');
-            document.getElementById('correct-answers').appendChild(input);
-            const group = document.createElement('div');
-            group.classList.add('input-group', 'row');
-            group.setAttribute('data-incorrect-answer', '');
-            const input2 = document.createElement('input');
-            input2.type = 'text';
-            input2.placeholder = 'Incorrect Answer';
-            group.appendChild(input2);
-            const reason = document.createElement('input');
-            reason.type = 'text';
-            reason.placeholder = 'Reason';
-            reason.setAttribute('data-incorrect-answer-reason', '');
-            group.appendChild(reason);
-            document.getElementById('incorrect-answers').appendChild(group);
-        };
-        function removeAnswers() {
-            [...document.querySelectorAll('[data-correct-answer]')].filter(e => e.value === '').forEach(e => e.remove());
-            [...document.querySelectorAll('[data-incorrect-answer]')].filter(e => e.querySelector('input').value === '' && e.querySelector('input[data-incorrect-answer-reason]').value === '').forEach(e => e.remove());
-        };
-        async function ai() {
-            var images = [];
-            var pondFiles = pond.getFiles();
-            if (pondFiles.length !== 0) {
-                const readPromises = pondFiles.map(file => {
-                    return new Promise((resolve, reject) => {
-                        const reader = new FileReader();
-                        reader.onloadend = function () {
-                            resolve(reader.result);
-                        };
-                        reader.onerror = reject;
-                        if (file.file) reader.readAsDataURL(file.file);
-                        else resolve(null);
-                    });
-                });
-                images = await Promise.all(readPromises);
+        function createUploader() {
+            const uploaderQuestionId = startingQuestionId;
+            const uploaderQuestion = startingQuestion;
+            window.opener.postMessage(`${startingQuestionId}+${startingQuestion}`, window.location.protocol + '//' + window.location.hostname + (window.location.port ? ':' + window.location.port : ''));
+            const isMultiple = document.querySelector('.uploader') && originalWindowWidth && originalWindowHeight && originalWindowY && originalWindowX;
+            if (isMultiple) {
+                window.resizeTo(originalWindowWidth, originalWindowHeight);
+                window.moveTo(originalWindowX, originalWindowY);
             };
-            images = images.filter(image => image !== null);
-            images = [...new Set(images)];
-            var description = quill.getText().replaceAll('\\n', ' ').replaceAll('  ', ' ').trim() || null;
-            if (images.length || description) {
-                startLoader();
-                await fetch(domain + '/ai/q', {
-                    method: 'POST',
-                    body: JSON.stringify({
-                        OpenAI_API_Key: "sk-proj-18b3a02f4fb35e8a8421948667fbacf7_2ac9b775227456bb9d53d370cc299da7937deb6b_184751e482b7_f157c538a800",
-                        title: document.querySelectorAll('input[type="text"]')[0].value || startingQuestion,
-                        description,
-                        images,
-                    }),
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                })
-                    .then(res => res.json())
-                    .then(data => {
-                        stopLoader();
-                        const output = data.o;
-                        if (data.error || !data.o) {
-                            document.getElementById('ai').classList.add('error');
-                            setTimeout(() => {
-                                document.getElementById('ai').classList.remove('error');
-                            }, 2000);
-                            alert(data.error);
-                        } else {
-                            const aiCorrectAnswers = output.correct || [];
-                            const aiIncorrectAnswers = output.incorrect || [];
-                            removeAnswers();
-                            aiCorrectAnswers.forEach(answer => {
-                                if (!answer || [...document.querySelectorAll('[data-correct-answer]')].find(e => e.value.toLowerCase() === answer.toLowerCase())) return;
-                                const input = document.createElement('input');
-                                input.type = 'text';
-                                input.value = answer;
-                                input.setAttribute('data-correct-answer', '');
-                                document.getElementById('correct-answers').appendChild(input);
-                            });
-                            aiIncorrectAnswers.forEach(answer => {
-                                if (!answer.answer || !answer.reason || [...document.querySelectorAll('[data-incorrect-answer] input:not([data-incorrect-answer-reason])')].find(e => e.value.toLowerCase() === answer.answer.toLowerCase())) return;
-                                const group = document.createElement('div');
-                                group.classList.add('input-group', 'row');
-                                group.setAttribute('data-incorrect-answer', '');
-                                const input = document.createElement('input');
-                                input.type = 'text';
-                                input.value = answer.answer;
-                                group.appendChild(input);
-                                const reason = document.createElement('input');
-                                reason.type = 'text';
-                                reason.value = answer.reason;
-                                reason.setAttribute('data-incorrect-answer-reason', '');
-                                group.appendChild(reason);
-                                document.getElementById('incorrect-answers').appendChild(group);
-                            });
-                            document.getElementById('ai').classList.add('success');
-                            setTimeout(() => {
-                                document.getElementById('ai').classList.remove('success');
-                            }, 2000);
-                        };
-                    })
-                    .catch(error => {
-                        document.getElementById('ai').classList.add('error');
-                        setTimeout(() => {
-                            document.getElementById('ai').classList.remove('error');
-                        }, 2000);
-                        alert(error);
-                    });
+            var uploader = document.createElement('div');
+            uploader.classList.add('uploader');
+            uploader.innerHTML = `
+                <div class="input-group row">
+                    <b>Question</b>
+                    <input type="text" placeholder="${uploaderQuestion}" value="${uploaderQuestion}" data-question-number />
+                </div>
+                <div class="input-group row">
+                    <input type="text" placeholder="Question Title" data-question-text />
+                    <button square id="add-answers"><i class="bi bi-plus"></i></button>
+                    <button square id="remove-answers"><i class="bi bi-dash"></i></button>
+                    <button square id="ai"><i class="bi bi-openai"></i></button>
+                    ${allowMultiple ? '<button square id="copy"><i class="bi bi-copy"></i></button>' : ''}
+                </div>
+                <div id="correct-answers" class="input-group">
+                    <input type="text" data-correct-answer placeholder="Correct Answer" />
+                    <input type="text" data-correct-answer placeholder="Correct Answer" />
+                </div>
+                <div id="incorrect-answers" class="input-group">
+                    <div class="input-group row" data-incorrect-answer>
+                        <input type="text" placeholder="Incorrect Answer" />
+                        <input type="text" data-incorrect-answer-reason placeholder="Reason" />
+                    </div>
+                    <div class="input-group row" data-incorrect-answer>
+                        <input type="text" placeholder="Incorrect Answer" />
+                        <input type="text" data-incorrect-answer-reason placeholder="Reason" />
+                    </div>
+                </div>
+                <input type="file" />
+                <button id="paste">Paste</button>
+                <div class="description"></div>
+                <button id="submit">Create</button>
+                <button id="exit">Close & Next Question</button>
+            `;
+            document.querySelector('.uploaders').appendChild(uploader);
+            const inputElement = uploader.querySelector('input[type="file"]');
+            const questionElement = uploader.querySelector('input[type="file"]');
+            const pond = FilePond.create(inputElement, {
+                server,
+                credits: false,
+                allowMultiple: (question || segment) ? true : false,
+                instantUpload: (question || segment) ? false : true,
+                acceptedFileTypes: (course || question || segment) ? ['image/*'] : syllabus ? ['image/*', 'application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'] : ['text/csv'],
+                itemInsertLocation: 'after',
+            });
+            pond.on('initfile', (item) => {
+                if (question) item.setMetadata('question', question);
+                if (segment) item.setMetadata('segment', segment);
+                if (syllabus) item.setMetadata('course', syllabus);
+                if (period) item.setMetadata('period', period);
+                if (course) item.setMetadata('course', course);
+                if (platform) item.setMetadata('platform', platform);
+                if (uploaderQuestionId && (uploader.querySelector('[data-question-number]').value || uploaderQuestion)) item.setMetadata('startingQuestionId', uploaderQuestionId);
+                if (uploaderQuestionId && (uploader.querySelector('[data-question-number]').value || uploaderQuestion)) item.setMetadata('startingQuestion', uploader.querySelector('[data-question-number]').value || uploaderQuestion);
+            });
+            pond.on('processfilestart', (file) => {
+                if (uploaderQuestionId && uploaderQuestion && !file.getMetadata('title')) {
+                    file.setMetadata('title', uploader.querySelector('[data-question-text]').value || uploaderQuestion);
+                    file.setMetadata('correctAnswers', JSON.stringify([...uploader.querySelectorAll('[data-correct-answer]')].map(a => a.value).filter(Boolean) || []));
+                    file.setMetadata('incorrectAnswers', JSON.stringify([...uploader.querySelectorAll('[data-incorrect-answer]')].map(a => {
+                        return { 'answer': a.querySelector('input').value, 'reason': a.querySelector('input[data-incorrect-answer-reason]').value };
+                    }).filter(a => a.answer !== '' && a.reason !== '') || []));
+                    file.setMetadata('description', JSON.stringify(quill.getContents()) || '{"ops":[{"insert":"\n"}]}');
+                    pond.processFile(file);
+                };
+            });
+            pond.on('processfiles', (error, file) => {
+                if (error) return;
+                if (document.querySelectorAll('.uploader').length === 1) {
+                    window.opener.postMessage('uploadSuccess', window.location.protocol + '//' + window.location.hostname + (window.location.port ? ':' + window.location.port : ''));
+                    setTimeout(() => {
+                        window.close();
+                    }, 500);
+                };
+            });
+            if (!navigator.clipboard) uploader.querySelector('#paste').remove();
+            uploader.querySelector('#paste').addEventListener('click', async () => {
+                var items = await navigator.clipboard.read();
+                if (!items) return;
+                items = items.filter(item => item.types.find(type => type.startsWith('image/')));
+                const item = items[0];
+                if (!item) return;
+                pond.addFile(await item.getType(item.types.filter(type => type.startsWith('image/'))[0]));
+            });
+            var quill = null;
+            if (!uploaderQuestionId || !uploaderQuestion) {
+                uploader.querySelectorAll('.input-group').forEach(e => e.remove());
+                uploader.querySelector('.description').remove();
+                uploader.querySelector('#submit').remove();
+                uploader.querySelector('#exit').remove();
             } else {
-                alert('Image(s) or description required.');
-                document.getElementById('ai').classList.add('error');
-                setTimeout(() => {
-                    document.getElementById('ai').classList.remove('error');
-                }, 2000);
-                return;
+                var textareaContainer = uploader.querySelector('.description')
+                var toolbar = document.createElement('div');
+                toolbar.innerHTML = `<div id="toolbar-container">
+                    <span class="ql-formats">
+                        <select class="ql-font" tooltip="Font"></select>
+                        <select class="ql-size" tooltip="Text Size"></select>
+                    </span>
+                    <span class="ql-formats">
+                        <button class="ql-bold" tooltip="Bold"></button>
+                        <button class="ql-italic" tooltip="Italic"></button>
+                        <button class="ql-underline" tooltip="Underline"></button>
+                        <button class="ql-strike" tooltip="Strikethrough"></button>
+                        <button class="ql-faz-emoji" tooltip="Emoji"></button>
+                    </span>
+                    <span class="ql-formats">
+                        <select class="ql-color" tooltip="Text Color"></select>
+                        <select class="ql-background" tooltip="Highlight"></select>
+                    </span>
+                    <span class="ql-formats">
+                        <button class="ql-script" value="sub" tooltip="Subscript"></button>
+                        <button class="ql-script" value="super" tooltip="Superscript"></button>
+                    </span>
+                    <span class="ql-formats">
+                        <button class="ql-header" value="1" tooltip="Heading"></button>
+                        <button class="ql-header" value="2" tooltip="Subheading"></button>
+                        <button class="ql-blockquote" tooltip="Blockquote"></button>
+                        <button class="ql-code-block" tooltip="Code Block"></button>
+                    </span>
+                    <span class="ql-formats">
+                        <button class="ql-list" value="ordered" tooltip="Number List"></button>
+                        <button class="ql-list" value="bullet" tooltip="Bullet List"></button>
+                        <button class="ql-indent" value="-1" tooltip="Remove Indent"></button>
+                        <button class="ql-indent" value="+1" tooltip="Indent"></button>
+                    </span>
+                    <span class="ql-formats">
+                        <button class="ql-direction" value="rtl" tooltip="Text Direction"></button>
+                        <select class="ql-align" tooltip="Alignment"></select>
+                    </span>
+                    <span class="ql-formats">
+                        <button class="ql-link" tooltip="Link"></button>
+                        <button class="ql-image" tooltip="Image"></button>
+                        <button class="ql-video" tooltip="Video"></button>
+                        <button class="ql-formula" tooltip="LaTeX"></button>
+                    </span>
+                    <span class="ql-formats">
+                        <button class="ql-clean" tooltip="Clear Formatting"></button>
+                        <button data-clear-rich-content tooltip="Clear Description"><i class="bi bi-x-lg"></i></button>
+                    </span>
+                    <span class="ql-formats">
+                        <button data-export-rich-content tooltip="Export To Clipboard"><i class="bi bi-clipboard-fill"></i></button>
+                        <button data-import-rich-content tooltip="Import From Clipboard"><i class="bi bi-clipboard-plus-fill"></i></button>
+                    </span>
+                    <span class="ql-formats">
+                        <button data-undo-rich-content tooltip="Undo"><i class="bi bi-arrow-counterclockwise"></i></button>
+                        <button data-redo-rich-content tooltip="Redo"><i class="bi bi-arrow-clockwise"></i></button>
+                    </span>
+                </div>`;
+                textareaContainer.appendChild(toolbar);
+                var textarea = document.createElement('div');
+                textareaContainer.appendChild(textarea);
+                quill = new Quill(textarea, {
+                    modules: {
+                        syntax: true,
+                        toolbar,
+                        fazEmoji: {
+                            collection: 'fluent-emoji',
+                        },
+                    },
+                    placeholder: 'Add some written content...',
+                    theme: 'snow'
+                });
+                quill.on('text-change', (delta) => {
+                    var pastedLatex = delta.ops.find(op => Object.keys(op).includes('insert'))?.insert;
+                    if (pastedLatex && (typeof pastedLatex === 'string')) {
+                        const latexMatches = [...pastedLatex.matchAll(/(\$\$(.+?)\$\$)|(?<!\\)\$(.+?)(?<!\\)\$/gs)];
+                        latexMatches.forEach(match => {
+                            const fullMatch = match[0];
+                            const innerLatex = match[2] || match[3];
+                            const index = pastedLatex.indexOf(fullMatch);
+                            quill.deleteText(quill.getSelection(true)?.index + index, fullMatch.length);
+                            quill.insertEmbed(quill.getSelection(true)?.index + index, 'formula', innerLatex);
+                            pastedLatex = pastedLatex.replace(fullMatch, ' ');
+                        });
+                        pastedLatex = pastedLatex.replace(/(?<!\\)\$/g, '');
+                    }
+                });
+                uploader.querySelectorAll('[data-undo-rich-content]').forEach(a => a.addEventListener('click', () => {
+                    quill.history.undo();
+                }));
+                uploader.querySelectorAll('[data-redo-rich-content]').forEach(a => a.addEventListener('click', () => {
+                    quill.history.redo();
+                }));
+                uploader.querySelectorAll('[data-export-rich-content]').forEach(a => a.addEventListener('click', () => {
+                    navigator.clipboard.writeText(JSON.stringify(quill.getContents())).then(() => {
+                        ui.toast("Content copied to clipboard.", 3000, "success", "bi bi-clipboard-check-fill");
+                    }).catch((err) => {
+                        console.error('Failed to copy content: ', err);
+                        ui.toast("Failed to copy content to clipboard.", 5000, "error", "bi bi-exclamation-triangle-fill");
+                    });
+                }));
+                uploader.querySelectorAll('[data-import-rich-content]').forEach(a => a.addEventListener('click', () => {
+                    navigator.clipboard.readText().then((text) => {
+                        try {
+                            const content = JSON.parse(text);
+                            if (!text || !text.includes("ops") || !content) return ui.toast("Invalid clipboard content.", 5000, "error", "bi bi-exclamation-triangle-fill");
+                            quill.setContents(content);
+                            ui.toast("Content imported from clipboard.", 3000, "success", "bi bi-clipboard-check-fill");
+                        } catch (err) {
+                            console.error('Failed to parse content: ', err);
+                            ui.toast("Failed to parse content from clipboard.", 5000, "error", "bi bi-exclamation-triangle-fill");
+                        }
+                    }).catch((err) => {
+                        console.error('Failed to read clipboard: ', err);
+                        ui.toast("Failed to read content from clipboard.", 5000, "error", "bi bi-exclamation-triangle-fill");
+                    });
+                }));
             };
+            var submitSuccess = false;
+            uploader.querySelector('#submit').addEventListener('click', async () => {
+                if (pond.getFiles().length != 0) {
+                    pond.processFiles();
+                } else {
+                    await fetch(server, {
+                        method: 'POST',
+                        body: JSON.stringify({
+                            question: question || null,
+                            segment: segment || null,
+                            course: syllabus || null,
+                            period: period || null,
+                            startingQuestionId: uploaderQuestionId || null,
+                            startingQuestion: uploader.querySelector('[data-question-number]').value || uploaderQuestion || null,
+                            description: JSON.stringify(quill.getContents()) || '{"ops":[{"insert":"\n"}]}',
+                            title: uploader.querySelector('[data-question-text]').value || uploader.querySelector('[data-question-number]').value || uploaderQuestion,
+                            correctAnswers: [...uploader.querySelectorAll('[data-correct-answer]')].map(a => a.value).filter(Boolean) || [],
+                            incorrectAnswers: [...uploader.querySelectorAll('[data-incorrect-answer]')].map(a => {
+                                return { 'answer': a.querySelector('input').value, 'reason': a.querySelector('input[data-incorrect-answer-reason]').value };
+                            }).filter(a => a.answer !== '' && a.reason !== '') || [],
+                        }),
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data.error) {
+                                submitSuccess = false;
+                                uploader.querySelector('#exit').classList.add('error');
+                                setTimeout(() => {
+                                    uploader.querySelector('#exit').classList.remove('error');
+                                }, 2000);
+                                alert(data.error);
+                            } else {
+                                submitSuccess = true;
+                                uploader.querySelector('#submit').innerText = 'Success';
+                                uploader.querySelector('#submit').classList.add('success');
+                                uploader.querySelector('#exit').style.display = 'block';
+                                setTimeout(() => {
+                                    uploader.querySelector('#submit').innerText = 'Save';
+                                    uploader.querySelector('#submit').classList.remove('success');
+                                }, 2000);
+                            };
+                        });
+                };
+            });
+            uploader.querySelector('#add-answers').addEventListener('click', async () => {
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.placeholder = 'Correct Answer';
+                input.setAttribute('data-correct-answer', '');
+                uploader.querySelector('#correct-answers').appendChild(input);
+                const group = document.createElement('div');
+                group.classList.add('input-group', 'row');
+                group.setAttribute('data-incorrect-answer', '');
+                const input2 = document.createElement('input');
+                input2.type = 'text';
+                input2.placeholder = 'Incorrect Answer';
+                group.appendChild(input2);
+                const reason = document.createElement('input');
+                reason.type = 'text';
+                reason.placeholder = 'Reason';
+                reason.setAttribute('data-incorrect-answer-reason', '');
+                group.appendChild(reason);
+                uploader.querySelector('#incorrect-answers').appendChild(group);
+            });
+            uploader.querySelector('#remove-answers').addEventListener('click', async () => {
+                [...uploader.querySelectorAll('[data-correct-answer]')].filter(e => e.value === '').forEach(e => e.remove());
+                [...uploader.querySelectorAll('[data-incorrect-answer]')].filter(e => e.querySelector('input').value === '' && e.querySelector('input[data-incorrect-answer-reason]').value === '').forEach(e => e.remove());
+            });
+            uploader.querySelector('#ai').addEventListener('click', async () => {
+                var images = [];
+                var pondFiles = pond.getFiles();
+                if (pondFiles.length !== 0) {
+                    const readPromises = pondFiles.map(file => {
+                        return new Promise((resolve, reject) => {
+                            const reader = new FileReader();
+                            reader.onloadend = function () {
+                                resolve(reader.result);
+                            };
+                            reader.onerror = reject;
+                            if (file.file) reader.readAsDataURL(file.file);
+                            else resolve(null);
+                        });
+                    });
+                    images = await Promise.all(readPromises);
+                };
+                images = images.filter(image => image !== null);
+                images = [...new Set(images)];
+                var description = quill.getText().replaceAll('\\n', ' ').replaceAll('  ', ' ').trim() || null;
+                if (images.length || description) {
+                    startLoader();
+                    await fetch(domain + '/ai/q', {
+                        method: 'POST',
+                        body: JSON.stringify({
+                            OpenAI_API_Key: "sk-proj-18b3a02f4fb35e8a8421948667fbacf7_2ac9b775227456bb9d53d370cc299da7937deb6b_184751e482b7_f157c538a800",
+                            title: uploader.querySelector('[data-question-text]').value || uploaderQuestion,
+                            description,
+                            images,
+                        }),
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                        .then(res => res.json())
+                        .then(data => {
+                            stopLoader();
+                            const output = data.o;
+                            if (data.error || !data.o) {
+                                uploader.querySelector('#ai').classList.add('error');
+                                setTimeout(() => {
+                                    uploader.querySelector('#ai').classList.remove('error');
+                                }, 2000);
+                                alert(data.error);
+                            } else {
+                                const aiCorrectAnswers = output.correct || [];
+                                const aiIncorrectAnswers = output.incorrect || [];
+                                [...uploader.querySelectorAll('[data-correct-answer]')].filter(e => e.value === '').forEach(e => e.remove());
+                                [...uploader.querySelectorAll('[data-incorrect-answer]')].filter(e => e.querySelector('input').value === '' && e.querySelector('input[data-incorrect-answer-reason]').value === '').forEach(e => e.remove());
+                                aiCorrectAnswers.forEach(answer => {
+                                    if (!answer || [...uploader.querySelectorAll('[data-correct-answer]')].find(e => e.value.toLowerCase() === answer.toLowerCase())) return;
+                                    const input = document.createElement('input');
+                                    input.type = 'text';
+                                    input.value = answer;
+                                    input.setAttribute('data-correct-answer', '');
+                                    uploader.querySelector('#correct-answers').appendChild(input);
+                                });
+                                aiIncorrectAnswers.forEach(answer => {
+                                    if (!answer.answer || !answer.reason || [...uploader.querySelectorAll('[data-incorrect-answer] input:not([data-incorrect-answer-reason])')].find(e => e.value.toLowerCase() === answer.answer.toLowerCase())) return;
+                                    const group = document.createElement('div');
+                                    group.classList.add('input-group', 'row');
+                                    group.setAttribute('data-incorrect-answer', '');
+                                    const input = document.createElement('input');
+                                    input.type = 'text';
+                                    input.value = answer.answer;
+                                    group.appendChild(input);
+                                    const reason = document.createElement('input');
+                                    reason.type = 'text';
+                                    reason.value = answer.reason;
+                                    reason.setAttribute('data-incorrect-answer-reason', '');
+                                    group.appendChild(reason);
+                                    uploader.querySelector('#incorrect-answers').appendChild(group);
+                                });
+                                uploader.querySelector('#ai').classList.add('success');
+                                setTimeout(() => {
+                                    uploader.querySelector('#ai').classList.remove('success');
+                                }, 2000);
+                            };
+                        })
+                        .catch(error => {
+                            uploader.querySelector('#ai').classList.add('error');
+                            setTimeout(() => {
+                                uploader.querySelector('#ai').classList.remove('error');
+                            }, 2000);
+                            alert(error);
+                        });
+                } else {
+                    alert('Image(s) or description required.');
+                    uploader.querySelector('#ai').classList.add('error');
+                    setTimeout(() => {
+                        uploader.querySelector('#ai').classList.remove('error');
+                    }, 2000);
+                    return;
+                };
+            });
+            uploader.querySelector('#copy')?.addEventListener('click', createUploader);
+            uploader.querySelector('#exit').addEventListener('click', exit);
+            startingQuestionId++;
+            startingQuestion = startingQuestion.replace(/(\d+)([a-z]*)$/, (match, num, suffix) => {
+                return !suffix ? (parseInt(num, 10) + 1).toString() : ((suffix === 'z') ? ((parseInt(num, 10) + 1) + 'a') : (num + String.fromCharCode(suffix.charCodeAt(0) + 1)));
+            });
         };
+        window.onload = createUploader;
     </script>
 </body>
 
