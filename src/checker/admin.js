@@ -1194,6 +1194,7 @@ try {
           newQuestions.find(q => String(q.id) === question.id.split('-')[1]).number = question.querySelector('#question-number-input').value;
           newQuestions.find(q => String(q.id) === question.id.split('-')[1]).segment = question.querySelector('#question-segment-input').value;
           newQuestions.find(q => String(q.id) === question.id.split('-')[1]).question = question.querySelector('#question-text-input').value;
+          newQuestions.find(q => String(q.id) === question.id.split('-')[1]).stem = question.querySelector('#question-stem-input')?.value || null;
           if (renderedEditors[Number(question.id.split('-')[1])]) newQuestions.find(q => String(q.id) === question.id.split('-')[1]).description = JSON.stringify(renderedEditors[Number(question.id.split('-')[1])].getContents());
           newQuestions.find(q => String(q.id) === question.id.split('-')[1]).images = Array.from(question.querySelectorAll('.attachments .image > *')).map(q => {
             return q.getAttribute('data-src');
@@ -1207,7 +1208,7 @@ try {
               reason: q.querySelector('#question-incorrect-answer-reason-input').value
             };
           });
-          newQuestions.find(q => String(q.id) === question.id.split('-')[1]).latex = question.querySelector('[data-toggle-latex] i').classList.contains('bi-calculator-fill');
+          newQuestions.find(q => String(q.id) === question.id.split('-')[1]).latex = question.querySelector('[data-toggle-latex] i')?.classList.contains('bi-calculator-fill') || false;
           if (question.getAttribute('modified')) newQuestions.find(q => String(q.id) === question.id.split('-')[1]).modifiedAnswers = true;
         });
       var editedQuestions = [];
@@ -1462,6 +1463,22 @@ try {
             questionMathRendering.innerHTML = convertLatexToMarkup(e.target.value);
             renderMathInElement(questionMathRendering);
           });
+          if (!isStem) {
+            var stemSelectContainer = document.createElement('div');
+            stemSelectContainer.classList = "stem-container";
+            var stemLabel = document.createElement('label');
+            stemLabel.innerText = "Stem:"
+            stemSelectContainer.appendChild(stemLabel);
+            var stemSelect = document.createElement('select');
+            stemSelect.id = "question-stem-input";
+            stemSelect.classList = "stem-select";
+            stemSelect.innerHTML = `<option value=""${!q.stem ? ' selected' : ''}>No Stem</option>` + questions.filter(question1 => String(question1.id) !== String(q.id)).map(question1 => `<option value="${question1.id}"${(String(q.stem || '') === String(question1.id)) ? ' selected' : ''}>${question1.number}: ${question1.question}</option>`).join('');
+            stemSelectContainer.appendChild(stemSelect);
+            question.appendChild(stemSelectContainer);
+            stemSelect.addEventListener('change', () => {
+              question.setAttribute('modified', 'true');
+            });
+          }
           var textareaContainer = document.createElement('div');
           textareaContainer.classList = "description";
           var toolbar = document.createElement('div');
@@ -1543,9 +1560,9 @@ try {
           images.appendChild(drop);
           question.appendChild(images);
           if (isStem) {
-            var isStemMessage = document.createElement('p');
-            isStemMessage.classList = "answers";
-            isStemMessage.innerHTML = `This question is the stem for the following question(s):<br>${questions.filter(question1 => String(question1.stem || '') === String(q.id)).map(question1 => `- Segment ${allSegmentsQuestionIsIn[0]?.number || 'N/A'} Number ${question1.number}`).join('<br>')}`;
+            var isStemMessage = document.createElement('ul');
+            isStemMessage.classList = "stem-container";
+            isStemMessage.innerHTML = `<br>This question is the stem for the following question(s):<br>${questions.filter(question1 => String(question1.stem || '') === String(q.id)).map(question1 => `<li>Segment ${allSegmentsQuestionIsIn[0]?.number || 'N/A'} Number ${question1.number}</li>`).join('')}`;
             question.appendChild(isStemMessage);
           } else {
             var autofillAIAnswersContainer = document.createElement('div');
