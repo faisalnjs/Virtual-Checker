@@ -1413,6 +1413,7 @@ try {
         renderedEditors = {};
         document.querySelector('.questions .section').innerHTML = '';
         currentPageQuestions.forEach(q => {
+          const isStem = questions.find(question1 => String(question1.stem || '') === String(q.id)) ? true : false;
           var question = document.createElement('div');
           question.className = "section";
           question.id = `question-${q.id}`;
@@ -1423,7 +1424,7 @@ try {
           segments.forEach(s => {
             segmentsString += `<option value="${s.id}"${(allSegmentsQuestionIsIn[0] && (allSegmentsQuestionIsIn[0].id === s.id)) ? ' selected' : ''}>${s.number}</option>`;
           });
-          buttonGrid.innerHTML = `<button square data-select tooltip="Select Question"><i class="bi bi-circle"></i><i class="bi bi-circle-fill"></i></button><div class="input-group small"><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-id-input" value="${q.id}" disabled /></div></div><div class="input-group small"><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-number-input" value="${q.number}" placeholder="${q.number}" /></div></div><div class="input-group small"><div class="space" id="question-container"><select id="question-segment-input">${segmentsString}</select></div></div><div class="input-group"><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-text-input" value="${q.question}" placeholder="${q.question}" /></div></div><button square data-toggle-latex tooltip="Toggle LaTeX Title"><i class="bi bi-${q.latex ? 'calculator-fill' : 'cursor-text'}"></i></button><button square data-remove-question-input tooltip="Remove Question"><i class="bi bi-trash"></i></button><button square data-archive-question-input tooltip="Archive Question"><i class="bi bi-archive"></i></button><button square data-toggle-question tooltip="Expand Question"><i class="bi bi-caret-down-fill"></i><i class="bi bi-caret-up-fill"></i></button>`;
+          buttonGrid.innerHTML = `<button square data-select tooltip="Select Question"><i class="bi bi-circle"></i><i class="bi bi-circle-fill"></i></button><div class="input-group small"><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-id-input" value="${q.id}" disabled /></div></div><div class="input-group small"><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-number-input" value="${q.number}" placeholder="${q.number}" /></div></div><div class="input-group small ${isStem ? 'hidden' : ''}"><div class="space" id="question-container"><select id="question-segment-input">${segmentsString}</select></div></div><div class="input-group"><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-text-input" value="${q.question}" placeholder="${q.question}" /></div></div>${!isStem ? `<button square data-toggle-latex tooltip="Toggle LaTeX Title"><i class="bi bi-${q.latex ? 'calculator-fill' : 'cursor-text'}"></i></button>` : ''}<button square data-remove-question-input tooltip="Remove Question"><i class="bi bi-trash"></i></button><button square data-archive-question-input tooltip="Archive Question"><i class="bi bi-archive"></i></button><button square data-toggle-question tooltip="Expand Question"><i class="bi bi-caret-down-fill"></i><i class="bi bi-caret-up-fill"></i></button>`;
           if (window.innerWidth >= 1400) {
             buttonGrid.addEventListener('mouseenter', () => {
               var question = q;
@@ -1541,32 +1542,39 @@ try {
           drop.addEventListener('click', renderPond);
           images.appendChild(drop);
           question.appendChild(images);
-          var autofillAIAnswersContainer = document.createElement('div');
-          autofillAIAnswersContainer.classList = "answers";
-          var autofillAIAnswers = document.createElement('button');
-          autofillAIAnswers.setAttribute('data-autofill-answers', '');
-          autofillAIAnswers.innerHTML = '<i class="bi bi-openai"></i> Autofill Answers';
-          autofillAIAnswersContainer.appendChild(autofillAIAnswers);
-          question.appendChild(autofillAIAnswersContainer);
-          var correctAnswers = document.createElement('div');
-          correctAnswers.classList = "answers";
-          var correctAnswersString = "";
-          var questionAnswers = answers.find(a => a.id === q.id);
-          questionAnswers.correct_answers.forEach(a => {
-            correctAnswersString += `<div class="button-grid inputs"><input type="text" autocomplete="off" id="question-correct-answer-input" value="${a}" placeholder="${a}" /><button data-remove-correct-answer-input square><i class="bi bi-dash"></i></button></div>`;
-          });
-          correctAnswers.innerHTML = `<b>Correct Answers</b><div class="section correctAnswers">${correctAnswersString}<button data-add-correct-answer-input>Add Correct Answer</button></div>`;
-          question.appendChild(correctAnswers);
-          var incorrectAnswers = document.createElement('div');
-          incorrectAnswers.classList = "answers";
-          var incorrectAnswersString = "";
-          questionAnswers.incorrect_answers.forEach(a => {
-            incorrectAnswersString += `<div class="button-grid inputs"><input type="text" autocomplete="off" id="question-incorrect-answer-input" value="${a.answer}" placeholder="${a.answer || 'Answer'}" /><input type="text" autocomplete="off" id="question-incorrect-answer-reason-input" value="${a.reason}" placeholder="${a.reason || 'Reason'}" /><button data-remove-incorrect-answer-input square><i class="bi bi-dash"></i></button></div>`;
-          });
-          incorrectAnswers.innerHTML = `<b>Incorrect Answers</b><div class="section incorrectAnswers">${incorrectAnswersString}<button data-add-incorrect-answer-input>Add Incorrect Answer</button></div>`;
-          question.appendChild(incorrectAnswers);
+          if (isStem) {
+            var isStemMessage = document.createElement('p');
+            isStemMessage.classList = "answers";
+            isStemMessage.innerHTML = `This question is the stem for the following question(s):<br>${questions.filter(question1 => String(question1.stem || '') === String(q.id)).map(question1 => `- Segment ${allSegmentsQuestionIsIn[0]?.number || 'N/A'} Number ${question1.number}`).join('<br>')}`;
+            question.appendChild(isStemMessage);
+          } else {
+            var autofillAIAnswersContainer = document.createElement('div');
+            autofillAIAnswersContainer.classList = "answers";
+            var autofillAIAnswers = document.createElement('button');
+            autofillAIAnswers.setAttribute('data-autofill-answers', '');
+            autofillAIAnswers.innerHTML = '<i class="bi bi-openai"></i> Autofill Answers';
+            autofillAIAnswersContainer.appendChild(autofillAIAnswers);
+            question.appendChild(autofillAIAnswersContainer);
+            var correctAnswers = document.createElement('div');
+            correctAnswers.classList = "answers";
+            var correctAnswersString = "";
+            var questionAnswers = answers.find(a => a.id === q.id);
+            questionAnswers.correct_answers.forEach(a => {
+              correctAnswersString += `<div class="button-grid inputs"><input type="text" autocomplete="off" id="question-correct-answer-input" value="${a}" placeholder="${a}" /><button data-remove-correct-answer-input square><i class="bi bi-dash"></i></button></div>`;
+            });
+            correctAnswers.innerHTML = `<b>Correct Answers</b><div class="section correctAnswers">${correctAnswersString}<button data-add-correct-answer-input>Add Correct Answer</button></div>`;
+            question.appendChild(correctAnswers);
+            var incorrectAnswers = document.createElement('div');
+            incorrectAnswers.classList = "answers";
+            var incorrectAnswersString = "";
+            questionAnswers.incorrect_answers.forEach(a => {
+              incorrectAnswersString += `<div class="button-grid inputs"><input type="text" autocomplete="off" id="question-incorrect-answer-input" value="${a.answer}" placeholder="${a.answer || 'Answer'}" /><input type="text" autocomplete="off" id="question-incorrect-answer-reason-input" value="${a.reason}" placeholder="${a.reason || 'Reason'}" /><button data-remove-incorrect-answer-input square><i class="bi bi-dash"></i></button></div>`;
+            });
+            incorrectAnswers.innerHTML = `<b>Incorrect Answers</b><div class="section incorrectAnswers">${incorrectAnswersString}<button data-add-incorrect-answer-input>Add Incorrect Answer</button></div>`;
+            question.appendChild(incorrectAnswers);
+          }
           document.querySelector('.questions .section').appendChild(question);
-          question.querySelectorAll('#question-correct-answer-input, #question-incorrect-answer-input, #question-incorrect-answer-reason-input').forEach(questionAnswerInput => questionAnswerInput.addEventListener('change', () => {
+          if (!isStem) question.querySelectorAll('#question-correct-answer-input, #question-incorrect-answer-input, #question-incorrect-answer-reason-input').forEach(questionAnswerInput => questionAnswerInput.addEventListener('change', () => {
             question.setAttribute('modified', 'true');
           }));
         });
