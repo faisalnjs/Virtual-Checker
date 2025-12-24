@@ -2754,7 +2754,7 @@ try {
     if (!active) return;
     const url = `/admin/upload?segment=${segment}${(startingQuestionId && startingQuestion) ? `&startingQuestionId=${startingQuestionId}&startingQuestion=${startingQuestion}` : ''}&w=${window.outerWidth}&h=${window.outerHeight}&t=${window.screenY}&l=${window.screenX}`;
     const width = 600;
-    const height = 600;
+    const height = 645;
     const left = (window.screen.width / 2) - (width / 2);
     const top = (window.screen.height / 2) - (height / 2);
     const windowFeatures = `width=${width},height=${height},resizable=no,scrollbars=no,status=yes,left=${left},top=${top}`;

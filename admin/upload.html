@@ -37,7 +37,7 @@
 
         .uploaders {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
             gap: 7.5px;
         }
 
@@ -46,13 +46,33 @@
             padding: 7.5px;
         }
 
+        .uploaders:has(.uploader:not(:only-child)) {
+            margin-bottom: calc(32.5px + 2vw);
+        }
+
+        .uploaders:has(.uploader:not(:only-child)) #submit-exit {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100vw;
+            gap: 1vw;
+            padding: calc(1vw - 0.5em) 1vw 1vw 1vw;
+            z-index: 1000;
+        }
+
+        .uploaders:has(.uploader:not(:only-child)) #submit::after {
+            content: ' All';
+        }
+
         button#paste,
         button#submit,
         button#exit,
         button#add-answers,
         button#remove-answers,
         button#ai,
-        button#copy {
+        button#copy,
+        button#remove,
+        button#stem {
             background: var(--accent-color, dodgerblue);
             width: -webkit-fill-available;
             border: 1px solid 1px solid var(--accent-color, aliceblue);
@@ -67,7 +87,9 @@
 
         button#add-answers,
         button#remove-answers,
-        button#copy {
+        button#copy,
+        button#remove,
+        button#stem {
             background: var(--surface-color, #efefef);
             color: var(--text-color, black);
         }
@@ -78,7 +100,9 @@
         button#add-answers:hover,
         button#remove-answers:hover,
         button#ai:hover,
-        button#copy:hover {
+        button#copy:hover,
+        button#remove:hover,
+        button#stem:hover {
             opacity: 0.75;
         }
 
@@ -157,6 +181,18 @@
             min-height: unset !important;
             padding-left: 5px !important;
         }
+
+        #stem.active {
+            background: var(--accent-color, dodgerblue);
+        }
+
+        #stem.active i.bi-diagram-3 {
+            display: none;
+        }
+
+        #stem:not(.active) i.bi-diagram-3-fill {
+            display: none;
+        }
     </style>
 </head>
 
@@ -205,6 +241,8 @@
         if (!question && !syllabus && !segment && !period && !course) window.location.href = '/admin';
         const domain = ((window.location.hostname.search('check') != -1) || (window.location.hostname.search('127') != -1)) ? 'https://api.check.vssfalcons.com' : `http://${document.domain}:5000`;
         const server = domain + (course ? '/announcement' : question ? '/upload' : segment ? '/speedModeUpload' : syllabus ? '/syllabus' : '/roster');
+        var submitSuccess = false;
+        var uploaders = [];
         FilePond.registerPlugin(FilePondPluginFileValidateType, FilePondPluginImagePreview);
         function startLoader() {
             const loader = uploader.querySelector('#loader');
@@ -230,6 +268,7 @@
                 window.moveTo(originalWindowX, originalWindowY);
             };
             var uploader = document.createElement('div');
+            uploader.id = uploaderQuestionId;
             uploader.classList.add('uploader');
             uploader.innerHTML = `
                 <div class="input-group row">
@@ -241,7 +280,9 @@
                     <button square id="add-answers"><i class="bi bi-plus"></i></button>
                     <button square id="remove-answers"><i class="bi bi-dash"></i></button>
                     <button square id="ai"><i class="bi bi-openai"></i></button>
-                    ${allowMultiple ? '<button square id="copy"><i class="bi bi-copy"></i></button>' : ''}
+                    ${allowMultiple ? `<button square id="stem" ${isMultiple ? '' : 'class="active"'}><i class="bi bi-diagram-3"></i><i class="bi bi-diagram-3-fill"></i></button>` : ''}
+                    ${isMultiple ? '<button square id="remove"><i class="bi bi-dash-circle-dotted"></i></button>' : ''}
+                    ${allowMultiple ? '<button square id="copy"><i class="bi bi-plus-circle-dotted"></i></button>' : ''}
                 </div>
                 <div id="correct-answers" class="input-group">
                     <input type="text" data-correct-answer placeholder="Correct Answer" />
@@ -260,8 +301,10 @@
                 <input type="file" />
                 <button id="paste">Paste</button>
                 <div class="description"></div>
-                <button id="submit">Create</button>
-                <button id="exit">Close & Next Question</button>
+                ${isMultiple ? '' : `${allowMultiple ? '<div id="submit-exit" class="input-group row">' : ''}
+                    <button id="submit">Create</button>
+                    <button id="exit">Close & Next Question</button>
+                ${allowMultiple ? '</div>' : ''}`}
             `;
             document.querySelector('.uploaders').appendChild(uploader);
             const inputElement = uploader.querySelector('input[type="file"]');
@@ -437,53 +480,8 @@
                     });
                 }));
             };
-            var submitSuccess = false;
-            uploader.querySelector('#submit').addEventListener('click', async () => {
-                if (pond.getFiles().length != 0) {
-                    pond.processFiles();
-                } else {
-                    await fetch(server, {
-                        method: 'POST',
-                        body: JSON.stringify({
-                            question: question || null,
-                            segment: segment || null,
-                            course: syllabus || null,
-                            period: period || null,
-                            startingQuestionId: uploaderQuestionId || null,
-                            startingQuestion: uploader.querySelector('[data-question-number]').value || uploaderQuestion || null,
-                            description: JSON.stringify(quill.getContents()) || '{"ops":[{"insert":"\n"}]}',
-                            title: uploader.querySelector('[data-question-text]').value || uploader.querySelector('[data-question-number]').value || uploaderQuestion,
-                            correctAnswers: [...uploader.querySelectorAll('[data-correct-answer]')].map(a => a.value).filter(Boolean) || [],
-                            incorrectAnswers: [...uploader.querySelectorAll('[data-incorrect-answer]')].map(a => {
-                                return { 'answer': a.querySelector('input').value, 'reason': a.querySelector('input[data-incorrect-answer-reason]').value };
-                            }).filter(a => a.answer !== '' && a.reason !== '') || [],
-                        }),
-                        headers: {
-                            'Content-Type': 'application/json'
-                        }
-                    })
-                        .then(res => res.json())
-                        .then(data => {
-                            if (data.error) {
-                                submitSuccess = false;
-                                uploader.querySelector('#exit').classList.add('error');
-                                setTimeout(() => {
-                                    uploader.querySelector('#exit').classList.remove('error');
-                                }, 2000);
-                                alert(data.error);
-                            } else {
-                                submitSuccess = true;
-                                uploader.querySelector('#submit').innerText = 'Success';
-                                uploader.querySelector('#submit').classList.add('success');
-                                uploader.querySelector('#exit').style.display = 'block';
-                                setTimeout(() => {
-                                    uploader.querySelector('#submit').innerText = 'Save';
-                                    uploader.querySelector('#submit').classList.remove('success');
-                                }, 2000);
-                            };
-                        });
-                };
-            });
+            uploaders.push({ uploader, pond, quill, uploaderQuestionId, uploaderQuestion });
+            uploader.querySelector('#submit')?.addEventListener('click', submitAllUploaders);
             uploader.querySelector('#add-answers').addEventListener('click', async () => {
                 const input = document.createElement('input');
                 input.type = 'text';
@@ -604,12 +602,74 @@
                 };
             });
             uploader.querySelector('#copy')?.addEventListener('click', createUploader);
-            uploader.querySelector('#exit').addEventListener('click', exit);
+            uploader.querySelector('#exit')?.addEventListener('click', exit);
+            uploader.querySelector('#remove')?.addEventListener('click', () => {
+                if (confirm('Are you sure you want to remove this question? If it has unsaved data, all will be deleted.')) uploader.remove();
+            });
+            uploader.querySelector('#stem')?.addEventListener('click', () => {
+                document.querySelectorAll('#stem').forEach(stem => {
+                    if (stem !== uploader.querySelector('#stem')) {
+                        stem.classList.remove('active');
+                    } else {
+                        stem.classList.add('active');
+                    };
+                });
+                ui.toast(`Stem set to Question ${uploader.querySelector('[data-question-number]').value || uploaderQuestion}.`, 3000, "info", "bi bi-diagram-3-fill");
+            });
             startingQuestionId++;
             startingQuestion = startingQuestion.replace(/(\d+)([a-z]*)$/, (match, num, suffix) => {
                 return !suffix ? (parseInt(num, 10) + 1).toString() : ((suffix === 'z') ? ((parseInt(num, 10) + 1) + 'a') : (num + String.fromCharCode(suffix.charCodeAt(0) + 1)));
             });
         };
+        async function submitAllUploaders() {
+            for (const { uploader, pond, quill, uploaderQuestionId, uploaderQuestion } of uploaders) {
+                if (pond.getFiles().length != 0) {
+                    pond.processFiles();
+                } else {
+                    await fetch(server, {
+                        method: 'POST',
+                        body: JSON.stringify({
+                            question: question || null,
+                            segment: segment || null,
+                            course: syllabus || null,
+                            period: period || null,
+                            startingQuestionId: uploader.id || uploaderQuestionId || null,
+                            startingQuestion: uploader.querySelector('[data-question-number]').value || uploaderQuestion || null,
+                            description: JSON.stringify(quill.getContents()) || '{"ops":[{"insert":"\n"}]}',
+                            title: uploader.querySelector('[data-question-text]').value || uploader.querySelector('[data-question-number]').value || uploaderQuestion,
+                            correctAnswers: [...uploader.querySelectorAll('[data-correct-answer]')].map(a => a.value).filter(Boolean) || [],
+                            incorrectAnswers: [...uploader.querySelectorAll('[data-incorrect-answer]')].map(a => {
+                                return { 'answer': a.querySelector('input').value, 'reason': a.querySelector('input[data-incorrect-answer-reason]').value };
+                            }).filter(a => a.answer !== '' && a.reason !== '') || [],
+                            stem: (!uploader.querySelector('#stem') || uploader.querySelector('#stem')?.classList.contains('active')) ? null : (document.querySelector('.uploader:has(#stem.active)')?.id || null),
+                        }),
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data.error) {
+                                submitSuccess = false;
+                                document.querySelector('#exit').classList.add('error');
+                                setTimeout(() => {
+                                    document.querySelector('#exit').classList.remove('error');
+                                }, 2000);
+                                alert(data.error);
+                            } else {
+                                submitSuccess = true;
+                                document.querySelector('#submit').innerText = 'Success';
+                                document.querySelector('#submit').classList.add('success');
+                                document.querySelector('#exit').style.display = 'block';
+                                setTimeout(() => {
+                                    document.querySelector('#submit').innerText = 'Save';
+                                    document.querySelector('#submit').classList.remove('success');
+                                }, 2000);
+                            };
+                        });
+                };
+            };
+        }
         window.onload = createUploader;
     </script>
 </body>
