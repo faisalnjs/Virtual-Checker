@@ -590,7 +590,7 @@ try {
     if (!selectedSegment) return updateQuestion();
     var questionStatuses = [];
     JSON.parse(selectedSegment.question_ids).forEach(questionId => {
-      if (questionsArray.find(q => String(q.id) === String(questionId.id))) {
+      if (questionsArray.find(q => String(q.id) === String(questionId.id)) && !questionsArray.find(q => String(q.stem) === String(questionId.id))) {
         const questionOption = document.createElement('option');
         questionOption.value = questionId.id;
         questionOption.innerHTML = questionId.name;
