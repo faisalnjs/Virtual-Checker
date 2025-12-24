@@ -3560,10 +3560,11 @@ try {
     } else if (this) {
       if (!document.getElementById("add-question-input").selectedOptions[0]) return;
       var questionId = document.getElementById("add-question-input").value;
-      div.id = `questionList-${questionId}`;
-      div.setAttribute("data-swapy-slot", `questionList-${questionId}`);
-      inner.setAttribute("data-swapy-item", `questionList-${questionId}`);
-      inner.innerHTML = `<div class="drag" data-swapy-handle><i class="bi bi-grip-vertical"></i></div>
+      if (!document.getElementById(`questionList-${questionId}`)) {
+        div.id = `questionList-${questionId}`;
+        div.setAttribute("data-swapy-slot", `questionList-${questionId}`);
+        inner.setAttribute("data-swapy-item", `questionList-${questionId}`);
+        inner.innerHTML = `<div class="drag" data-swapy-handle><i class="bi bi-grip-vertical"></i></div>
       <div class="input-group">
         <div class="space" id="question-container">
           <input type="text" id="${questionId}" value="${document.getElementById("add-question-input").selectedOptions[0].innerHTML}" disabled>
@@ -3575,34 +3576,36 @@ try {
         </div>
       </div>
       <button class="space" id="remove-existing-question-button" square tooltip="Remove Question"><i class="bi bi-trash"></i></button>`;
-      if (window.innerWidth >= 1400) {
-        inner.addEventListener('mouseenter', () => {
-          var question = questions.find(q => String(q.id) === String(questionId));
-          island(inner, null, 'question', {
-            sourceId: String(question.id),
-            id: `ID ${question.id}`,
-            title: `Question ${question.number}`,
-            subtitle: `${question.question}`,
-            subtitleLatex: question.latex,
-            description: question.description,
-            attachments: question.images,
-            lists: [
-              {
-                title: 'Correct Answers',
-                items: answers.find(a => a.id === question.id)?.correct_answers
-              },
-              {
-                title: 'Incorrect Answers',
-                items: answers.find(a => a.id === question.id)?.incorrect_answers
-              },
-            ],
-          }, answers);
-        });
-        inner.addEventListener('mouseleave', () => {
-          island();
-        });
+        if (window.innerWidth >= 1400) {
+          inner.addEventListener('mouseenter', () => {
+            var question = questions.find(q => String(q.id) === String(questionId));
+            island(inner, null, 'question', {
+              sourceId: String(question.id),
+              id: `ID ${question.id}`,
+              title: `Question ${question.number}`,
+              subtitle: `${question.question}`,
+              subtitleLatex: question.latex,
+              description: question.description,
+              attachments: question.images,
+              lists: [
+                {
+                  title: 'Correct Answers',
+                  items: answers.find(a => a.id === question.id)?.correct_answers
+                },
+                {
+                  title: 'Incorrect Answers',
+                  items: answers.find(a => a.id === question.id)?.incorrect_answers
+                },
+              ],
+            }, answers);
+          });
+          inner.addEventListener('mouseleave', () => {
+            island();
+          });
+        }
       }
       document.getElementById("add-question-input").removeChild(document.getElementById("add-question-input").selectedOptions[0]);
+      if (document.getElementById(`questionList-${questionId}`)) return;
     } else {
       var newQuestion = document.getElementById("add-question-input").children[document.getElementById("add-question-input").children.length - 1];
       div.id = `questionList-${newQuestion.value}`;
