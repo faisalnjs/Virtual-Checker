@@ -2719,6 +2719,7 @@ try {
 
   function toggleSpeedMode() {
     if (!active) return;
+    if (loadedSegmentCreator) return createSegment();
     if (!speed) {
       ui.view("speed");
       document.getElementById("speed-mode-starting-question")?.focus();
@@ -3717,10 +3718,10 @@ try {
         }
         return await r.json();
       })
-      .then(() => {
+      .then((r) => {
         ui.setUnsavedChanges(false);
         ui.toast(loadedSegmentEditor ? "Segment updated successfully." : "Segment created successfully.", 3000, "success", "bi bi-check-circle-fill");
-        editSegment(null, loadedSegmentEditor ? loadedSegment.id : null);
+        editSegment(null, loadedSegmentEditor ? loadedSegment.id : (r.id || null));
       })
       .catch((e) => {
         console.error(e);
