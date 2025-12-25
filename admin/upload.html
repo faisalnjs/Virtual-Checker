@@ -258,15 +258,21 @@
                 window.close();
             }, 500);
         };
-        function createUploader() {
-            const uploaderQuestionId = startingQuestionId;
-            const uploaderQuestion = startingQuestion;
-            window.opener.postMessage(`${startingQuestionId}+${startingQuestion}`, window.location.protocol + '//' + window.location.hostname + (window.location.port ? ':' + window.location.port : ''));
+        function createUploader(event = null, number = null) {
             const isMultiple = document.querySelector('.uploader') && originalWindowWidth && originalWindowHeight && originalWindowY && originalWindowX;
             if (isMultiple) {
                 window.resizeTo(originalWindowWidth, originalWindowHeight);
                 window.moveTo(originalWindowX, originalWindowY);
             };
+            if (isMultiple) {
+                startingQuestionId++;
+                startingQuestion = (number || startingQuestion).replace(/(\d+)([a-z]*)$/, (match, num, suffix) => {
+                    return !suffix ? (parseInt(num, 10) + 1).toString() : ((suffix === 'z') ? ((parseInt(num, 10) + 1) + 'a') : (num + String.fromCharCode(suffix.charCodeAt(0) + 1)));
+                });
+            }
+            const uploaderQuestionId = startingQuestionId;
+            const uploaderQuestion = startingQuestion;
+            window.opener.postMessage(`${startingQuestionId}+${startingQuestion}`, window.location.protocol + '//' + window.location.hostname + (window.location.port ? ':' + window.location.port : ''));
             var uploader = document.createElement('div');
             uploader.id = uploaderQuestionId;
             uploader.classList.add('uploader');
@@ -307,6 +313,7 @@
                 ${allowMultiple ? '</div>' : ''}`}
             `;
             document.querySelector('.uploaders').appendChild(uploader);
+            uploader.querySelector('[data-question-number]').focus();
             const inputElement = uploader.querySelector('input[type="file"]');
             const questionElement = uploader.querySelector('input[type="file"]');
             const pond = FilePond.create(inputElement, {
@@ -602,7 +609,9 @@
                     return;
                 };
             });
-            uploader.querySelector('#copy')?.addEventListener('click', createUploader);
+            uploader.querySelector('#copy')?.addEventListener('click', () => {
+                createUploader(null, uploader.querySelector('[data-question-number]').value || uploaderQuestion);
+            });
             uploader.querySelector('#exit')?.addEventListener('click', exit);
             uploader.querySelector('#remove')?.addEventListener('click', () => {
                 if (confirm('Are you sure you want to remove this question? If it has unsaved data, all will be deleted.')) uploader.remove();
@@ -616,10 +625,6 @@
                     };
                 });
                 ui.toast(`Stem set to Question ${uploader.querySelector('[data-question-number]').value || uploaderQuestion}.`, 3000, "info", "bi bi-diagram-3-fill");
-            });
-            startingQuestionId++;
-            startingQuestion = startingQuestion.replace(/(\d+)([a-z]*)$/, (match, num, suffix) => {
-                return !suffix ? (parseInt(num, 10) + 1).toString() : ((suffix === 'z') ? ((parseInt(num, 10) + 1) + 'a') : (num + String.fromCharCode(suffix.charCodeAt(0) + 1)));
             });
         };
         async function submitAllUploaders() {
