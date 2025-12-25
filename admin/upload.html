@@ -24,7 +24,7 @@
     <link rel="stylesheet" href="../src/design.css" />
     <style>
         body {
-            padding: 10px;
+            padding: 1vw !important;
         }
 
         ::-webkit-scrollbar {
@@ -37,7 +37,7 @@
 
         .uploaders {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
             gap: 7.5px;
         }
 
@@ -316,6 +316,7 @@
                 instantUpload: (question || segment) ? false : true,
                 acceptedFileTypes: (course || question || segment) ? ['image/*'] : syllabus ? ['image/*', 'application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'] : ['text/csv'],
                 itemInsertLocation: 'after',
+                allowPaste: isMultiple ? false : true,
             });
             pond.on('initfile', (item) => {
                 if (question) item.setMetadata('question', question);
@@ -350,10 +351,10 @@
             if (!navigator.clipboard) uploader.querySelector('#paste').remove();
             uploader.querySelector('#paste').addEventListener('click', async () => {
                 var items = await navigator.clipboard.read();
-                if (!items) return;
+                if (!items) return alert('No items found in clipboard.');
                 items = items.filter(item => item.types.find(type => type.startsWith('image/')));
                 const item = items[0];
-                if (!item) return;
+                if (!item) return alert('No image found in clipboard.');
                 pond.addFile(await item.getType(item.types.filter(type => type.startsWith('image/'))[0]));
             });
             var quill = null;
@@ -622,52 +623,51 @@
             });
         };
         async function submitAllUploaders() {
+            var submitSuccess = true;
+            document.querySelector('#submit').innerText = 'Submitting';
             for (const { uploader, pond, quill, uploaderQuestionId, uploaderQuestion } of uploaders) {
-                if (pond.getFiles().length != 0) {
-                    pond.processFiles();
-                } else {
-                    await fetch(server, {
-                        method: 'POST',
-                        body: JSON.stringify({
-                            question: question || null,
-                            segment: segment || null,
-                            course: syllabus || null,
-                            period: period || null,
-                            startingQuestionId: uploader.id || uploaderQuestionId || null,
-                            startingQuestion: uploader.querySelector('[data-question-number]').value || uploaderQuestion || null,
-                            description: JSON.stringify(quill.getContents()) || '{"ops":[{"insert":"\n"}]}',
-                            title: uploader.querySelector('[data-question-text]').value || uploader.querySelector('[data-question-number]').value || uploaderQuestion,
-                            correctAnswers: [...uploader.querySelectorAll('[data-correct-answer]')].map(a => a.value).filter(Boolean) || [],
-                            incorrectAnswers: [...uploader.querySelectorAll('[data-incorrect-answer]')].map(a => {
-                                return { 'answer': a.querySelector('input').value, 'reason': a.querySelector('input[data-incorrect-answer-reason]').value };
-                            }).filter(a => a.answer !== '' && a.reason !== '') || [],
-                            stem: (!uploader.querySelector('#stem') || uploader.querySelector('#stem')?.classList.contains('active')) ? null : (document.querySelector('.uploader:has(#stem.active)')?.id || null),
-                        }),
-                        headers: {
-                            'Content-Type': 'application/json'
-                        }
-                    })
-                        .then(res => res.json())
-                        .then(data => {
-                            if (data.error) {
-                                submitSuccess = false;
-                                document.querySelector('#exit').classList.add('error');
-                                setTimeout(() => {
-                                    document.querySelector('#exit').classList.remove('error');
-                                }, 2000);
-                                alert(data.error);
-                            } else {
-                                submitSuccess = true;
-                                document.querySelector('#submit').innerText = 'Success';
-                                document.querySelector('#submit').classList.add('success');
-                                document.querySelector('#exit').style.display = 'block';
-                                setTimeout(() => {
-                                    document.querySelector('#submit').innerText = 'Save';
-                                    document.querySelector('#submit').classList.remove('success');
-                                }, 2000);
-                            };
-                        });
-                };
+                // console.log(pond.getFiles())
+                if (pond.getFiles().length != 0) await pond.processFiles();
+                await fetch(server, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        question: question || null,
+                        segment: segment || null,
+                        course: syllabus || null,
+                        period: period || null,
+                        startingQuestionId: uploader.id || uploaderQuestionId || null,
+                        startingQuestion: uploader.querySelector('[data-question-number]').value || uploaderQuestion || null,
+                        description: JSON.stringify(quill.getContents()) || '{"ops":[{"insert":"\n"}]}',
+                        title: uploader.querySelector('[data-question-text]').value || uploader.querySelector('[data-question-number]').value || uploaderQuestion,
+                        correctAnswers: [...uploader.querySelectorAll('[data-correct-answer]')].map(a => a.value).filter(Boolean) || [],
+                        incorrectAnswers: [...uploader.querySelectorAll('[data-incorrect-answer]')].map(a => {
+                            return { 'answer': a.querySelector('input').value, 'reason': a.querySelector('input[data-incorrect-answer-reason]').value };
+                        }).filter(a => a.answer !== '' && a.reason !== '') || [],
+                        stem: (!uploader.querySelector('#stem') || uploader.querySelector('#stem')?.classList.contains('active')) ? null : (document.querySelector('.uploader:has(#stem.active)')?.id || null),
+                    }),
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.error) submitSuccess = false;
+                    });
+            };
+            if (submitSuccess) {
+                document.querySelector('#submit').innerText = 'Success';
+                document.querySelector('#submit').classList.add('success');
+                document.querySelector('#exit').style.display = 'block';
+                setTimeout(() => {
+                    document.querySelector('#submit').innerText = 'Save';
+                    document.querySelector('#submit').classList.remove('success');
+                }, 2000);
+            } else {
+                document.querySelector('#exit').classList.add('error');
+                setTimeout(() => {
+                    document.querySelector('#exit').classList.remove('error');
+                }, 2000);
+                alert(data.error);
             };
         }
         window.onload = createUploader;
