@@ -1928,7 +1928,7 @@ try {
     let uploadSuccessful = false;
     window.addEventListener('message', (event) => {
       if (event.origin !== (window.location.protocol + '//' + window.location.hostname + (window.location.port ? ':' + window.location.port : ''))) return;
-      if (event.data.startsWith('uploadSuccess')) uploadSuccessful = true;
+      if (event.data === 'uploadSuccess') uploadSuccessful = true;
     }, false);
     const checkWindowClosed = setInterval(function () {
       if (newWindow && newWindow.closed) {
@@ -2760,6 +2760,7 @@ try {
     var startingQuestion = null;
     if (!document.getElementById("speed-mode-segments") && !document.getElementById("speed-mode-starting-question-id")) return;
     if (document.getElementById("speed-mode-segments")) segmentId = document.getElementById("speed-mode-segments").value;
+    if (loadedSegmentEditor) segmentId = loadedSegment?.id;
     if (document.getElementById("speed-mode-starting-question-id")) {
       startingQuestionId = document.getElementById("speed-mode-starting-question-id").value;
       startingQuestion = document.getElementById("speed-mode-starting-question").value;
@@ -2789,9 +2790,9 @@ try {
     let endingQuestion = startingQuestion || null;
     window.addEventListener('message', (event) => {
       if (event.origin !== (window.location.protocol + '//' + window.location.hostname + (window.location.port ? ':' + window.location.port : ''))) return;
-      if (event.data.startsWith('uploadSuccess')) {
+      if (event.data && (String(event.data) === 'uploadSuccess')) {
         uploadSuccessful = true;
-      } else {
+      } else if (event.data && String(event.data).includes('+')) {
         [endingQuestionId, endingQuestion] = event.data.split('+');
       }
     }, false);
@@ -2830,7 +2831,7 @@ try {
     let uploadSuccessful = false;
     window.addEventListener('message', (event) => {
       if (event.origin !== (window.location.protocol + '//' + window.location.hostname + (window.location.port ? ':' + window.location.port : ''))) return;
-      if (event.data.startsWith('uploadSuccess')) uploadSuccessful = true;
+      if (event.data === 'uploadSuccess') uploadSuccessful = true;
     }, false);
     const checkWindowClosed = setInterval(function () {
       if (newWindow && newWindow.closed) {
@@ -2859,7 +2860,7 @@ try {
     let uploadSuccessful = false;
     window.addEventListener('message', (event) => {
       if (event.origin !== (window.location.protocol + '//' + window.location.hostname + (window.location.port ? ':' + window.location.port : ''))) return;
-      if (event.data.startsWith('uploadSuccess')) uploadSuccessful = true;
+      if (event.data === 'uploadSuccess') uploadSuccessful = true;
     }, false);
     const checkWindowClosed = setInterval(function () {
       if (newWindow && newWindow.closed) {
@@ -3757,7 +3758,7 @@ try {
     document.getElementById("segment-number-input").value = loadedSegment.number;
     document.getElementById("segment-name-input").value = loadedSegment.name;
     document.getElementById("segment-due-date-input").value = loadedSegment.due;
-    JSON.parse(loadedSegment.question_ids).forEach(q => addExistingQuestion(q.id));
+    JSON.parse(loadedSegment.question_ids).filter((item, index, self) => index === self.findIndex((t) => (t.id === item.id))).forEach(q => addExistingQuestion(q.id));
     document.getElementById("create-button").innerText = "Save";
     document.querySelector('[data-delete-segment]')?.addEventListener('click', deleteSegmentConfirm);
     document.querySelector('[edit-segment-questions]')?.addEventListener('click', () => {
@@ -5652,7 +5653,7 @@ try {
     let uploadSuccessful = false;
     window.addEventListener('message', (event) => {
       if (event.origin !== (window.location.protocol + '//' + window.location.hostname + (window.location.port ? ':' + window.location.port : ''))) return;
-      if (event.data.startsWith('uploadSuccess')) uploadSuccessful = true;
+      if (event.data === 'uploadSuccess') uploadSuccessful = true;
     }, false);
     const checkWindowClosed = setInterval(function () {
       if (newWindow && newWindow.closed) {
