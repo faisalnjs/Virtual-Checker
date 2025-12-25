@@ -862,6 +862,7 @@ try {
     const selectedQuestionOptionIndex = Array.from(questionOptions).indexOf(selectedQuestionOption);
     var questionStatuses = [];
     questionOptions.forEach(questionId => {
+      if (questionsArray.find(q => String(q.stem) === String(questionId.value))) return;
       var question = questionsArray.find(q => String(q.id) === String(questionId.value));
       if (question) {
         var highestStatus = "";
