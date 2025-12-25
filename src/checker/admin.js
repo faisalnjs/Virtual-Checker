@@ -1194,6 +1194,7 @@ try {
           newQuestions.find(q => String(q.id) === question.id.split('-')[1]).number = question.querySelector('#question-number-input').value;
           newQuestions.find(q => String(q.id) === question.id.split('-')[1]).segment = question.querySelector('#question-segment-input').value;
           newQuestions.find(q => String(q.id) === question.id.split('-')[1]).question = question.querySelector('#question-text-input').value;
+          newQuestions.find(q => String(q.id) === question.id.split('-')[1]).stem = question.querySelector('#question-stem-input')?.value || null;
           if (renderedEditors[Number(question.id.split('-')[1])]) newQuestions.find(q => String(q.id) === question.id.split('-')[1]).description = JSON.stringify(renderedEditors[Number(question.id.split('-')[1])].getContents());
           newQuestions.find(q => String(q.id) === question.id.split('-')[1]).images = Array.from(question.querySelectorAll('.attachments .image > *')).map(q => {
             return q.getAttribute('data-src');
@@ -1207,7 +1208,7 @@ try {
               reason: q.querySelector('#question-incorrect-answer-reason-input').value
             };
           });
-          newQuestions.find(q => String(q.id) === question.id.split('-')[1]).latex = question.querySelector('[data-toggle-latex] i').classList.contains('bi-calculator-fill');
+          newQuestions.find(q => String(q.id) === question.id.split('-')[1]).latex = question.querySelector('[data-toggle-latex] i')?.classList.contains('bi-calculator-fill') || false;
           if (question.getAttribute('modified')) newQuestions.find(q => String(q.id) === question.id.split('-')[1]).modifiedAnswers = true;
         });
       var editedQuestions = [];
@@ -1413,6 +1414,7 @@ try {
         renderedEditors = {};
         document.querySelector('.questions .section').innerHTML = '';
         currentPageQuestions.forEach(q => {
+          const isStem = questions.find(question1 => String(question1.stem || '') === String(q.id)) ? true : false;
           var question = document.createElement('div');
           question.className = "section";
           question.id = `question-${q.id}`;
@@ -1423,7 +1425,7 @@ try {
           segments.forEach(s => {
             segmentsString += `<option value="${s.id}"${(allSegmentsQuestionIsIn[0] && (allSegmentsQuestionIsIn[0].id === s.id)) ? ' selected' : ''}>${s.number}</option>`;
           });
-          buttonGrid.innerHTML = `<button square data-select tooltip="Select Question"><i class="bi bi-circle"></i><i class="bi bi-circle-fill"></i></button><div class="input-group small"><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-id-input" value="${q.id}" disabled /></div></div><div class="input-group small"><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-number-input" value="${q.number}" placeholder="${q.number}" /></div></div><div class="input-group small"><div class="space" id="question-container"><select id="question-segment-input">${segmentsString}</select></div></div><div class="input-group"><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-text-input" value="${q.question}" placeholder="${q.question}" /></div></div><button square data-toggle-latex tooltip="Toggle LaTeX Title"><i class="bi bi-${q.latex ? 'calculator-fill' : 'cursor-text'}"></i></button><button square data-remove-question-input tooltip="Remove Question"><i class="bi bi-trash"></i></button><button square data-archive-question-input tooltip="Archive Question"><i class="bi bi-archive"></i></button><button square data-toggle-question tooltip="Expand Question"><i class="bi bi-caret-down-fill"></i><i class="bi bi-caret-up-fill"></i></button>`;
+          buttonGrid.innerHTML = `<button square data-select tooltip="Select Question"><i class="bi bi-circle"></i><i class="bi bi-circle-fill"></i></button><div class="input-group small"><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-id-input" value="${q.id}" disabled /></div></div><div class="input-group small"><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-number-input" value="${q.number}" placeholder="${q.number}" /></div></div><div class="input-group small ${isStem ? 'hidden' : ''}"><div class="space" id="question-container"><select id="question-segment-input">${segmentsString}</select></div></div><div class="input-group"><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-text-input" value="${q.question}" placeholder="${q.question}" /></div></div>${!isStem ? `<button square data-toggle-latex tooltip="Toggle LaTeX Title"><i class="bi bi-${q.latex ? 'calculator-fill' : 'cursor-text'}"></i></button>` : ''}<button square data-remove-question-input tooltip="Remove Question"><i class="bi bi-trash"></i></button><button square data-archive-question-input tooltip="Archive Question"><i class="bi bi-archive"></i></button><button square data-toggle-question tooltip="Expand Question"><i class="bi bi-caret-down-fill"></i><i class="bi bi-caret-up-fill"></i></button>`;
           if (window.innerWidth >= 1400) {
             buttonGrid.addEventListener('mouseenter', () => {
               var question = q;
@@ -1461,6 +1463,22 @@ try {
             questionMathRendering.innerHTML = convertLatexToMarkup(e.target.value);
             renderMathInElement(questionMathRendering);
           });
+          if (!isStem) {
+            var stemSelectContainer = document.createElement('div');
+            stemSelectContainer.classList = "stem-container";
+            var stemLabel = document.createElement('label');
+            stemLabel.innerText = "Stem:"
+            stemSelectContainer.appendChild(stemLabel);
+            var stemSelect = document.createElement('select');
+            stemSelect.id = "question-stem-input";
+            stemSelect.classList = "stem-select";
+            stemSelect.innerHTML = `<option value=""${!q.stem ? ' selected' : ''}>No Stem</option>` + questions.filter(question1 => String(question1.id) !== String(q.id)).map(question1 => `<option value="${question1.id}"${(String(q.stem || '') === String(question1.id)) ? ' selected' : ''}>${question1.number}: ${question1.question}</option>`).join('');
+            stemSelectContainer.appendChild(stemSelect);
+            question.appendChild(stemSelectContainer);
+            stemSelect.addEventListener('change', () => {
+              question.setAttribute('modified', 'true');
+            });
+          }
           var textareaContainer = document.createElement('div');
           textareaContainer.classList = "description";
           var toolbar = document.createElement('div');
@@ -1541,32 +1559,39 @@ try {
           drop.addEventListener('click', renderPond);
           images.appendChild(drop);
           question.appendChild(images);
-          var autofillAIAnswersContainer = document.createElement('div');
-          autofillAIAnswersContainer.classList = "answers";
-          var autofillAIAnswers = document.createElement('button');
-          autofillAIAnswers.setAttribute('data-autofill-answers', '');
-          autofillAIAnswers.innerHTML = '<i class="bi bi-openai"></i> Autofill Answers';
-          autofillAIAnswersContainer.appendChild(autofillAIAnswers);
-          question.appendChild(autofillAIAnswersContainer);
-          var correctAnswers = document.createElement('div');
-          correctAnswers.classList = "answers";
-          var correctAnswersString = "";
-          var questionAnswers = answers.find(a => a.id === q.id);
-          questionAnswers.correct_answers.forEach(a => {
-            correctAnswersString += `<div class="button-grid inputs"><input type="text" autocomplete="off" id="question-correct-answer-input" value="${a}" placeholder="${a}" /><button data-remove-correct-answer-input square><i class="bi bi-dash"></i></button></div>`;
-          });
-          correctAnswers.innerHTML = `<b>Correct Answers</b><div class="section correctAnswers">${correctAnswersString}<button data-add-correct-answer-input>Add Correct Answer</button></div>`;
-          question.appendChild(correctAnswers);
-          var incorrectAnswers = document.createElement('div');
-          incorrectAnswers.classList = "answers";
-          var incorrectAnswersString = "";
-          questionAnswers.incorrect_answers.forEach(a => {
-            incorrectAnswersString += `<div class="button-grid inputs"><input type="text" autocomplete="off" id="question-incorrect-answer-input" value="${a.answer}" placeholder="${a.answer || 'Answer'}" /><input type="text" autocomplete="off" id="question-incorrect-answer-reason-input" value="${a.reason}" placeholder="${a.reason || 'Reason'}" /><button data-remove-incorrect-answer-input square><i class="bi bi-dash"></i></button></div>`;
-          });
-          incorrectAnswers.innerHTML = `<b>Incorrect Answers</b><div class="section incorrectAnswers">${incorrectAnswersString}<button data-add-incorrect-answer-input>Add Incorrect Answer</button></div>`;
-          question.appendChild(incorrectAnswers);
+          if (isStem) {
+            var isStemMessage = document.createElement('ul');
+            isStemMessage.classList = "stem-container";
+            isStemMessage.innerHTML = `<br>This question is the stem for the following question(s):<br>${questions.filter(question1 => String(question1.stem || '') === String(q.id)).map(question1 => `<li>Segment ${allSegmentsQuestionIsIn[0]?.number || 'N/A'} Number ${question1.number}</li>`).join('')}`;
+            question.appendChild(isStemMessage);
+          } else {
+            var autofillAIAnswersContainer = document.createElement('div');
+            autofillAIAnswersContainer.classList = "answers";
+            var autofillAIAnswers = document.createElement('button');
+            autofillAIAnswers.setAttribute('data-autofill-answers', '');
+            autofillAIAnswers.innerHTML = '<i class="bi bi-openai"></i> Autofill Answers';
+            autofillAIAnswersContainer.appendChild(autofillAIAnswers);
+            question.appendChild(autofillAIAnswersContainer);
+            var correctAnswers = document.createElement('div');
+            correctAnswers.classList = "answers";
+            var correctAnswersString = "";
+            var questionAnswers = answers.find(a => a.id === q.id);
+            questionAnswers.correct_answers.forEach(a => {
+              correctAnswersString += `<div class="button-grid inputs"><input type="text" autocomplete="off" id="question-correct-answer-input" value="${a}" placeholder="${a}" /><button data-remove-correct-answer-input square><i class="bi bi-dash"></i></button></div>`;
+            });
+            correctAnswers.innerHTML = `<b>Correct Answers</b><div class="section correctAnswers">${correctAnswersString}<button data-add-correct-answer-input>Add Correct Answer</button></div>`;
+            question.appendChild(correctAnswers);
+            var incorrectAnswers = document.createElement('div');
+            incorrectAnswers.classList = "answers";
+            var incorrectAnswersString = "";
+            questionAnswers.incorrect_answers.forEach(a => {
+              incorrectAnswersString += `<div class="button-grid inputs"><input type="text" autocomplete="off" id="question-incorrect-answer-input" value="${a.answer}" placeholder="${a.answer || 'Answer'}" /><input type="text" autocomplete="off" id="question-incorrect-answer-reason-input" value="${a.reason}" placeholder="${a.reason || 'Reason'}" /><button data-remove-incorrect-answer-input square><i class="bi bi-dash"></i></button></div>`;
+            });
+            incorrectAnswers.innerHTML = `<b>Incorrect Answers</b><div class="section incorrectAnswers">${incorrectAnswersString}<button data-add-incorrect-answer-input>Add Incorrect Answer</button></div>`;
+            question.appendChild(incorrectAnswers);
+          }
           document.querySelector('.questions .section').appendChild(question);
-          question.querySelectorAll('#question-correct-answer-input, #question-incorrect-answer-input, #question-incorrect-answer-reason-input').forEach(questionAnswerInput => questionAnswerInput.addEventListener('change', () => {
+          if (!isStem) question.querySelectorAll('#question-correct-answer-input, #question-incorrect-answer-input, #question-incorrect-answer-reason-input').forEach(questionAnswerInput => questionAnswerInput.addEventListener('change', () => {
             question.setAttribute('modified', 'true');
           }));
         });
@@ -2694,6 +2719,7 @@ try {
 
   function toggleSpeedMode() {
     if (!active) return;
+    if (loadedSegmentCreator) return createSegment();
     if (!speed) {
       ui.view("speed");
       document.getElementById("speed-mode-starting-question")?.focus();
@@ -2735,6 +2761,7 @@ try {
     var startingQuestion = null;
     if (!document.getElementById("speed-mode-segments") && !document.getElementById("speed-mode-starting-question-id")) return;
     if (document.getElementById("speed-mode-segments")) segmentId = document.getElementById("speed-mode-segments").value;
+    if (loadedSegmentEditor) segmentId = loadedSegment?.id;
     if (document.getElementById("speed-mode-starting-question-id")) {
       startingQuestionId = document.getElementById("speed-mode-starting-question-id").value;
       startingQuestion = document.getElementById("speed-mode-starting-question").value;
@@ -2752,32 +2779,38 @@ try {
 
   async function renderSpeedPond(segment = 0, startingQuestionId, startingQuestion) {
     if (!active) return;
-    const url = `/admin/upload?segment=${segment}${(startingQuestionId && startingQuestion) ? `&startingQuestionId=${startingQuestionId}&startingQuestion=${startingQuestion}` : ''}`;
+    const url = `/admin/upload?segment=${segment}${(startingQuestionId && startingQuestion) ? `&startingQuestionId=${startingQuestionId}&startingQuestion=${startingQuestion}` : ''}&w=${window.outerWidth}&h=${window.outerHeight}&t=${window.screenY}&l=${window.screenX}`;
     const width = 600;
-    const height = 600;
+    const height = 645;
     const left = (window.screen.width / 2) - (width / 2);
     const top = (window.screen.height / 2) - (height / 2);
     const windowFeatures = `width=${width},height=${height},resizable=no,scrollbars=no,status=yes,left=${left},top=${top}`;
     const newWindow = window.open(url, '_blank', windowFeatures);
     let uploadSuccessful = false;
+    let endingQuestionId = startingQuestionId || null;
+    let endingQuestion = startingQuestion || null;
     window.addEventListener('message', (event) => {
       if (event.origin !== (window.location.protocol + '//' + window.location.hostname + (window.location.port ? ':' + window.location.port : ''))) return;
-      if (event.data === 'uploadSuccess') uploadSuccessful = true;
+      if (event.data && (String(event.data) === 'uploadSuccess')) {
+        uploadSuccessful = true;
+      } else if (event.data && String(event.data).includes('+')) {
+        [endingQuestionId, endingQuestion] = event.data.split('+');
+      }
     }, false);
     const checkWindowClosed = setInterval(async function () {
       if (newWindow && newWindow.closed) {
         clearInterval(checkWindowClosed);
         if (uploadSuccessful) {
           ui.modeless(`<i class="bi bi-cloud-upload"></i>`, "Uploaded");
-          if (startingQuestionId && startingQuestion) {
-            renderSpeedPond(segment, Number(startingQuestionId) + 1, startingQuestion.replace(/(\d+)([a-z]*)$/, (match, num, suffix) => {
+          if (endingQuestionId && endingQuestion) {
+            renderSpeedPond(segment, Number(endingQuestionId) + 1, endingQuestion.replace(/(\d+)([a-z]*)$/, (match, num, suffix) => {
               return !suffix ? (parseInt(num, 10) + 1).toString() : ((suffix === 'z') ? ((parseInt(num, 10) + 1) + 'a') : (num + String.fromCharCode(suffix.charCodeAt(0) + 1)));
             }));
           } else {
             renderSpeedPond(segment);
           }
           await init();
-          if ((segment === 0) && startingQuestionId) addExistingQuestion(startingQuestionId);
+          if ((segment === 0) && endingQuestionId) addExistingQuestion(endingQuestionId);
         } else {
           init();
         }
@@ -2791,7 +2824,7 @@ try {
     await save(null, true);
     const url = '/admin/upload?syllabus=' + document.getElementById("course-period-input").value;
     const width = 600;
-    const height = 150;
+    const height = 217;
     const left = (window.screen.width / 2) - (width / 2);
     const top = (window.screen.height / 2) - (height / 2);
     const windowFeatures = `width=${width},height=${height},resizable=no,scrollbars=no,status=yes,left=${left},top=${top}`;
@@ -2820,7 +2853,7 @@ try {
     await save(null, true);
     const url = '/admin/upload?course=' + document.getElementById("course-period-input").value + '&platform=' + platform;
     const width = 600;
-    const height = 150;
+    const height = 217;
     const left = (window.screen.width / 2) - (width / 2);
     const top = (window.screen.height / 2) - (height / 2);
     const windowFeatures = `width=${width},height=${height},resizable=no,scrollbars=no,status=yes,left=${left},top=${top}`;
@@ -3529,10 +3562,11 @@ try {
     } else if (this) {
       if (!document.getElementById("add-question-input").selectedOptions[0]) return;
       var questionId = document.getElementById("add-question-input").value;
-      div.id = `questionList-${questionId}`;
-      div.setAttribute("data-swapy-slot", `questionList-${questionId}`);
-      inner.setAttribute("data-swapy-item", `questionList-${questionId}`);
-      inner.innerHTML = `<div class="drag" data-swapy-handle><i class="bi bi-grip-vertical"></i></div>
+      if (!document.getElementById(`questionList-${questionId}`)) {
+        div.id = `questionList-${questionId}`;
+        div.setAttribute("data-swapy-slot", `questionList-${questionId}`);
+        inner.setAttribute("data-swapy-item", `questionList-${questionId}`);
+        inner.innerHTML = `<div class="drag" data-swapy-handle><i class="bi bi-grip-vertical"></i></div>
       <div class="input-group">
         <div class="space" id="question-container">
           <input type="text" id="${questionId}" value="${document.getElementById("add-question-input").selectedOptions[0].innerHTML}" disabled>
@@ -3544,34 +3578,36 @@ try {
         </div>
       </div>
       <button class="space" id="remove-existing-question-button" square tooltip="Remove Question"><i class="bi bi-trash"></i></button>`;
-      if (window.innerWidth >= 1400) {
-        inner.addEventListener('mouseenter', () => {
-          var question = questions.find(q => String(q.id) === String(questionId));
-          island(inner, null, 'question', {
-            sourceId: String(question.id),
-            id: `ID ${question.id}`,
-            title: `Question ${question.number}`,
-            subtitle: `${question.question}`,
-            subtitleLatex: question.latex,
-            description: question.description,
-            attachments: question.images,
-            lists: [
-              {
-                title: 'Correct Answers',
-                items: answers.find(a => a.id === question.id)?.correct_answers
-              },
-              {
-                title: 'Incorrect Answers',
-                items: answers.find(a => a.id === question.id)?.incorrect_answers
-              },
-            ],
-          }, answers);
-        });
-        inner.addEventListener('mouseleave', () => {
-          island();
-        });
+        if (window.innerWidth >= 1400) {
+          inner.addEventListener('mouseenter', () => {
+            var question = questions.find(q => String(q.id) === String(questionId));
+            island(inner, null, 'question', {
+              sourceId: String(question.id),
+              id: `ID ${question.id}`,
+              title: `Question ${question.number}`,
+              subtitle: `${question.question}`,
+              subtitleLatex: question.latex,
+              description: question.description,
+              attachments: question.images,
+              lists: [
+                {
+                  title: 'Correct Answers',
+                  items: answers.find(a => a.id === question.id)?.correct_answers
+                },
+                {
+                  title: 'Incorrect Answers',
+                  items: answers.find(a => a.id === question.id)?.incorrect_answers
+                },
+              ],
+            }, answers);
+          });
+          inner.addEventListener('mouseleave', () => {
+            island();
+          });
+        }
       }
       document.getElementById("add-question-input").removeChild(document.getElementById("add-question-input").selectedOptions[0]);
+      if (document.getElementById(`questionList-${questionId}`)) return;
     } else {
       var newQuestion = document.getElementById("add-question-input").children[document.getElementById("add-question-input").children.length - 1];
       div.id = `questionList-${newQuestion.value}`;
@@ -3682,10 +3718,10 @@ try {
         }
         return await r.json();
       })
-      .then(() => {
+      .then((r) => {
         ui.setUnsavedChanges(false);
         ui.toast(loadedSegmentEditor ? "Segment updated successfully." : "Segment created successfully.", 3000, "success", "bi bi-check-circle-fill");
-        editSegment(null, loadedSegmentEditor ? loadedSegment.id : null);
+        editSegment(null, loadedSegmentEditor ? loadedSegment.id : (r.id || null));
       })
       .catch((e) => {
         console.error(e);
@@ -3723,7 +3759,7 @@ try {
     document.getElementById("segment-number-input").value = loadedSegment.number;
     document.getElementById("segment-name-input").value = loadedSegment.name;
     document.getElementById("segment-due-date-input").value = loadedSegment.due;
-    JSON.parse(loadedSegment.question_ids).forEach(q => addExistingQuestion(q.id));
+    JSON.parse(loadedSegment.question_ids).filter((item, index, self) => index === self.findIndex((t) => (t.id === item.id))).forEach(q => addExistingQuestion(q.id));
     document.getElementById("create-button").innerText = "Save";
     document.querySelector('[data-delete-segment]')?.addEventListener('click', deleteSegmentConfirm);
     document.querySelector('[edit-segment-questions]')?.addEventListener('click', () => {
@@ -5610,7 +5646,7 @@ try {
     if (!period) return;
     const url = '/admin/upload?period=' + period;
     const width = 600;
-    const height = 150;
+    const height = 217;
     const left = (window.screen.width / 2) - (width / 2);
     const top = (window.screen.height / 2) - (height / 2);
     const windowFeatures = `width=${width},height=${height},resizable=no,scrollbars=no,status=yes,left=${left},top=${top}`;

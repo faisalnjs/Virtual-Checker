@@ -590,7 +590,7 @@ try {
     if (!selectedSegment) return updateQuestion();
     var questionStatuses = [];
     JSON.parse(selectedSegment.question_ids).forEach(questionId => {
-      if (questionsArray.find(q => String(q.id) === String(questionId.id))) {
+      if (questionsArray.find(q => String(q.id) === String(questionId.id)) && !questionsArray.find(q => String(q.stem) === String(questionId.id))) {
         const questionOption = document.createElement('option');
         questionOption.value = questionId.id;
         questionOption.innerHTML = questionId.name;
@@ -745,7 +745,8 @@ try {
       };
       document.querySelector('[data-question-title]').removeAttribute('hidden');
     }
-    if (question.description && question.description.includes('ops') && (question.description != '{"ops":[{"insert":"\\n"}]}') && JSON.parse(question.description)) {
+    const stem = question.stem ? (questionsArray.find(q => String(q.id) === String(question.stem)) || null) : null;
+    if ((question.description && question.description.includes('ops') && (question.description != '{"ops":[{"insert":"\\n"}]}') && JSON.parse(question.description)) || (stem && stem.description && stem.description.includes('ops') && (stem.description != '{"ops":[{"insert":"\\n"}]}') && JSON.parse(stem.description))) {
       var textarea = document.createElement('div');
       document.querySelector('[data-question-description]').appendChild(textarea);
       var quill = new Quill(textarea, {
@@ -759,10 +760,12 @@ try {
         },
         theme: 'snow'
       });
-      quill.setContents(JSON.parse(question.description));
+      quill.setContents({
+        'ops': [...JSON.parse(stem?.description || '{"ops":[]}').ops, ...JSON.parse(question.description).ops]
+      });
       document.querySelector('[data-question-description]').removeAttribute('hidden');
     }
-    JSON.parse(question.images).forEach(image => {
+    [...JSON.parse(stem?.images || '[]'), ...JSON.parse(question.images)].forEach(image => {
       var i = document.createElement('img');
       i.src = image;
       questionImages.append(i);
@@ -859,6 +862,7 @@ try {
     const selectedQuestionOptionIndex = Array.from(questionOptions).indexOf(selectedQuestionOption);
     var questionStatuses = [];
     questionOptions.forEach(questionId => {
+      if (questionsArray.find(q => String(q.stem) === String(questionId.value))) return;
       var question = questionsArray.find(q => String(q.id) === String(questionId.value));
       if (question) {
         var highestStatus = "";

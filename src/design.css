@@ -951,7 +951,8 @@ div.ML__keyboard {
 .questions .section .description,
 .questions .section .EasyMDEContainer,
 .questions .section .attachments,
-.questions .section .answers {
+.questions .section .answers,
+.questions .section .stem-container {
   max-height: 0px;
   transition: 0.25s var(--easing);
   overflow: hidden;
@@ -971,7 +972,8 @@ div.ML__keyboard {
 .questions .section.expanded .description,
 .questions .section.expanded .EasyMDEContainer,
 .questions .section.expanded .attachments,
-.questions .section.expanded .answers {
+.questions .section.expanded .answers,
+.questions .section.expanded .stem-container {
   max-height: 10000px;
   transition: 0.25s var(--easing);
 }
