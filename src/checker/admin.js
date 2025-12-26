@@ -1471,9 +1471,9 @@ try {
             questionMathRendering.innerHTML = convertLatexToMarkup(e.target.value);
             renderMathInElement(questionMathRendering);
           });
-          var buttonGrid2 = document.createElement('div');
-          buttonGrid2.className = "button-grid stem-container";
           if (!isStem) {
+            var buttonGrid2 = document.createElement('div');
+            buttonGrid2.className = "button-grid stem-container";
             var stemSelectContainer = document.createElement('div');
             var stemLabel = document.createElement('label');
             stemLabel.innerText = "Stem"
@@ -1487,22 +1487,22 @@ try {
             stemSelect.addEventListener('change', () => {
               question.setAttribute('modified', 'true');
             });
+            var nonScoredContainer = document.createElement('div');
+            nonScoredContainer.style.minWidth = "156px";
+            var nonScoredLabel = document.createElement('label');
+            nonScoredLabel.innerText = "Scored"
+            nonScoredContainer.appendChild(nonScoredLabel);
+            var nonScoredSelect = document.createElement('select');
+            nonScoredSelect.id = "question-nonscored-input";
+            nonScoredSelect.classList = "stem-select";
+            nonScoredSelect.innerHTML = `<option value="0"${!q.nonscored ? ' selected' : ''}>Yes</option><option value="1"${q.nonscored ? ' selected' : ''}>No</option>`;
+            nonScoredContainer.appendChild(nonScoredSelect);
+            buttonGrid2.appendChild(nonScoredContainer);
+            nonScoredSelect.addEventListener('change', () => {
+              question.setAttribute('modified', 'true');
+            });
+            question.appendChild(buttonGrid2);
           }
-          var nonScoredContainer = document.createElement('div');
-          nonScoredContainer.style.minWidth = "156px";
-          var nonScoredLabel = document.createElement('label');
-          nonScoredLabel.innerText = "Scored"
-          nonScoredContainer.appendChild(nonScoredLabel);
-          var nonScoredSelect = document.createElement('select');
-          nonScoredSelect.id = "question-nonscored-input";
-          nonScoredSelect.classList = "stem-select";
-          nonScoredSelect.innerHTML = `<option value="0"${!q.nonscored ? ' selected' : ''}>Yes</option><option value="1"${q.nonscored ? ' selected' : ''}>No</option>`;
-          nonScoredContainer.appendChild(nonScoredSelect);
-          buttonGrid2.appendChild(nonScoredContainer);
-          nonScoredSelect.addEventListener('change', () => {
-            question.setAttribute('modified', 'true');
-          });
-          question.appendChild(buttonGrid2);
           var textareaContainer = document.createElement('div');
           textareaContainer.classList = "description";
           var toolbar = document.createElement('div');
@@ -2044,7 +2044,7 @@ try {
         if (!a.flagged && b.flagged) return 1;
         return b.id - a.id;
       });
-      console.log(responses1, questions)
+    console.log(responses1, questions)
     if (this && ((this.id === 'course-period-input') || (this.id === 'filter-segment-input') || (this.id === 'sort-question-input') || (this.id === 'sort-seat-input'))) {
       pagination.awaitingResponses.page = 0;
       pagination.responses.page = 0;
