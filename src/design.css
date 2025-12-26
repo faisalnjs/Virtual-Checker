@@ -1487,6 +1487,7 @@ hidden,
   border-radius: 10px;
   border-left: 3px solid mediumseagreen;
   border-right: 3px solid mediumseagreen;
+  margin-top: 10px;
 }
 
 #segment-completed i {
@@ -1495,6 +1496,22 @@ hidden,
 
 #segment-completed ul i {
   font-size: 15px;
+}
+
+#segment-completed:not(.incomplete) > *:not(ul).incomplete {
+  display: none;
+}
+
+#segment-completed.incomplete > *:not(ul):not(.incomplete) {
+  display: none;
+}
+
+#segment-completed:not(.complete) > *:not(ul).complete {
+  display: none;
+}
+
+#segment-completed.complete > *:not(ul):not(.complete) {
+  display: none;
 }
 
 #segment-completed:not(.mastery) > *:not(ul).mastery {

@@ -85,6 +85,7 @@ try {
     });
     if (document.querySelector('[data-logout]')) document.querySelector('[data-logout]').addEventListener('click', () => auth.logout(init));
     if (document.querySelector('[data-toggle-layout]')) document.querySelector('[data-toggle-layout]').addEventListener('click', toggleLayout);
+    if (document.querySelector('[data-toggle-segment-completion]')) document.querySelector('[data-toggle-segment-completion]').addEventListener('click', toggleSegmentCompletion);
     document.getElementById("code-input").value = '';
     document.querySelectorAll("span.code").forEach((element) => {
       element.innerHTML = '';
@@ -503,7 +504,8 @@ try {
         option.value = segment.id;
         var questionStatuses = [];
         JSON.parse(segment.question_ids).forEach(questionId => {
-          if (questionsArray.find(q => String(q.id) === String(questionId.id))) {
+          const question = questionsArray.find(q => String(q.id) === String(questionId.id));
+          if (question) {
             var highestStatus = "";
             var questionResponses = history.filter(r => String(r.question_id) === String(questionId.id));
             if (questionResponses.find(r => r.status === 'Correct')) {
@@ -513,10 +515,10 @@ try {
             } else if (questionResponses.find(r => r.status === 'Incorrect')) {
               highestStatus = 'In Progress';
             }
-            questionStatuses.push({ "segment": segment.id, "question": questionId.id, "status": highestStatus });
+            questionStatuses.push({ "segment": segment.id, "question": questionId.id, "status": highestStatus, "nonscored": question.nonscored });
           }
         });
-        const allQuestionsCorrect = (JSON.parse(segment.question_ids).length > 0) && questionStatuses.every(question => question.status === 'Correct');
+        const allQuestionsCorrect = (JSON.parse(segment.question_ids).length > 0) && questionStatuses.every(question => (question.status === 'Correct') || question.nonscored);
         option.innerHTML = `${segment.number} - ${segment.name}${segment.due ? ` (Due ${new Date(`${segment.due}T00:00:00`).toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })})` : ''}${allQuestionsCorrect ? ' [MASTERY]' : ''}`;
         option.setAttribute('due', segment.due || '');
         segments.append(option);
@@ -597,8 +599,8 @@ try {
         questionOption.innerHTML = questionId.name;
         var highestStatus = "";
         var highestStatusClass = "";
-        var questionResponses = history.filter(r => String(r.question_id) === String(questionId.id));
         if (!question.nonscored) {
+          var questionResponses = history.filter(r => String(r.question_id) === String(questionId.id));
           if (questionResponses.find(r => r.status === 'Correct')) {
             highestStatus = 'Correct';
             highestStatusClass = 'correct';
@@ -631,16 +633,23 @@ try {
     await updateQuestion();
     document.getElementById("segment-completed").setAttribute('hidden', '');
     document.getElementById("segment-completed").querySelector('ul').innerHTML = '';
+    document.getElementById("segment-completed").classList.remove('incomplete');
+    document.getElementById("segment-completed").classList.remove('complete');
     document.getElementById("segment-completed").classList.remove('mastery');
-    if ((questions.querySelectorAll('option').length > 0) && questionStatuses.every(question => question.status)) {
-      document.getElementById("segment-completed").removeAttribute('hidden');
+    if (questions.querySelectorAll('option').length > 0) {
+      if (questionStatuses.every(question => question.status)) {
+        document.getElementById("segment-completed").classList.add('complete');
+        document.getElementById("segment-completed").removeAttribute('hidden');
+      } else {
+        document.getElementById("segment-completed").classList.add('incomplete');
+      }
       questionStatuses.forEach(question => {
         const questionId = questionsArray.find(q => String(q.id) === String(question.question));
-        const questionText = `${questionId.number} - ${question.status}`;
+        const questionText = `${questionId.number} - ${question.nonscored ? 'Non-scored' : (question.status || 'Not Completed')}`;
         const li = document.createElement('li');
         if (question.status === 'Correct') {
           li.innerHTML = `<i class="bi bi-check-lg"></i> ${questionText}`;
-        } else if (question.status === 'Incorrect') {
+        } else if ((question.status === 'Awaiting Scoring') || (question.status === 'In Progress')) {
           li.innerHTML = `<i class="bi bi-hourglass-split"></i> ${questionText}`;
         } else {
           li.innerHTML = `<i class="bi bi-hourglass"></i> ${questionText}`;
@@ -648,7 +657,7 @@ try {
         document.getElementById("segment-completed").querySelector('ul').append(li);
       });
     }
-    if ((questions.querySelectorAll('option').length > 0) && questionStatuses.every(question => question.status === 'Correct')) {
+    if ((questions.querySelectorAll('option').length > 0) && questionStatuses.every(question => (question.status === 'Correct') || question.nonscored)) {
       document.getElementById("segment-completed").classList.add('mastery');
       const count = 200;
       const textColor = getComputedStyle(document.body).getPropertyValue('--text-color').trim();
@@ -1408,6 +1417,18 @@ try {
     checker.classList.toggle('horizontal');
     storage.set('layout', checker.classList.toString());
     auth.syncPush('layout');
+  }
+
+  function toggleSegmentCompletion() {
+    const checker = document.getElementById('checker');
+    if (!checker) return;
+    const segmentCompleted = document.getElementById('segment-completed');
+    if (!segmentCompleted) return;
+    if (segmentCompleted.hasAttribute('hidden')) {
+      segmentCompleted.removeAttribute('hidden');
+    } else {
+      segmentCompleted.setAttribute('hidden', '');
+    }
   }
 
   async function updateNotifications(filteredHistory) {

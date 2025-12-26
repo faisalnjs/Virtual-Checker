@@ -470,6 +470,18 @@ label:has(i) {
   display: none;
 }
 
+[data-toggle-segment-completion] {
+  position: absolute !important;
+  top: 2.5px;
+  right: 40px;
+  z-index: 1;
+}
+
+#checker:not(:has(#segment-completed[hidden])) [data-toggle-segment-completion] .bi-info-square,
+#checker:has(#segment-completed[hidden]) [data-toggle-segment-completion] .bi-info-square-fill {
+  display: none;
+}
+
 .awaitingResponses .button-grid,
 .trendingResponses .button-grid,
 .responses .button-grid {
