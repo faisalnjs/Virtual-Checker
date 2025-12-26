@@ -332,6 +332,17 @@
                 acceptedFileTypes: (course || question || segment) ? ['image/*'] : syllabus ? ['image/*', 'application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'] : ['text/csv'],
                 itemInsertLocation: 'after',
                 allowPaste: isMultiple ? false : true,
+                maxParallelUploads: 1,
+            });
+            pond.on('addfile', (error, item) => {
+                if (error) return;
+                const existingFiles = pond.getFiles().filter(f => f.id !== item.id);
+                for (const file of existingFiles) {
+                    if (file.filename === item.filename && file.fileSize === item.fileSize) {
+                        pond.removeFile(item.id);
+                        return;
+                    };
+                };
             });
             pond.on('initfile', (item) => {
                 if (question) item.setMetadata('question', question);

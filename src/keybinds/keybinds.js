@@ -100,9 +100,22 @@ try {
       zoomOverlay.click();
       if (next) setTimeout(() => next.click(), 500);
     } else if (e.key == "y" && island && islandOpen && !isTyping) {
-      document.querySelector('.island-extends #mark-correct-button')?.click()
+      document.querySelector('.island-extends #mark-correct-button')?.click();
     } else if (e.key == "n" && island && islandOpen && !isTyping) {
-      document.querySelector('.island-extends #mark-incorrect-button')?.click()
+      document.querySelector('.island-extends #mark-incorrect-button')?.click();
+      setTimeout(() => {
+        if (document.querySelector(".dialog-input.selectAll")) document.querySelector(".dialog-input.selectAll").value = '';
+      }, 100);
+    } else if (e.key == "q" && island && islandOpen && !isTyping) {
+      var responseData = document.querySelector('.island-extends #response-question-input');
+      if (!responseData || !responseData.getAttribute('data-segment') || !responseData.getAttribute('data-question-id')) return;
+      const url = `/admin/questions?segment=${responseData.getAttribute('data-segment')}&question=${responseData.getAttribute('data-question-id')}`;
+      const width = window.outerWidth;
+      const height = window.outerHeight;
+      const left = window.screenLeft;
+      const top = window.screenTop;
+      const windowFeatures = `width=${width},height=${height},resizable=no,scrollbars=no,status=yes,left=${left},top=${top}`;
+      window.open(url, '_blank', windowFeatures);
     }
   });
 } catch (error) {

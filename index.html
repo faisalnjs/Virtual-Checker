@@ -65,6 +65,8 @@
     </div>
   </div>
   <div id="checker">
+    <button square data-toggle-segment-completion tooltip="Segment Completion"><i class="bi bi-info-square"></i><i
+        class="bi bi-info-square-fill"></i></button>
     <button square data-toggle-layout tooltip="Switch Layout"><i class="bi bi-app"></i><i
         class="bi bi-layout-sidebar-reverse"></i></button>
     <div class="column">
@@ -107,9 +109,12 @@
       </div>
       <h6 data-segment-due hidden></h6>
       <div id="segment-completed" class="input-group" hidden>
-        <i class="bi bi-check2-all"></i>
-        <h3>Segment Completed</h3>
-        <p>You have answered all questions in this segment.</p>
+        <i class="incomplete bi bi-question-octagon"></i>
+        <h3 class="incomplete">Segment Not Completed</h3>
+        <p class="incomplete">You have not answered all questions in this segment.</p>
+        <i class="complete bi bi-check2-all"></i>
+        <h3 class="complete">Segment Completed</h3>
+        <p class="complete">You have answered all questions in this segment.</p>
         <i class="bi bi-patch-check mastery"></i>
         <h3 class="mastery">Segment Completed, Mastery Achieved</h3>
         <p class="mastery">You have answered all questions in this segment correctly.</p>
