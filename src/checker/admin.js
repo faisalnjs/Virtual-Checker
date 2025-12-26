@@ -333,6 +333,7 @@ try {
         if (document.getElementById("course-period-input") && !loadedSegmentEditor && !loadedSegmentCreator && !noReloadCourse) updateSegments();
         if (document.getElementById("filter-segment-input")) updateCourses();
         if (document.getElementById("speed-mode-segments")) updateSpeedModeSegments();
+        if (window.location.pathname.split('/admin/')[1] === 'editor') loadSegmentEditor();
         if (document.getElementById("add-question-input")) {
           document.getElementById("add-question-input").innerHTML = '';
           questions.sort((a, b) => a.id - b.id).forEach(question => {
@@ -356,7 +357,6 @@ try {
         if (noReloadCourse) await updateResponses();
         if (document.querySelector('.segment-reports')) updateSegments();
         if (document.querySelector('.question-reports')) updateQuestionReports();
-        if (window.location.pathname.split('/admin/')[1] === 'editor') loadSegmentEditor();
         active = true;
         ui.stopLoader();
         if (!polling) ui.toast("Data restored.", 1000, "info", "bi bi-cloud-arrow-down");
@@ -1936,6 +1936,7 @@ try {
     window.addEventListener('message', (event) => {
       if (event.origin !== (window.location.protocol + '//' + window.location.hostname + (window.location.port ? ':' + window.location.port : ''))) return;
       if (event.data === 'uploadSuccess') uploadSuccessful = true;
+      if (event.data === 'exitToCourse') window.location.href = '/admin/';
     }, false);
     const checkWindowClosed = setInterval(function () {
       if (newWindow && newWindow.closed) {
@@ -2800,8 +2801,11 @@ try {
       if (event.origin !== (window.location.protocol + '//' + window.location.hostname + (window.location.port ? ':' + window.location.port : ''))) return;
       if (event.data && (String(event.data) === 'uploadSuccess')) {
         uploadSuccessful = true;
-      } else if (event.data && String(event.data).includes('+')) {
-        [endingQuestionId, endingQuestion] = event.data.split('+');
+        init();
+      } else if (event.data && String(event.data).includes(';+;')) {
+        [endingQuestionId, endingQuestion] = event.data.split(';+;');
+      } else if (event.data === 'exitToCourse') {
+        window.location.href = '/admin/';
       }
     }, false);
     const checkWindowClosed = setInterval(async function () {
@@ -3765,7 +3769,7 @@ try {
   }
 
   function loadSegmentEditor() {
-    if (loadedSegmentEditor) return;
+    // if (loadedSegmentEditor) return;
     var segment = new URLSearchParams(window.location.search).get('segment');
     if (!segment) {
       loadedSegmentCreator = true;
@@ -3793,6 +3797,7 @@ try {
     document.getElementById("segment-number-input").value = loadedSegment.number;
     document.getElementById("segment-name-input").value = loadedSegment.name;
     document.getElementById("segment-due-date-input").value = loadedSegment.due;
+    document.getElementById("question-list").innerHTML = '';
     JSON.parse(loadedSegment.question_ids).filter((item, index, self) => index === self.findIndex((t) => (t.id === item.id))).forEach(q => addExistingQuestion(q.id));
     document.getElementById("create-button").innerText = "Save";
     document.querySelector('[data-delete-segment]')?.addEventListener('click', deleteSegmentConfirm);
