@@ -638,6 +638,9 @@
             });
         };
         async function submitAllUploaders() {
+            document.querySelector('#submit').disabled = true;
+            document.querySelector('#next').disabled = true;
+            document.querySelector('#exit').disabled = true;
             var submitSuccess = true;
             document.querySelector('#submit').innerText = 'Submitting';
             for (const { uploader, pond, quill, uploaderQuestionId, uploaderQuestion } of uploaders) {
@@ -669,6 +672,9 @@
                         if (data.error) submitSuccess = false;
                     });
             };
+            document.querySelector('#submit').disabled = false;
+            document.querySelector('#next').disabled = false;
+            document.querySelector('#exit').disabled = false;
             if (submitSuccess) {
                 document.querySelector('#submit').innerText = 'Success';
                 document.querySelector('#submit').classList.add('success');
