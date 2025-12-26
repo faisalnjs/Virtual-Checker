@@ -100,9 +100,12 @@ try {
       zoomOverlay.click();
       if (next) setTimeout(() => next.click(), 500);
     } else if (e.key == "y" && island && islandOpen && !isTyping) {
-      document.querySelector('.island-extends #mark-correct-button')?.click()
+      document.querySelector('.island-extends #mark-correct-button')?.click();
     } else if (e.key == "n" && island && islandOpen && !isTyping) {
-      document.querySelector('.island-extends #mark-incorrect-button')?.click()
+      document.querySelector('.island-extends #mark-incorrect-button')?.click();
+      setTimeout(() => {
+        if (document.querySelector(".dialog-input.selectAll")) document.querySelector(".dialog-input.selectAll").value = '';
+      }, 100);
     }
   });
 } catch (error) {

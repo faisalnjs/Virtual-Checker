@@ -2044,7 +2044,6 @@ try {
         if (!a.flagged && b.flagged) return 1;
         return b.id - a.id;
       });
-    console.log(responses1, questions)
     if (this && ((this.id === 'course-period-input') || (this.id === 'filter-segment-input') || (this.id === 'sort-question-input') || (this.id === 'sort-seat-input'))) {
       pagination.awaitingResponses.page = 0;
       pagination.responses.page = 0;
