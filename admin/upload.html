@@ -66,6 +66,7 @@
 
         button#paste,
         button#submit,
+        button#next,
         button#exit,
         button#add-answers,
         button#remove-answers,
@@ -96,6 +97,7 @@
 
         button#paste:hover,
         button#submit:hover,
+        button#next:hover,
         button#exit:hover,
         button#add-answers:hover,
         button#remove-answers:hover,
@@ -116,6 +118,7 @@
             margin-top: 0.5em;
         }
 
+        button#next,
         button#exit {
             display: none;
             margin-top: 0.5em;
@@ -252,8 +255,14 @@
             const loader = uploader.querySelector('#loader');
             if (loader) loader.classList.remove('active');
         };
-        async function exit() {
+        async function next() {
             window.opener.postMessage('uploadSuccess', window.location.protocol + '//' + window.location.hostname + (window.location.port ? ':' + window.location.port : ''));
+            setTimeout(() => {
+                window.close();
+            }, 500);
+        };
+        async function exit() {
+            window.opener.postMessage('exitToCourse', window.location.protocol + '//' + window.location.hostname + (window.location.port ? ':' + window.location.port : ''));
             setTimeout(() => {
                 window.close();
             }, 500);
@@ -263,16 +272,14 @@
             if (isMultiple) {
                 window.resizeTo(originalWindowWidth, originalWindowHeight);
                 window.moveTo(originalWindowX, originalWindowY);
-            };
-            if (isMultiple) {
                 startingQuestionId++;
                 startingQuestion = (number || startingQuestion).replace(/(\d+)([a-z]*)$/, (match, num, suffix) => {
                     return !suffix ? (parseInt(num, 10) + 1).toString() : ((suffix === 'z') ? ((parseInt(num, 10) + 1) + 'a') : (num + String.fromCharCode(suffix.charCodeAt(0) + 1)));
                 });
             }
+            window.opener.postMessage(`${startingQuestionId};+;${startingQuestion}`, window.location.protocol + '//' + window.location.hostname + (window.location.port ? ':' + window.location.port : ''));
             const uploaderQuestionId = startingQuestionId;
             const uploaderQuestion = startingQuestion;
-            window.opener.postMessage(`${startingQuestionId}+${startingQuestion}`, window.location.protocol + '//' + window.location.hostname + (window.location.port ? ':' + window.location.port : ''));
             var uploader = document.createElement('div');
             uploader.id = uploaderQuestionId;
             uploader.classList.add('uploader');
@@ -309,11 +316,12 @@
                 <div class="description"></div>
                 ${isMultiple ? '' : `${allowMultiple ? '<div id="submit-exit" class="input-group row">' : ''}
                     <button id="submit">Create</button>
-                    <button id="exit">Close & Next Question</button>
+                    <button id="next">Next Question</button>
+                    <button id="exit">Exit</button>
                 ${allowMultiple ? '</div>' : ''}`}
             `;
             document.querySelector('.uploaders').appendChild(uploader);
-            uploader.querySelector('[data-question-number]').focus();
+            uploader.querySelector('[data-question-number]').select();
             const inputElement = uploader.querySelector('input[type="file"]');
             const questionElement = uploader.querySelector('input[type="file"]');
             const pond = FilePond.create(inputElement, {
@@ -369,6 +377,7 @@
                 uploader.querySelectorAll('.input-group').forEach(e => e.remove());
                 uploader.querySelector('.description').remove();
                 uploader.querySelector('#submit').remove();
+                uploader.querySelector('#next').remove();
                 uploader.querySelector('#exit').remove();
             } else {
                 var textareaContainer = uploader.querySelector('.description')
@@ -612,6 +621,7 @@
             uploader.querySelector('#copy')?.addEventListener('click', () => {
                 createUploader(null, uploader.querySelector('[data-question-number]').value || uploaderQuestion);
             });
+            uploader.querySelector('#next')?.addEventListener('click', next);
             uploader.querySelector('#exit')?.addEventListener('click', exit);
             uploader.querySelector('#remove')?.addEventListener('click', () => {
                 if (confirm('Are you sure you want to remove this question? If it has unsaved data, all will be deleted.')) uploader.remove();
@@ -628,6 +638,9 @@
             });
         };
         async function submitAllUploaders() {
+            document.querySelector('#submit').disabled = true;
+            document.querySelector('#next').disabled = true;
+            document.querySelector('#exit').disabled = true;
             var submitSuccess = true;
             document.querySelector('#submit').innerText = 'Submitting';
             for (const { uploader, pond, quill, uploaderQuestionId, uploaderQuestion } of uploaders) {
@@ -659,21 +672,26 @@
                         if (data.error) submitSuccess = false;
                     });
             };
+            document.querySelector('#submit').disabled = false;
+            document.querySelector('#next').disabled = false;
+            document.querySelector('#exit').disabled = false;
             if (submitSuccess) {
                 document.querySelector('#submit').innerText = 'Success';
                 document.querySelector('#submit').classList.add('success');
+                document.querySelector('#next').style.display = 'block';
                 document.querySelector('#exit').style.display = 'block';
                 setTimeout(() => {
                     document.querySelector('#submit').innerText = 'Save';
                     document.querySelector('#submit').classList.remove('success');
                 }, 2000);
             } else {
-                document.querySelector('#exit').classList.add('error');
+                document.querySelector('#submit').classList.add('error');
                 setTimeout(() => {
-                    document.querySelector('#exit').classList.remove('error');
+                    document.querySelector('#submit').classList.remove('error');
                 }, 2000);
                 alert(data.error);
             };
+            window.opener.postMessage('uploadSuccess', window.location.protocol + '//' + window.location.hostname + (window.location.port ? ':' + window.location.port : ''));
         }
         window.onload = createUploader;
     </script>
