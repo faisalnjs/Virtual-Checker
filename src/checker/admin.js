@@ -68,25 +68,25 @@ try {
         case 'editor':
           return ["courses", "segments", "questions", "answers", "settings"];
         case 'users':
-          return ["users", "courses"];
+          return ["users", "courses", "settings"];
         case 'logs':
-          return ["logs"];
+          return ["logs", "settings", "ai"];
         case 'backups':
-          return ["backups"];
+          return ["backups", "settings"];
         case 'passwords':
-          return ["passwords"];
+          return ["passwords", "settings"];
         case 'questions':
-          return ["questions", "answers", "segments", "courses"];
+          return ["questions", "answers", "segments", "courses", "settings"];
         case 'responses':
-          return ["responses", "courses", "segments", "questions", "answers"];
+          return ["responses", "courses", "segments", "questions", "answers", "settings"];
         case 'reports':
-          return ["responses", "courses", "segments", "questions"];
+          return ["responses", "courses", "segments", "questions", "settings"];
         case 'archive':
-          return ["archive"];
+          return ["archive", "settings"];
         case 'courses':
-          return ["courses", "segments", "rosters"];
+          return ["courses", "segments", "rosters", "settings"];
         case 'upload':
-          return ["courses"];
+          return ["courses", "settings"];
         default:
           return ["courses", "segments", "questions", "settings", "ai"];
       }
