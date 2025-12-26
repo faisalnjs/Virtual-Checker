@@ -2036,11 +2036,13 @@ try {
       .filter(r => document.getElementById("filter-segment-input")?.value ? (String(segments.find(s => (String(s.id) === String(r.segment)) && (courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value) ? (String(s.course) === String(courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value).id)) : true)) ? (segments.find(s => (String(s.id) === String(r.segment)) && (courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value) ? (String(s.course) === String(courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value).id)) : true)).id || r.segment) : (segments.find(s => (courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value) ? (String(s.course) === String(courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value).id)) : false) && JSON.parse(s.question_ids || [])?.find(q => String(q.id) === String(r.question_id)))?.id || '-')) === document.getElementById("filter-segment-input").value) : true)
       .filter(r => document.getElementById("sort-question-input")?.value.startsWith('"') ? (questions.find(q => String(q.id) === String(r.question_id))?.number === document.getElementById("sort-question-input")?.value.replaceAll('"', '')) : questions.find(q => String(q.id) === String(r.question_id))?.number.startsWith(document.getElementById("sort-question-input")?.value))
       .filter(r => String(r.seatCode).startsWith(document.getElementById("sort-seat-input")?.value))
+      .filter(r => !questions.find(q => String(q.id) === String(r.question_id))?.nonscored)
       .sort((a, b) => {
         if (a.flagged && !b.flagged) return -1;
         if (!a.flagged && b.flagged) return 1;
         return b.id - a.id;
       });
+      console.log(responses1, questions)
     if (this && ((this.id === 'course-period-input') || (this.id === 'filter-segment-input') || (this.id === 'sort-question-input') || (this.id === 'sort-seat-input'))) {
       pagination.awaitingResponses.page = 0;
       pagination.responses.page = 0;
