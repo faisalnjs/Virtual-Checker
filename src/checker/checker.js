@@ -590,7 +590,8 @@ try {
     if (!selectedSegment) return updateQuestion();
     var questionStatuses = [];
     JSON.parse(selectedSegment.question_ids).forEach(questionId => {
-      if (questionsArray.find(q => String(q.id) === String(questionId.id)) && !questionsArray.find(q => String(q.stem) === String(questionId.id))) {
+      const question = questionsArray.find(q => String(q.id) === String(questionId.id));
+      if (question && !questionsArray.find(q => String(q.stem) === String(questionId.id))) {
         const questionOption = document.createElement('option');
         questionOption.value = questionId.id;
         questionOption.innerHTML = questionId.name;
@@ -603,7 +604,11 @@ try {
         } else if (questionResponses.find(r => r.status === 'Incorrect')) {
           highestStatus = 'In Progress';
         }
-        if (highestStatus !== "") questionOption.innerHTML += ` - ${ui.getNotifications().includes(Number(questionId.id)) ? '* ' : ''}${highestStatus}`;
+        if (highestStatus !== "") {
+          questionOption.innerHTML += ` - ${ui.getNotifications().includes(Number(questionId.id)) ? '* ' : ''}${question.nonscored ? 'Non-scoring' : highestStatus}`;
+        } else if (question.nonscored) {
+          questionOption.innerHTML += ` - Non-scoring`;
+        }
         questionStatuses.push({ "segment": selectedSegment.id, "question": questionId.id, "status": highestStatus });
         questions.append(questionOption);
       }
