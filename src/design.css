@@ -1526,3 +1526,18 @@ body > canvas {
 .katex .vlist {
   height: unset !important;
 }
+
+option.correct {
+  background-color: mediumseagreen;
+  color: var(--accent-text-color);
+}
+
+option.pending {
+  background-color: darkorange;
+  color: var(--accent-text-color);
+}
+
+option.incorrect {
+  background-color: indianred;
+  color: var(--accent-text-color);
+}

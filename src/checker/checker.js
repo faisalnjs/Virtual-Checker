@@ -596,19 +596,26 @@ try {
         questionOption.value = questionId.id;
         questionOption.innerHTML = questionId.name;
         var highestStatus = "";
+        var highestStatusClass = "";
         var questionResponses = history.filter(r => String(r.question_id) === String(questionId.id));
-        if (questionResponses.find(r => r.status === 'Correct')) {
-          highestStatus = 'Correct';
-        } else if (questionResponses.find(r => r.status.includes('Unknown'))) {
-          highestStatus = 'Awaiting Scoring';
-        } else if (questionResponses.find(r => r.status === 'Incorrect')) {
-          highestStatus = 'In Progress';
+        if (!question.nonscored) {
+          if (questionResponses.find(r => r.status === 'Correct')) {
+            highestStatus = 'Correct';
+            highestStatusClass = 'correct';
+          } else if (questionResponses.find(r => r.status.includes('Unknown'))) {
+            highestStatus = 'Awaiting Scoring';
+            highestStatusClass = 'pending';
+          } else if (questionResponses.find(r => r.status === 'Incorrect')) {
+            highestStatus = 'In Progress';
+            highestStatusClass = 'incorrect';
+          }
         }
         if (highestStatus !== "") {
           questionOption.innerHTML += ` - ${ui.getNotifications().includes(Number(questionId.id)) ? '* ' : ''}${question.nonscored ? 'Non-scoring' : highestStatus}`;
         } else if (question.nonscored) {
           questionOption.innerHTML += ` - Non-scoring`;
         }
+        if (highestStatusClass !== "") questionOption.classList.add(highestStatusClass);
         questionStatuses.push({ "segment": selectedSegment.id, "question": questionId.id, "status": highestStatus });
         questions.append(questionOption);
       }
