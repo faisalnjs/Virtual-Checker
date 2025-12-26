@@ -1,5 +1,6 @@
+/* eslint-disable no-empty */
 /* eslint-disable no-redeclare */
-import { convertLatexToMarkup, renderMathInElement } from "mathlive";
+import { convertLatexToMarkup } from "mathlive";
 import mediumZoom from "medium-zoom";
 import Quill from "quill";
 import "faz-quill-emoji/autoregister";
@@ -10,6 +11,8 @@ var islandSource2 = null;
 var islandSource3 = null;
 var islandElement = null;
 var hideIslandTimeout = null;
+var islandRenderTimer = null;
+var islandRenderCache = new Map();
 
 function escapeHTML(str) {
     return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
@@ -22,6 +25,10 @@ export default function spawnIsland(element = null, source = null, dataType = 'q
         element.classList.add('island-extends');
         clearTimeout(hideIslandTimeout);
     } else {
+        if (islandRenderTimer) {
+            clearTimeout(islandRenderTimer);
+            islandRenderTimer = null;
+        }
         hideIslandTimeout = setTimeout(() => {
             if (document.querySelector('.island:hover')) return;
             if (Array.from(document.querySelectorAll('dialog')).find(dialog => dialog.querySelector('h2')?.innerText === 'Add Reason')) return;
@@ -41,86 +48,124 @@ export default function spawnIsland(element = null, source = null, dataType = 'q
     if (window.innerWidth < 1400) return island.classList.remove('visible');
     if (document.querySelector('.questions .section.expanded')) return island.classList.remove('visible');
     if (data.id) {
-        if (lastIslandSourceId && (data.sourceId === lastIslandSourceId)) return island.classList.add('visible');
+        if (lastIslandSourceId && (String(data.id) === String(lastIslandSourceId))) return island.classList.add('visible');
         lastIslandSourceId = data.id;
     }
-    island.innerHTML = '';
     if (source) islandSource = source;
     if (source2) islandSource2 = source2;
     if (source3) islandSource3 = source3;
     island.classList.remove('rendered');
     island.setAttribute('datatype', dataType);
     island.setAttribute('sourceid', String(data.sourceId || ''));
-    if (data.id) {
-        var id = document.createElement('code');
-        id.innerHTML = data.id;
-        island.appendChild(id);
+    function _getItemKey(it) {
+        if (!it) return '';
+        if (typeof it === 'string' || typeof it === 'number') return String(it);
+        return String(it.id ?? it.number ?? it.name ?? it.period ?? '');
     }
-    if (data.title) {
-        var title = document.createElement('h4');
-        title.innerHTML = data.title;
-        island.appendChild(title);
+    var sourceSignature = '';
+    try {
+        if (Array.isArray(islandSource) && islandSource.length > 0) {
+            var first = _getItemKey(islandSource[0]);
+            var last = _getItemKey(islandSource[islandSource.length - 1]);
+            sourceSignature = `${islandSource.length}:${first}:${last}`;
+        }
+    } catch (e) {
+        sourceSignature = '';
     }
-    if (data.subtitle) {
-        var subtitle = document.createElement('h6');
-        if (data.subtitleLatex) {
-            subtitle.innerHTML = convertLatexToMarkup(data.subtitle);
-            island.appendChild(subtitle);
-            renderMathInElement(subtitle);
-        } else {
-            subtitle.innerHTML = data.subtitle;
-            island.appendChild(subtitle);
+    var positionIndex = '';
+    try {
+        if (element && element.parentElement) positionIndex = String([].indexOf.call(element.parentElement.children, element));
+    } catch (e) {
+        positionIndex = '';
+    }
+    function _hashString(str) {
+        var h = 5381;
+        for (var i = 0; i < str.length; i++) {
+            h = ((h << 5) + h) + str.charCodeAt(i);
+            h = h & 0xFFFFFFFF;
+        }
+        return (h >>> 0).toString(36);
+    }
+    var cacheKey = '';
+    if (data && (data.id || data.uniqueId)) {
+        cacheKey = `${dataType}:id:${String(data.id || data.uniqueId)}`;
+    } else {
+        try {
+            var fingerprintSource = JSON.stringify(data || {});
+            if (fingerprintSource.length > 1200) fingerprintSource = fingerprintSource.slice(0, 1200);
+            var sig = _hashString(fingerprintSource);
+            cacheKey = `${dataType}:full:${sig}:pos:${positionIndex}:${sourceSignature}`;
+        } catch (e) {
+            try {
+                var fingerprintSource = JSON.stringify({
+                    title: data.title || '',
+                    subtitle: data.subtitle || '',
+                    description: data.description || '',
+                    attachments: data.attachments || '',
+                    lists: data.lists ? data.lists.map(l => ({ title: l.title || '', len: (l.items || []).length })) : ''
+                });
+                var sig = _hashString(fingerprintSource);
+                cacheKey = `${dataType}:sig:${sourceSignature}:${sig}`;
+            } catch (e2) {
+                cacheKey = `${dataType}:${sourceSignature}:${String(data.sourceId || data.number || '')}`;
+            }
         }
     }
-    if (data.description && data.description.includes('ops') && (data.description != '{"ops":[{"insert":"\\n"}]}') && JSON.parse(data.description.replaceAll(/\s/g, ''))) {
-        var description = document.createElement('div');
-        description.classList = 'description extra hidden';
-        var textarea = document.createElement('div');
-        textarea.classList.add('textarea');
-        textarea.setAttribute('content', data.description);
-        description.appendChild(textarea);
-        island.appendChild(description);
+    if (islandRenderCache.has(cacheKey)) {
+        island.innerHTML = islandRenderCache.get(cacheKey);
+        island.classList.add('visible');
+        requestAnimationFrame(() => renderExtras());
+        return;
     }
-    if (data.attachments && JSON.parse(data.attachments)) {
-        var attachments = document.createElement('div');
-        attachments.classList = 'attachments extra hidden';
-        JSON.parse(data.attachments).forEach(attachment => {
-            var image = document.createElement('img');
-            image.setAttribute('data-src', attachment);
-            attachments.appendChild(image);
-        });
-        island.appendChild(attachments);
-    }
-    if (data.lists) {
-        data.lists.forEach(list => {
-            var listContainer = document.createElement('div');
-            if (list.title) {
-                var title = document.createElement('h5');
-                title.innerHTML = list.title;
-                listContainer.appendChild(title);
-            }
-            if (list.items) {
-                var listUl = document.createElement('ul');
-                list.items.forEach(item => {
-                    var itemElement = document.createElement('li');
-                    if (typeof item === 'object') {
-                        Object.keys(item).forEach(itemKey => {
-                            itemElement.innerHTML += `${itemKey[0].toUpperCase()}${itemKey.slice(1)}: ${escapeHTML(item[itemKey])}, `;
-                            if (data.activeItem && (data.activeItem === item[itemKey])) itemElement.classList.add('island-extends-item');
-                        });
-                        itemElement.innerHTML = itemElement.innerHTML.slice(0, itemElement.innerHTML.length - 2);
-                    } else {
-                        itemElement.innerHTML = escapeHTML(item);
-                        if (data.activeItem && (data.activeItem === item)) itemElement.classList.add('island-extends-item');
-                    }
-                    listUl.appendChild(itemElement);
+    if (islandRenderTimer) clearTimeout(islandRenderTimer);
+    islandRenderTimer = setTimeout(() => {
+        try {
+            var html = '';
+            if (data.id) html += `<code>${escapeHTML(String(data.id))}</code>`;
+            if (data.title) html += `<h4>${escapeHTML(String(data.title))}</h4>`;
+            if (data.subtitle) html += `<h6>${data.subtitleLatex ? convertLatexToMarkup(String(data.subtitle)) : escapeHTML(String(data.subtitle))}</h6>`;
+            if (data.description && data.description.includes('ops') && (data.description != '{"ops":[{"insert":"\\n"}]}') && JSON.parse(String(data.description).replaceAll(/\s/g, ''))) html += `<div class="description extra hidden"><div class="textarea" content='${escapeHTML(String(data.description))}'></div></div>`;
+            if (data.attachments && JSON.parse(String(data.attachments))) {
+                html += `<div class="attachments extra hidden">`;
+                JSON.parse(String(data.attachments)).forEach(attachment => {
+                    html += `<img data-src="${escapeHTML(String(attachment))}">`;
                 });
-                listContainer.appendChild(listUl);
+                html += `</div>`;
             }
-            island.appendChild(listContainer);
-        });
-    }
-    island.classList.add('visible');
+            if (data.lists) {
+                data.lists.forEach(list => {
+                    html += `<div>`;
+                    if (list.title) html += `<h5>${escapeHTML(String(list.title))}</h5>`;
+                    if (list.items) {
+                        html += `<ul>`;
+                        list.items.forEach(item => {
+                            if (typeof item === 'object') {
+                                var parts = [];
+                                Object.keys(item).forEach(itemKey => {
+                                    parts.push(`${escapeHTML(itemKey[0].toUpperCase() + itemKey.slice(1))}: ${escapeHTML(String(item[itemKey]))}`);
+                                });
+                                html += `<li>${parts.join(', ').replace(/, $/, '')}</li>`;
+                            } else {
+                                html += `<li>${escapeHTML(String(item))}</li>`;
+                            }
+                        });
+                        html += `</ul>`;
+                    }
+                    html += `</div>`;
+                });
+            }
+            island.innerHTML = html;
+            island.classList.add('visible');
+            try { islandRenderCache.set(cacheKey, html); } catch (e) { }
+            if (islandRenderCache.size > 200) {
+                const firstKey = islandRenderCache.keys().next().value;
+                if (firstKey) islandRenderCache.delete(firstKey);
+            }
+            requestAnimationFrame(() => renderExtras());
+        } finally {
+            islandRenderTimer = null;
+        }
+    }, 120);
 }
 
 export function moveFromCurrent(moveBy) {
