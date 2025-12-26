@@ -1200,6 +1200,7 @@ try {
           newQuestions.find(q => String(q.id) === question.id.split('-')[1]).segment = question.querySelector('#question-segment-input').value;
           newQuestions.find(q => String(q.id) === question.id.split('-')[1]).question = question.querySelector('#question-text-input').value;
           newQuestions.find(q => String(q.id) === question.id.split('-')[1]).stem = question.querySelector('#question-stem-input')?.value || null;
+          newQuestions.find(q => String(q.id) === question.id.split('-')[1]).nonscored = question.querySelector('#question-nonscored-input')?.value || null;
           if (renderedEditors[Number(question.id.split('-')[1])]) newQuestions.find(q => String(q.id) === question.id.split('-')[1]).description = JSON.stringify(renderedEditors[Number(question.id.split('-')[1])].getContents());
           newQuestions.find(q => String(q.id) === question.id.split('-')[1]).images = Array.from(question.querySelectorAll('.attachments .image > *')).map(q => {
             return q.getAttribute('data-src');
@@ -1468,22 +1469,38 @@ try {
             questionMathRendering.innerHTML = convertLatexToMarkup(e.target.value);
             renderMathInElement(questionMathRendering);
           });
+          var buttonGrid2 = document.createElement('div');
+          buttonGrid2.className = "button-grid stem-container";
           if (!isStem) {
             var stemSelectContainer = document.createElement('div');
-            stemSelectContainer.classList = "stem-container";
             var stemLabel = document.createElement('label');
-            stemLabel.innerText = "Stem:"
+            stemLabel.innerText = "Stem"
             stemSelectContainer.appendChild(stemLabel);
             var stemSelect = document.createElement('select');
             stemSelect.id = "question-stem-input";
             stemSelect.classList = "stem-select";
             stemSelect.innerHTML = `<option value=""${!q.stem ? ' selected' : ''}>No Stem</option>` + questions.filter(question1 => String(question1.id) !== String(q.id)).map(question1 => `<option value="${question1.id}"${(String(q.stem || '') === String(question1.id)) ? ' selected' : ''}>${question1.number}: ${question1.question}</option>`).join('');
             stemSelectContainer.appendChild(stemSelect);
-            question.appendChild(stemSelectContainer);
+            buttonGrid2.appendChild(stemSelectContainer);
             stemSelect.addEventListener('change', () => {
               question.setAttribute('modified', 'true');
             });
           }
+          var nonScoredContainer = document.createElement('div');
+          nonScoredContainer.style.minWidth = "156px";
+          var nonScoredLabel = document.createElement('label');
+          nonScoredLabel.innerText = "Scored"
+          nonScoredContainer.appendChild(nonScoredLabel);
+          var nonScoredSelect = document.createElement('select');
+          nonScoredSelect.id = "question-nonscored-input";
+          nonScoredSelect.classList = "stem-select";
+          nonScoredSelect.innerHTML = `<option value="0"${!q.nonscored ? ' selected' : ''}>Yes</option><option value="1"${q.nonscored ? ' selected' : ''}>No</option>`;
+          nonScoredContainer.appendChild(nonScoredSelect);
+          buttonGrid2.appendChild(nonScoredContainer);
+          nonScoredSelect.addEventListener('change', () => {
+            question.setAttribute('modified', 'true');
+          });
+          question.appendChild(buttonGrid2);
           var textareaContainer = document.createElement('div');
           textareaContainer.classList = "description";
           var toolbar = document.createElement('div');
@@ -1851,6 +1868,7 @@ try {
       document.querySelectorAll('#save-button').forEach(w => w.style.display = "none");
       if (!questionContainer.classList.contains('rendered')) {
         var textarea = questionContainer.querySelector('.description .textarea');
+        if (!textarea) return;
         var textareaContent = textarea.getAttribute('content');
         var toolbar = questionContainer.querySelector('.description #toolbar-container');
         var quill = new Quill(textarea, {
