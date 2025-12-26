@@ -456,6 +456,8 @@ try {
   if (document.querySelector('[data-checker-announcement-clear]')) document.querySelector('[data-checker-announcement-clear]').addEventListener("click", () => clearAnnouncement('checker'));
   document.querySelectorAll('#previous-page-button').forEach(a => a.addEventListener("click", () => previousPage(a)));
   document.querySelectorAll('#next-page-button').forEach(a => a.addEventListener("click", () => nextPage(a)));
+  document.querySelectorAll('#first-page-button').forEach(a => a.addEventListener("click", () => firstPage(a)));
+  document.querySelectorAll('#last-page-button').forEach(a => a.addEventListener("click", () => lastPage(a)));
 
   function toggleSelecting() {
     if (!active) return;
@@ -6214,9 +6216,7 @@ try {
     } else if (document.querySelector('.questions')) {
       updateQuestions();
     }
-    paginationSection.parentElement.querySelector('#current-page').innerText = `Page ${pagination[group].page + 1} of ${Math.ceil(pagination[group].total / pagination[group].perPage)}`;
-    paginationSection.parentElement.querySelector('#next-page-button').disabled = false;
-    paginationSection.parentElement.querySelector('#previous-page-button').disabled = (pagination[group].page - 1 < 0) ? true : false;
+    syncPagination();
   }
 
   function nextPage(paginationSection) {
@@ -6252,9 +6252,7 @@ try {
     } else if (document.querySelector('.questions')) {
       updateQuestions();
     }
-    paginationSection.parentElement.querySelector('#current-page').innerText = `Page ${pagination[group].page + 1} of ${Math.ceil(pagination[group].total / pagination[group].perPage)}`;
-    paginationSection.parentElement.querySelector('#next-page-button').disabled = (pagination[group].page + 1 >= Math.ceil(pagination[group].total / pagination[group].perPage)) ? true : false;
-    paginationSection.parentElement.querySelector('#previous-page-button').disabled = false;
+    syncPagination();
   }
 
   function syncPagination() {
@@ -6264,6 +6262,8 @@ try {
           paginationSection.parentElement.querySelector('#current-page').innerText = `Page ${pagination[group].page + 1} of ${Math.ceil(pagination[group].total / pagination[group].perPage)}`;
           paginationSection.parentElement.querySelector('#next-page-button').disabled = (pagination[group].page + 1 >= Math.ceil(pagination[group].total / pagination[group].perPage)) ? true : false;
           paginationSection.parentElement.querySelector('#previous-page-button').disabled = (pagination[group].page - 1 < 0) ? true : false;
+          paginationSection.parentElement.querySelector('#first-page-button').disabled = (pagination[group].page - 1 < 0) ? true : false;
+          paginationSection.parentElement.querySelector('#last-page-button').disabled = (pagination[group].page + 1 >= Math.ceil(pagination[group].total / pagination[group].perPage)) ? true : false;
         });
       }
     });
@@ -6286,9 +6286,17 @@ try {
     } else if (document.querySelector('.questions')) {
       updateQuestions();
     }
-    paginationSection.parentElement.querySelector('#current-page').innerText = `Page ${pagination[group].page + 1} of ${Math.ceil(pagination[group].total / pagination[group].perPage)}`;
-    paginationSection.parentElement.querySelector('#next-page-button').disabled = (pagination[group].page + 1 >= Math.ceil(pagination[group].total / pagination[group].perPage)) ? true : false;
-    paginationSection.parentElement.querySelector('#previous-page-button').disabled = (pagination[group].page - 1 < 0) ? true : false;
+    syncPagination();
+  }
+
+  function firstPage(paginationSection) {
+    goToPage(paginationSection, 0);
+  }
+
+  function lastPage(paginationSection) {
+    const group = Array.from(paginationSection.parentElement.parentElement.classList).find(a => Object.keys(pagination).includes(a));
+    if (!group) return;
+    goToPage(paginationSection, Math.ceil(pagination[group].total / pagination[group].perPage) - 1);
   }
 } catch (error) {
   if (storage.get("developer")) {

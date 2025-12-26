@@ -934,7 +934,7 @@ body:has(.topbar) #checker.horizontal .column:last-child {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 5px;
   width: -webkit-fill-available;
   margin-top: 5px;
 }
@@ -943,4 +943,8 @@ body:has(.topbar) #checker.horizontal .column:last-child {
   height: 30px !important;
   width: 30px !important;
   min-width: unset !important;
+}
+
+.pagination #current-page {
+  padding: 0 10px;
 }
