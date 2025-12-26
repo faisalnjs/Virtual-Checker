@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 /* eslint-disable no-unreachable */
 /* eslint-disable no-inner-declarations */
 import * as ui from "/src/modules/ui.js";
@@ -12,6 +13,7 @@ import "faz-quill-emoji/autoregister";
 
 const domain = ((window.location.hostname.search('check') != -1) || (window.location.hostname.search('127') != -1)) ? 'https://api.check.vssfalcons.com' : `http://${document.domain}:5000`;
 if (window.location.pathname.split('?')[0].endsWith('/admin')) window.location.pathname = '/admin/';
+const params = Object.fromEntries((new URL(location)).searchParams);
 
 var archiveTypeSelected = null;
 var courses = [];
@@ -343,7 +345,10 @@ try {
           if (questions.length === 0) document.getElementById("add-existing-question-button").disabled = true;
         }
         if (document.getElementById("speed-mode-starting-question")) updateSpeedModeStartingQuestion();
-        if (document.querySelector('.questions.section')) updateQuestions();
+        if (document.querySelector('.questions.section')) {
+          await updateQuestions();
+          if (params?.question) toggleQuestion(null, params.question);
+        }
         if (document.getElementById("course-period-input") && !loadedSegmentEditor && !loadedSegmentCreator && !noReloadCourse) {
           document.getElementById("course-period-input").value = (storage.get('period') && courses.find(c => String(c.id) === String(storage.get('period')))) ? storage.get('period') : (((ui.defaultCourse !== null) && courses.find(c => String(c.id) === String(ui.defaultCourse))) ? ui.defaultCourse : courses.find(c => responses.some(r => JSON.parse(c.periods).includes(Number(String(r.seatCode)[0])))) ? courses.find(c => responses.some(r => JSON.parse(c.periods).includes(Number(String(r.seatCode)[0])))).id : courses.sort((a, b) => a.id - b.id)[0]?.id);
           await updateResponses();
@@ -540,7 +545,7 @@ try {
       const course = courses.find(c => document.getElementById("course-period-input") ? (String(c.id) === document.getElementById("course-period-input").value) : null);
       if (course) filteredSegments = filteredSegments.filter(segment => String(segment.course) === String(course.id));
       filteredSegments.forEach(segment => {
-        document.getElementById("filter-segment-input").innerHTML += `<option value="${segment.id}" ${(document.location.search.split('?segment=')[1] && (document.location.search.split('?segment=')[1] === String(segment.id))) ? 'selected' : ''}>${segment.number} - ${segment.name}${segment.due ? ` (Due ${new Date(`${segment.due}T00:00:00`).toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })})` : ''}</option>`;
+        document.getElementById("filter-segment-input").innerHTML += `<option value="${segment.id}" ${(params?.segment === String(segment.id)) ? 'selected' : ''}>${segment.number} - ${segment.name}${segment.due ? ` (Due ${new Date(`${segment.due}T00:00:00`).toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })})` : ''}</option>`;
       });
       if (keepSegment) document.getElementById("filter-segment-input").value = keepSegment;
       keepSegment = null;
@@ -1398,7 +1403,7 @@ try {
     }
   }
 
-  function updateQuestions() {
+  async function updateQuestions() {
     if (questions.length > 0) {
       if (document.querySelector('.questions .section')) {
         var filteredQuestions = questions;
@@ -1833,19 +1838,21 @@ try {
       });
   }
 
-  function toggleQuestion() {
-    if (!active) return;
-    if (this.parentElement.parentElement.classList.contains('expanded')) {
+  async function toggleQuestion(event = null, questionId = null) {
+    if (questionId) await goToPage(document.querySelector('.questions #current-page'), pageQuestionIsOn(document.querySelector('.questions #current-page'), questionId));
+    const questionContainer = questionId ? document.querySelector(`#question-${questionId}`) : this.parentElement.parentElement;
+    if (!questionContainer) return;
+    if (questionContainer.classList.contains('expanded')) {
       hideAllQuestions();
     } else {
       hideAllQuestions();
-      this.parentElement.parentElement.classList.add('expanded');
+      questionContainer.classList.add('expanded');
       document.querySelector('[data-add-question-input]').style.display = "none";
       document.querySelectorAll('#save-button').forEach(w => w.style.display = "none");
-      if (!this.parentElement.parentElement.classList.contains('rendered')) {
-        var textarea = this.parentElement.parentElement.querySelector('.description .textarea');
+      if (!questionContainer.classList.contains('rendered')) {
+        var textarea = questionContainer.querySelector('.description .textarea');
         var textareaContent = textarea.getAttribute('content');
-        var toolbar = this.parentElement.parentElement.querySelector('.description #toolbar-container');
+        var toolbar = questionContainer.querySelector('.description #toolbar-container');
         var quill = new Quill(textarea, {
           modules: {
             syntax: true,
@@ -1874,8 +1881,8 @@ try {
             pastedLatex = pastedLatex.replace(/(?<!\\)\$/g, '');
           }
         });
-        renderedEditors[this.parentElement.parentElement.querySelector('#question-id-input').value] = quill;
-        this.parentElement.parentElement.querySelectorAll('img[data-src]:not([src])').forEach(img => img.src = img.getAttribute('data-src'));
+        renderedEditors[questionContainer.querySelector('#question-id-input').value] = quill;
+        questionContainer.querySelectorAll('img[data-src]:not([src])').forEach(img => img.src = img.getAttribute('data-src'));
       }
     }
   }
@@ -1895,7 +1902,7 @@ try {
     var buttonGrid = document.createElement('div');
     buttonGrid.className = "button-grid inputs";
     var segmentsString = "";
-    segments.forEach(s => segmentsString += `<option value="${s.id}"${(document.location.search.split('?segment=')[1] && (document.location.search.split('?segment=')[1] === String(s.id))) ? ' selected' : ''}>${s.number}</option>`);
+    segments.forEach(s => segmentsString += `<option value="${s.id}"${(params.segment && (params.segment === String(s.id))) ? ' selected' : ''}>${s.number}</option>`);
     buttonGrid.innerHTML = `<button square data-select tooltip="Select Question"><i class="bi bi-circle"></i><i class="bi bi-circle-fill"></i></button><div class="input-group small"><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-id-input" value="" disabled /></div></div><div class="input-group small"><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-number-input" value="" /></div></div><div class="input-group small"><div class="space" id="question-container"><select id="question-segment-input">${segmentsString}</select></div></div><div class="input-group"><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-text-input" value="" /></div></div><button square data-toggle-latex disabled tooltip="Toggle LaTeX Title"><i class="bi bi-cursor-text"></i></button><button square data-remove-question-input tooltip="Remove Question"><i class="bi bi-trash"></i></button><button square data-toggle-question tooltip="Expand Question"><i class="bi bi-caret-down-fill"></i><i class="bi bi-caret-up-fill"></i></button>`;
     group.appendChild(buttonGrid);
     this.parentElement.insertBefore(group, this.parentElement.children[this.parentElement.children.length - 1]);
@@ -2737,7 +2744,7 @@ try {
       var option = document.createElement('option');
       option.value = segment.id;
       option.innerHTML = segment.name;
-      if (document.location.search.split('?segment=')[1] && (document.location.search.split('?segment=')[1] === String(segment.id))) option.selected = true;
+      if (params.segment && (params.segment === String(segment.id))) option.selected = true;
       document.getElementById("speed-mode-segments").appendChild(option);
     });
   }
@@ -3072,6 +3079,7 @@ try {
       updatedQuestionsString += updatedQuestions[i].outerHTML;
     }
     document.getElementById("question-list").innerHTML = updatedQuestionsString;
+    document.querySelectorAll('#edit-existing-question-button').forEach(a => a.addEventListener('click', editExistingQuestion));
     document.querySelectorAll('#remove-existing-question-button').forEach(a => a.addEventListener('click', removeExistingQuestion));
     document.getElementById("add-existing-question-button").disabled = (document.getElementById("add-question-input").children.length === 0) ? true : false;
     if (draggableQuestionList) draggableQuestionList.destroy();
@@ -3486,6 +3494,7 @@ try {
           <input type="text" value="${JSON.parse(loadedSegment.question_ids).find(q => String(q.id) === String(question)).name}">
         </div>
       </div>
+      <button class="space" id="edit-existing-question-button" square tooltip="Edit Question"><i class="bi bi-pencil"></i></button>
       <button class="space" id="remove-existing-question-button" square tooltip="Remove Question"><i class="bi bi-trash"></i></button>`;
       if (window.innerWidth >= 1400) {
         inner.addEventListener('mouseenter', () => {
@@ -3531,6 +3540,7 @@ try {
           <input type="text" value="${addingQuestion.number}">
         </div>
       </div>
+      <button class="space" id="edit-existing-question-button" square tooltip="Edit Question"><i class="bi bi-pencil"></i></button>
       <button class="space" id="remove-existing-question-button" square tooltip="Remove Question"><i class="bi bi-trash"></i></button>`;
       if (window.innerWidth >= 1400) {
         inner.addEventListener('mouseenter', () => {
@@ -3577,6 +3587,7 @@ try {
           <input type="text" value="${document.getElementById("add-question-input").selectedOptions[0].innerHTML.split('#')[1].split(' ')[0]}">
         </div>
       </div>
+      <button class="space" id="edit-existing-question-button" square tooltip="Edit Question"><i class="bi bi-pencil"></i></button>
       <button class="space" id="remove-existing-question-button" square tooltip="Remove Question"><i class="bi bi-trash"></i></button>`;
         if (window.innerWidth >= 1400) {
           inner.addEventListener('mouseenter', () => {
@@ -3624,11 +3635,13 @@ try {
           <input type="text" value="${newQuestion.innerHTML.split('#')[1].split(' ')[0]}">
         </div>
       </div>
+      <button class="space" id="edit-existing-question-button" square tooltip="Edit Question"><i class="bi bi-pencil"></i></button>
       <button class="space" id="remove-existing-question-button" square tooltip="Remove Question"><i class="bi bi-trash"></i></button>`;
       document.getElementById("add-question-input").removeChild(document.getElementById("add-question-input").children[document.getElementById("add-question-input").children.length - 1]);
     }
     div.appendChild(inner);
     document.getElementById("question-list").appendChild(div);
+    document.querySelectorAll('#edit-existing-question-button').forEach(a => a.addEventListener('click', editExistingQuestion));
     document.querySelectorAll('#remove-existing-question-button').forEach(a => a.addEventListener('click', removeExistingQuestion));
     document.getElementById("add-existing-question-button").disabled = (document.getElementById("add-question-input").children.length === 0) ? true : false;
     if (draggableQuestionList) draggableQuestionList.destroy();
@@ -3637,6 +3650,27 @@ try {
     });
     ui.setUnsavedChanges(true);
     ui.reloadUnsavedInputs();
+  }
+
+  function editExistingQuestion() {
+    if (!active) return;
+    if (ui.unsavedChanges) return ui.toast("You have unsaved changes. Please save or discard them before editing questions.", 3000, "error", "bi bi-exclamation-triangle-fill");
+    const url = `/admin/questions?segment=${loadedSegment.id}&question=${this?.parentElement?.parentElement?.id?.split('questionList-')[1]}`;
+    const width = window.outerWidth;
+    const height = window.outerHeight;
+    const left = window.screenLeft;
+    const top = window.screenTop;
+    const windowFeatures = `width=${width},height=${height},resizable=no,scrollbars=no,status=yes,left=${left},top=${top}`;
+    const newWindow = window.open(url, '_blank', windowFeatures);
+    window.addEventListener('message', (event) => {
+      if (event.origin !== (window.location.protocol + '//' + window.location.hostname + (window.location.port ? ':' + window.location.port : ''))) return;
+    }, false);
+    const checkWindowClosed = setInterval(async function () {
+      if (newWindow && newWindow.closed) {
+        clearInterval(checkWindowClosed);
+        window.location.reload();
+      }
+    }, 1000);
   }
 
   function removeExistingQuestion() {
@@ -6173,6 +6207,28 @@ try {
         });
       }
     });
+  }
+
+  function pageQuestionIsOn(paginationSection, questionId) {
+    const group = Array.from(paginationSection.parentElement.parentElement.classList).find(a => Object.keys(pagination).includes(a));
+    if (!group) return 0;
+    const questionIndex = questions.filter(q => document.getElementById("filter-segment-input")?.value ? segments.filter(segment => JSON.parse(segment.question_ids).find(q1 => String(q1.id) === String(q.id))).map(segment => String(segment.id)).includes(String(document.getElementById("filter-segment-input")?.value)) : true).findIndex(q => String(q.id) === String(questionId));
+    if (questionIndex === -1) return 0;
+    return Math.floor(questionIndex / pagination[group].perPage) || 0;
+  }
+
+  async function goToPage(paginationSection, page) {
+    const group = Array.from(paginationSection.parentElement.parentElement.classList).find(a => Object.keys(pagination).includes(a));
+    if (!group) return;
+    pagination[group].page = page;
+    if (document.querySelector('.responses')) {
+      updateResponses();
+    } else if (document.querySelector('.questions')) {
+      updateQuestions();
+    }
+    paginationSection.parentElement.querySelector('#current-page').innerText = `Page ${pagination[group].page + 1} of ${Math.ceil(pagination[group].total / pagination[group].perPage)}`;
+    paginationSection.parentElement.querySelector('#next-page-button').disabled = (pagination[group].page + 1 >= Math.ceil(pagination[group].total / pagination[group].perPage)) ? true : false;
+    paginationSection.parentElement.querySelector('#previous-page-button').disabled = (pagination[group].page - 1 < 0) ? true : false;
   }
 } catch (error) {
   if (storage.get("developer")) {
