@@ -244,7 +244,7 @@ try {
         const params = new URLSearchParams(window.location.search);
         params.set("code", input);
         ui.setUnsavedChanges(false);
-      };
+      }
     } else {
       ui.alert("Error", "Seat code isn't possible");
     }
@@ -304,8 +304,42 @@ try {
     }
     pagination.awaitingResponses.total = responses1.filter(r => ((r.status === 'Invalid Format') || (r.status === 'Unknown, Recorded')) && document.querySelector('.awaitingResponses .section')).length;
     pagination.responses.total = responses1.filter(r => !((r.status === 'Invalid Format') || (r.status === 'Unknown, Recorded')) && document.querySelector('.responses .section')).length;
-    if (document.querySelector('.awaitingResponses #current-page')) document.querySelector('.awaitingResponses #current-page').innerText = `Page ${pagination.awaitingResponses.page + 1} of ${Math.ceil(pagination.awaitingResponses.total / pagination.awaitingResponses.perPage)}`;
-    if (document.querySelector('.responses #current-page')) document.querySelector('.responses #current-page').innerText = `Page ${pagination.responses.page + 1} of ${Math.ceil(pagination.responses.total / pagination.responses.perPage)}`;
+    if (document.querySelector('.awaitingResponses #current-page')) {
+      const currentPage = document.querySelector('.awaitingResponses #current-page');
+      const input = currentPage.querySelector('.current-page-input');
+      const totalSpan = currentPage.querySelector('.current-page-total');
+      const totalPages = Math.max(1, Math.ceil((pagination.awaitingResponses.total || 0) / pagination.awaitingResponses.perPage));
+      if (input) input.value = Math.min(Math.max(1, pagination.awaitingResponses.page + 1), totalPages);
+      if (totalSpan) totalSpan.innerText = totalPages;
+      if (input && !input._pageHandlerAttached) {
+        input.addEventListener('change', (e) => {
+          let v = parseInt(e.target.value) || 1;
+          if (v < 1) v = 1;
+          if (v > totalPages) v = totalPages;
+          e.target.value = v;
+          goToPage(document.querySelector('.awaitingResponses .pagination'), v - 1);
+        });
+        input._pageHandlerAttached = true;
+      }
+    }
+    if (document.querySelector('.responses #current-page')) {
+      const currentPage = document.querySelector('.responses #current-page');
+      const input = currentPage.querySelector('.current-page-input');
+      const totalSpan = currentPage.querySelector('.current-page-total');
+      const totalPages = Math.max(1, Math.ceil((pagination.responses.total || 0) / pagination.responses.perPage));
+      if (input) input.value = Math.min(Math.max(1, pagination.responses.page + 1), totalPages);
+      if (totalSpan) totalSpan.innerText = totalPages;
+      if (input && !input._pageHandlerAttached) {
+        input.addEventListener('change', (e) => {
+          let v = parseInt(e.target.value) || 1;
+          if (v < 1) v = 1;
+          if (v > totalPages) v = totalPages;
+          e.target.value = v;
+          goToPage(document.querySelector('.responses .pagination'), v - 1);
+        });
+        input._pageHandlerAttached = true;
+      }
+    }
     syncPagination();
     const awaitingSection = document.querySelector('.awaitingResponses .section');
     const responsesSection = document.querySelector('.responses .section');
@@ -822,18 +856,44 @@ try {
     Object.keys(pagination).forEach(group => {
       if (document.querySelector(`.${group} .pagination`)) {
         document.querySelectorAll(`.${group} .pagination`).forEach(paginationSection => {
-          paginationSection.parentElement.querySelector('#current-page').innerText = `Page ${pagination[group].page + 1} of ${Math.ceil(pagination[group].total / pagination[group].perPage)}`;
-          paginationSection.parentElement.querySelector('#next-page-button').disabled = (pagination[group].page + 1 >= Math.ceil(pagination[group].total / pagination[group].perPage)) ? true : false;
+          const currentPage = paginationSection.parentElement.querySelector('#current-page');
+          const input = currentPage?.querySelector('.current-page-input');
+          const totalSpan = currentPage?.querySelector('.current-page-total');
+          const totalPages = Math.max(1, Math.ceil((pagination[group].total || 0) / pagination[group].perPage));
+          if (input) input.value = Math.min(Math.max(1, pagination[group].page + 1), totalPages);
+          if (totalSpan) totalSpan.innerText = totalPages;
+          if (input && !input._pageHandlerAttached) {
+            input.addEventListener('change', (e) => {
+              let v = parseInt(e.target.value) || 1;
+              if (v < 1) v = 1;
+              if (v > totalPages) v = totalPages;
+              e.target.value = v;
+              goToPage(paginationSection, v - 1);
+            });
+            input._pageHandlerAttached = true;
+          }
+          paginationSection.parentElement.querySelector('#next-page-button').disabled = (pagination[group].page + 1 >= totalPages) ? true : false;
           paginationSection.parentElement.querySelector('#previous-page-button').disabled = (pagination[group].page - 1 < 0) ? true : false;
           paginationSection.parentElement.querySelector('#first-page-button').disabled = (pagination[group].page - 1 < 0) ? true : false;
-          paginationSection.parentElement.querySelector('#last-page-button').disabled = (pagination[group].page + 1 >= Math.ceil(pagination[group].total / pagination[group].perPage)) ? true : false;
+          paginationSection.parentElement.querySelector('#last-page-button').disabled = (pagination[group].page + 1 >= totalPages) ? true : false;
         });
       }
     });
   }
 
   async function goToPage(paginationSection, page) {
-    const group = Array.from(paginationSection.parentElement.parentElement.classList).find(a => Object.keys(pagination).includes(a));
+    function findGroup(el) {
+      let cur = el;
+      for (let i = 0; i < 6 && cur; i++) {
+        if (cur.classList) {
+          const found = Array.from(cur.classList).find(a => Object.keys(pagination).includes(a));
+          if (found) return found;
+        }
+        cur = cur.parentElement;
+      }
+      return null;
+    }
+    const group = findGroup(paginationSection);
     if (!group) return;
     pagination[group].page = page;
     if (document.querySelector('.responses')) updateResponses();
@@ -852,6 +912,6 @@ try {
 } catch (error) {
   if (storage.get("developer")) {
     alert(`Error @ ta.js: ${error.message}`);
-  };
+  }
   throw error;
-};
+}
