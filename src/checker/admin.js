@@ -1256,6 +1256,7 @@ try {
     formData.append('usr', storage.get("usr"));
     formData.append('pwd', storage.get("pwd"));
     ui.setUnsavedChanges(true);
+    keepSegment = document.getElementById("filter-segment-input")?.value || null;
     fetch(domain + '/save', {
       method: "POST",
       body: formData,
