@@ -631,21 +631,48 @@ try {
     questions.removeEventListener("change", updateQuestion);
     questions.addEventListener("change", updateQuestion);
     await updateQuestion();
+    const count = 200;
+    const textColor = getComputedStyle(document.body).getPropertyValue('--text-color').trim();
+    var defaults = {
+      origin: {
+        y: 1
+      },
+      shapes: [
+        confetti.shapeFromText({ text: '➕' }),
+        confetti.shapeFromText({ text: '➖' }),
+        confetti.shapeFromText({ text: '✖️' }),
+        confetti.shapeFromText({ text: '➗' }),
+        confetti.shapeFromText({ text: '0️⃣' }),
+        confetti.shapeFromText({ text: '1️⃣' }),
+        confetti.shapeFromText({ text: '2️⃣' }),
+        confetti.shapeFromText({ text: '3️⃣' }),
+        confetti.shapeFromText({ text: '4️⃣' }),
+        confetti.shapeFromText({ text: '5️⃣' }),
+        confetti.shapeFromText({ text: '6️⃣' }),
+        confetti.shapeFromText({ text: '7️⃣' }),
+        confetti.shapeFromText({ text: '8️⃣' }),
+        confetti.shapeFromText({ text: '9️⃣' }),
+        confetti.shapeFromText({ text: '🔢' }),
+        confetti.shapeFromText({ text: '📐' }),
+        confetti.shapeFromText({ text: '📏' }),
+        confetti.shapeFromText({ text: '📊' }),
+        confetti.shapeFromText({ text: '📈' }),
+        confetti.shapeFromText({ text: '📉' }),
+        confetti.shapeFromText({ text: '🔣' }),
+        confetti.shapeFromText({ text: '✅' }),
+        confetti.shapeFromText({ text: '☑️' }),
+        confetti.shapeFromText({ text: '✔️' }),
+      ],
+    };
     document.getElementById("segment-completed").setAttribute('hidden', '');
     document.getElementById("segment-completed").querySelector('ul').innerHTML = '';
     document.getElementById("segment-completed").classList.remove('incomplete');
     document.getElementById("segment-completed").classList.remove('complete');
     document.getElementById("segment-completed").classList.remove('mastery');
     if (questions.querySelectorAll('option').length > 0) {
-      if (questionStatuses.every(question => question.status)) {
-        document.getElementById("segment-completed").classList.add('complete');
-        document.getElementById("segment-completed").removeAttribute('hidden');
-      } else {
-        document.getElementById("segment-completed").classList.add('incomplete');
-      }
       questionStatuses.forEach(question => {
         const questionId = questionsArray.find(q => String(q.id) === String(question.question));
-        const questionText = `${questionId.number} - ${question.nonscored ? 'Non-scored' : (question.status || 'Not Completed')}`;
+        const questionText = `${JSON.parse(selectedSegment.question_ids).find(q => String(q.id) === String(question.question))?.name || questionId.number} - ${question.nonscored ? 'Non-scored' : (question.status || 'Not Completed')}`;
         const li = document.createElement('li');
         if (question.status === 'Correct') {
           li.innerHTML = `<i class="bi bi-check-lg"></i> ${questionText}`;
@@ -659,39 +686,7 @@ try {
     }
     if ((questions.querySelectorAll('option').length > 0) && questionStatuses.every(question => (question.status === 'Correct') || question.nonscored)) {
       document.getElementById("segment-completed").classList.add('mastery');
-      const count = 200;
-      const textColor = getComputedStyle(document.body).getPropertyValue('--text-color').trim();
-      var defaults = {
-        origin: {
-          y: 1
-        },
-        shapes: [
-          confetti.shapeFromText({ text: '➕' }),
-          confetti.shapeFromText({ text: '➖' }),
-          confetti.shapeFromText({ text: '✖️' }),
-          confetti.shapeFromText({ text: '➗' }),
-          confetti.shapeFromText({ text: '0️⃣' }),
-          confetti.shapeFromText({ text: '1️⃣' }),
-          confetti.shapeFromText({ text: '2️⃣' }),
-          confetti.shapeFromText({ text: '3️⃣' }),
-          confetti.shapeFromText({ text: '4️⃣' }),
-          confetti.shapeFromText({ text: '5️⃣' }),
-          confetti.shapeFromText({ text: '6️⃣' }),
-          confetti.shapeFromText({ text: '7️⃣' }),
-          confetti.shapeFromText({ text: '8️⃣' }),
-          confetti.shapeFromText({ text: '9️⃣' }),
-          confetti.shapeFromText({ text: '🔢' }),
-          confetti.shapeFromText({ text: '📐' }),
-          confetti.shapeFromText({ text: '📏' }),
-          confetti.shapeFromText({ text: '📊' }),
-          confetti.shapeFromText({ text: '📈' }),
-          confetti.shapeFromText({ text: '📉' }),
-          confetti.shapeFromText({ text: '🔣' }),
-          confetti.shapeFromText({ text: '✅' }),
-          confetti.shapeFromText({ text: '☑️' }),
-          confetti.shapeFromText({ text: '✔️' }),
-        ],
-      };
+      document.getElementById("segment-completed").removeAttribute('hidden');
       uniqueSymbols.forEach(symbol => {
         defaults.shapes.push(confetti.shapeFromText({ text: symbol, color: textColor }));
       });
@@ -729,6 +724,76 @@ try {
           scalar: 1.5,
         });
       }, 100);
+    } else if (questionStatuses.every(question => question.status)) {
+      document.getElementById("segment-completed").classList.add('complete');
+      document.getElementById("segment-completed").removeAttribute('hidden');
+    } else {
+      document.getElementById("segment-completed").classList.add('incomplete');
+    }
+    document.getElementById("segments-completed").setAttribute('hidden', '');
+    document.getElementById("segments-completed").querySelector('ul').innerHTML = '';
+    document.getElementById("segments-completed").classList.remove('incomplete');
+    document.getElementById("segments-completed").classList.remove('complete');
+    document.getElementById("segments-completed").classList.remove('mastery');
+    if (segmentsArray && segmentsArray.length > 0) {
+      var anyQuestionsInCourse = false;
+      const masterySegments = [];
+      const completedSegments = [];
+      segmentsArray.forEach(segment => {
+        const questionIds = JSON.parse(segment.question_ids || '[]');
+        const segmentQuestions = questionIds.map(qi => questionsArray.find(q => String(q.id) === String(qi.id))).filter(q => q && !questionsArray.find(q2 => String(q2.stem) === String(q.id)));
+        const totalQuestions = segmentQuestions.length;
+        if (totalQuestions > 0) anyQuestionsInCourse = true;
+        var correctCount = 0;
+        var attemptedCount = 0;
+        segmentQuestions.forEach(q => {
+          const questionHistory = history.filter(r => String(r.segment) === String(segment.id) && String(r.question_id) === String(q.id));
+          if (q.nonscored) {
+            correctCount += 1;
+            if (questionHistory.length > 0) attemptedCount += 1;
+          } else {
+            if (questionHistory.find(r => r.status === 'Correct')) {
+              correctCount += 1;
+              attemptedCount += 1;
+            } else if (questionHistory.length > 0) {
+              attemptedCount += 1;
+            }
+          }
+        });
+        if (totalQuestions > 0) {
+          masterySegments.push(correctCount === totalQuestions);
+          completedSegments.push(attemptedCount === totalQuestions);
+        }
+        console.log(segment, totalQuestions, correctCount, attemptedCount)
+        var statusLabel = 'Not Started';
+        var icon = '<i class="bi bi-hourglass"></i>';
+        if (totalQuestions === 0) {
+          statusLabel = 'No Questions';
+          icon = '<i class="bi bi-dash-circle"></i>';
+        } else if (correctCount === totalQuestions) {
+          statusLabel = 'Mastery';
+          icon = '<i class="bi bi-patch-check"></i>';
+        } else if (attemptedCount === totalQuestions) {
+          statusLabel = 'Completed';
+          icon = '<i class="bi bi-check2-all"></i>';
+        } else if (attemptedCount > 0) {
+          statusLabel = 'In Progress';
+          icon = '<i class="bi bi-hourglass-split"></i>';
+        }
+        const li = document.createElement('li');
+        li.classList.add(statusLabel.replace(/\s+/g, '-').toLowerCase());
+        li.innerHTML = `${icon} <b>${segment.number} - ${segment.name}:</b>&nbsp;${statusLabel}<span style="float: right; font-weight: 600;">${attemptedCount}/${totalQuestions} Answered • ${correctCount}/${totalQuestions} Correct (${(totalQuestions > 0) ? Math.round((correctCount / totalQuestions) * 100) : 0}%)</span>`;
+        document.getElementById("segments-completed").querySelector('ul').append(li);
+      });
+      if (anyQuestionsInCourse && (masterySegments.length > 0) && masterySegments.every(Boolean)) {
+        document.getElementById("segments-completed").classList.add('mastery');
+        document.getElementById("segments-completed").removeAttribute('hidden');
+      } else if (anyQuestionsInCourse && (completedSegments.length > 0) && completedSegments.every(Boolean)) {
+        document.getElementById("segments-completed").classList.add('complete');
+        document.getElementById("segments-completed").removeAttribute('hidden');
+      } else {
+        document.getElementById("segments-completed").classList.add('incomplete');
+      }
     }
     ui.setUnsavedChanges(false);
     ui.reloadUnsavedInputs();
@@ -1070,7 +1135,7 @@ try {
       if (r.flagged) button.classList.add('flagged');
       var response = `<b>Status:</b> ${r.status.includes('Unknown') ? r.status.split('Unknown, ')[1] : r.status}${(r.reason) ? `</p>\n<p><b>Response:</b> ${r.reason}<br>` : ''}</p><button data-flag-response><i class="bi bi-flag-fill"></i> ${r.flagged ? 'Unflag Response' : 'Flag for Review'}</button>`;
       var segmentNumber = segmentsArray.find(s => (String(s.id) === String(r.segment)) && (courses.find(c => JSON.parse(c.periods).includes(Number(String(r.seatCode).slice(0, 1)))) ? (String(s.course) === String(courses.find(c => JSON.parse(c.periods).includes(Number(String(r.seatCode).slice(0, 1)))).id)) : true)) ? (segmentsArray.find(s => (String(s.id) === String(r.segment)) && (courses.find(c => JSON.parse(c.periods).includes(Number(String(r.seatCode).slice(0, 1)))) ? (String(s.course) === String(courses.find(c => JSON.parse(c.periods).includes(Number(String(r.seatCode).slice(0, 1)))).id)) : true)).number || r.segment) : (segmentsArray.find(s => (courses.find(c => JSON.parse(c.periods).includes(Number(String(r.seatCode).slice(0, 1)))) ? (String(s.course) === String(courses.find(c => JSON.parse(c.periods).includes(Number(String(r.seatCode).slice(0, 1)))).id)) : false) && JSON.parse(s.question_ids || [])?.find(q => String(q.id) === String(r.question_id)))?.number || null);
-      var questionNumber = questionsArray.find(question => String(question.id) === String(r.question_id)).number;
+      var questionNumber = JSON.parse(segmentsArray.find(s => String(s.id) === String(r.segment))?.question_ids || '[]').find(q => String(q.id) === String(r.question_id))?.name || questionsArray.find(question => String(question.id) === String(r.question_id)).number;
       switch (r.mode) {
         case 'latex':
           button.innerHTML = `${(String(r.seatCode) !== String(storage.get("code"))) ? `<p><b>${courses.find(c => JSON.parse(c.periods).includes(Number(String(r.seatCode).slice(0, 1))))?.name}</b></p>\n` : ''}<p><b>${segmentNumber ? `Segment ${segmentNumber}` : 'Deleted Segment'} Question #${questionNumber}.</b> ${unixToTimeString(r.timestamp)} (${r.seatCode})</p>\n${convertLatexToMarkup(r.response)}\n<p class="hint">(Equation may not display properly)</p>\n<p>${response}`;
@@ -1423,11 +1488,14 @@ try {
     const checker = document.getElementById('checker');
     if (!checker) return;
     const segmentCompleted = document.getElementById('segment-completed');
-    if (!segmentCompleted) return;
-    if (segmentCompleted.hasAttribute('hidden')) {
+    const segmentsCompleted = document.getElementById('segments-completed');
+    if (!segmentCompleted || !segmentsCompleted) return;
+    if (segmentCompleted.hasAttribute('hidden') || segmentsCompleted.hasAttribute('hidden')) {
       segmentCompleted.removeAttribute('hidden');
+      segmentsCompleted.removeAttribute('hidden');
     } else {
       segmentCompleted.setAttribute('hidden', '');
+      segmentsCompleted.setAttribute('hidden', '');
     }
   }
 

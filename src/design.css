@@ -1481,44 +1481,58 @@ hidden,
   cursor: pointer;
 }
 
-#segment-completed {
+#segment-completed,
+#segments-completed {
   background: var(--surface-color);
   padding: 15px 20px 20px 20px;
   border-radius: 10px;
   border-left: 3px solid mediumseagreen;
   border-right: 3px solid mediumseagreen;
-  margin-top: 10px;
 }
 
-#segment-completed i {
+#segment-completed.incomplete,
+#segments-completed.incomplete {
+  border-left: 3px solid indianred;
+  border-right: 3px solid indianred;
+}
+
+#segment-completed i,
+#segments-completed i {
   font-size: 25px;
 }
 
-#segment-completed ul i {
+#segment-completed ul i,
+#segments-completed ul i {
   font-size: 15px;
 }
 
-#segment-completed:not(.incomplete) > *:not(ul).incomplete {
+#segment-completed:not(.incomplete) > *:not(ul).incomplete,
+#segments-completed:not(.incomplete) > *:not(ul).incomplete {
   display: none;
 }
 
-#segment-completed.incomplete > *:not(ul):not(.incomplete) {
+#segment-completed.incomplete > *:not(ul):not(.incomplete),
+#segments-completed.incomplete > *:not(ul):not(.incomplete) {
   display: none;
 }
 
-#segment-completed:not(.complete) > *:not(ul).complete {
+#segment-completed:not(.complete) > *:not(ul).complete,
+#segments-completed:not(.complete) > *:not(ul).complete {
   display: none;
 }
 
-#segment-completed.complete > *:not(ul):not(.complete) {
+#segment-completed.complete > *:not(ul):not(.complete),
+#segments-completed.complete > *:not(ul):not(.complete) {
   display: none;
 }
 
-#segment-completed:not(.mastery) > *:not(ul).mastery {
+#segment-completed:not(.mastery) > *:not(ul).mastery,
+#segments-completed:not(.mastery) > *:not(ul).mastery {
   display: none;
 }
 
-#segment-completed.mastery > *:not(ul):not(.mastery) {
+#segment-completed.mastery > *:not(ul):not(.mastery),
+#segments-completed.mastery > *:not(ul):not(.mastery) {
   display: none;
 }
 
