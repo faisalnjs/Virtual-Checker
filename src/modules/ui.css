@@ -934,7 +934,7 @@ body:has(.topbar) #checker.horizontal .column:last-child {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 5px;
   width: -webkit-fill-available;
   margin-top: 5px;
 }
@@ -943,4 +943,32 @@ body:has(.topbar) #checker.horizontal .column:last-child {
   height: 30px !important;
   width: 30px !important;
   min-width: unset !important;
+}
+
+.pagination #current-page {
+  padding: 0 10px;
+}
+
+.pagination #current-page label {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 3px;
+}
+
+.pagination #current-page input {
+  background: none;
+  padding: 0 5px;
+  height: unset;
+  min-height: unset;
+  width: unset;
+  min-width: unset;
+  text-align: end;
+  field-sizing: content;
+  border-radius: 5px;
+}
+
+.pagination #current-page input:not(:hover):not(:focus) {
+  margin-right: -12.5px;
+  padding: 0;
 }

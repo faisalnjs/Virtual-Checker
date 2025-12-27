@@ -68,25 +68,25 @@ try {
         case 'editor':
           return ["courses", "segments", "questions", "answers", "settings"];
         case 'users':
-          return ["users", "courses"];
+          return ["users", "courses", "settings"];
         case 'logs':
-          return ["logs"];
+          return ["logs", "settings", "ai"];
         case 'backups':
-          return ["backups"];
+          return ["backups", "settings"];
         case 'passwords':
-          return ["passwords"];
+          return ["passwords", "settings"];
         case 'questions':
-          return ["questions", "answers", "segments", "courses"];
+          return ["questions", "answers", "segments", "courses", "settings"];
         case 'responses':
-          return ["responses", "courses", "segments", "questions", "answers"];
+          return ["responses", "courses", "segments", "questions", "answers", "settings"];
         case 'reports':
-          return ["responses", "courses", "segments", "questions"];
+          return ["responses", "courses", "segments", "questions", "settings"];
         case 'archive':
-          return ["archive"];
+          return ["archive", "settings"];
         case 'courses':
-          return ["courses", "segments", "rosters"];
+          return ["courses", "segments", "rosters", "settings"];
         case 'upload':
-          return ["courses"];
+          return ["courses", "settings"];
         default:
           return ["courses", "segments", "questions", "settings", "ai"];
       }
@@ -456,6 +456,8 @@ try {
   if (document.querySelector('[data-checker-announcement-clear]')) document.querySelector('[data-checker-announcement-clear]').addEventListener("click", () => clearAnnouncement('checker'));
   document.querySelectorAll('#previous-page-button').forEach(a => a.addEventListener("click", () => previousPage(a)));
   document.querySelectorAll('#next-page-button').forEach(a => a.addEventListener("click", () => nextPage(a)));
+  document.querySelectorAll('#first-page-button').forEach(a => a.addEventListener("click", () => firstPage(a)));
+  document.querySelectorAll('#last-page-button').forEach(a => a.addEventListener("click", () => lastPage(a)));
 
   function toggleSelecting() {
     if (!active) return;
@@ -1416,7 +1418,24 @@ try {
         }
         if (this && (this.id === 'filter-segment-input')) pagination.questions.page = 0;
         pagination.questions.total = filteredQuestions.length;
-        if (document.querySelector('.questions #current-page')) document.querySelector('.questions #current-page').innerText = `Page ${pagination.questions.page + 1} of ${Math.ceil(pagination.questions.total / pagination.questions.perPage)}`;
+        if (document.querySelector('.questions #current-page')) {
+          const currentPage = document.querySelector('.questions #current-page');
+          const input = currentPage.querySelector('.current-page-input');
+          const totalSpan = currentPage.querySelector('.current-page-total');
+          const totalPages = Math.max(1, Math.ceil((pagination.questions.total || 0) / pagination.questions.perPage));
+          if (input) input.value = Math.min(Math.max(1, pagination.questions.page + 1), totalPages);
+          if (totalSpan) totalSpan.innerText = totalPages;
+          if (input && !input._pageHandlerAttached) {
+            input.addEventListener('change', (e) => {
+              let v = parseInt(e.target.value) || 1;
+              if (v < 1) v = 1;
+              if (v > totalPages) v = totalPages;
+              e.target.value = v;
+              goToPage(document.querySelector('.questions .pagination'), v - 1);
+            });
+            input._pageHandlerAttached = true;
+          }
+        }
         var currentPageQuestions = filteredQuestions.slice(pagination.questions.page * pagination.questions.perPage, (pagination.questions.page + 1) * pagination.questions.perPage);
         syncPagination();
         renderedEditors = {};
@@ -1601,7 +1620,7 @@ try {
             var correctAnswersString = "";
             var questionAnswers = answers.find(a => a.id === q.id);
             questionAnswers.correct_answers.forEach(a => {
-              correctAnswersString += `<div class="button-grid inputs"><input type="text" autocomplete="off" id="question-correct-answer-input" value="${a}" placeholder="${a}" /><button data-remove-correct-answer-input square><i class="bi bi-dash"></i></button></div>`;
+              correctAnswersString += `<div class="button-grid inputs"><input type="text" autocomplete="off" id="question-correct-answer-input" value="${a}" placeholder="${a}" /><button data-remove-correct-answer-input square><i class="bi bi-dash"></i></button><button data-convert-correct-answer-to-incorrect-answer square><i class="bi bi-arrow-down-up"></i></button></div>`;
             });
             correctAnswers.innerHTML = `<b>Correct Answers</b><div class="section correctAnswers">${correctAnswersString}<button data-add-correct-answer-input>Add Correct Answer</button></div>`;
             question.appendChild(correctAnswers);
@@ -1609,7 +1628,7 @@ try {
             incorrectAnswers.classList = "answers";
             var incorrectAnswersString = "";
             questionAnswers.incorrect_answers.forEach(a => {
-              incorrectAnswersString += `<div class="button-grid inputs"><input type="text" autocomplete="off" id="question-incorrect-answer-input" value="${a.answer}" placeholder="${a.answer || 'Answer'}" /><input type="text" autocomplete="off" id="question-incorrect-answer-reason-input" value="${a.reason}" placeholder="${a.reason || 'Reason'}" /><button data-remove-incorrect-answer-input square><i class="bi bi-dash"></i></button></div>`;
+              incorrectAnswersString += `<div class="button-grid inputs"><input type="text" autocomplete="off" id="question-incorrect-answer-input" value="${a.answer}" placeholder="${a.answer || 'Answer'}" /><input type="text" autocomplete="off" id="question-incorrect-answer-reason-input" value="${a.reason}" placeholder="${a.reason || 'Reason'}" /><button data-remove-incorrect-answer-input square><i class="bi bi-dash"></i></button><button data-convert-incorrect-answer-to-correct-answer square><i class="bi bi-arrow-down-up"></i></button></div>`;
             });
             incorrectAnswers.innerHTML = `<b>Incorrect Answers</b><div class="section incorrectAnswers">${incorrectAnswersString}<button data-add-incorrect-answer-input>Add Incorrect Answer</button></div>`;
             question.appendChild(incorrectAnswers);
@@ -1709,6 +1728,8 @@ try {
     document.querySelectorAll('[data-add-incorrect-answer-input]').forEach(a => a.addEventListener('click', addIncorrectAnswer));
     document.querySelectorAll('[data-remove-correct-answer-input]').forEach(a => a.addEventListener('click', removeCorrectAnswer));
     document.querySelectorAll('[data-remove-incorrect-answer-input]').forEach(a => a.addEventListener('click', removeIncorrectAnswer));
+    document.querySelectorAll('[data-convert-correct-answer-to-incorrect-answer]').forEach(a => a.addEventListener('click', convertToIncorrectAnswer));
+    document.querySelectorAll('[data-convert-incorrect-answer-to-correct-answer]').forEach(a => a.addEventListener('click', convertToCorrectAnswer));
     document.querySelectorAll('[data-toggle-latex]').forEach(a => a.addEventListener('click', toggleQuestionLatex));
     document.querySelectorAll('[data-archive-question-input]').forEach(a => a.addEventListener('click', () => {
       if (a.parentElement.parentElement.id) archiveModal('question', a.parentElement.parentElement.id.split('question-')[1]);
@@ -1760,11 +1781,12 @@ try {
     if (!active) return;
     var input = document.createElement('div');
     input.className = "button-grid inputs";
-    input.innerHTML = `<input type="text" autocomplete="off" id="question-correct-answer-input" value="" placeholder="Answer" /><button data-remove-correct-answer-input square><i class="bi bi-dash"></i></button>`;
+    input.innerHTML = `<input type="text" autocomplete="off" id="question-correct-answer-input" value="" placeholder="Answer" /><button data-remove-correct-answer-input square><i class="bi bi-dash"></i></button><button data-convert-correct-answer-to-incorrect-answer square><i class="bi bi-arrow-down-up"></i></button>`;
     this.parentElement.insertBefore(input, this);
     this.parentElement.parentElement.parentElement.setAttribute('modified', 'true');
     document.querySelectorAll('[data-add-correct-answer-input]').forEach(a => a.addEventListener('click', addCorrectAnswer));
     document.querySelectorAll('[data-remove-correct-answer-input]').forEach(a => a.addEventListener('click', removeCorrectAnswer));
+    document.querySelectorAll('[data-convert-correct-answer-to-incorrect-answer]').forEach(a => a.addEventListener('click', convertToIncorrectAnswer));
     ui.reloadUnsavedInputs();
   }
 
@@ -1772,11 +1794,12 @@ try {
     if (!active) return;
     var input = document.createElement('div');
     input.className = "button-grid inputs";
-    input.innerHTML = `<input type="text" autocomplete="off" id="question-incorrect-answer-input" value="" placeholder="Answer" /><input type="text" autocomplete="off" id="question-incorrect-answer-reason-input" value="" placeholder="Reason" /><button data-remove-incorrect-answer-input square><i class="bi bi-dash"></i></button>`;
+    input.innerHTML = `<input type="text" autocomplete="off" id="question-incorrect-answer-input" value="" placeholder="Answer" /><input type="text" autocomplete="off" id="question-incorrect-answer-reason-input" value="" placeholder="Reason" /><button data-remove-incorrect-answer-input square><i class="bi bi-dash"></i></button><button data-convert-incorrect-answer-to-correct-answer square><i class="bi bi-arrow-down-up"></i></button>`;
     this.parentElement.insertBefore(input, this);
     this.parentElement.parentElement.parentElement.setAttribute('modified', 'true');
     document.querySelectorAll('[data-add-incorrect-answer-input]').forEach(a => a.addEventListener('click', addIncorrectAnswer));
     document.querySelectorAll('[data-remove-incorrect-answer-input]').forEach(a => a.addEventListener('click', removeIncorrectAnswer));
+    document.querySelectorAll('[data-convert-incorrect-answer-to-correct-answer]').forEach(a => a.addEventListener('click', convertToCorrectAnswer));
     ui.reloadUnsavedInputs();
   }
 
@@ -1789,6 +1812,34 @@ try {
 
   function removeIncorrectAnswer() {
     if (!active) return;
+    this.parentElement.parentElement.parentElement.parentElement.setAttribute('modified', 'true');
+    this.parentElement.remove();
+    ui.setUnsavedChanges(true);
+  }
+
+  function convertToIncorrectAnswer() {
+    if (!active) return;
+    const answerText = this.parentElement.querySelector('#question-correct-answer-input').value;
+    var input = document.createElement('div');
+    input.className = "button-grid inputs";
+    input.innerHTML = `<input type="text" autocomplete="off" id="question-incorrect-answer-input" value="${answerText}" placeholder="Answer" /><input type="text" autocomplete="off" id="question-incorrect-answer-reason-input" value="" placeholder="Reason" /><button data-remove-incorrect-answer-input square><i class="bi bi-dash"></i></button><button data-convert-incorrect-answer-to-correct-answer square><i class="bi bi-arrow-down-up"></i></button>`;
+    this.parentElement.parentElement.parentElement.parentElement.querySelector('.incorrectAnswers').insertBefore(input, this.parentElement.parentElement.parentElement.parentElement.querySelector('.incorrectAnswers [data-add-incorrect-answer-input]'));
+    document.querySelectorAll('[data-remove-incorrect-answer-input]').forEach(a => a.addEventListener('click', removeIncorrectAnswer));
+    document.querySelectorAll('[data-convert-incorrect-answer-to-correct-answer]').forEach(a => a.addEventListener('click', convertToCorrectAnswer));
+    this.parentElement.parentElement.parentElement.parentElement.setAttribute('modified', 'true');
+    this.parentElement.remove();
+    ui.setUnsavedChanges(true);
+  }
+
+  function convertToCorrectAnswer() {
+    if (!active) return;
+    const answerText = this.parentElement.querySelector('#question-incorrect-answer-input').value;
+    var input = document.createElement('div');
+    input.className = "button-grid inputs";
+    input.innerHTML = `<input type="text" autocomplete="off" id="question-correct-answer-input" value="${answerText}" placeholder="Answer" /><button data-remove-correct-answer-input square><i class="bi bi-dash"></i></button><button data-convert-correct-answer-to-incorrect-answer square><i class="bi bi-arrow-down-up"></i></button>`;
+    this.parentElement.parentElement.parentElement.parentElement.querySelector('.correctAnswers').insertBefore(input, this.parentElement.parentElement.parentElement.parentElement.querySelector('.correctAnswers [data-add-correct-answer-input]'));
+    document.querySelectorAll('[data-remove-correct-answer-input]').forEach(a => a.addEventListener('click', removeCorrectAnswer));
+    document.querySelectorAll('[data-convert-correct-answer-to-incorrect-answer]').forEach(a => a.addEventListener('click', convertToIncorrectAnswer));
     this.parentElement.parentElement.parentElement.parentElement.setAttribute('modified', 'true');
     this.parentElement.remove();
     ui.setUnsavedChanges(true);
@@ -2050,8 +2101,42 @@ try {
     }
     pagination.awaitingResponses.total = responses1.filter(r => ((r.status === 'Invalid Format') || (r.status === 'Unknown, Recorded')) && document.querySelector('.awaitingResponses .section')).length;
     pagination.responses.total = responses1.filter(r => !((r.status === 'Invalid Format') || (r.status === 'Unknown, Recorded')) && document.querySelector('.responses .section')).length;
-    if (document.querySelector('.awaitingResponses #current-page')) document.querySelector('.awaitingResponses #current-page').innerText = `Page ${pagination.awaitingResponses.page + 1} of ${Math.ceil(pagination.awaitingResponses.total / pagination.awaitingResponses.perPage)}`;
-    if (document.querySelector('.responses #current-page')) document.querySelector('.responses #current-page').innerText = `Page ${pagination.responses.page + 1} of ${Math.ceil(pagination.responses.total / pagination.responses.perPage)}`;
+    if (document.querySelector('.awaitingResponses #current-page')) {
+      const currentPage = document.querySelector('.awaitingResponses #current-page');
+      const input = currentPage.querySelector('.current-page-input');
+      const totalSpan = currentPage.querySelector('.current-page-total');
+      const totalPages = Math.max(1, Math.ceil((pagination.awaitingResponses.total || 0) / pagination.awaitingResponses.perPage));
+      if (input) input.value = Math.min(Math.max(1, pagination.awaitingResponses.page + 1), totalPages);
+      if (totalSpan) totalSpan.innerText = totalPages;
+      if (input && !input._pageHandlerAttached) {
+        input.addEventListener('change', (e) => {
+          let v = parseInt(e.target.value) || 1;
+          if (v < 1) v = 1;
+          if (v > totalPages) v = totalPages;
+          e.target.value = v;
+          goToPage(document.querySelector('.awaitingResponses .pagination'), v - 1);
+        });
+        input._pageHandlerAttached = true;
+      }
+    }
+    if (document.querySelector('.responses #current-page')) {
+      const currentPage = document.querySelector('.responses #current-page');
+      const input = currentPage.querySelector('.current-page-input');
+      const totalSpan = currentPage.querySelector('.current-page-total');
+      const totalPages = Math.max(1, Math.ceil((pagination.responses.total || 0) / pagination.responses.perPage));
+      if (input) input.value = Math.min(Math.max(1, pagination.responses.page + 1), totalPages);
+      if (totalSpan) totalSpan.innerText = totalPages;
+      if (input && !input._pageHandlerAttached) {
+        input.addEventListener('change', (e) => {
+          let v = parseInt(e.target.value) || 1;
+          if (v < 1) v = 1;
+          if (v > totalPages) v = totalPages;
+          e.target.value = v;
+          goToPage(document.querySelector('.responses .pagination'), v - 1);
+        });
+        input._pageHandlerAttached = true;
+      }
+    }
     syncPagination();
     const awaitingSection = document.querySelector('.awaitingResponses .section');
     const responsesSection = document.querySelector('.responses .section');
@@ -6050,14 +6135,14 @@ try {
               if (!answer || [...this.parentElement.parentElement.querySelectorAll('.correctAnswers .button-grid')].find(e => e.querySelector('#question-correct-answer-input').value.toLowerCase() === answer.toLowerCase())) return;
               var input = document.createElement('div');
               input.className = "button-grid inputs";
-              input.innerHTML = `<input type="text" autocomplete="off" id="question-correct-answer-input" value="${escapeHTML(answer)}" placeholder="Answer" /><button data-remove-correct-answer-input square><i class="bi bi-dash"></i></button>`;
+              input.innerHTML = `<input type="text" autocomplete="off" id="question-correct-answer-input" value="${escapeHTML(answer)}" placeholder="Answer" /><button data-remove-correct-answer-input square><i class="bi bi-dash"></i></button><button data-convert-correct-answer-to-incorrect-answer square><i class="bi bi-arrow-down-up"></i></button>`;
               this.parentElement.parentElement.querySelector('.correctAnswers').insertBefore(input, this.parentElement.parentElement.querySelector('.correctAnswers').children[this.parentElement.parentElement.querySelector('.correctAnswers').children.length - 1]);
             });
             aiIncorrectAnswers.forEach(answer => {
               if (!answer.answer || !answer.reason || [...this.parentElement.parentElement.querySelectorAll('.incorrectAnswers .button-grid')].find(e => e.querySelector('#question-incorrect-answer-input').value.toLowerCase() === answer.answer.toLowerCase())) return;
               var input = document.createElement('div');
               input.className = "button-grid inputs";
-              input.innerHTML = `<input type="text" autocomplete="off" id="question-incorrect-answer-input" value="${escapeHTML(answer.answer)}" placeholder="Answer" /><input type="text" autocomplete="off" id="question-incorrect-answer-reason-input" value="${escapeHTML(answer.reason)}" placeholder="Reason" /><button data-remove-incorrect-answer-input square><i class="bi bi-dash"></i></button>`;
+              input.innerHTML = `<input type="text" autocomplete="off" id="question-incorrect-answer-input" value="${escapeHTML(answer.answer)}" placeholder="Answer" /><input type="text" autocomplete="off" id="question-incorrect-answer-reason-input" value="${escapeHTML(answer.reason)}" placeholder="Reason" /><button data-remove-incorrect-answer-input square><i class="bi bi-dash"></i></button><button data-convert-incorrect-answer-to-correct-answer square><i class="bi bi-arrow-down-up"></i></button>`;
               this.parentElement.parentElement.querySelector('.incorrectAnswers').insertBefore(input, this.parentElement.parentElement.querySelector('.incorrectAnswers').children[this.parentElement.parentElement.querySelector('.incorrectAnswers').children.length - 1]);
             });
             if (aiCorrectAnswers.length || aiIncorrectAnswers.length) this.parentElement.parentElement.setAttribute('modified', 'true');
@@ -6065,6 +6150,8 @@ try {
             document.querySelectorAll('[data-remove-correct-answer-input]').forEach(a => a.addEventListener('click', removeCorrectAnswer));
             document.querySelectorAll('[data-add-incorrect-answer-input]').forEach(a => a.addEventListener('click', addIncorrectAnswer));
             document.querySelectorAll('[data-remove-incorrect-answer-input]').forEach(a => a.addEventListener('click', removeIncorrectAnswer));
+            document.querySelectorAll('[data-convert-correct-answer-to-incorrect-answer]').forEach(a => a.addEventListener('click', convertToIncorrectAnswer));
+            document.querySelectorAll('[data-convert-incorrect-answer-to-correct-answer]').forEach(a => a.addEventListener('click', convertToCorrectAnswer));
             this.classList.add('success');
             setTimeout(() => {
               this.classList.remove('success');
@@ -6180,9 +6267,7 @@ try {
     } else if (document.querySelector('.questions')) {
       updateQuestions();
     }
-    paginationSection.parentElement.querySelector('#current-page').innerText = `Page ${pagination[group].page + 1} of ${Math.ceil(pagination[group].total / pagination[group].perPage)}`;
-    paginationSection.parentElement.querySelector('#next-page-button').disabled = false;
-    paginationSection.parentElement.querySelector('#previous-page-button').disabled = (pagination[group].page - 1 < 0) ? true : false;
+    syncPagination();
   }
 
   function nextPage(paginationSection) {
@@ -6218,18 +6303,33 @@ try {
     } else if (document.querySelector('.questions')) {
       updateQuestions();
     }
-    paginationSection.parentElement.querySelector('#current-page').innerText = `Page ${pagination[group].page + 1} of ${Math.ceil(pagination[group].total / pagination[group].perPage)}`;
-    paginationSection.parentElement.querySelector('#next-page-button').disabled = (pagination[group].page + 1 >= Math.ceil(pagination[group].total / pagination[group].perPage)) ? true : false;
-    paginationSection.parentElement.querySelector('#previous-page-button').disabled = false;
+    syncPagination();
   }
 
   function syncPagination() {
     Object.keys(pagination).forEach(group => {
       if (document.querySelector(`.${group} .pagination`)) {
         document.querySelectorAll(`.${group} .pagination`).forEach(paginationSection => {
-          paginationSection.parentElement.querySelector('#current-page').innerText = `Page ${pagination[group].page + 1} of ${Math.ceil(pagination[group].total / pagination[group].perPage)}`;
+          const currentPage = paginationSection.parentElement.querySelector('#current-page');
+          const input = currentPage?.querySelector('.current-page-input');
+          const totalSpan = currentPage?.querySelector('.current-page-total');
+          const totalPages = Math.max(1, Math.ceil((pagination[group].total || 0) / pagination[group].perPage));
+          if (input) input.value = Math.min(Math.max(1, pagination[group].page + 1), totalPages);
+          if (totalSpan) totalSpan.innerText = totalPages;
+          if (input && !input._pageHandlerAttached) {
+            input.addEventListener('change', (e) => {
+              let v = parseInt(e.target.value) || 1;
+              if (v < 1) v = 1;
+              if (v > totalPages) v = totalPages;
+              e.target.value = v;
+              goToPage(paginationSection, v - 1);
+            });
+            input._pageHandlerAttached = true;
+          }
           paginationSection.parentElement.querySelector('#next-page-button').disabled = (pagination[group].page + 1 >= Math.ceil(pagination[group].total / pagination[group].perPage)) ? true : false;
           paginationSection.parentElement.querySelector('#previous-page-button').disabled = (pagination[group].page - 1 < 0) ? true : false;
+          paginationSection.parentElement.querySelector('#first-page-button').disabled = (pagination[group].page - 1 < 0) ? true : false;
+          paginationSection.parentElement.querySelector('#last-page-button').disabled = (pagination[group].page + 1 >= Math.ceil(pagination[group].total / pagination[group].perPage)) ? true : false;
         });
       }
     });
@@ -6244,7 +6344,18 @@ try {
   }
 
   async function goToPage(paginationSection, page) {
-    const group = Array.from(paginationSection.parentElement.parentElement.classList).find(a => Object.keys(pagination).includes(a));
+    function findGroup(el) {
+      let cur = el;
+      for (let i = 0; i < 6 && cur; i++) {
+        if (cur.classList) {
+          const found = Array.from(cur.classList).find(a => Object.keys(pagination).includes(a));
+          if (found) return found;
+        }
+        cur = cur.parentElement;
+      }
+      return null;
+    }
+    const group = findGroup(paginationSection);
     if (!group) return;
     pagination[group].page = page;
     if (document.querySelector('.responses')) {
@@ -6252,13 +6363,21 @@ try {
     } else if (document.querySelector('.questions')) {
       updateQuestions();
     }
-    paginationSection.parentElement.querySelector('#current-page').innerText = `Page ${pagination[group].page + 1} of ${Math.ceil(pagination[group].total / pagination[group].perPage)}`;
-    paginationSection.parentElement.querySelector('#next-page-button').disabled = (pagination[group].page + 1 >= Math.ceil(pagination[group].total / pagination[group].perPage)) ? true : false;
-    paginationSection.parentElement.querySelector('#previous-page-button').disabled = (pagination[group].page - 1 < 0) ? true : false;
+    syncPagination();
+  }
+
+  function firstPage(paginationSection) {
+    goToPage(paginationSection, 0);
+  }
+
+  function lastPage(paginationSection) {
+    const group = Array.from(paginationSection.parentElement.parentElement.classList).find(a => Object.keys(pagination).includes(a));
+    if (!group) return;
+    goToPage(paginationSection, Math.ceil(pagination[group].total / pagination[group].perPage) - 1);
   }
 } catch (error) {
   if (storage.get("developer")) {
     alert(`Error @ admin.js: ${error.message}`);
-  };
+  }
   throw error;
-};
+}

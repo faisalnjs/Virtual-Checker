@@ -124,9 +124,14 @@
         </div>
       </div>
       <div class="pagination">
-        <button id="previous-page-button" square disabled tooltip="Previous Page"><i class="bi bi-chevron-left"></i></button>
-        <span id="current-page">1</span>
+        <button id="first-page-button" square disabled tooltip="First Page"><i
+            class="bi bi-chevron-double-left"></i></button>
+        <button id="previous-page-button" square disabled tooltip="Previous Page"><i
+            class="bi bi-chevron-left"></i></button>
+        <span id="current-page"><label>Page <input type="number" class="current-page-input" min="1" value="1" /> of
+            <span class="current-page-total">1</span></label></span>
         <button id="next-page-button" square tooltip="Next Page"><i class="bi bi-chevron-right"></i></button>
+        <button id="last-page-button" square tooltip="Last Page"><i class="bi bi-chevron-double-right"></i></button>
       </div>
       <button class="space" id="save-button">Save</button>
     </div>
@@ -370,7 +375,8 @@
     <div class="row center" style="gap: 7.5px; margin-top: 5px;">
       <a href="https://github.com/faisalnjs/virtual-checker/issues" class="icon" tooltip="GitHub Issues"><i
           class="bi bi-github"></i></a>
-      <a href="https://dangoweb.com/community" class="icon" tooltip="Support Communities"><i class="bi bi-life-preserver"></i></a>
+      <a href="https://dangoweb.com/community" class="icon" tooltip="Support Communities"><i
+          class="bi bi-life-preserver"></i></a>
       <a href="mailto:contact@faisaln.com" class="icon" tooltip="Email"><i class="bi bi-envelope-fill"></i></a>
     </div>
   </dialog>
