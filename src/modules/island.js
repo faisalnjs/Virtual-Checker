@@ -120,14 +120,25 @@ export default function spawnIsland(element = null, source = null, dataType = 'q
     if (islandRenderTimer) clearTimeout(islandRenderTimer);
     islandRenderTimer = setTimeout(() => {
         try {
+            var stem = null;
             var html = '';
             if (data.id) html += `<code>${escapeHTML(String(data.id))}</code>`;
             if (data.title) html += `<h4>${escapeHTML(String(data.title))}</h4>`;
             if (data.subtitle) html += `<h6>${data.subtitleLatex ? convertLatexToMarkup(String(data.subtitle)) : escapeHTML(String(data.subtitle))}</h6>`;
+            if ((dataType === 'response' || dataType === 'question') && source2 && Array.isArray(source2)) {
+                try {
+                    var qId = String(data.id || '').match(/ID\s*(\d+)/) ? String(data.id || '').match(/ID\s*(\d+)/)[1] : (data.sourceId || null);
+                    if (qId) {
+                        const qObj = source2.find(q => String(q.id) === String(qId));
+                        if (qObj && qObj.stem) stem = source2.find(sq => String(sq.id) === String(qObj.stem)) || null;
+                    }
+                } catch (e) { }
+            }
+            if (stem.description && stem.description.includes('ops') && (stem.description != '{"ops":[{"insert":"\\n"}]}') && JSON.parse(String(stem.description).replaceAll(/\s/g, ''))) html += `<div class="description extra hidden"><div class="textarea" content='${escapeHTML(String(stem.description))}'></div></div>`;
             if (data.description && data.description.includes('ops') && (data.description != '{"ops":[{"insert":"\\n"}]}') && JSON.parse(String(data.description).replaceAll(/\s/g, ''))) html += `<div class="description extra hidden"><div class="textarea" content='${escapeHTML(String(data.description))}'></div></div>`;
-            if (data.attachments && JSON.parse(String(data.attachments))) {
+            if ((data.attachments || (stem && stem.images)) && [...JSON.parse(String(stem.images)), ...JSON.parse(String(data.attachments))]) {
                 html += `<div class="attachments extra hidden">`;
-                JSON.parse(String(data.attachments)).forEach(attachment => {
+                [...JSON.parse(String(stem.images)), ...JSON.parse(String(data.attachments))].forEach(attachment => {
                     html += `<img data-src="${escapeHTML(String(attachment))}">`;
                 });
                 html += `</div>`;
