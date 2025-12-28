@@ -38,9 +38,9 @@ var aiInfo = {};
 var settings = [];
 var lastMarkedQuestion = {};
 var pagination = {
-  awaitingResponses: { page: 0, perPage: 50 },
-  responses: { page: 0, perPage: 50 },
-  questions: { page: 0, perPage: 50 },
+  awaitingResponses: { page: 0, perPage: 10 },
+  responses: { page: 0, perPage: 5 },
+  questions: { page: 0, perPage: 10 },
 };
 var questionsToDelete = [];
 var keepSegment = null;
@@ -353,9 +353,8 @@ try {
         if (document.getElementById("course-period-input") && !loadedSegmentEditor && !loadedSegmentCreator && !noReloadCourse) {
           document.getElementById("course-period-input").value = (storage.get('period') && courses.find(c => String(c.id) === String(storage.get('period')))) ? storage.get('period') : (((ui.defaultCourse !== null) && courses.find(c => String(c.id) === String(ui.defaultCourse))) ? ui.defaultCourse : courses.find(c => responses.some(r => JSON.parse(c.periods).includes(Number(String(r.seatCode)[0])))) ? courses.find(c => responses.some(r => JSON.parse(c.periods).includes(Number(String(r.seatCode)[0])))).id : courses.sort((a, b) => a.id - b.id)[0]?.id);
           if (document.getElementById("export-report-course")) document.getElementById("export-report-course").value = (storage.get('period') && courses.find(c => String(c.id) === String(storage.get('period')))) ? storage.get('period') : (((ui.defaultCourse !== null) && courses.find(c => String(c.id) === String(ui.defaultCourse))) ? ui.defaultCourse : courses.find(c => responses.some(r => JSON.parse(c.periods).includes(Number(String(r.seatCode)[0])))) ? courses.find(c => responses.some(r => JSON.parse(c.periods).includes(Number(String(r.seatCode)[0])))).id : courses.sort((a, b) => a.id - b.id)[0]?.id);
-          await updateResponses();
         }
-        if (noReloadCourse) await updateResponses();
+        if ((document.getElementById("course-period-input") && !loadedSegmentEditor && !loadedSegmentCreator && !noReloadCourse) || noReloadCourse) await updateResponses();
         if (document.querySelector('.segment-reports')) updateSegments();
         if (document.querySelector('.question-reports')) updateQuestionReports();
         active = true;
