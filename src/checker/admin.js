@@ -1989,6 +1989,7 @@ try {
     if (!active) return;
     questionElement.parentElement.parentElement.remove();
     questionsToDelete.push(questionElement.parentElement.parentElement.id.split('question-')[1]);
+    ui.setUnsavedChanges(true);
     hideAllQuestions();
   }
 
