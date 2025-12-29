@@ -134,11 +134,12 @@ export default function spawnIsland(element = null, source = null, dataType = 'q
                     }
                 } catch (e) { }
             }
-            if (stem.description && stem.description.includes('ops') && (stem.description != '{"ops":[{"insert":"\\n"}]}') && JSON.parse(String(stem.description).replaceAll(/\s/g, ''))) html += `<div class="description extra hidden"><div class="textarea" content='${escapeHTML(String(stem.description))}'></div></div>`;
+            if (stem && stem.description && stem.description.includes('ops') && (stem.description != '{"ops":[{"insert":"\\n"}]}') && JSON.parse(String(stem.description).replaceAll(/\s/g, ''))) html += `<div class="description extra hidden"><div class="textarea" content='${escapeHTML(String(stem.description))}'></div></div>`;
             if (data.description && data.description.includes('ops') && (data.description != '{"ops":[{"insert":"\\n"}]}') && JSON.parse(String(data.description).replaceAll(/\s/g, ''))) html += `<div class="description extra hidden"><div class="textarea" content='${escapeHTML(String(data.description))}'></div></div>`;
-            if ((data.attachments || (stem && stem.images)) && [...JSON.parse(String(stem.images)), ...JSON.parse(String(data.attachments))]) {
+            var islandAttachments = [...((stem && stem.images) ? JSON.parse(String(stem.images)) : []), ...(data.attachments ? JSON.parse(String(data.attachments)) : [])];
+            if (islandAttachments.length) {
                 html += `<div class="attachments extra hidden">`;
-                [...JSON.parse(String(stem.images)), ...JSON.parse(String(data.attachments))].forEach(attachment => {
+                islandAttachments.forEach(attachment => {
                     html += `<img data-src="${escapeHTML(String(attachment))}">`;
                 });
                 html += `</div>`;
