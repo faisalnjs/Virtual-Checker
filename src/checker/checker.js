@@ -425,6 +425,13 @@ try {
     }
   }
 
+  function getCacheIDs() {
+    var cacheIds = {};
+    var cache = storage.get("cache") || {};
+    for (const table in cache) cacheIds[table] = (cache[table] || []).map(data => String(data.id || data.seatCode || data.period || data.key || data.username || 0));
+    return cacheIds;
+  }
+
   // Update elements with new seat code
   async function updateCode() {
     const code = storage.get("code");
@@ -438,9 +445,38 @@ try {
       const bulkLoadResponse = await fetch(`${domain}/bulk_load`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ fields: ["courses", "segments", "questions", "settings"] }),
+        body: JSON.stringify({
+          fields: ["courses", "segments", "questions"],
+          lastFetched: storage.get("lastBulkLoad") || null,
+          syncDeleted: getCacheIDs(),
+        }),
       });
-      const bulkLoad = await bulkLoadResponse.json();
+      var fetchedBulkLoad = await bulkLoadResponse.json();
+      var updatedBulkLoad = {};
+      for (const table in fetchedBulkLoad) {
+        if (table === 'asOf' || table === 'syncDeleted') continue;
+        if (storage.get("lastBulkLoad") || null) {
+          var deletedData = fetchedBulkLoad.syncDeleted?.[table] || [];
+          var existingData = (storage.get("cache")[table] || []).filter(item => {
+            return !deletedData.includes(String(item.id || item.seatCode || item.period || item.key || item.username || 0));
+          });
+          var mergedData = [...existingData];
+          (fetchedBulkLoad[table] || []).forEach(newItem => {
+            const index = mergedData.findIndex(item => String(item.id || item.seatCode || item.period || item.key || item.username || 0) === String(newItem.id || newItem.seatCode || newItem.period || newItem.key || newItem.username || 0));
+            if (index !== -1) {
+              mergedData[index] = newItem;
+            } else {
+              mergedData.push(newItem);
+            }
+          });
+          updatedBulkLoad[table] = mergedData;
+        } else {
+          updatedBulkLoad[table] = fetchedBulkLoad[table];
+        }
+      }
+      storage.set("lastBulkLoad", fetchedBulkLoad.asOf || null);
+      storage.set("cache", updatedBulkLoad || fetchedBulkLoad || {});
+      const bulkLoad = storage.get("cache") || {};
       courses = bulkLoad.courses;
       segmentsArray = bulkLoad.segments;
       questionsArray = bulkLoad.questions;
@@ -764,7 +800,6 @@ try {
           masterySegments.push(correctCount === totalQuestions);
           completedSegments.push(attemptedCount === totalQuestions);
         }
-        console.log(segment, totalQuestions, correctCount, attemptedCount)
         var statusLabel = 'Not Started';
         var icon = '<i class="bi bi-hourglass"></i>';
         if (totalQuestions === 0) {
