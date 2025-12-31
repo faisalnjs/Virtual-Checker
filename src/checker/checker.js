@@ -435,7 +435,7 @@ try {
     document.title = `Virtual Checker (${storage.get("code")})`;
     const periodRange = getExtendedPeriodRange(null, Number(code.slice(0, 1)));
     try {
-      await auth.bulkLoad(false, ["courses", "segments", "questions"]);
+      await auth.bulkLoad(["courses", "segments", "questions", "responses"], storage.get("code"), storage.get("password"));
       const bulkLoad = storage.get("cache") || {};
       courses = bulkLoad.courses;
       segmentsArray = bulkLoad.segments;
@@ -553,32 +553,8 @@ try {
   }
 
   async function fetchHistory() {
-    history = await fetch(domain + '/responses', {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        usr: storage.get("code"),
-        pwd: storage.get("password"),
-      }),
-    })
-      .then(async (r) => {
-        if (!r.ok) {
-          try {
-            var re = await r.json();
-            if (re.error || re.message) {
-              ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
-              throw new Error(re.error || re.message);
-            } else {
-              throw new Error("API error");
-            }
-          } catch (e) {
-            throw new Error(e.message || "API error");
-          }
-        }
-        return await r.json();
-      });
+    await auth.bulkLoad(["courses", "segments", "questions", "responses"], storage.get("code"), storage.get("password"));
+    history = (storage.get("cache") || {}).responses || [];
   }
 
   async function updateSegment(event, sameSegment = false) {
