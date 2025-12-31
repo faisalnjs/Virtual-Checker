@@ -741,22 +741,22 @@ export async function loadAdminSettings(courses) {
         });
 }
 
-export async function bulkLoad(useAuth = false, fields = []) {
+export async function bulkLoad(fields = [], usr = null, pwd = null) {
     const startTime = Date.now();
     const bulkLoadResponse = await fetch(`${domain}/bulk_load`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-            usr: useAuth ? storage.get("usr") : null,
-            pwd: useAuth ? storage.get("pwd") : null,
+            usr,
+            pwd,
             fields,
             lastFetched: storage.get("lastBulkLoad") || null,
-            syncDeleted: () => {
+            syncDeleted: (() => {
                 var cacheIds = {};
                 var cache = storage.get("cache") || {};
                 for (const table in cache) cacheIds[table] = (cache[table] || []).map(data => String(data.id || data.seatCode || data.period || data.key || data.username || 0));
                 return cacheIds;
-            },
+            })(),
         }),
     });
     var fetchedBulkLoad = await bulkLoadResponse.json();
