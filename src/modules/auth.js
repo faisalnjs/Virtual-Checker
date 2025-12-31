@@ -224,7 +224,7 @@ export async function sync(hideWelcome = true, returnFunction = null) {
                 ))) === JSON.stringify(sortKeys(Object.fromEntries(
                     Object.entries(storage.all()).filter(([key]) => key !== "password" && key !== "code" && key !== "usr" && key !== "pwd" && key !== "history" && key !== "questionsAnswered" && key !== "developer" && key !== "cache" && key !== "lastBulkLoad")
                 )));
-                console.log(`Settings is ${!settingsIsSynced ? 'not ' : ''}synced!`);
+                console.log(`${settingsIsSynced ? '🟢' : '🟡'} Settings is ${!settingsIsSynced ? 'not ' : ''}synced!`);
                 if (settingsIsSynced) {
                     if (document.getElementById('checker')) document.getElementById('checker').classList = r.settings['layout'] || '';
                     ui.stopLoader();
@@ -739,4 +739,51 @@ export async function loadAdminSettings(courses) {
             console.error(e);
             if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
         });
+}
+
+export async function bulkLoad(useAuth = false, fields = []) {
+    const startTime = Date.now();
+    const bulkLoadResponse = await fetch(`${domain}/bulk_load`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            usr: useAuth ? storage.get("usr") : null,
+            pwd: useAuth ? storage.get("pwd") : null,
+            fields,
+            lastFetched: storage.get("lastBulkLoad") || null,
+            syncDeleted: () => {
+                var cacheIds = {};
+                var cache = storage.get("cache") || {};
+                for (const table in cache) cacheIds[table] = (cache[table] || []).map(data => String(data.id || data.seatCode || data.period || data.key || data.username || 0));
+                return cacheIds;
+            },
+        }),
+    });
+    var fetchedBulkLoad = await bulkLoadResponse.json();
+    var updatedBulkLoad = {};
+    for (const table in fetchedBulkLoad) {
+        if (table === 'asOf' || table === 'syncDeleted') continue;
+        if (storage.get("lastBulkLoad") || null) {
+            var deletedData = fetchedBulkLoad.syncDeleted?.[table] || [];
+            var existingData = (storage.get("cache")[table] || []).filter(item => {
+                return !deletedData.includes(String(item.id || item.seatCode || item.period || item.key || item.username || 0));
+            });
+            var mergedData = [...existingData];
+            (fetchedBulkLoad[table] || []).forEach(newItem => {
+                const index = mergedData.findIndex(item => String(item.id || item.seatCode || item.period || item.key || item.username || 0) === String(newItem.id || newItem.seatCode || newItem.period || newItem.key || newItem.username || 0));
+                if (index !== -1) {
+                    mergedData[index] = newItem;
+                } else {
+                    mergedData.push(newItem);
+                }
+            });
+            updatedBulkLoad[table] = mergedData;
+        } else {
+            updatedBulkLoad[table] = fetchedBulkLoad[table];
+        }
+    }
+    storage.set("lastBulkLoad", fetchedBulkLoad.asOf || null);
+    storage.set("cache", updatedBulkLoad || fetchedBulkLoad || {});
+    const loadTime = ((Date.now() - startTime) / 1000).toFixed(2);
+    console.log(`${(loadTime < 1) ? '🟢' : ((loadTime > 5) ? '🔴' : '🟡')} Bulk load fetched in ${loadTime}s`);
 }
