@@ -213,16 +213,16 @@ export async function sync(hideWelcome = true, returnFunction = null) {
                 if (r.notifications.length > 0) ui.toast(`You have ${r.notifications.length} unread notification${(r.notifications.length === 1) ? '' : 's'}.`, 5000, 'info', 'bi bi-bell-fill');
                 const combinedSettings = sortKeys({
                     ...Object.fromEntries(
-                        Object.entries(storage.all()).filter(([key]) => key !== "password" && key !== "code" && key !== "usr" && key !== "pwd" && key !== "history" && key !== "questionsAnswered" && key !== "developer")
+                        Object.entries(storage.all()).filter(([key]) => key !== "password" && key !== "code" && key !== "usr" && key !== "pwd" && key !== "history" && key !== "questionsAnswered" && key !== "developer" && key !== "cache" && key !== "lastBulkLoad")
                     ),
                     ...Object.fromEntries(
-                        Object.entries(r.settings).filter(([key]) => key !== "password" && key !== "code" && key !== "usr" && key !== "pwd" && key !== "history" && key !== "questionsAnswered" && key !== "developer")
+                        Object.entries(r.settings).filter(([key]) => key !== "password" && key !== "code" && key !== "usr" && key !== "pwd" && key !== "history" && key !== "questionsAnswered" && key !== "developer" && key !== "cache" && key !== "lastBulkLoad")
                     ),
                 });
                 var settingsIsSynced = JSON.stringify(sortKeys(Object.fromEntries(
-                    Object.entries(r.settings).filter(([key]) => key !== "password" && key !== "code" && key !== "usr" && key !== "pwd" && key !== "history" && key !== "questionsAnswered" && key !== "developer")
+                    Object.entries(r.settings).filter(([key]) => key !== "password" && key !== "code" && key !== "usr" && key !== "pwd" && key !== "history" && key !== "questionsAnswered" && key !== "developer" && key !== "cache" && key !== "lastBulkLoad")
                 ))) === JSON.stringify(sortKeys(Object.fromEntries(
-                    Object.entries(storage.all()).filter(([key]) => key !== "password" && key !== "code" && key !== "usr" && key !== "pwd" && key !== "history" && key !== "questionsAnswered" && key !== "developer")
+                    Object.entries(storage.all()).filter(([key]) => key !== "password" && key !== "code" && key !== "usr" && key !== "pwd" && key !== "history" && key !== "questionsAnswered" && key !== "developer" && key !== "cache" && key !== "lastBulkLoad")
                 )));
                 console.log(`Settings is ${!settingsIsSynced ? 'not ' : ''}synced!`);
                 if (settingsIsSynced) {
@@ -262,7 +262,7 @@ export async function sync(hideWelcome = true, returnFunction = null) {
                     .then(async () => {
                         if (r.settings && Object.keys(r.settings).length > 0) {
                             Object.entries(r.settings).forEach(([key, value]) => {
-                                if (key !== "password" && key !== "code" && key !== "usr" && key !== "pwd" && key !== "history" && key !== "questionsAnswered" && key !== "developer") storage.set(key, value);
+                                if (key !== "password" && key !== "code" && key !== "usr" && key !== "pwd" && key !== "history" && key !== "questionsAnswered" && key !== "developer" && key !== "cache" && key !== "lastBulkLoad") storage.set(key, value);
                             });
                             await themes.syncTheme();
                             if (document.getElementById('checker')) document.getElementById('checker').classList = r.settings['layout'] || '';
@@ -536,7 +536,7 @@ export async function syncManual(hideWelcome = false) {
                                                 body: JSON.stringify({
                                                     "seatCode": storage.get("code"),
                                                     "password": password,
-                                                    "settings": Object.fromEntries(Object.entries(storage.all()).filter(([key]) => key !== "password" && key !== "code" && key !== "usr" && key !== "pwd" && key !== "history" && key !== "questionsAnswered" && key !== "developer")),
+                                                    "settings": Object.fromEntries(Object.entries(storage.all()).filter(([key]) => key !== "password" && key !== "code" && key !== "usr" && key !== "pwd" && key !== "history" && key !== "questionsAnswered" && key !== "developer" && key !== "cache" && key !== "lastBulkLoad")),
                                                 })
                                             })
                                                 .then(async (r) => {
@@ -583,7 +583,7 @@ export async function syncManual(hideWelcome = false) {
                                     prompt(false, () => {
                                         if (r.settings && Object.keys(r.settings).length > 0) {
                                             Object.entries(r.settings).forEach(([key, value]) => {
-                                                if (key !== "password" && key !== "code" && key !== "usr" && key !== "pwd" && key !== "history" && key !== "questionsAnswered" && key !== "developer") storage.set(key, value);
+                                                if (key !== "password" && key !== "code" && key !== "usr" && key !== "pwd" && key !== "history" && key !== "questionsAnswered" && key !== "developer" && key !== "cache" && key !== "lastBulkLoad") storage.set(key, value);
                                             });
                                             ui.toast("Settings restored successfully!", 3000, "success", "bi bi-check-circle-fill");
                                             window.location.reload();
