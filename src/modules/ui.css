@@ -334,6 +334,7 @@ div[data-color-input] > div[data-color-preview]:hover {
   opacity: 0;
   transition: opacity 0.25s ease-in-out;
   height: fit-content;
+  min-height: 65px;
   max-height: calc(100vh - 50px);
   width: calc((100vw - min(100%, 1000px)) / 2);
   min-width: min(100%, 350px);
