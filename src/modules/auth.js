@@ -213,16 +213,16 @@ export async function sync(hideWelcome = true, returnFunction = null) {
                 if (r.notifications.length > 0) ui.toast(`You have ${r.notifications.length} unread notification${(r.notifications.length === 1) ? '' : 's'}.`, 5000, 'info', 'bi bi-bell-fill');
                 const combinedSettings = sortKeys({
                     ...Object.fromEntries(
-                        Object.entries(storage.all()).filter(([key]) => key !== "password" && key !== "code" && key !== "usr" && key !== "pwd" && key !== "history" && key !== "questionsAnswered" && key !== "developer" && key !== "cache" && key !== "lastBulkLoad")
+                        Object.entries(storage.all()).filter(([key]) => key !== "password" && key !== "code" && key !== "usr" && key !== "pwd" && key !== "history" && key !== "questionsAnswered" && key !== "developer" && key !== "cache" && key !== "lastBulkLoad" && key !== "adminCache")
                     ),
                     ...Object.fromEntries(
-                        Object.entries(r.settings).filter(([key]) => key !== "password" && key !== "code" && key !== "usr" && key !== "pwd" && key !== "history" && key !== "questionsAnswered" && key !== "developer" && key !== "cache" && key !== "lastBulkLoad")
+                        Object.entries(r.settings).filter(([key]) => key !== "password" && key !== "code" && key !== "usr" && key !== "pwd" && key !== "history" && key !== "questionsAnswered" && key !== "developer" && key !== "cache" && key !== "lastBulkLoad" && key !== "adminCache")
                     ),
                 });
                 var settingsIsSynced = JSON.stringify(sortKeys(Object.fromEntries(
-                    Object.entries(r.settings).filter(([key]) => key !== "password" && key !== "code" && key !== "usr" && key !== "pwd" && key !== "history" && key !== "questionsAnswered" && key !== "developer" && key !== "cache" && key !== "lastBulkLoad")
+                    Object.entries(r.settings).filter(([key]) => key !== "password" && key !== "code" && key !== "usr" && key !== "pwd" && key !== "history" && key !== "questionsAnswered" && key !== "developer" && key !== "cache" && key !== "lastBulkLoad" && key !== "adminCache")
                 ))) === JSON.stringify(sortKeys(Object.fromEntries(
-                    Object.entries(storage.all()).filter(([key]) => key !== "password" && key !== "code" && key !== "usr" && key !== "pwd" && key !== "history" && key !== "questionsAnswered" && key !== "developer" && key !== "cache" && key !== "lastBulkLoad")
+                    Object.entries(storage.all()).filter(([key]) => key !== "password" && key !== "code" && key !== "usr" && key !== "pwd" && key !== "history" && key !== "questionsAnswered" && key !== "developer" && key !== "cache" && key !== "lastBulkLoad" && key !== "adminCache")
                 )));
                 console.log(`${settingsIsSynced ? '🟢' : '🟡'} Settings is ${!settingsIsSynced ? 'not ' : ''}synced!`);
                 if (settingsIsSynced) {
@@ -261,7 +261,7 @@ export async function sync(hideWelcome = true, returnFunction = null) {
                     .then(async () => {
                         if (r.settings && Object.keys(r.settings).length > 0) {
                             Object.entries(r.settings).forEach(([key, value]) => {
-                                if (key !== "password" && key !== "code" && key !== "usr" && key !== "pwd" && key !== "history" && key !== "questionsAnswered" && key !== "developer" && key !== "cache" && key !== "lastBulkLoad") storage.set(key, value);
+                                if (key !== "password" && key !== "code" && key !== "usr" && key !== "pwd" && key !== "history" && key !== "questionsAnswered" && key !== "developer" && key !== "cache" && key !== "lastBulkLoad" && key !== "adminCache") storage.set(key, value);
                             });
                             await themes.syncTheme();
                             if (document.getElementById('checker')) document.getElementById('checker').classList = r.settings['layout'] || '';
@@ -535,7 +535,7 @@ export async function syncManual(hideWelcome = false) {
                                                 body: JSON.stringify({
                                                     "seatCode": storage.get("code"),
                                                     "password": password,
-                                                    "settings": Object.fromEntries(Object.entries(storage.all()).filter(([key]) => key !== "password" && key !== "code" && key !== "usr" && key !== "pwd" && key !== "history" && key !== "questionsAnswered" && key !== "developer" && key !== "cache" && key !== "lastBulkLoad")),
+                                                    "settings": Object.fromEntries(Object.entries(storage.all()).filter(([key]) => key !== "password" && key !== "code" && key !== "usr" && key !== "pwd" && key !== "history" && key !== "questionsAnswered" && key !== "developer" && key !== "cache" && key !== "lastBulkLoad" && key !== "adminCache")),
                                                 })
                                             })
                                                 .then(async (r) => {
@@ -582,7 +582,7 @@ export async function syncManual(hideWelcome = false) {
                                     prompt(false, () => {
                                         if (r.settings && Object.keys(r.settings).length > 0) {
                                             Object.entries(r.settings).forEach(([key, value]) => {
-                                                if (key !== "password" && key !== "code" && key !== "usr" && key !== "pwd" && key !== "history" && key !== "questionsAnswered" && key !== "developer" && key !== "cache" && key !== "lastBulkLoad") storage.set(key, value);
+                                                if (key !== "password" && key !== "code" && key !== "usr" && key !== "pwd" && key !== "history" && key !== "questionsAnswered" && key !== "developer" && key !== "cache" && key !== "lastBulkLoad" && key !== "adminCache") storage.set(key, value);
                                             });
                                             ui.toast("Settings restored successfully!", 3000, "success", "bi bi-check-circle-fill");
                                             window.location.reload();
@@ -740,7 +740,7 @@ export async function loadAdminSettings(courses) {
         });
 }
 
-export async function bulkLoad(fields = [], usr = null, pwd = null) {
+export async function bulkLoad(fields = [], usr = null, pwd = null, isAdmin = false) {
     const startTime = Date.now();
     const bulkLoadResponse = await fetch(`${domain}/bulk_load`, {
         method: "POST",
@@ -752,7 +752,7 @@ export async function bulkLoad(fields = [], usr = null, pwd = null) {
             lastFetched: storage.get("lastBulkLoad") || null,
             syncDeleted: (() => {
                 var cacheIds = {};
-                var cache = storage.get("cache") || {};
+                var cache = storage.get(isAdmin ? "adminCache" : "cache") || {};
                 for (const table in cache) {
                     if (Array.isArray(cache[table] || [])) cacheIds[table] = (cache[table] || []).map(data => String(data.id || data.seatCode || data.period || data.key || data.username || 0));
                 }
@@ -770,7 +770,7 @@ export async function bulkLoad(fields = [], usr = null, pwd = null) {
             var mergedData;
             if (!Array.isArray(fetchedBulkLoad[table] || [])) continue;
             deletedData = fetchedBulkLoad.syncDeleted?.[table] || [];
-            existingData = (storage.get("cache")[table] || []).filter(item => {
+            existingData = (storage.get(isAdmin ? "adminCache" : "cache")[table] || []).filter(item => {
                 return !deletedData.includes(String(item.id || item.seatCode || item.period || item.key || item.username || 0));
             });
             mergedData = [...existingData];
@@ -788,7 +788,7 @@ export async function bulkLoad(fields = [], usr = null, pwd = null) {
         }
     }
     storage.set("lastBulkLoad", fetchedBulkLoad.asOf || null);
-    storage.set("cache", updatedBulkLoad || fetchedBulkLoad || {});
+    storage.set(isAdmin ? "adminCache" : "cache", updatedBulkLoad || fetchedBulkLoad || {});
     const loadTime = ((Date.now() - startTime) / 1000).toFixed(2);
     console.log(`${(loadTime < 1) ? '🟢' : ((loadTime > 5) ? '🔴' : '🟡')} Bulk load fetched in ${loadTime}s`);
 }
