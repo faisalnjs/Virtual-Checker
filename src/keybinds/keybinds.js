@@ -41,7 +41,12 @@ try {
         insertFromIndex(parseInt(e.key) - 1);
       }
     } else if (e.shiftKey) {
-      if (e.key == "R" && !anyDialogOpen && !isTyping) themes.resetTheme();
+      if (e.key == "R" && !anyDialogOpen && !isTyping) {
+        themes.resetTheme();
+        storage.delete("cache");
+        storage.delete("lastBulkLoad");
+        location.reload();
+      }
       if (e.key == "{" && islandOpen && !isTyping) moveFromCurrent(-1);
       if (e.key == "}" && islandOpen && !isTyping) moveFromCurrent(1);
     } else if (e.key == "Enter" && anyDialogOpen) {
