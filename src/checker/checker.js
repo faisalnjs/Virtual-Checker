@@ -331,7 +331,8 @@ try {
           ui.modeless(`<i class="bi bi-hourglass"></i>`, "Submitted, Awaiting Scoring");
         }
         resetInputs();
-        await fetchHistory();
+        await auth.bulkLoad(["courses", "segments", "questions", "responses"], storage.get("code"), storage.get("password"));
+        history = (storage.get("cache") || {}).responses || [];
         await updateHistory();
         await updateSegment(null, true);
         if ((typeof r.correct === 'undefined') || r.correct || (typeof r.error !== 'undefined')) {
@@ -529,7 +530,7 @@ try {
       segments.removeEventListener("change", updateSegment);
       segments.addEventListener("change", updateSegment);
       // Update history feed
-      await fetchHistory();
+      history = (storage.get("cache") || {}).responses || [];
       await updateHistory();
       await updateSegment();
       // Show clear data fix guide
@@ -550,11 +551,6 @@ try {
       ui.view("api-fail");
     }
     ui.reloadUnsavedInputs();
-  }
-
-  async function fetchHistory() {
-    await auth.bulkLoad(["courses", "segments", "questions", "responses"], storage.get("code"), storage.get("password"));
-    history = (storage.get("cache") || {}).responses || [];
   }
 
   async function updateSegment(event, sameSegment = false) {
