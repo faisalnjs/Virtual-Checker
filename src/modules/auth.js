@@ -773,7 +773,7 @@ export async function bulkLoad(fields = [], usr = null, pwd = null, isAdmin = fa
                 continue;
             }
             deletedData = fetchedBulkLoad.syncDeleted?.[table] || [];
-            existingData = (storage.get(isAdmin ? "adminCache" : "cache")[table] || []).filter(item => {
+            existingData = (storage.get(isAdmin ? "adminCache" : "cache")?.[table] || []).filter(item => {
                 return !deletedData.includes(String(item.id || item.seatCode || item.period || item.key || item.username || 0));
             });
             mergedData = [...existingData];
