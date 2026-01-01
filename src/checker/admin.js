@@ -64,95 +64,81 @@ try {
     // }
 
     function getAdminFields() {
+      // switch ((window.location.pathname.split('/admin/')[1] || '').split('?')[0].split('/')[0]) {
+      //   case 'editor':
+      //     return ["courses", "segments", "questions", "answers", "settings"];
+      //   case 'users':
+      //     return ["users", "courses", "settings"];
+      //   case 'logs':
+      //     return ["logs", "settings", "ai"];
+      //   case 'backups':
+      //     return ["backups", "settings"];
+      //   case 'passwords':
+      //     return ["passwords", "settings"];
+      //   case 'questions':
+      //     return ["questions", "answers", "segments", "courses", "settings"];
+      //   case 'responses':
+      //     return ["responses", "courses", "segments", "questions", "answers", "settings"];
+      //   case 'reports':
+      //     return ["responses", "courses", "segments", "questions", "settings"];
+      //   case 'archive':
+      //     return ["archive", "settings"];
+      //   case 'courses':
+      //     return ["courses", "segments", "rosters", "settings"];
+      //   case 'upload':
+      //     return ["courses", "settings"];
+      //   default:
+      //     return ["courses", "segments", "questions", "settings", "ai"];
+      // }
       switch ((window.location.pathname.split('/admin/')[1] || '').split('?')[0].split('/')[0]) {
-        case 'editor':
-          return ["courses", "segments", "questions", "answers", "settings"];
-        case 'users':
-          return ["users", "courses", "settings"];
-        case 'logs':
-          return ["logs", "settings", "ai"];
-        case 'backups':
-          return ["backups", "settings"];
-        case 'passwords':
-          return ["passwords", "settings"];
-        case 'questions':
-          return ["questions", "answers", "segments", "courses", "settings"];
-        case 'responses':
-          return ["responses", "courses", "segments", "questions", "answers", "settings"];
-        case 'reports':
-          return ["responses", "courses", "segments", "questions", "settings"];
         case 'archive':
-          return ["archive", "settings"];
-        case 'courses':
-          return ["courses", "segments", "rosters", "settings"];
-        case 'upload':
-          return ["courses", "settings"];
+          return ["courses", "segments", "questions", "users", "logs", "ai", "passwords", "backups", "rosters", "answers", "responses", "settings", "archive"];
         default:
-          return ["courses", "segments", "questions", "settings", "ai"];
+          return ["courses", "segments", "questions", "users", "logs", "ai", "passwords", "backups", "rosters", "answers", "responses", "settings"];
       }
     }
 
-    await fetch(domain + '/bulk_load', {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        usr: storage.get("usr"),
-        pwd: storage.get("pwd"),
-        fields: getAdminFields()
-      }),
-    })
-      .then(async (r) => {
-        if (!r.ok) {
-          try {
-            var re = await r.json();
-            if (re.error || re.message) {
-              ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
-              throw new Error(re.error || re.message);
-            } else {
-              throw new Error("API error");
-            }
-          } catch (e) {
-            throw new Error(e.message || "API error");
-          }
-        }
-        return await r.json();
-      })
-      .then(async bulkLoad => {
-        courses = bulkLoad.courses || [];
-        segments = bulkLoad.segments || [];
-        questions = bulkLoad.questions || [];
-        var users = bulkLoad.users || [];
-        logs = bulkLoad.logs || [];
-        aiInfo = bulkLoad.ai || {};
-        var passwords = bulkLoad.passwords || [];
-        var backups = bulkLoad.backups || [];
-        var archive = bulkLoad.archive || {};
-        rosters = bulkLoad.rosters || [];
-        answers = bulkLoad.answers || [];
-        responses = bulkLoad.responses || [];
-        settings = bulkLoad.settings || {};
-        if (document.querySelector('.users')) {
-          if (document.getElementById('add-user-button')) document.getElementById('add-user-button').addEventListener('click', addUserModal);
+    await auth.bulkLoad(getAdminFields(), storage.get("usr"), storage.get("pwd"), true)
+      .catch((e) => {
+        console.error(e);
+        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
+        pollingOff();
+      });
+    const bulkLoad = storage.get("adminCache") || {};
+    courses = bulkLoad.courses || [];
+    segments = bulkLoad.segments || [];
+    questions = bulkLoad.questions || [];
+    var users = bulkLoad.users || [];
+    logs = bulkLoad.logs || [];
+    aiInfo = bulkLoad.ai || {};
+    var passwords = bulkLoad.passwords || [];
+    var backups = bulkLoad.backups || [];
+    var archive = bulkLoad.archive || {};
+    rosters = bulkLoad.rosters || [];
+    answers = bulkLoad.answers || [];
+    responses = bulkLoad.responses || [];
+    settings = bulkLoad.settings || {};
+    if (document.querySelector('.users')) {
+      if (document.getElementById('add-user-button')) document.getElementById('add-user-button').addEventListener('click', addUserModal);
 
-          document.querySelector('.users').innerHTML = '<div class="row header"><span>User</span><span>Role</span><span>Partial Access</span><span>Full Access</span><span>Anonymous</span><span>Actions</span></div>';
-          if (users.length > 0) {
-            document.getElementById('no-users').setAttribute('hidden', '');
-            document.querySelector('.users').removeAttribute('hidden');
-          } else {
-            document.getElementById('no-users').removeAttribute('hidden');
-            document.querySelector('.users').setAttribute('hidden', '');
-          }
-          users = users.sort((a, b) => {
-            const roleA = a.role.toLowerCase();
-            const roleB = b.role.toLowerCase();
-            if (roleA < roleB) return -1;
-            if (roleA > roleB) return 1;
-            return a.username.localeCompare(b.username);
-          });
-          users.forEach(user => {
-            document.querySelector('.users').innerHTML += `<div class="enhanced-item" id="${user.username}">
+      document.querySelector('.users').innerHTML = '<div class="row header"><span>User</span><span>Role</span><span>Partial Access</span><span>Full Access</span><span>Anonymous</span><span>Actions</span></div>';
+      if (users.length > 0) {
+        document.getElementById('no-users').setAttribute('hidden', '');
+        document.querySelector('.users').removeAttribute('hidden');
+      } else {
+        document.getElementById('no-users').removeAttribute('hidden');
+        document.querySelector('.users').setAttribute('hidden', '');
+      }
+      users = users.sort((a, b) => {
+        const roleA = a.role.toLowerCase();
+        const roleB = b.role.toLowerCase();
+        if (roleA < roleB) return -1;
+        if (roleA > roleB) return 1;
+        return a.username.localeCompare(b.username);
+      });
+      users.forEach(user => {
+        document.querySelector('.users').innerHTML += `<div class="enhanced-item" id="${user.username}">
               <span class="username">${user.username}</span>
               <span class="role">${user.role}</span>
               <span class="partialAccessCourses">${JSON.stringify(user.main_courses)}</span>
@@ -167,40 +153,40 @@ try {
                 </button>
               </span>
             </div>`;
-          });
-          document.querySelectorAll('[data-edit-user]').forEach(button => button.addEventListener('click', editUserModal));
-          document.querySelectorAll('[data-delete-user]').forEach(button => button.addEventListener('click', deleteUserModal));
-          ui.stopLoader();
-          active = true;
-        }
-        if (document.querySelector('.logs')) {
-          if (document.getElementById('clear-logs')) document.getElementById('clear-logs').addEventListener('click', clearLogsModal);
-          if (document.getElementById("filter-logs-by-username-input")) document.getElementById("filter-logs-by-username-input").addEventListener("input", updateLogs);
-          if (document.getElementById("filter-logs-by-action-input")) document.getElementById("filter-logs-by-action-input").addEventListener("input", updateLogs);
-          if (document.getElementById("filter-logs-by-type")) document.getElementById("filter-logs-by-type").addEventListener("input", updateLogs);
-          updateLogs();
-          ui.stopLoader();
-          active = true;
-        }
-        if (document.querySelector('.ai-manager')) {
-          updateAISettings();
-          ui.stopLoader();
-          active = true;
-        }
-        if (document.querySelector('.passwords')) {
-          if (document.getElementById('remove-passwords')) document.getElementById('remove-passwords').addEventListener('click', removePasswordsModal);
+      });
+      document.querySelectorAll('[data-edit-user]').forEach(button => button.addEventListener('click', editUserModal));
+      document.querySelectorAll('[data-delete-user]').forEach(button => button.addEventListener('click', deleteUserModal));
+      ui.stopLoader();
+      active = true;
+    }
+    if (document.querySelector('.logs')) {
+      if (document.getElementById('clear-logs')) document.getElementById('clear-logs').addEventListener('click', clearLogsModal);
+      if (document.getElementById("filter-logs-by-username-input")) document.getElementById("filter-logs-by-username-input").addEventListener("input", updateLogs);
+      if (document.getElementById("filter-logs-by-action-input")) document.getElementById("filter-logs-by-action-input").addEventListener("input", updateLogs);
+      if (document.getElementById("filter-logs-by-type")) document.getElementById("filter-logs-by-type").addEventListener("input", updateLogs);
+      updateLogs();
+      ui.stopLoader();
+      active = true;
+    }
+    if (document.querySelector('.ai-manager')) {
+      updateAISettings();
+      ui.stopLoader();
+      active = true;
+    }
+    if (document.querySelector('.passwords')) {
+      if (document.getElementById('remove-passwords')) document.getElementById('remove-passwords').addEventListener('click', removePasswordsModal);
 
-          document.querySelector('.passwords').innerHTML = '<div class="row header"><span>Seat Code</span><span>Saved Settings</span><span>Actions</span></div>';
-          if (passwords.length > 0) {
-            document.getElementById('no-passwords').setAttribute('hidden', '');
-            document.querySelector('.passwords').removeAttribute('hidden');
-          } else {
-            document.getElementById('no-passwords').removeAttribute('hidden');
-            document.querySelector('.passwords').setAttribute('hidden', '');
-          }
-          passwords = passwords.sort((a, b) => a.seatCode - b.seatCode);
-          passwords.forEach(password => {
-            document.querySelector('.passwords').innerHTML += `<div class="enhanced-item" id="${password.seatCode}">
+      document.querySelector('.passwords').innerHTML = '<div class="row header"><span>Seat Code</span><span>Saved Settings</span><span>Actions</span></div>';
+      if (passwords.length > 0) {
+        document.getElementById('no-passwords').setAttribute('hidden', '');
+        document.querySelector('.passwords').removeAttribute('hidden');
+      } else {
+        document.getElementById('no-passwords').removeAttribute('hidden');
+        document.querySelector('.passwords').setAttribute('hidden', '');
+      }
+      passwords = passwords.sort((a, b) => a.seatCode - b.seatCode);
+      passwords.forEach(password => {
+        document.querySelector('.passwords').innerHTML += `<div class="enhanced-item" id="${password.seatCode}">
               <span class="seatCode">${password.seatCode}</span>
               <span class="settings">${(password.settings !== '{}') ? '<i class="bi bi-check-lg"></i>' : ''}</span>
               <span class="actions">
@@ -212,34 +198,34 @@ try {
                 </button>
               </span>
             </div>`;
-          });
-          document.querySelectorAll('[data-reset-password]').forEach(button => button.addEventListener('click', resetPasswordModal));
-          document.querySelectorAll('[data-remove-password]').forEach(button => button.addEventListener('click', removePasswordModal));
-          ui.stopLoader();
-          active = true;
+      });
+      document.querySelectorAll('[data-reset-password]').forEach(button => button.addEventListener('click', resetPasswordModal));
+      document.querySelectorAll('[data-remove-password]').forEach(button => button.addEventListener('click', removePasswordModal));
+      ui.stopLoader();
+      active = true;
+    }
+    if (document.querySelector('.backups')) {
+      if (document.getElementById('create-backup-button')) document.getElementById('create-backup-button').addEventListener('click', createBackupModal);
+      document.querySelector('.backups').innerHTML = '<div></div><div class="row header"><span>Name</span><span>Type</span><span>Modified</span><span>Size</span><span>Actions</span></div>';
+      if (backups.length > 0) {
+        document.getElementById('no-backups').setAttribute('hidden', '');
+        document.querySelector('.backups').removeAttribute('hidden');
+      } else {
+        document.getElementById('no-backups').removeAttribute('hidden');
+        document.querySelector('.backups').setAttribute('hidden', '');
+      }
+      backups = backups.sort((a, b) => new Date(b.modified) - new Date(a.modified));
+      function humanReadableFileSize(size) {
+        const units = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+        let unitIndex = 0;
+        while (size >= 1024 && unitIndex < units.length - 1) {
+          size /= 1024;
+          unitIndex++;
         }
-        if (document.querySelector('.backups')) {
-          if (document.getElementById('create-backup-button')) document.getElementById('create-backup-button').addEventListener('click', createBackupModal);
-          document.querySelector('.backups').innerHTML = '<div></div><div class="row header"><span>Name</span><span>Type</span><span>Modified</span><span>Size</span><span>Actions</span></div>';
-          if (backups.length > 0) {
-            document.getElementById('no-backups').setAttribute('hidden', '');
-            document.querySelector('.backups').removeAttribute('hidden');
-          } else {
-            document.getElementById('no-backups').removeAttribute('hidden');
-            document.querySelector('.backups').setAttribute('hidden', '');
-          }
-          backups = backups.sort((a, b) => new Date(b.modified) - new Date(a.modified));
-          function humanReadableFileSize(size) {
-            const units = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
-            let unitIndex = 0;
-            while (size >= 1024 && unitIndex < units.length - 1) {
-              size /= 1024;
-              unitIndex++;
-            }
-            return `${size.toFixed(2)} ${units[unitIndex]}`;
-          }
-          backups.forEach(backup => {
-            document.querySelector('.backups').innerHTML += `<div class="enhanced-item" id="${backup.full_url}">
+        return `${size.toFixed(2)} ${units[unitIndex]}`;
+      }
+      backups.forEach(backup => {
+        document.querySelector('.backups').innerHTML += `<div class="enhanced-item" id="${backup.full_url}">
               <span class="file_name">${backup.file_name.split('.')[0]}</span>
               <span class="type"><code>${backup.file_name.split('.')[1].toUpperCase()}</code></span>
               <span class="modified">${time.unixToString(backup.modified)}</span>
@@ -253,147 +239,140 @@ try {
                 </button>
               </span>
             </div>`;
-          });
-          document.querySelector('.backups').innerHTML += `<button id="delete-backups-button">Delete All Backups</button>`;
-          document.querySelectorAll('[data-download-backup]').forEach(button => button.addEventListener('click', downloadBackupModal));
-          document.querySelectorAll('[data-delete-backup]').forEach(button => button.addEventListener('click', deleteBackupModal));
-          document.getElementById('delete-backups-button').addEventListener('click', deleteBackupsModal);
-          ui.stopLoader();
-          active = true;
-        }
-        if (document.querySelector('.archives')) {
-          archiveType("courses");
-          document.getElementById("archive-type-selector").addEventListener("input", (e) => {
-            const mode = e.detail;
-            archiveType(mode);
-          });
-          courses = archive.courses;
-          segments = archive.segments;
-          questions = archive.questions;
-          answers = archive.answers;
-          responses = archive.responses;
-          updateCourses();
-          updateSegments();
-          updateQuestions();
-          updateResponses();
-          document.querySelector('#archive-type-selector [aria-selected="true"]')?.click();
-          ui.stopLoader();
-          active = true;
-        }
-        await auth.loadAdminSettings(courses);
-        if (document.querySelector('.users')) {
-          ui.reloadUnsavedInputs();
-          return;
-        }
-        if (document.getElementById("course-period-input") && !loadedSegmentEditor && !loadedSegmentCreator && !noReloadCourse) {
-          document.getElementById("course-period-input").innerHTML = "";
-          courses.sort((a, b) => a.id - b.id).forEach(course => {
-            var coursePeriods = JSON.parse(course.periods);
-            const option = document.createElement("option");
-            option.value = course.id;
-            option.innerHTML = document.getElementById("course-input") ? course.name : `${course.name}${(coursePeriods.length > 0) ? ` (Period${(coursePeriods.length > 1) ? 's' : ''} ${coursePeriods.join(', ')})` : ''}`;
-            document.getElementById("course-period-input").appendChild(option);
-          });
-          const course = courses.find(c => String(c.id) === document.getElementById("course-period-input").value);
-          if (document.getElementById("course-input") && course) document.getElementById("course-input").value = course.name;
-        }
-        if (document.getElementById("export-report-course")) updateExportReportCourses();
-        if (document.getElementById("course-period-input")) document.getElementById("course-period-input").addEventListener("change", updateResponses);
-        if (document.getElementById("filter-segment-input")) document.getElementById("filter-segment-input").addEventListener("change", updateResponses);
-        if (document.getElementById("sort-question-input")) document.getElementById("sort-question-input").addEventListener("input", updateResponses);
-        if (document.getElementById("sort-seat-input")) document.getElementById("sort-seat-input").addEventListener("input", updateResponses);
-        if (document.getElementById("course-period-input")) document.getElementById("course-period-input").addEventListener("change", updateSegments);
-        if (document.getElementById("filter-segment-input")) document.getElementById("filter-segment-input").addEventListener("change", updateSegments);
-        if (document.getElementById("sort-question-input")) document.getElementById("sort-question-input").addEventListener("input", updateSegments);
-        if (document.getElementById("sort-seat-input")) document.getElementById("sort-seat-input").addEventListener("input", updateSegments);
-        if (document.getElementById("course-period-input")) document.getElementById("course-period-input").addEventListener("change", updateQuestionReports);
-        if (document.getElementById("filter-segment-input")) document.getElementById("filter-segment-input").addEventListener("change", updateQuestionReports);
-        if (document.getElementById("sort-question-input")) document.getElementById("sort-question-input").addEventListener("input", updateQuestionReports);
-        if (document.getElementById("sort-seat-input")) document.getElementById("sort-seat-input").addEventListener("input", updateQuestionReports);
-        if (document.getElementById("filter-segment-input")) document.getElementById("filter-segment-input").addEventListener("change", updateQuestions);
-        if (document.getElementById("course-period-input")) document.getElementById("course-period-input").addEventListener("input", updateCourses);
-        if (document.getElementById("export-responses-course")) updateExportResponsesCourses();
-        if (document.querySelector(".course-reorder .reorder") && !loadedSegmentEditor && !loadedSegmentCreator && !noReloadCourse) {
-          document.querySelector(".course-reorder .reorder").innerHTML = "";
-          for (let i = 1; i < 10; i++) {
-            const elem = document.createElement("div");
-            elem.classList = "button-grid inputs";
-            elem.style = "flex-wrap: nowrap !important;";
-            var periodCourse = courses.find(course => JSON.parse(course.periods).includes(i))?.id;
-            var coursesSelectorString = "";
-            courses.sort((a, b) => a.id - b.id).forEach(course => {
-              coursesSelectorString += `<option value="${course.id}" ${(periodCourse === course.id) ? 'selected' : ''}>${course.name}</option>`;
-            });
-            elem.innerHTML = `<input type="text" autocomplete="off" id="period-${i}" class="small" value="Period ${i}" disabled /><select id="periodCourseSelector" value="${(periodCourse === undefined) ? '' : periodCourse}"><option value="" ${(periodCourse === undefined) ? 'selected' : ''}></option>${coursesSelectorString}</select>${rosters.find(roster => String(roster.period) === String(i)) ? '<button class="fit" style="min-width: 126px !important;" data-view-roster>View Roster</button>' : '<button class="fit" style="min-width: 126px !important;" data-upload-roster>Upload Roster</button>'}`;
-            document.querySelector(".course-reorder .reorder").appendChild(elem);
-          }
-          document.querySelectorAll("[data-view-roster]").forEach(a => a.addEventListener("click", viewRoster));
-          document.querySelectorAll("[data-upload-roster]").forEach(a => a.addEventListener("click", uploadRoster));
-        }
-        if (document.getElementById("course-period-input") && !loadedSegmentEditor && !loadedSegmentCreator && !noReloadCourse) updateSegments();
-        if (document.getElementById("filter-segment-input")) updateCourses();
-        if (document.getElementById("speed-mode-segments")) updateSpeedModeSegments();
-        if (window.location.pathname.split('/admin/')[1] === 'editor') loadSegmentEditor();
-        if (document.getElementById("add-question-input")) {
-          document.getElementById("add-question-input").innerHTML = '';
-          questions.sort((a, b) => a.id - b.id).forEach(question => {
-            if (document.querySelector(`#question-list .question:has(input[id="${question.id}"])`)) return;
-            const option = document.createElement("option");
-            option.value = question.id;
-            option.innerHTML = `ID ${question.id} #${question.number} - ${question.question}`;
-            document.getElementById("add-question-input").appendChild(option);
-          });
-          if (questions.length === 0) document.getElementById("add-existing-question-button").disabled = true;
-        }
-        if (document.getElementById("speed-mode-starting-question")) updateSpeedModeStartingQuestion();
-        if (document.querySelector('.questions.section')) {
-          await updateQuestions();
-          if (params?.question) toggleQuestion(null, params.question);
-        }
-        if (document.getElementById("course-period-input") && !loadedSegmentEditor && !loadedSegmentCreator && !noReloadCourse) {
-          document.getElementById("course-period-input").value = (storage.get('period') && courses.find(c => String(c.id) === String(storage.get('period')))) ? storage.get('period') : (((ui.defaultCourse !== null) && courses.find(c => String(c.id) === String(ui.defaultCourse))) ? ui.defaultCourse : courses.find(c => responses.some(r => JSON.parse(c.periods).includes(Number(String(r.seatCode)[0])))) ? courses.find(c => responses.some(r => JSON.parse(c.periods).includes(Number(String(r.seatCode)[0])))).id : courses.sort((a, b) => a.id - b.id)[0]?.id);
-          if (document.getElementById("export-report-course")) document.getElementById("export-report-course").value = (storage.get('period') && courses.find(c => String(c.id) === String(storage.get('period')))) ? storage.get('period') : (((ui.defaultCourse !== null) && courses.find(c => String(c.id) === String(ui.defaultCourse))) ? ui.defaultCourse : courses.find(c => responses.some(r => JSON.parse(c.periods).includes(Number(String(r.seatCode)[0])))) ? courses.find(c => responses.some(r => JSON.parse(c.periods).includes(Number(String(r.seatCode)[0])))).id : courses.sort((a, b) => a.id - b.id)[0]?.id);
-        }
-        if ((document.getElementById("course-period-input") && !loadedSegmentEditor && !loadedSegmentCreator && !noReloadCourse) || noReloadCourse) await updateResponses();
-        if (document.querySelector('.segment-reports')) updateSegments();
-        if (document.querySelector('.question-reports')) updateQuestionReports();
-        active = true;
-        ui.stopLoader();
-        if (!polling) ui.toast("Data restored.", 1000, "info", "bi bi-cloud-arrow-down");
-        if (polling && (expandedReports.length > 0)) {
-          expandedReports.forEach(er => {
-            if (document.getElementById(er)) {
-              document.getElementById(er).classList.remove('active');
-              setTimeout(() => {
-                document.getElementById(er).click();
-              }, 1000);
-            }
-          });
-        }
-        if (document.getElementById("course-period-input") && !loadedSegmentEditor && !loadedSegmentCreator && !noReloadCourse) {
-          document.querySelectorAll('[data-remove-segment-input]').forEach(a => a.removeEventListener('click', removeSegment));
-          document.querySelectorAll('[data-remove-segment-input]').forEach(a => a.addEventListener('click', removeSegment));
-          if (document.getElementById("course-input")) document.getElementById("course-input").value = courses.find(c => String(c.id) === document.getElementById("course-period-input").value).name;
-          updateSegments();
-        }
-        if (document.getElementById("sort-segments-types")) document.getElementById("sort-segments-types").value = await getSettings('sort-segments');
-        if (document.getElementById("filter-segment-input") && document.getElementById("sort-question-input")) document.getElementById("filter-segment-input").addEventListener("change", () => {
-          document.getElementById("sort-question-input").value = "";
-          const event = new Event('input', { bubbles: true });
-          document.getElementById("sort-question-input").dispatchEvent(event);
-        });
-        if (document.getElementById("course-period-input")) document.getElementById("course-period-input").addEventListener("change", () => {
-          storage.set('period', document.getElementById("course-period-input").value);
-          if (document.getElementById("export-report-course")) document.getElementById("export-report-course").value = document.getElementById("course-period-input").value;
-        });
-        ui.reloadUnsavedInputs();
-      })
-      .catch((e) => {
-        console.error(e);
-        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
-        if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
-        pollingOff();
       });
+      document.querySelector('.backups').innerHTML += `<button id="delete-backups-button">Delete All Backups</button>`;
+      document.querySelectorAll('[data-download-backup]').forEach(button => button.addEventListener('click', downloadBackupModal));
+      document.querySelectorAll('[data-delete-backup]').forEach(button => button.addEventListener('click', deleteBackupModal));
+      document.getElementById('delete-backups-button').addEventListener('click', deleteBackupsModal);
+      ui.stopLoader();
+      active = true;
+    }
+    if (document.querySelector('.archives')) {
+      archiveType("courses");
+      document.getElementById("archive-type-selector").addEventListener("input", (e) => {
+        const mode = e.detail;
+        archiveType(mode);
+      });
+      courses = archive.courses;
+      segments = archive.segments;
+      questions = archive.questions;
+      answers = archive.answers;
+      responses = archive.responses;
+      updateCourses();
+      updateSegments();
+      updateQuestions();
+      updateResponses();
+      document.querySelector('#archive-type-selector [aria-selected="true"]')?.click();
+      ui.stopLoader();
+      active = true;
+    }
+    await auth.loadAdminSettings(courses);
+    if (document.querySelector('.users')) {
+      ui.reloadUnsavedInputs();
+      return;
+    }
+    if (document.getElementById("course-period-input") && !loadedSegmentEditor && !loadedSegmentCreator && !noReloadCourse) {
+      document.getElementById("course-period-input").innerHTML = "";
+      courses.sort((a, b) => a.id - b.id).forEach(course => {
+        var coursePeriods = JSON.parse(course.periods);
+        const option = document.createElement("option");
+        option.value = course.id;
+        option.innerHTML = document.getElementById("course-input") ? course.name : `${course.name}${(coursePeriods.length > 0) ? ` (Period${(coursePeriods.length > 1) ? 's' : ''} ${coursePeriods.join(', ')})` : ''}`;
+        document.getElementById("course-period-input").appendChild(option);
+      });
+      const course = courses.find(c => String(c.id) === document.getElementById("course-period-input").value);
+      if (document.getElementById("course-input") && course) document.getElementById("course-input").value = course.name;
+    }
+    if (document.getElementById("export-report-course")) updateExportReportCourses();
+    if (document.getElementById("course-period-input")) document.getElementById("course-period-input").addEventListener("change", updateResponses);
+    if (document.getElementById("filter-segment-input")) document.getElementById("filter-segment-input").addEventListener("change", updateResponses);
+    if (document.getElementById("sort-question-input")) document.getElementById("sort-question-input").addEventListener("input", updateResponses);
+    if (document.getElementById("sort-seat-input")) document.getElementById("sort-seat-input").addEventListener("input", updateResponses);
+    if (document.getElementById("course-period-input")) document.getElementById("course-period-input").addEventListener("change", updateSegments);
+    if (document.getElementById("filter-segment-input")) document.getElementById("filter-segment-input").addEventListener("change", updateSegments);
+    if (document.getElementById("sort-question-input")) document.getElementById("sort-question-input").addEventListener("input", updateSegments);
+    if (document.getElementById("sort-seat-input")) document.getElementById("sort-seat-input").addEventListener("input", updateSegments);
+    if (document.getElementById("course-period-input")) document.getElementById("course-period-input").addEventListener("change", updateQuestionReports);
+    if (document.getElementById("filter-segment-input")) document.getElementById("filter-segment-input").addEventListener("change", updateQuestionReports);
+    if (document.getElementById("sort-question-input")) document.getElementById("sort-question-input").addEventListener("input", updateQuestionReports);
+    if (document.getElementById("sort-seat-input")) document.getElementById("sort-seat-input").addEventListener("input", updateQuestionReports);
+    if (document.getElementById("filter-segment-input")) document.getElementById("filter-segment-input").addEventListener("change", updateQuestions);
+    if (document.getElementById("course-period-input")) document.getElementById("course-period-input").addEventListener("input", updateCourses);
+    if (document.getElementById("export-responses-course")) updateExportResponsesCourses();
+    if (document.querySelector(".course-reorder .reorder") && !loadedSegmentEditor && !loadedSegmentCreator && !noReloadCourse) {
+      document.querySelector(".course-reorder .reorder").innerHTML = "";
+      for (let i = 1; i < 10; i++) {
+        const elem = document.createElement("div");
+        elem.classList = "button-grid inputs";
+        elem.style = "flex-wrap: nowrap !important;";
+        var periodCourse = courses.find(course => JSON.parse(course.periods).includes(i))?.id;
+        var coursesSelectorString = "";
+        courses.sort((a, b) => a.id - b.id).forEach(course => {
+          coursesSelectorString += `<option value="${course.id}" ${(periodCourse === course.id) ? 'selected' : ''}>${course.name}</option>`;
+        });
+        elem.innerHTML = `<input type="text" autocomplete="off" id="period-${i}" class="small" value="Period ${i}" disabled /><select id="periodCourseSelector" value="${(periodCourse === undefined) ? '' : periodCourse}"><option value="" ${(periodCourse === undefined) ? 'selected' : ''}></option>${coursesSelectorString}</select>${rosters.find(roster => String(roster.period) === String(i)) ? '<button class="fit" style="min-width: 126px !important;" data-view-roster>View Roster</button>' : '<button class="fit" style="min-width: 126px !important;" data-upload-roster>Upload Roster</button>'}`;
+        document.querySelector(".course-reorder .reorder").appendChild(elem);
+      }
+      document.querySelectorAll("[data-view-roster]").forEach(a => a.addEventListener("click", viewRoster));
+      document.querySelectorAll("[data-upload-roster]").forEach(a => a.addEventListener("click", uploadRoster));
+    }
+    if (document.getElementById("course-period-input") && !loadedSegmentEditor && !loadedSegmentCreator && !noReloadCourse) updateSegments();
+    if (document.getElementById("filter-segment-input")) updateCourses();
+    if (document.getElementById("speed-mode-segments")) updateSpeedModeSegments();
+    if (window.location.pathname.split('/admin/')[1] === 'editor') loadSegmentEditor();
+    if (document.getElementById("add-question-input")) {
+      document.getElementById("add-question-input").innerHTML = '';
+      questions.sort((a, b) => a.id - b.id).forEach(question => {
+        if (document.querySelector(`#question-list .question:has(input[id="${question.id}"])`)) return;
+        const option = document.createElement("option");
+        option.value = question.id;
+        option.innerHTML = `ID ${question.id} #${question.number} - ${question.question}`;
+        document.getElementById("add-question-input").appendChild(option);
+      });
+      if (questions.length === 0) document.getElementById("add-existing-question-button").disabled = true;
+    }
+    if (document.getElementById("speed-mode-starting-question")) updateSpeedModeStartingQuestion();
+    if (document.querySelector('.questions.section')) {
+      await updateQuestions();
+      if (params?.question) toggleQuestion(null, params.question);
+    }
+    if (document.getElementById("course-period-input") && !loadedSegmentEditor && !loadedSegmentCreator && !noReloadCourse) {
+      document.getElementById("course-period-input").value = (storage.get('period') && courses.find(c => String(c.id) === String(storage.get('period')))) ? storage.get('period') : (((ui.defaultCourse !== null) && courses.find(c => String(c.id) === String(ui.defaultCourse))) ? ui.defaultCourse : courses.find(c => responses.some(r => JSON.parse(c.periods).includes(Number(String(r.seatCode)[0])))) ? courses.find(c => responses.some(r => JSON.parse(c.periods).includes(Number(String(r.seatCode)[0])))).id : courses.sort((a, b) => a.id - b.id)[0]?.id);
+      if (document.getElementById("export-report-course")) document.getElementById("export-report-course").value = (storage.get('period') && courses.find(c => String(c.id) === String(storage.get('period')))) ? storage.get('period') : (((ui.defaultCourse !== null) && courses.find(c => String(c.id) === String(ui.defaultCourse))) ? ui.defaultCourse : courses.find(c => responses.some(r => JSON.parse(c.periods).includes(Number(String(r.seatCode)[0])))) ? courses.find(c => responses.some(r => JSON.parse(c.periods).includes(Number(String(r.seatCode)[0])))).id : courses.sort((a, b) => a.id - b.id)[0]?.id);
+    }
+    if ((document.getElementById("course-period-input") && !loadedSegmentEditor && !loadedSegmentCreator && !noReloadCourse) || noReloadCourse) await updateResponses();
+    if (document.querySelector('.segment-reports')) updateSegments();
+    if (document.querySelector('.question-reports')) updateQuestionReports();
+    active = true;
+    ui.stopLoader();
+    if (!polling) ui.toast("Data restored.", 1000, "info", "bi bi-cloud-arrow-down");
+    if (polling && (expandedReports.length > 0)) {
+      expandedReports.forEach(er => {
+        if (document.getElementById(er)) {
+          document.getElementById(er).classList.remove('active');
+          setTimeout(() => {
+            document.getElementById(er).click();
+          }, 1000);
+        }
+      });
+    }
+    if (document.getElementById("course-period-input") && !loadedSegmentEditor && !loadedSegmentCreator && !noReloadCourse) {
+      document.querySelectorAll('[data-remove-segment-input]').forEach(a => a.removeEventListener('click', removeSegment));
+      document.querySelectorAll('[data-remove-segment-input]').forEach(a => a.addEventListener('click', removeSegment));
+      if (document.getElementById("course-input")) document.getElementById("course-input").value = courses.find(c => String(c.id) === document.getElementById("course-period-input").value).name;
+      updateSegments();
+    }
+    if (document.getElementById("sort-segments-types")) document.getElementById("sort-segments-types").value = await getSettings('sort-segments');
+    if (document.getElementById("filter-segment-input") && document.getElementById("sort-question-input")) document.getElementById("filter-segment-input").addEventListener("change", () => {
+      document.getElementById("sort-question-input").value = "";
+      const event = new Event('input', { bubbles: true });
+      document.getElementById("sort-question-input").dispatchEvent(event);
+    });
+    if (document.getElementById("course-period-input")) document.getElementById("course-period-input").addEventListener("change", () => {
+      storage.set('period', document.getElementById("course-period-input").value);
+      if (document.getElementById("export-report-course")) document.getElementById("export-report-course").value = document.getElementById("course-period-input").value;
+    });
+    ui.reloadUnsavedInputs();
   }
 
   init();
