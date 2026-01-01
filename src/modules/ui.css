@@ -361,6 +361,10 @@ div[data-color-input] > div[data-color-preview]:hover {
   right: 20px;
 }
 
+.island:not(:has(h4))::before {
+  content: "Not cached yet, try again soon";
+}
+
 .island.visible {
   opacity: 0.5;
   transition: opacity 0.25s ease-in-out;
