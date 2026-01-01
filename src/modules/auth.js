@@ -227,7 +227,6 @@ export async function sync(hideWelcome = true, returnFunction = null) {
                 console.log(`${settingsIsSynced ? '🟢' : '🟡'} Settings is ${!settingsIsSynced ? 'not ' : ''}synced!`);
                 if (settingsIsSynced) {
                     if (document.getElementById('checker')) document.getElementById('checker').classList = r.settings['layout'] || '';
-                    ui.stopLoader();
                     if (returnFunction) returnFunction();
                     return;
                 }
@@ -742,6 +741,7 @@ export async function loadAdminSettings(courses) {
 }
 
 export async function bulkLoad(fields = [], usr = null, pwd = null) {
+    ui.startLoader();
     const startTime = Date.now();
     const bulkLoadResponse = await fetch(`${domain}/bulk_load`, {
         method: "POST",
@@ -786,4 +786,5 @@ export async function bulkLoad(fields = [], usr = null, pwd = null) {
     storage.set("cache", updatedBulkLoad || fetchedBulkLoad || {});
     const loadTime = ((Date.now() - startTime) / 1000).toFixed(2);
     console.log(`${(loadTime < 1) ? '🟢' : ((loadTime > 5) ? '🔴' : '🟡')} Bulk load fetched in ${loadTime}s`);
+    ui.stopLoader();
 }
