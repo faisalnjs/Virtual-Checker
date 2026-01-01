@@ -740,20 +740,20 @@ export async function loadAdminSettings(courses) {
         });
 }
 
-export async function bulkLoad(fields = [], usr = null, pwd = null, isAdmin = false) {
+export async function bulkLoad(fields = [], usr = null, pwd = null, isAdmin = false, isTA = false) {
     const startTime = Date.now();
     await storage.idbReady;
-    const bulkLoadResponse = await fetch(`${domain}/bulk_load`, {
+    const bulkLoadResponse = await fetch(`${domain}/bulk_load${isTA ? '?ta=true' : ''}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
             usr,
             pwd,
             fields,
-            lastFetched: storage.get(isAdmin ? "lastAdminBulkLoad" : "lastBulkLoad") || null,
+            lastFetched: storage.get((isAdmin || isTA) ? "lastAdminBulkLoad" : "lastBulkLoad") || null,
             syncDeleted: (async () => {
                 var cacheIds = {};
-                var cache = (await storage.idbGet(isAdmin ? "adminCache" : "cache")) || storage.get(isAdmin ? "adminCache" : "cache") || {};
+                var cache = (await storage.idbGet((isAdmin || isTA) ? "adminCache" : "cache")) || storage.get((isAdmin || isTA) ? "adminCache" : "cache") || {};
                 for (const table in cache) {
                     if (Array.isArray(cache[table] || [])) cacheIds[table] = (cache[table] || []).map(data => String(data.id || data.seatCode || data.period || data.key || data.username || 0));
                 }
@@ -765,7 +765,7 @@ export async function bulkLoad(fields = [], usr = null, pwd = null, isAdmin = fa
     var updatedBulkLoad = {};
     for (const table in fetchedBulkLoad) {
         if (table === 'asOf' || table === 'syncDeleted') continue;
-        if (storage.get(isAdmin ? "lastAdminBulkLoad" : "lastBulkLoad") || null) {
+        if (storage.get((isAdmin || isTA) ? "lastAdminBulkLoad" : "lastBulkLoad") || null) {
             var deletedData;
             var existingData;
             var mergedData;
@@ -774,7 +774,7 @@ export async function bulkLoad(fields = [], usr = null, pwd = null, isAdmin = fa
                 continue;
             }
             deletedData = fetchedBulkLoad.syncDeleted?.[table] || [];
-            existingData = (((await storage.idbGet(isAdmin ? "adminCache" : "cache")) || storage.get(isAdmin ? "adminCache" : "cache") || {})?.[table] || []).filter(item => {
+            existingData = (((await storage.idbGet((isAdmin || isTA) ? "adminCache" : "cache")) || storage.get((isAdmin || isTA) ? "adminCache" : "cache") || {})?.[table] || []).filter(item => {
                 return !deletedData.includes(String(item.id || item.seatCode || item.period || item.key || item.username || 0));
             });
             mergedData = [...existingData];
@@ -791,12 +791,11 @@ export async function bulkLoad(fields = [], usr = null, pwd = null, isAdmin = fa
             updatedBulkLoad[table] = fetchedBulkLoad[table];
         }
     }
-    storage.set(isAdmin ? "lastAdminBulkLoad" : "lastBulkLoad", fetchedBulkLoad.asOf || null);
+    storage.set((isAdmin || isTA) ? "lastAdminBulkLoad" : "lastBulkLoad", fetchedBulkLoad.asOf || null);
     try {
-        console.log('Setting', updatedBulkLoad || fetchedBulkLoad || {})
-        await storage.idbSet(isAdmin ? "adminCache" : "cache", updatedBulkLoad || fetchedBulkLoad || {});
+        await storage.idbSet((isAdmin || isTA) ? "adminCache" : "cache", updatedBulkLoad || fetchedBulkLoad || {});
     } catch (e) {
-        storage.set(isAdmin ? "adminCache" : "cache", updatedBulkLoad || fetchedBulkLoad || {});
+        storage.set((isAdmin || isTA) ? "adminCache" : "cache", updatedBulkLoad || fetchedBulkLoad || {});
     }
     const loadTime = ((Date.now() - startTime) / 1000).toFixed(2);
     console.log(`${(loadTime < 1) ? '🟢' : ((loadTime > 5) ? '🔴' : '🟡')} Bulk load fetched in ${loadTime}s`);
