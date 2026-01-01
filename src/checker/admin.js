@@ -2519,7 +2519,7 @@ try {
         </div>
         <div class="input-group">
           <div class="space" id="response-container">
-            <textarea rows="1" id="response-response-input" value="${escapeHTML(response.response) || ''}" disabled>${escapeHTML(response.response) || ''}</textarea>
+            <textarea rows="1" id="response-response-input" value="${escapeHTML(response.response) || ''}" style="width: -webkit-fill-available;" disabled>${escapeHTML(response.response) || ''}</textarea>
           </div>
         </div>
         <div class="input-group vsmedium">
