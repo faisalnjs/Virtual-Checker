@@ -754,7 +754,9 @@ export async function bulkLoad(fields = [], usr = null, pwd = null) {
             syncDeleted: (() => {
                 var cacheIds = {};
                 var cache = storage.get("cache") || {};
-                for (const table in cache) cacheIds[table] = (cache[table] || []).map(data => String(data.id || data.seatCode || data.period || data.key || data.username || 0));
+                for (const table in cache) {
+                    if (Array.isArray(cache[table] || [])) cacheIds[table] = (cache[table] || []).map(data => String(data.id || data.seatCode || data.period || data.key || data.username || 0));
+                }
                 return cacheIds;
             })(),
         }),
@@ -764,11 +766,15 @@ export async function bulkLoad(fields = [], usr = null, pwd = null) {
     for (const table in fetchedBulkLoad) {
         if (table === 'asOf' || table === 'syncDeleted') continue;
         if (storage.get("lastBulkLoad") || null) {
-            var deletedData = fetchedBulkLoad.syncDeleted?.[table] || [];
-            var existingData = (storage.get("cache")[table] || []).filter(item => {
+            var deletedData;
+            var existingData;
+            var mergedData;
+            if (!Array.isArray(fetchedBulkLoad[table] || [])) return;
+            deletedData = fetchedBulkLoad.syncDeleted?.[table] || [];
+            existingData = (storage.get("cache")[table] || []).filter(item => {
                 return !deletedData.includes(String(item.id || item.seatCode || item.period || item.key || item.username || 0));
             });
-            var mergedData = [...existingData];
+            mergedData = [...existingData];
             (fetchedBulkLoad[table] || []).forEach(newItem => {
                 const index = mergedData.findIndex(item => String(item.id || item.seatCode || item.period || item.key || item.username || 0) === String(newItem.id || newItem.seatCode || newItem.period || newItem.key || newItem.username || 0));
                 if (index !== -1) {
