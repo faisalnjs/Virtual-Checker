@@ -768,7 +768,10 @@ export async function bulkLoad(fields = [], usr = null, pwd = null, isAdmin = fa
             var deletedData;
             var existingData;
             var mergedData;
-            if (!Array.isArray(fetchedBulkLoad[table] || [])) continue;
+            if (!Array.isArray(fetchedBulkLoad[table] || [])) {
+                updatedBulkLoad[table] = fetchedBulkLoad[table];
+                continue;
+            }
             deletedData = fetchedBulkLoad.syncDeleted?.[table] || [];
             existingData = (storage.get(isAdmin ? "adminCache" : "cache")[table] || []).filter(item => {
                 return !deletedData.includes(String(item.id || item.seatCode || item.period || item.key || item.username || 0));
