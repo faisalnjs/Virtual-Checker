@@ -45,6 +45,8 @@ try {
         themes.resetTheme();
         storage.delete("cache");
         storage.delete("lastBulkLoad");
+        storage.delete("adminCache");
+        storage.delete("lastAdminBulkLoad");
         location.reload();
       }
       if (e.key == "{" && islandOpen && !isTyping) moveFromCurrent(-1);
