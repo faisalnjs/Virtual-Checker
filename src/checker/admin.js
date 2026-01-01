@@ -256,7 +256,6 @@ try {
       courses = archive.courses;
       segments = archive.segments;
       questions = archive.questions;
-      answers = archive.answers;
       responses = archive.responses;
       updateCourses();
       updateSegments();
