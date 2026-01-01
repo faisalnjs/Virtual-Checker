@@ -1237,6 +1237,10 @@ try {
       updatedInfo.questions = editedQuestions;
       updatedInfo.deleted_questions = questionsToDelete;
       updatedInfo.edited_only = true;
+      if (!editedQuestions.length && !questionsToDelete.length) {
+        if (!hideResult) ui.toast("No changes to save.", 5000, "error", "bi bi-exclamation-triangle-fill");
+        return;
+      }
     } else if (document.querySelector('.ai-manager')) {
       updatedInfo = {
         ai: {
