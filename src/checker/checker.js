@@ -333,7 +333,9 @@ try {
         }
         resetInputs();
         await auth.bulkLoad(["courses", "segments", "questions", "responses"], storage.get("code"), storage.get("password"));
-        history = (storage.get("cache") || {}).responses || [];
+        await storage.idbReady;
+        const _cache = (await storage.idbGet('cache')) || storage.get('cache') || {};
+        history = (_cache).responses || [];
         await updateHistory();
         await updateSegment(null, true);
         if ((typeof r.correct === 'undefined') || r.correct || (typeof r.error !== 'undefined')) {
@@ -438,7 +440,8 @@ try {
     const periodRange = getExtendedPeriodRange(null, Number(code.slice(0, 1)));
     try {
       await auth.bulkLoad(["courses", "segments", "questions", "responses"], storage.get("code"), storage.get("password"));
-      const bulkLoad = storage.get("cache") || {};
+      await storage.idbReady;
+      const bulkLoad = (await storage.idbGet('cache')) || storage.get("cache") || {};
       courses = bulkLoad.courses;
       segmentsArray = bulkLoad.segments;
       questionsArray = bulkLoad.questions;
@@ -531,7 +534,8 @@ try {
       segments.removeEventListener("change", updateSegment);
       segments.addEventListener("change", updateSegment);
       // Update history feed
-      history = (storage.get("cache") || {}).responses || [];
+      await storage.idbReady;
+      history = ((await storage.idbGet('cache')) || storage.get("cache") || {}).responses || [];
       await updateHistory();
       await updateSegment();
       // Show clear data fix guide

@@ -5,7 +5,7 @@ import { insertFromIndex } from "/src/symbols/symbols.js";
 import { moveFromCurrent, renderExtras } from "/src/modules/island.js";
 
 try {
-  document.addEventListener("keydown", (e) => {
+  document.addEventListener("keydown", async (e) => {
     const anyDialogOpen = Array.from(document.querySelectorAll("dialog")).some(
       (dialog) => dialog.open,
     );
@@ -43,9 +43,10 @@ try {
     } else if (e.shiftKey) {
       if (e.key == "R" && !anyDialogOpen && !isTyping) {
         themes.resetTheme();
-        storage.delete("cache");
+        await storage.idbReady;
+        storage.idbDelete("cache").catch((e) => console.error('IDB delete failed', e));
         storage.delete("lastBulkLoad");
-        storage.delete("adminCache");
+        storage.idbDelete("adminCache").catch((e) => console.error('IDB delete failed', e));
         storage.delete("lastAdminBulkLoad");
         location.reload();
       }

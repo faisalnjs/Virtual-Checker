@@ -105,7 +105,8 @@ try {
         if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
         pollingOff();
       });
-    const bulkLoad = storage.get("adminCache") || {};
+    await storage.idbReady;
+    const bulkLoad = (await storage.idbGet('adminCache')) || storage.get("adminCache") || {};
     courses = bulkLoad.courses || [];
     segments = bulkLoad.segments || [];
     questions = bulkLoad.questions || [];

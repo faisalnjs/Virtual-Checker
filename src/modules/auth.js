@@ -742,6 +742,7 @@ export async function loadAdminSettings(courses) {
 
 export async function bulkLoad(fields = [], usr = null, pwd = null, isAdmin = false) {
     const startTime = Date.now();
+    await storage.idbReady;
     const bulkLoadResponse = await fetch(`${domain}/bulk_load`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -750,9 +751,9 @@ export async function bulkLoad(fields = [], usr = null, pwd = null, isAdmin = fa
             pwd,
             fields,
             lastFetched: storage.get(isAdmin ? "lastAdminBulkLoad" : "lastBulkLoad") || null,
-            syncDeleted: (() => {
+            syncDeleted: (async () => {
                 var cacheIds = {};
-                var cache = storage.get(isAdmin ? "adminCache" : "cache") || {};
+                var cache = (await storage.idbGet(isAdmin ? "adminCache" : "cache")) || storage.get(isAdmin ? "adminCache" : "cache") || {};
                 for (const table in cache) {
                     if (Array.isArray(cache[table] || [])) cacheIds[table] = (cache[table] || []).map(data => String(data.id || data.seatCode || data.period || data.key || data.username || 0));
                 }
@@ -773,7 +774,7 @@ export async function bulkLoad(fields = [], usr = null, pwd = null, isAdmin = fa
                 continue;
             }
             deletedData = fetchedBulkLoad.syncDeleted?.[table] || [];
-            existingData = (storage.get(isAdmin ? "adminCache" : "cache")?.[table] || []).filter(item => {
+            existingData = (((await storage.idbGet(isAdmin ? "adminCache" : "cache")) || storage.get(isAdmin ? "adminCache" : "cache") || {})?.[table] || []).filter(item => {
                 return !deletedData.includes(String(item.id || item.seatCode || item.period || item.key || item.username || 0));
             });
             mergedData = [...existingData];
@@ -791,7 +792,12 @@ export async function bulkLoad(fields = [], usr = null, pwd = null, isAdmin = fa
         }
     }
     storage.set(isAdmin ? "lastAdminBulkLoad" : "lastBulkLoad", fetchedBulkLoad.asOf || null);
-    storage.set(isAdmin ? "adminCache" : "cache", updatedBulkLoad || fetchedBulkLoad || {});
+    try {
+        console.log('Setting', updatedBulkLoad || fetchedBulkLoad || {})
+        await storage.idbSet(isAdmin ? "adminCache" : "cache", updatedBulkLoad || fetchedBulkLoad || {});
+    } catch (e) {
+        storage.set(isAdmin ? "adminCache" : "cache", updatedBulkLoad || fetchedBulkLoad || {});
+    }
     const loadTime = ((Date.now() - startTime) / 1000).toFixed(2);
     console.log(`${(loadTime < 1) ? '🟢' : ((loadTime > 5) ? '🔴' : '🟡')} Bulk load fetched in ${loadTime}s`);
 }
