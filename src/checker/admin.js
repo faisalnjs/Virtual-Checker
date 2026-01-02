@@ -1223,8 +1223,9 @@ try {
           generator_enabled: document.getElementById('generate-answers').checked,
           checker_enabled: document.getElementById('check-responses').checked,
           generate_answers_prompt: document.getElementById('generate-answers-prompt').value,
-          check_responses_prompt: document.getElementById('check-responses-prompt').value
-        }
+          check_responses_prompt: document.getElementById('check-responses-prompt').value,
+          maintenance_enabled: document.getElementById('maintenance-mode').checked
+        },
       };
     }
     for (const key in updatedInfo) {
@@ -6200,6 +6201,7 @@ try {
     document.getElementById('check-responses-prompt').value = aiInfo.check_responses_prompt;
     document.getElementById('check-responses-prompt-ending').placeholder = aiInfo.check_responses_prompt_ending;
     document.getElementById('check-responses-prompt-ending').value = aiInfo.check_responses_prompt_ending;
+    document.getElementById('maintenance-mode').checked = Number(settings['maintenance-mode'] || 0);
   }
 
   async function clearAnnouncement(platform) {
