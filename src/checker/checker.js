@@ -282,7 +282,7 @@ try {
     multipleChoice = null;
     autocomplete.update();
     // Focus input element
-    answerInput.focus();
+    // answerInput.focus();
   }
 
   // Check answer
@@ -1018,7 +1018,7 @@ try {
       false,
     );
 
-    target?.querySelector('input, textarea, math-field')?.focus();
+    // target?.querySelector('input, textarea, math-field')?.focus();
 
     currentAnswerMode = mode;
   }
@@ -1126,6 +1126,10 @@ try {
         if (event.target.hasAttribute('data-flag-response')) return r.flagged ? unflagResponse(event) : flagResponse(event);
         ui.view("");
         await resubmitCheck(r);
+        window.scrollTo(0, document.body.scrollHeight);
+        setTimeout(() => {
+          document.querySelector(`[data-answer-mode="${r.mode === 'text' ? 'input' : r.mode}"]`)?.querySelector('input, textarea, math-field')?.focus();
+        }, 500);
       });
     });
     if (sortedHistory.find(r => r.flagged)) {
