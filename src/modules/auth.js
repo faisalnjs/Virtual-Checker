@@ -776,6 +776,11 @@ export async function bulkLoad(fields = [], usr = null, pwd = null, isAdmin = fa
         if ((fetchedBulkLoad.error === "Access denied.") || (fetchedBulkLoad.message === "Access denied.")) ifAccessDenied();
         return false;
     }
+    if (fetchedBulkLoad.maintenanceMode) {
+        ui.startLoader();
+        ui.view("maintenance-mode");
+        return false;
+    }
     var updatedBulkLoad = {};
     for (const table in fetchedBulkLoad) {
         if (table === 'asOf' || table === 'syncDeleted') continue;
