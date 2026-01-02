@@ -72,91 +72,45 @@ try {
     //   storage.set("created", Date.now());
     // }
 
-    await fetch(domain + '/bulk_load?ta=true', {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        usr: storage.get("code"),
-        pwd: storage.get("pwd"),
-        fields: ["courses", "segments", "questions", "answers", "responses"]
-      }),
-    })
-      .then(async (r) => {
-        if (!r.ok) {
-          try {
-            var re = await r.json();
-            if (re.error || re.message) {
-              ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
-              throw new Error(re.error || re.message);
-            } else {
-              throw new Error("API error");
-            }
-          } catch (e) {
-            throw new Error(e.message || "API error");
-          }
-        }
-        return await r.json();
-      })
-      .then(async bulkLoad => {
-        courses = bulkLoad.courses;
-        segments = bulkLoad.segments;
-        questions = bulkLoad.questions;
-        answers = bulkLoad.answers;
-        responses = bulkLoad.responses;
-        if (courses.length === 0) return ui.modal({
-          title: 'Enter Password',
-          body: `<p>Enter the assigned password for TA seat code <code>${storage.get("code")}</code>.</p>`,
-          input: {
-            type: 'password'
-          },
-          buttons: [
-            {
-              text: 'Verify',
-              class: 'submit-button',
-              onclick: (inputValue) => {
-                storage.set("pwd", inputValue);
-                init();
-              },
-              close: true,
-            },
-          ],
-        });
-        await auth.loadAdminSettings(courses);
-        if (!noReloadCourse) {
-          document.getElementById("course-period-input").innerHTML = "";
-          courses.sort((a, b) => a.id - b.id).forEach(course => {
-            var coursePeriods = JSON.parse(course.periods);
-            const option = document.createElement("option");
-            option.value = course.id;
-            option.innerHTML = document.getElementById("course-input") ? course.name : `${course.name}${(coursePeriods.length > 0) ? ` (Period${(coursePeriods.length > 1) ? 's' : ''} ${coursePeriods.join(', ')})` : ''}`;
-            document.getElementById("course-period-input").appendChild(option);
-          });
-        }
-        document.getElementById("course-period-input").addEventListener("input", updateCourses);
-        document.getElementById("course-period-input").addEventListener("change", updateResponses);
-        document.getElementById("filter-segment-input").addEventListener("change", updateResponses);
-        document.getElementById("sort-question-input").addEventListener("input", updateResponses);
-        document.getElementById("sort-seat-input").addEventListener("input", updateResponses);
-        if (document.getElementById("filter-segment-input")) updateCourses();
-        if (responses.find(response => String(response.seatCode).includes('xx'))) document.getElementById("checker").classList.add("anonymous");
-        if (!noReloadCourse) document.getElementById("course-period-input").value = (storage.get('period') && courses.find(c => String(c.id) === String(storage.get('period')))) ? storage.get('period') : (((ui.defaultCourse !== null) && courses.find(c => String(c.id) === String(ui.defaultCourse))) ? ui.defaultCourse : courses.find(c => JSON.parse(c.periods).includes(Number(String(responses.sort((a, b) => String(a.seatCode)[0] - String(b.seatCode)[0])[0]?.seatCode)[0]))) ? courses.find(c => JSON.parse(c.periods).includes(Number(String(responses.sort((a, b) => String(a.seatCode)[0] - String(b.seatCode)[0])[0]?.seatCode)[0]))).id : 0);
-        await updateResponses();
-        active = true;
-        ui.stopLoader();
-        ui.toast("Data restored.", 1000, "info", "bi bi-cloud-arrow-down");
-        document.getElementById("filter-segment-input").addEventListener("change", () => {
-          document.getElementById("sort-question-input").value = "";
-          const event = new Event('input', { bubbles: true });
-          document.getElementById("sort-question-input").dispatchEvent(event);
-        });
-        ui.reloadUnsavedInputs();
-      })
-      .catch((e) => {
-        console.error(e);
-        if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.ta(init);
+    if (!(await auth.bulkLoad(["courses", "segments", "questions", "answers", "responses"], storage.get("code"), storage.get("pwd"), false, true, () => {
+      auth.ta(init);
+    }))) return;
+    await storage.idbReady;
+    const bulkLoad = (await storage.idbGet('adminCache')) || storage.get("adminCache") || {};
+    courses = bulkLoad.courses;
+    segments = bulkLoad.segments;
+    questions = bulkLoad.questions;
+    answers = bulkLoad.answers;
+    responses = bulkLoad.responses;
+    await auth.loadAdminSettings(courses);
+    if (!noReloadCourse) {
+      document.getElementById("course-period-input").innerHTML = "";
+      courses.sort((a, b) => a.id - b.id).forEach(course => {
+        var coursePeriods = JSON.parse(course.periods);
+        const option = document.createElement("option");
+        option.value = course.id;
+        option.innerHTML = document.getElementById("course-input") ? course.name : `${course.name}${(coursePeriods.length > 0) ? ` (Period${(coursePeriods.length > 1) ? 's' : ''} ${coursePeriods.join(', ')})` : ''}`;
+        document.getElementById("course-period-input").appendChild(option);
       });
+    }
+    document.getElementById("course-period-input").addEventListener("input", updateCourses);
+    document.getElementById("course-period-input").addEventListener("change", updateResponses);
+    document.getElementById("filter-segment-input").addEventListener("change", updateResponses);
+    document.getElementById("sort-question-input").addEventListener("input", updateResponses);
+    document.getElementById("sort-seat-input").addEventListener("input", updateResponses);
+    if (document.getElementById("filter-segment-input")) updateCourses();
+    if (responses.find(response => String(response.seatCode).includes('xx'))) document.getElementById("checker").classList.add("anonymous");
+    if (!noReloadCourse) document.getElementById("course-period-input").value = (storage.get('period') && courses.find(c => String(c.id) === String(storage.get('period')))) ? storage.get('period') : (((ui.defaultCourse !== null) && courses.find(c => String(c.id) === String(ui.defaultCourse))) ? ui.defaultCourse : courses.find(c => JSON.parse(c.periods).includes(Number(String(responses.sort((a, b) => String(a.seatCode)[0] - String(b.seatCode)[0])[0]?.seatCode)[0]))) ? courses.find(c => JSON.parse(c.periods).includes(Number(String(responses.sort((a, b) => String(a.seatCode)[0] - String(b.seatCode)[0])[0]?.seatCode)[0]))).id : 0);
+    await updateResponses();
+    active = true;
+    ui.stopLoader();
+    ui.toast("Data restored.", 1000, "info", "bi bi-cloud-arrow-down");
+    document.getElementById("filter-segment-input").addEventListener("change", () => {
+      document.getElementById("sort-question-input").value = "";
+      const event = new Event('input', { bubbles: true });
+      document.getElementById("sort-question-input").dispatchEvent(event);
+    });
+    ui.reloadUnsavedInputs();
   }
 
   init();
