@@ -745,6 +745,18 @@ export async function loadAdminSettings(courses) {
 export async function bulkLoad(fields = [], usr = null, pwd = null, isAdmin = false, isTA = false, ifAccessDenied = () => { }) {
     const startTime = Date.now();
     await storage.idbReady;
+    const syncDeleted = async () => {
+        const cacheIds = {};
+        const cache = (await storage.idbGet((isAdmin || isTA) ? "adminCache" : "cache")) ||
+            storage.get((isAdmin || isTA) ? "adminCache" : "cache") || {};
+
+        for (const table in cache) {
+            if (Array.isArray(cache[table] || []))
+                cacheIds[table] = (cache[table] || []).map(data =>
+                    String(data.id || data.seatCode || data.period || data.key || data.username || 0));
+        }
+        return cacheIds;
+    };
     var bulkLoadResponse;
     try {
         bulkLoadResponse = await fetch(`${domain}/bulk_load${isTA ? '?ta=true' : ''}`, {
@@ -755,14 +767,7 @@ export async function bulkLoad(fields = [], usr = null, pwd = null, isAdmin = fa
                 pwd,
                 fields,
                 lastFetched: storage.get((isAdmin || isTA) ? "lastAdminBulkLoad" : "lastBulkLoad") || null,
-                syncDeleted: (async () => {
-                    var cacheIds = {};
-                    var cache = (await storage.idbGet((isAdmin || isTA) ? "adminCache" : "cache")) || storage.get((isAdmin || isTA) ? "adminCache" : "cache") || {};
-                    for (const table in cache) {
-                        if (Array.isArray(cache[table] || [])) cacheIds[table] = (cache[table] || []).map(data => String(data.id || data.seatCode || data.period || data.key || data.username || 0));
-                    }
-                    return cacheIds;
-                })(),
+                syncDeleted: await syncDeleted(),
             }),
         });
     } catch (e) {

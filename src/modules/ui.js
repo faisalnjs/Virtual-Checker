@@ -407,7 +407,7 @@ export function view(path = "") {
       });
   }
   const previous = pages.slice(0, pages.length - 1).join("/");
-  const buttons = ((path === 'api-fail') || (path === 'maintenance-mode')) ? [] : [
+  const buttons = ((path === 'api-fail') || (path === 'no-course') || (path === 'maintenance-mode')) ? [] : [
     {
       text: `<i class="bi bi-x-lg"></i>`,
       class: "icon",
@@ -427,7 +427,7 @@ export function view(path = "") {
     });
   }
   show(document.querySelector(`[data-modal-page="${pages[0]}"]`), title, buttons);
-  if (path === "api-fail") startLoader();
+  if ((path === 'api-fail') || (path === 'no-course') || (path === 'maintenance-mode')) startLoader();
   const event = new Event("view");
   target.dispatchEvent(event);
 }
