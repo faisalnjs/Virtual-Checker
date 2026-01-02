@@ -793,7 +793,8 @@ export async function bulkLoad(fields = [], usr = null, pwd = null, isAdmin = fa
                 continue;
             }
             deletedData = fetchedBulkLoad.syncDeleted?.[table] || [];
-            existingData = (((await storage.idbGet((isAdmin || isTA) ? "adminCache" : "cache")) || storage.get((isAdmin || isTA) ? "adminCache" : "cache") || {})?.[table] || []).filter(item => {
+            const cacheObj = (await storage.idbGet((isAdmin || isTA) ? "adminCache" : "cache")) || storage.get((isAdmin || isTA) ? "adminCache" : "cache") || {};
+            existingData = (Array.isArray(cacheObj[table]) ? cacheObj[table] : []).filter(item => {
                 return !deletedData.includes(String(item.id || item.seatCode || item.period || item.key || item.username || 0));
             });
             mergedData = [...existingData];
