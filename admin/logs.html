@@ -94,12 +94,10 @@
       </div>
     </div>
     <div class="section">
-      <h1>Logs</h1>
-      <div id="no-logs" class="row">
-        <p>No actions reported.</p>
-      </div>
-      <div class="section logs enhanced-list" hidden></div>
-      <button id="clear-logs">Clear Logs</button>
+      <h1>Maintenance Mode</h1>
+      <label class="checkboxGroup"><input type="checkbox" id="maintenance-mode" hidden>
+        <div class="checkbox"></div> Enable Maintenance Mode
+      </label>
     </div>
     <div class="section ai-manager">
       <h1>AI Configuration</h1>
@@ -121,6 +119,14 @@
       <textarea name="check-responses-prompt-ending" id="check-responses-prompt-ending"
         placeholder="Enter your prompt here..." rows="1" disabled></textarea>
       <button id="save-button">Save</button>
+    </div>
+    <div class="section">
+      <h1>Logs</h1>
+      <div id="no-logs" class="row">
+        <p>No actions reported.</p>
+      </div>
+      <div class="section logs enhanced-list" hidden></div>
+      <button id="clear-logs">Clear Logs</button>
     </div>
   </div>
   <!-- Controls -->
@@ -348,6 +354,11 @@
       <a href="https://dangoweb.com/community" class="icon" tooltip="Support Communities"><i class="bi bi-life-preserver"></i></a>
       <a href="mailto:contact@faisaln.com" class="icon" tooltip="Email"><i class="bi bi-envelope-fill"></i></a>
     </div>
+  </dialog>
+  <dialog data-modal-page="maintenance-mode" data-page-title="Maintenance">
+    <p>
+      The Virtual Checker is undergoing maintenance. Please try again later.
+    </p>
   </dialog>
   <dialog data-modal-page="menu" data-page-title="Virtual Checker">
     <div class="menu-icons">

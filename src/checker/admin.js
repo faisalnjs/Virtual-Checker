@@ -333,7 +333,7 @@ try {
       await updateQuestions();
       if (params?.question) toggleQuestion(null, params.question);
     }
-    if (document.getElementById("course-period-input") && !loadedSegmentEditor && !loadedSegmentCreator && !noReloadCourse) {
+    if (document.getElementById("course-period-input") && !loadedSegmentEditor && !noReloadCourse) {
       document.getElementById("course-period-input").value = (storage.get('period') && courses.find(c => String(c.id) === String(storage.get('period')))) ? storage.get('period') : (((ui.defaultCourse !== null) && courses.find(c => String(c.id) === String(ui.defaultCourse))) ? ui.defaultCourse : courses.find(c => responses.some(r => JSON.parse(c.periods).includes(Number(String(r.seatCode)[0])))) ? courses.find(c => responses.some(r => JSON.parse(c.periods).includes(Number(String(r.seatCode)[0])))).id : courses.sort((a, b) => a.id - b.id)[0]?.id);
       if (document.getElementById("export-report-course")) document.getElementById("export-report-course").value = (storage.get('period') && courses.find(c => String(c.id) === String(storage.get('period')))) ? storage.get('period') : (((ui.defaultCourse !== null) && courses.find(c => String(c.id) === String(ui.defaultCourse))) ? ui.defaultCourse : courses.find(c => responses.some(r => JSON.parse(c.periods).includes(Number(String(r.seatCode)[0])))) ? courses.find(c => responses.some(r => JSON.parse(c.periods).includes(Number(String(r.seatCode)[0])))).id : courses.sort((a, b) => a.id - b.id)[0]?.id);
     }
@@ -1223,8 +1223,9 @@ try {
           generator_enabled: document.getElementById('generate-answers').checked,
           checker_enabled: document.getElementById('check-responses').checked,
           generate_answers_prompt: document.getElementById('generate-answers-prompt').value,
-          check_responses_prompt: document.getElementById('check-responses-prompt').value
-        }
+          check_responses_prompt: document.getElementById('check-responses-prompt').value,
+          maintenance_enabled: document.getElementById('maintenance-mode').checked
+        },
       };
     }
     for (const key in updatedInfo) {
@@ -6200,6 +6201,7 @@ try {
     document.getElementById('check-responses-prompt').value = aiInfo.check_responses_prompt;
     document.getElementById('check-responses-prompt-ending').placeholder = aiInfo.check_responses_prompt_ending;
     document.getElementById('check-responses-prompt-ending').value = aiInfo.check_responses_prompt_ending;
+    document.getElementById('maintenance-mode').checked = Number(settings['maintenance-mode'] || 0);
   }
 
   async function clearAnnouncement(platform) {

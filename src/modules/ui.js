@@ -407,7 +407,7 @@ export function view(path = "") {
       });
   }
   const previous = pages.slice(0, pages.length - 1).join("/");
-  const buttons = (title === 'API Offline') ? [] : [
+  const buttons = ((path === 'api-fail') || (path === 'maintenance-mode')) ? [] : [
     {
       text: `<i class="bi bi-x-lg"></i>`,
       class: "icon",
@@ -521,7 +521,7 @@ export function animate(element, from, to, duration, assign = true) {
 (() => {
   document.addEventListener("pointerdown", (e) => {
     const dialog = document.querySelector("dialog[open]");
-    if ((dialog?.querySelector('h2').innerText != 'API Offline') && dialog?.hasAttribute("data-open") && !dialog?.contains(e.target)) {
+    if (dialog && (dialog.getAttribute('data-modal-page') !== 'api-fail') && (dialog.getAttribute('data-modal-page') !== 'maintenance-mode') && dialog.hasAttribute("data-open") && !dialog.contains(e.target)) {
       document.addEventListener(
         "pointerup",
         () => {
