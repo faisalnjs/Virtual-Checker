@@ -745,24 +745,31 @@ export async function loadAdminSettings(courses) {
 export async function bulkLoad(fields = [], usr = null, pwd = null, isAdmin = false, isTA = false, ifAccessDenied = () => { }) {
     const startTime = Date.now();
     await storage.idbReady;
-    const bulkLoadResponse = await fetch(`${domain}/bulk_load${isTA ? '?ta=true' : ''}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-            usr,
-            pwd,
-            fields,
-            lastFetched: storage.get((isAdmin || isTA) ? "lastAdminBulkLoad" : "lastBulkLoad") || null,
-            syncDeleted: (async () => {
-                var cacheIds = {};
-                var cache = (await storage.idbGet((isAdmin || isTA) ? "adminCache" : "cache")) || storage.get((isAdmin || isTA) ? "adminCache" : "cache") || {};
-                for (const table in cache) {
-                    if (Array.isArray(cache[table] || [])) cacheIds[table] = (cache[table] || []).map(data => String(data.id || data.seatCode || data.period || data.key || data.username || 0));
-                }
-                return cacheIds;
-            })(),
-        }),
-    });
+    var bulkLoadResponse;
+    try {
+        bulkLoadResponse = await fetch(`${domain}/bulk_load${isTA ? '?ta=true' : ''}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                usr,
+                pwd,
+                fields,
+                lastFetched: storage.get((isAdmin || isTA) ? "lastAdminBulkLoad" : "lastBulkLoad") || null,
+                syncDeleted: (async () => {
+                    var cacheIds = {};
+                    var cache = (await storage.idbGet((isAdmin || isTA) ? "adminCache" : "cache")) || storage.get((isAdmin || isTA) ? "adminCache" : "cache") || {};
+                    for (const table in cache) {
+                        if (Array.isArray(cache[table] || [])) cacheIds[table] = (cache[table] || []).map(data => String(data.id || data.seatCode || data.period || data.key || data.username || 0));
+                    }
+                    return cacheIds;
+                })(),
+            }),
+        });
+    } catch (e) {
+        console.error(e);
+        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        return false;
+    }
     var fetchedBulkLoad = await bulkLoadResponse.json();
     if (!bulkLoadResponse.ok) {
         if (!fetchedBulkLoad.message || (fetchedBulkLoad.message && !fetchedBulkLoad.message.includes("."))) ui.view("api-fail");
