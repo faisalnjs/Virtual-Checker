@@ -207,6 +207,7 @@ export async function sync(hideWelcome = true, returnFunction = null) {
                 return await r.json();
             })
             .then(async r => {
+                ui.stopLoader();
                 var password = storage.get("password");
                 if (!hideWelcome) ui.toast("Welcome back!", 3000, "success", "bi bi-key");
                 ui.setNotifications(r.notifications);
@@ -328,6 +329,7 @@ export async function sync(hideWelcome = true, returnFunction = null) {
                                 return await r.json();
                             })
                             .then(async r => {
+                                ui.stopLoader();
                                 ui.toast(r.message, 3000, "success", "bi bi-key");
                                 ui.setUnsavedChanges(false);
                                 await ui.launchWelcome(returnFunction);
@@ -740,7 +742,7 @@ export async function loadAdminSettings(courses) {
         });
 }
 
-export async function bulkLoad(fields = [], usr = null, pwd = null, isAdmin = false, isTA = false) {
+export async function bulkLoad(fields = [], usr = null, pwd = null, isAdmin = false, isTA = false, ifAccessDenied = () => { }) {
     const startTime = Date.now();
     await storage.idbReady;
     const bulkLoadResponse = await fetch(`${domain}/bulk_load${isTA ? '?ta=true' : ''}`, {
@@ -762,6 +764,11 @@ export async function bulkLoad(fields = [], usr = null, pwd = null, isAdmin = fa
         }),
     });
     var fetchedBulkLoad = await bulkLoadResponse.json();
+    if (!bulkLoadResponse.ok) {
+        if (!fetchedBulkLoad.message || (fetchedBulkLoad.message && !fetchedBulkLoad.message.includes("."))) ui.view("api-fail");
+        if ((fetchedBulkLoad.error === "Access denied.") || (fetchedBulkLoad.message === "Access denied.")) ifAccessDenied();
+        return false;
+    }
     var updatedBulkLoad = {};
     for (const table in fetchedBulkLoad) {
         if (table === 'asOf' || table === 'syncDeleted') continue;
@@ -799,4 +806,5 @@ export async function bulkLoad(fields = [], usr = null, pwd = null, isAdmin = fa
     }
     const loadTime = ((Date.now() - startTime) / 1000).toFixed(2);
     console.log(`${(loadTime < 1) ? '🟢' : ((loadTime > 5) ? '🔴' : '🟡')} Bulk load fetched in ${loadTime}s`);
+    return true;
 }

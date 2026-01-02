@@ -72,12 +72,9 @@ try {
     //   storage.set("created", Date.now());
     // }
 
-    await auth.bulkLoad(["courses", "segments", "questions", "answers", "responses"], storage.get("code"), storage.get("pwd"), false, true)
-      .catch((e) => {
-        console.error(e);
-        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
-        if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
-      });
+    if (!(await auth.bulkLoad(["courses", "segments", "questions", "answers", "responses"], storage.get("code"), storage.get("pwd"), false, true, () => {
+      auth.ta(init);
+    }))) return;
     await storage.idbReady;
     const bulkLoad = (await storage.idbGet('adminCache')) || storage.get("adminCache") || {};
     courses = bulkLoad.courses;
@@ -85,24 +82,6 @@ try {
     questions = bulkLoad.questions;
     answers = bulkLoad.answers;
     responses = bulkLoad.responses;
-    if (courses.length === 0) return ui.modal({
-      title: 'Enter Password',
-      body: `<p>Enter the assigned password for TA seat code <code>${storage.get("code")}</code>.</p>`,
-      input: {
-        type: 'password'
-      },
-      buttons: [
-        {
-          text: 'Verify',
-          class: 'submit-button',
-          onclick: (inputValue) => {
-            storage.set("pwd", inputValue);
-            init();
-          },
-          close: true,
-        },
-      ],
-    });
     await auth.loadAdminSettings(courses);
     if (!noReloadCourse) {
       document.getElementById("course-period-input").innerHTML = "";

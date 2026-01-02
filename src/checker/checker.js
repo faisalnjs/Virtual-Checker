@@ -106,7 +106,6 @@ try {
       return;
     }
     await auth.sync(false, updateCode);
-    ui.stopLoader();
   };
 
   init();
@@ -438,123 +437,121 @@ try {
     });
     document.title = `Virtual Checker (${storage.get("code")})`;
     const periodRange = getExtendedPeriodRange(null, Number(code.slice(0, 1)));
-    try {
-      await auth.bulkLoad(["courses", "segments", "questions", "responses"], storage.get("code"), storage.get("password"));
-      await storage.idbReady;
-      const bulkLoad = (await storage.idbGet('cache')) || storage.get("cache") || {};
-      courses = bulkLoad.courses;
-      segmentsArray = bulkLoad.segments;
-      questionsArray = bulkLoad.questions;
-      const course = courses.find(c => JSON.parse(c.periods).includes(Number(code.slice(0, 1))));
-      if (course) {
-        ui.view();
+    if (!(await auth.bulkLoad(["courses", "segments", "questions", "responses"], storage.get("code"), storage.get("password"), false, false, () => {
+      ui.view("api-fail");
+    }))) return;
+    await storage.idbReady;
+    const bulkLoad = (await storage.idbGet('cache')) || storage.get("cache") || {};
+    courses = bulkLoad.courses;
+    segmentsArray = bulkLoad.segments;
+    questionsArray = bulkLoad.questions;
+    const course = courses.find(c => JSON.parse(c.periods).includes(Number(code.slice(0, 1))));
+    if (course) {
+      ui.view();
+    } else {
+      ui.startLoader();
+      return ui.view("no-course");
+    }
+    if (document.getElementById("course-input")) document.getElementById("course-input").value = course.name || "Unknown Course";
+    if (document.querySelector('[data-syllabus-download]')) {
+      if (course.syllabus) {
+        document.querySelector('[data-syllabus-download]').removeAttribute('hidden');
+        document.querySelector('[data-syllabus-download]').addEventListener('click', () => {
+          window.open(course.syllabus, '_blank');
+        });
       } else {
-        ui.startLoader();
-        return ui.view("no-course");
+        document.querySelector('[data-syllabus-download]').setAttribute('hidden', '');
       }
-      if (document.getElementById("course-input")) document.getElementById("course-input").value = course.name || "Unknown Course";
-      if (document.querySelector('[data-syllabus-download]')) {
-        if (course.syllabus) {
-          document.querySelector('[data-syllabus-download]').removeAttribute('hidden');
-          document.querySelector('[data-syllabus-download]').addEventListener('click', () => {
-            window.open(course.syllabus, '_blank');
+    }
+    if (document.querySelector('.alert')) {
+      var checker_announcement = JSON.parse(course.checker_announcement || '{}');
+      if ((checker_announcement.image || checker_announcement.title || checker_announcement.content || checker_announcement.link) && (checker_announcement.expires ? new Date(`${checker_announcement.expires}T${extendedSchedule[Number(code.slice(0, 1))][1]}:00`) > new Date() : true)) {
+        document.querySelector('.alert').removeAttribute('hidden');
+        document.querySelector('.alert').classList = `alert ${checker_announcement.layout || ''}`;
+        if (checker_announcement.image) {
+          document.querySelector('.alert img').removeAttribute('hidden');
+          document.querySelector('.alert img').src = checker_announcement.image;
+          mediumZoom(document.querySelector('.alert img'), {
+            background: "transparent"
           });
         } else {
-          document.querySelector('[data-syllabus-download]').setAttribute('hidden', '');
+          document.querySelector('.alert img').setAttribute('hidden', '');
         }
-      }
-      if (document.querySelector('.alert')) {
-        var checker_announcement = JSON.parse(course.checker_announcement || '{}');
-        if ((checker_announcement.image || checker_announcement.title || checker_announcement.content || checker_announcement.link) && (checker_announcement.expires ? new Date(`${checker_announcement.expires}T${extendedSchedule[Number(code.slice(0, 1))][1]}:00`) > new Date() : true)) {
-          document.querySelector('.alert').removeAttribute('hidden');
-          document.querySelector('.alert').classList = `alert ${checker_announcement.layout || ''}`;
-          if (checker_announcement.image) {
-            document.querySelector('.alert img').removeAttribute('hidden');
-            document.querySelector('.alert img').src = checker_announcement.image;
-            mediumZoom(document.querySelector('.alert img'), {
-              background: "transparent"
-            });
-          } else {
-            document.querySelector('.alert img').setAttribute('hidden', '');
-          }
-          document.querySelector('.alert h3').innerText = checker_announcement.title || 'Announcement';
-          if (checker_announcement.content) {
-            document.querySelector('.alert p').removeAttribute('hidden');
-            document.querySelector('.alert p').innerText = checker_announcement.content;
-          } else {
-            document.querySelector('.alert p').setAttribute('hidden', '');
-          }
-          if (checker_announcement.link) {
-            document.querySelector('.alert button').removeAttribute('hidden');
-            document.querySelector('.alert button').innerHTML = `${checker_announcement.linkTitle || 'Go'} <i class="bi bi-arrow-right-short"></i>`;
-            document.querySelector('.alert button').addEventListener('click', () => {
-              window.open(checker_announcement.link, '_blank');
-            });
-          } else {
-            document.querySelector('.alert button').setAttribute('hidden', '');
-            document.querySelector('.alert button').removeEventListener('click', () => { });
-          }
+        document.querySelector('.alert h3').innerText = checker_announcement.title || 'Announcement';
+        if (checker_announcement.content) {
+          document.querySelector('.alert p').removeAttribute('hidden');
+          document.querySelector('.alert p').innerText = checker_announcement.content;
         } else {
-          document.querySelector('.alert').setAttribute('hidden', '');
+          document.querySelector('.alert p').setAttribute('hidden', '');
         }
+        if (checker_announcement.link) {
+          document.querySelector('.alert button').removeAttribute('hidden');
+          document.querySelector('.alert button').innerHTML = `${checker_announcement.linkTitle || 'Go'} <i class="bi bi-arrow-right-short"></i>`;
+          document.querySelector('.alert button').addEventListener('click', () => {
+            window.open(checker_announcement.link, '_blank');
+          });
+        } else {
+          document.querySelector('.alert button').setAttribute('hidden', '');
+          document.querySelector('.alert button').removeEventListener('click', () => { });
+        }
+      } else {
+        document.querySelector('.alert').setAttribute('hidden', '');
       }
-      segmentsArray = segmentsArray.filter(s => String(s.course) === String(course.id));
-      segments.innerHTML = '';
-      segmentsArray.sort((a, b) => a.order - b.order).forEach(segment => {
-        const option = document.createElement('option');
-        option.value = segment.id;
-        var questionStatuses = [];
-        JSON.parse(segment.question_ids).forEach(questionId => {
-          const question = questionsArray.find(q => String(q.id) === String(questionId.id));
-          if (question) {
-            var highestStatus = "";
-            var questionResponses = history.filter(r => String(r.question_id) === String(questionId.id));
-            if (questionResponses.find(r => r.status === 'Correct')) {
-              highestStatus = 'Correct';
-            } else if (questionResponses.find(r => r.status.includes('Unknown'))) {
-              highestStatus = 'Awaiting Scoring';
-            } else if (questionResponses.find(r => r.status === 'Incorrect')) {
-              highestStatus = 'In Progress';
-            }
-            questionStatuses.push({ "segment": segment.id, "question": questionId.id, "status": highestStatus, "nonscored": question.nonscored });
-          }
-        });
-        const allQuestionsCorrect = (JSON.parse(segment.question_ids).length > 0) && questionStatuses.every(question => (question.status === 'Correct') || question.nonscored);
-        option.innerHTML = `${segment.number} - ${segment.name}${segment.due ? ` (Due ${new Date(`${segment.due}T00:00:00`).toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })})` : ''}${allQuestionsCorrect ? ' [MASTERY]' : ''}`;
-        option.setAttribute('due', segment.due || '');
-        segments.append(option);
-      });
-      segments.value = segmentsArray.find(s => {
-        if (!s.due) return false;
-        return (new Date(`${s.due}T00:00:00`).toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' }) === new Date().toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric', }) && new Date().getTime() <= periodRange[1]);
-      })?.id || segmentsArray.find(s => {
-        if (!s.due) return false;
-        return (new Date(`${s.due}T00:00:00`).getTime() > periodRange[1] && new Date(`${s.due}T00:00:00`).getTime() <= periodRange[0] + 86400000);
-      })?.id || segmentsArray.find(s => !s.due)?.id || segmentsArray[0]?.id;
-      segments.removeEventListener("change", updateSegment);
-      segments.addEventListener("change", updateSegment);
-      // Update history feed
-      await storage.idbReady;
-      history = ((await storage.idbGet('cache')) || storage.get("cache") || {}).responses || [];
-      await updateHistory();
-      await updateSegment();
-      // Show clear data fix guide
-      // if (storage.get("created")) {
-      //   document.querySelector(`[data-modal-view="clear-data-fix"]`).remove();
-      // } else {
-      //   storage.set("created", Date.now());
-      // }
-      // Focus segment input
-      if (segmentInput) segmentInput.focus();
-      // Set default answer mode
-      answerMode("input");
-      // Focus answer input
-      document.getElementById("answer-suggestion").addEventListener("click", () => answerInput.focus());
-      document.querySelector("[data-sync]").addEventListener("click", () => auth.syncManual());
-      ui.reloadUnsavedInputs();
-    } catch (error) {
-      ui.view("api-fail");
     }
+    segmentsArray = segmentsArray.filter(s => String(s.course) === String(course.id));
+    segments.innerHTML = '';
+    segmentsArray.sort((a, b) => a.order - b.order).forEach(segment => {
+      const option = document.createElement('option');
+      option.value = segment.id;
+      var questionStatuses = [];
+      JSON.parse(segment.question_ids).forEach(questionId => {
+        const question = questionsArray.find(q => String(q.id) === String(questionId.id));
+        if (question) {
+          var highestStatus = "";
+          var questionResponses = history.filter(r => String(r.question_id) === String(questionId.id));
+          if (questionResponses.find(r => r.status === 'Correct')) {
+            highestStatus = 'Correct';
+          } else if (questionResponses.find(r => r.status.includes('Unknown'))) {
+            highestStatus = 'Awaiting Scoring';
+          } else if (questionResponses.find(r => r.status === 'Incorrect')) {
+            highestStatus = 'In Progress';
+          }
+          questionStatuses.push({ "segment": segment.id, "question": questionId.id, "status": highestStatus, "nonscored": question.nonscored });
+        }
+      });
+      const allQuestionsCorrect = (JSON.parse(segment.question_ids).length > 0) && questionStatuses.every(question => (question.status === 'Correct') || question.nonscored);
+      option.innerHTML = `${segment.number} - ${segment.name}${segment.due ? ` (Due ${new Date(`${segment.due}T00:00:00`).toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })})` : ''}${allQuestionsCorrect ? ' [MASTERY]' : ''}`;
+      option.setAttribute('due', segment.due || '');
+      segments.append(option);
+    });
+    segments.value = segmentsArray.find(s => {
+      if (!s.due) return false;
+      return (new Date(`${s.due}T00:00:00`).toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' }) === new Date().toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric', }) && new Date().getTime() <= periodRange[1]);
+    })?.id || segmentsArray.find(s => {
+      if (!s.due) return false;
+      return (new Date(`${s.due}T00:00:00`).getTime() > periodRange[1] && new Date(`${s.due}T00:00:00`).getTime() <= periodRange[0] + 86400000);
+    })?.id || segmentsArray.find(s => !s.due)?.id || segmentsArray[0]?.id;
+    segments.removeEventListener("change", updateSegment);
+    segments.addEventListener("change", updateSegment);
+    // Update history feed
+    await storage.idbReady;
+    history = ((await storage.idbGet('cache')) || storage.get("cache") || {}).responses || [];
+    await updateHistory();
+    await updateSegment();
+    // Show clear data fix guide
+    // if (storage.get("created")) {
+    //   document.querySelector(`[data-modal-view="clear-data-fix"]`).remove();
+    // } else {
+    //   storage.set("created", Date.now());
+    // }
+    // Focus segment input
+    if (segmentInput) segmentInput.focus();
+    // Set default answer mode
+    answerMode("input");
+    // Focus answer input
+    document.getElementById("answer-suggestion").addEventListener("click", () => answerInput.focus());
+    document.querySelector("[data-sync]").addEventListener("click", () => auth.syncManual());
+    ui.reloadUnsavedInputs();
     ui.reloadUnsavedInputs();
   }
 

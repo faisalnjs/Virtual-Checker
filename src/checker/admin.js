@@ -98,13 +98,10 @@ try {
       }
     }
 
-    await auth.bulkLoad(getAdminFields(), storage.get("usr"), storage.get("pwd"), true)
-      .catch((e) => {
-        console.error(e);
-        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
-        if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
-        pollingOff();
-      });
+    if (!(await auth.bulkLoad(getAdminFields(), storage.get("usr"), storage.get("pwd"), true, false, () => {
+      auth.admin(init);
+      pollingOff();
+    }))) return;
     await storage.idbReady;
     const bulkLoad = (await storage.idbGet('adminCache')) || storage.get("adminCache") || {};
     courses = bulkLoad.courses || [];
