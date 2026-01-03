@@ -57,7 +57,6 @@ export function admin(returnFunction) {
 
 export function ta(returnFunction) {
     ui.view();
-    console.log(authModalOpen)
     if (authModalOpen) return;
     ui.startLoader();
     ui.modal({
