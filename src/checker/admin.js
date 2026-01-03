@@ -38,9 +38,9 @@ var aiInfo = {};
 var settings = [];
 var lastMarkedQuestion = {};
 var pagination = {
-  awaitingResponses: { page: 0, perPage: 10 },
-  responses: { page: 0, perPage: 5 },
-  questions: { page: 0, perPage: 10 },
+  awaitingResponses: { page: 0, perPage: 25 },
+  responses: { page: 0, perPage: 25 },
+  questions: { page: 0, perPage: 25 },
 };
 var questionsToDelete = [];
 var keepSegment = null;
@@ -1403,7 +1403,7 @@ try {
           const currentPage = document.querySelector('.questions #current-page');
           const input = currentPage.querySelector('.current-page-input');
           const totalSpan = currentPage.querySelector('.current-page-total');
-          const totalPages = Math.max(1, Math.ceil((pagination.questions.total || 0) / pagination.questions.perPage));
+          const totalPages = Math.max(1, Math.ceil((pagination.questions.total || 0) / (storage.get("rowsPerPage") ? Number(storage.get("rowsPerPage")) : pagination.questions.perPage)));
           if (input) input.value = Math.min(Math.max(1, pagination.questions.page + 1), totalPages);
           if (totalSpan) totalSpan.innerText = totalPages;
           if (input && !input._pageHandlerAttached) {
@@ -1417,7 +1417,7 @@ try {
             input._pageHandlerAttached = true;
           }
         }
-        var currentPageQuestions = filteredQuestions.slice(pagination.questions.page * pagination.questions.perPage, (pagination.questions.page + 1) * pagination.questions.perPage);
+        var currentPageQuestions = filteredQuestions.slice(pagination.questions.page * (storage.get("rowsPerPage") ? Number(storage.get("rowsPerPage")) : pagination.questions.perPage), (pagination.questions.page + 1) * (storage.get("rowsPerPage") ? Number(storage.get("rowsPerPage")) : pagination.questions.perPage));
         syncPagination();
         renderedEditors = {};
         document.querySelector('.questions .section').innerHTML = '';
@@ -2087,7 +2087,7 @@ try {
       const currentPage = document.querySelector('.awaitingResponses #current-page');
       const input = currentPage.querySelector('.current-page-input');
       const totalSpan = currentPage.querySelector('.current-page-total');
-      const totalPages = Math.max(1, Math.ceil((pagination.awaitingResponses.total || 0) / pagination.awaitingResponses.perPage));
+      const totalPages = Math.max(1, Math.ceil((pagination.awaitingResponses.total || 0) / (storage.get("rowsPerPage") ? Number(storage.get("rowsPerPage")) : pagination.awaitingResponses.perPage)));
       if (input) input.value = Math.min(Math.max(1, pagination.awaitingResponses.page + 1), totalPages);
       if (totalSpan) totalSpan.innerText = totalPages;
       if (input && !input._pageHandlerAttached) {
@@ -2105,7 +2105,7 @@ try {
       const currentPage = document.querySelector('.responses #current-page');
       const input = currentPage.querySelector('.current-page-input');
       const totalSpan = currentPage.querySelector('.current-page-total');
-      const totalPages = Math.max(1, Math.ceil((pagination.responses.total || 0) / pagination.responses.perPage));
+      const totalPages = Math.max(1, Math.ceil((pagination.responses.total || 0) / (storage.get("rowsPerPage") ? Number(storage.get("rowsPerPage")) : pagination.responses.perPage)));
       if (input) input.value = Math.min(Math.max(1, pagination.responses.page + 1), totalPages);
       if (totalSpan) totalSpan.innerText = totalPages;
       if (input && !input._pageHandlerAttached) {
@@ -2124,8 +2124,8 @@ try {
     const responsesSection = document.querySelector('.responses .section');
     const awaitingResponses = responses1.filter(r => (r.status === 'Invalid Format' || r.status === 'Unknown, Recorded'));
     const normalResponses = responses1.filter(r => !(r.status === 'Invalid Format' || r.status === 'Unknown, Recorded'));
-    const awaitingPageResponses = awaitingSection ? awaitingResponses.slice(pagination.awaitingResponses.page * pagination.awaitingResponses.perPage, (pagination.awaitingResponses.page + 1) * pagination.awaitingResponses.perPage) : [];
-    const responsesPageResponses = responsesSection ? normalResponses.slice(pagination.responses.page * pagination.responses.perPage, (pagination.responses.page + 1) * pagination.responses.perPage) : [];
+    const awaitingPageResponses = awaitingSection ? awaitingResponses.slice(pagination.awaitingResponses.page * (storage.get("rowsPerPage") ? Number(storage.get("rowsPerPage")) : pagination.awaitingResponses.perPage), (pagination.awaitingResponses.page + 1) * (storage.get("rowsPerPage") ? Number(storage.get("rowsPerPage")) : pagination.awaitingResponses.perPage)) : [];
+    const responsesPageResponses = responsesSection ? normalResponses.slice(pagination.responses.page * (storage.get("rowsPerPage") ? Number(storage.get("rowsPerPage")) : pagination.responses.perPage), (pagination.responses.page + 1) * (storage.get("rowsPerPage") ? Number(storage.get("rowsPerPage")) : pagination.responses.perPage)) : [];
     var pageResponses = [...awaitingPageResponses, ...responsesPageResponses];
     pageResponses.forEach(r => {
       if (document.querySelector('.responses .section') || document.querySelector('.awaitingResponses .section')) {
@@ -6296,7 +6296,7 @@ try {
           const currentPage = paginationSection.parentElement.querySelector('#current-page');
           const input = currentPage?.querySelector('.current-page-input');
           const totalSpan = currentPage?.querySelector('.current-page-total');
-          const totalPages = Math.max(1, Math.ceil((pagination[group].total || 0) / pagination[group].perPage));
+          const totalPages = Math.max(1, Math.ceil((pagination[group].total || 0) / (storage.get("rowsPerPage") ? Number(storage.get("rowsPerPage")) : pagination[group].perPage)));
           if (input) input.value = Math.min(Math.max(1, pagination[group].page + 1), totalPages);
           if (totalSpan) totalSpan.innerText = totalPages;
           if (input && !input._pageHandlerAttached) {
@@ -6309,10 +6309,10 @@ try {
             });
             input._pageHandlerAttached = true;
           }
-          paginationSection.parentElement.querySelector('#next-page-button').disabled = (pagination[group].page + 1 >= Math.ceil(pagination[group].total / pagination[group].perPage)) ? true : false;
+          paginationSection.parentElement.querySelector('#next-page-button').disabled = (pagination[group].page + 1 >= Math.ceil(pagination[group].total / (storage.get("rowsPerPage") ? Number(storage.get("rowsPerPage")) : pagination[group].perPage))) ? true : false;
           paginationSection.parentElement.querySelector('#previous-page-button').disabled = (pagination[group].page - 1 < 0) ? true : false;
           paginationSection.parentElement.querySelector('#first-page-button').disabled = (pagination[group].page - 1 < 0) ? true : false;
-          paginationSection.parentElement.querySelector('#last-page-button').disabled = (pagination[group].page + 1 >= Math.ceil(pagination[group].total / pagination[group].perPage)) ? true : false;
+          paginationSection.parentElement.querySelector('#last-page-button').disabled = (pagination[group].page + 1 >= Math.ceil(pagination[group].total / (storage.get("rowsPerPage") ? Number(storage.get("rowsPerPage")) : pagination[group].perPage))) ? true : false;
         });
       }
     });
@@ -6323,7 +6323,7 @@ try {
     if (!group) return 0;
     const questionIndex = questions.filter(q => document.getElementById("filter-segment-input")?.value ? segments.filter(segment => JSON.parse(segment.question_ids).find(q1 => String(q1.id) === String(q.id))).map(segment => String(segment.id)).includes(String(document.getElementById("filter-segment-input")?.value)) : true).findIndex(q => String(q.id) === String(questionId));
     if (questionIndex === -1) return 0;
-    return Math.floor(questionIndex / pagination[group].perPage) || 0;
+    return Math.floor(questionIndex / (storage.get("rowsPerPage") ? Number(storage.get("rowsPerPage")) : pagination[group].perPage)) || 0;
   }
 
   async function goToPage(paginationSection, page) {
@@ -6356,7 +6356,7 @@ try {
   function lastPage(paginationSection) {
     const group = Array.from(paginationSection.parentElement.parentElement.classList).find(a => Object.keys(pagination).includes(a));
     if (!group) return;
-    goToPage(paginationSection, Math.ceil(pagination[group].total / pagination[group].perPage) - 1);
+    goToPage(paginationSection, Math.ceil(pagination[group].total / (storage.get("rowsPerPage") ? Number(storage.get("rowsPerPage")) : pagination[group].perPage)) - 1);
   }
 } catch (error) {
   if (storage.get("developer")) {

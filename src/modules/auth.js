@@ -669,6 +669,7 @@ export async function loadAdminSettings(courses) {
             if (r.default_course !== null) ui.setDefaultCourse(r.default_course);
             const pagesList = document.getElementById("default-page");
             const coursesList = document.getElementById("default-course");
+            const rowsPerPageList = document.getElementById("default-rows-per-page");
             if (!pagesList || !coursesList) return;
             pagesList.innerHTML = '';
             if (window.location.pathname === '/ta/') {
@@ -695,6 +696,8 @@ export async function loadAdminSettings(courses) {
                 if (r.default_course && (String(option.value) === String(r.default_course))) option.selected = true;
                 coursesList.appendChild(option);
             });
+            rowsPerPageList.value = r.default_rows_per_page || '10';
+            storage.set('rowsPerPage', rowsPerPageList.value);
             ui.reloadUnsavedInputs();
             document.getElementById("save-admin-settings").addEventListener("click", async () => {
                 await fetch(domain + '/user/settings', {
@@ -707,6 +710,7 @@ export async function loadAdminSettings(courses) {
                         "pwd": storage.get("pwd"),
                         "page": pagesList.value,
                         "course": coursesList.value,
+                        "rows": rowsPerPageList.value,
                     })
                 })
                     .then(async (r) => {
@@ -728,7 +732,7 @@ export async function loadAdminSettings(courses) {
                     .then(() => {
                         storage.delete('period');
                         ui.setUnsavedChanges(false);
-                        ui.toast("Successfully saved settings.", 3000, "success", "bi bi-check-lg");
+                        ui.toast("Successfully saved settings. Reload to see changes.", 3000, "success", "bi bi-check-lg");
                     })
                     .catch((e) => {
                         console.error(e);
