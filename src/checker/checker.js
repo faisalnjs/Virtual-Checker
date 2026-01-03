@@ -282,7 +282,7 @@ try {
     multipleChoice = null;
     autocomplete.update();
     // Focus input element
-    answerInput.focus();
+    // answerInput.focus();
   }
 
   // Check answer
@@ -596,6 +596,29 @@ try {
     document.querySelector('[data-segment-due]').setAttribute('hidden', '');
     if (selectedSegment.due) {
       document.querySelector('[data-segment-due]').innerHTML = `<i class="bi bi-calendar3"></i> Due ${new Date(`${selectedSegment.due}T00:00:00`).toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })}`;
+      if (document.querySelector('[data-segment-due]')._interval) clearInterval(document.querySelector('[data-segment-due]')._interval);
+      document.querySelector('[data-segment-due]')._interval = setInterval(() => {
+        const dueTime = new Date(`${selectedSegment.due}T00:00:00`).getTime();
+        const currentTime = new Date().getTime();
+        var timeDiff = dueTime - currentTime;
+        var prefix = 'in ';
+        var suffix = '';
+        if (timeDiff < 0) {
+          timeDiff = Math.abs(timeDiff);
+          prefix = 'Past due - ';
+          suffix = ' ago';
+        }
+        const days = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((timeDiff % (1000 * 60)) / 1000);
+        var timeString = prefix;
+        if (days > 0) timeString += `${days} day${days > 1 ? 's' : ''}, `;
+        if (hours > 0) timeString += `${hours} hour${hours > 1 ? 's' : ''}, `;
+        if (minutes > 0) timeString += `${minutes} minute${minutes !== 1 ? 's' : ''}, `;
+        if (hours === 0) timeString += `${seconds} second${seconds !== 1 ? 's' : ''}, `;
+        document.querySelector('[data-segment-due]').innerHTML = `<i class="bi bi-calendar3"></i> Due ${new Date(`${selectedSegment.due}T00:00:00`).toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })} (${timeString.slice(0, -2)}${suffix})`;
+      }, 1000);
       document.querySelector('[data-segment-due]').removeAttribute('hidden');
     };
     questions.removeEventListener("change", updateQuestion);
@@ -1018,7 +1041,7 @@ try {
       false,
     );
 
-    target?.querySelector('input, textarea, math-field')?.focus();
+    // target?.querySelector('input, textarea, math-field')?.focus();
 
     currentAnswerMode = mode;
   }
@@ -1126,6 +1149,10 @@ try {
         if (event.target.hasAttribute('data-flag-response')) return r.flagged ? unflagResponse(event) : flagResponse(event);
         ui.view("");
         await resubmitCheck(r);
+        window.scrollTo(0, document.body.scrollHeight);
+        setTimeout(() => {
+          document.querySelector(`[data-answer-mode="${r.mode === 'text' ? 'input' : r.mode}"]`)?.querySelector('input, textarea, math-field')?.focus();
+        }, 500);
       });
     });
     if (sortedHistory.find(r => r.flagged)) {

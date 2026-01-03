@@ -354,10 +354,6 @@
           Theme Code
           <input type="text" id="theme-code" />
         </label>
-        <p>
-          <i class="bi bi-exclamation-circle"></i> Use <kbd>Shift</kbd> + <kbd>R</kbd> to reset
-          the theme if you can't get back here
-        </p>
         <div data-modal-actions>
           <button id="editor-reset">Reset</button>
           <button id="editor-apply">Apply</button>
@@ -371,7 +367,6 @@
       <p><kbd>Ctrl</kbd> + <kbd>,</kbd> Open Settings</p>
       <p><kbd>Ctrl</kbd> + <kbd>.</kbd> Open History</p>
       <p><kbd>Shift</kbd> + <kbd>R</kbd> Reset theme and cache</p>
-      <p><kbd>Ctrl</kbd> + <kbd>S</kbd> Launch Speed Mode</p>
       <p><kbd>[</kbd> Hide Island</p>
       <p><kbd>]</kbd> Show Island</p>
       <p><kbd>Shift</kbd> + <kbd>[</kbd> Previous Island item</p>
@@ -409,6 +404,13 @@
       <select id="default-page"></select>
       <label for="default-course">Default Course</label>
       <select id="default-course"></select>
+      <label for="default-rows-per-page">Default Rows Per Page</label>
+      <select id="default-rows-per-page">
+        <option value="10">10</option>
+        <option value="25">25</option>
+        <option value="50">50</option>
+        <option value="100">100</option>
+      </select>
       <div data-modal-actions>
         <button class="submit-button" id="save-admin-settings">Save</button>
       </div>
