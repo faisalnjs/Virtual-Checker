@@ -644,7 +644,7 @@ export async function loadAdminSettings(courses) {
             "Content-Type": "application/json",
         },
         body: JSON.stringify({
-            "usr": (window.location.pathname === '/ta/') ? storage.get("code") : storage.get("usr"),
+            "usr": window.location.pathname.startsWith('/ta/') ? storage.get("code") : storage.get("usr"),
             "pwd": storage.get("pwd"),
         })
     })
@@ -706,7 +706,7 @@ export async function loadAdminSettings(courses) {
                         "Content-Type": "application/json",
                     },
                     body: JSON.stringify({
-                        "usr": (window.location.pathname === '/ta/') ? storage.get("code") : storage.get("usr"),
+                        "usr": window.location.pathname.startsWith('/ta/') ? storage.get("code") : storage.get("usr"),
                         "pwd": storage.get("pwd"),
                         "page": pagesList.value,
                         "course": coursesList.value,

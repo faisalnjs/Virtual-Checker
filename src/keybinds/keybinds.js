@@ -117,7 +117,7 @@ try {
     } else if (e.key == "q" && island && islandOpen && !isTyping) {
       var responseData = document.querySelector('.island-extends #response-question-input');
       if (!responseData || !responseData.getAttribute('data-segment') || !responseData.getAttribute('data-question-id')) return;
-      const url = `/admin/questions?segment=${responseData.getAttribute('data-segment')}&question=${responseData.getAttribute('data-question-id')}`;
+      const url = `/${window.location.pathname.startsWith('/ta/') ? 'ta' : 'admin'}/questions?segment=${responseData.getAttribute('data-segment')}&question=${responseData.getAttribute('data-question-id')}`;
       const width = window.outerWidth;
       const height = window.outerHeight;
       const left = window.screenLeft;

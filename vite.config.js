@@ -39,6 +39,7 @@ export default {
         backups: new URL('admin/backups.html', import.meta.url).pathname,
         archive: new URL('admin/archive.html', import.meta.url).pathname,
         courses: new URL('admin/courses.html', import.meta.url).pathname,
+        taQuestions: new URL('ta/questions.html', import.meta.url).pathname,
       },
     },
   },
