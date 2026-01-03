@@ -80,7 +80,7 @@ try {
 
   // Show reset modal
   document.querySelectorAll("[data-reset]").forEach((button) => {
-    button.addEventListener("click", (e) => {
+    button.addEventListener("click", async (e) => {
       if (e.target.getAttribute("data-reset") === 'cache') {
         var timestamp = new Date().getTime();
         storage.set("cacheBust", true);
@@ -90,6 +90,11 @@ try {
         document.querySelectorAll("script[src]").forEach(script => {
           script.setAttribute("src", `${script.getAttribute("src")}?_=${timestamp}`);
         });
+        await storage.idbReady;
+        storage.idbDelete("cache").catch((e) => console.error('IDB delete failed', e));
+        storage.delete("lastBulkLoad");
+        storage.idbDelete("adminCache").catch((e) => console.error('IDB delete failed', e));
+        storage.delete("lastAdminBulkLoad");
         window.location.reload();
       } else {
         resets[e.target.getAttribute("data-reset")]();
