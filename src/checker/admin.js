@@ -4675,7 +4675,7 @@ try {
         usr: storage.get("usr"),
         pwd: storage.get("pwd"),
         username: user,
-        admin_password: inputValues[0],
+        admin_password: inputValues,
       }),
     })
       .then(async (r) => {
