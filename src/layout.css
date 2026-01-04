@@ -101,7 +101,9 @@ div.spacer {
   justify-content: center;
   width: min(100%, 900px);
   gap: 12.5px;
-  transition: 0.25s width, 0.25s align-self;
+  transition:
+    0.25s width,
+    0.25s align-self;
 }
 
 #checker:has(.responses) {
@@ -110,7 +112,9 @@ div.spacer {
 
 body:has(.island.visible) #checker {
   align-self: flex-end;
-  transition: 0.25s width, 0.25s align-self;
+  transition:
+    0.25s width,
+    0.25s align-self;
 }
 
 #checker .column {
@@ -345,11 +349,13 @@ body:has(.island.visible) #checker {
   display: none;
 }
 
-.history-feed > button.flagged {
+.history-feed > button.flagged,
+.history-feed > button.reviewLater {
   position: relative;
 }
 
-.history-feed > button.flagged::after {
+.history-feed > button.flagged::after,
+.history-feed > button.reviewLater:not(.flagged)::after {
   display: inline-block;
   font-family: bootstrap-icons !important;
   font-style: normal;
@@ -365,6 +371,14 @@ body:has(.island.visible) #checker {
   position: absolute;
   top: 15px;
   right: 15px;
+}
+
+.history-feed > button.flagged::after {
+  content: "\f3cb";
+}
+
+.history-feed > button.reviewLater:not(.flagged)::after {
+  content: "\F19F";
 }
 
 .history-feed > .flagged-response-alert {
