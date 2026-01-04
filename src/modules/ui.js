@@ -1100,7 +1100,11 @@ export function reportBugModal(event = null, report = null) {
 
 document.querySelectorAll('[data-suggestions]').forEach(a => a.addEventListener('click', suggestionsModal));
 
-export function suggestionsModal() {
+document.querySelectorAll('[data-suggest-theme]').forEach(a => a.addEventListener('click', () => {
+  suggestionsModal(null, `I would like to suggest a theme for publication in the theme store. Theme Code:\n${a.parentElement.parentElement.querySelector('#theme-code').value}`);
+}));
+
+export function suggestionsModal(event = null, suggestion = null) {
   view();
   modal({
     title: 'Make Suggestion',
@@ -1112,15 +1116,19 @@ export function suggestionsModal() {
         options: [
           { value: 'Virtual Checker', text: 'Virtual Checker' },
           { value: 'Homework Checker (API)', text: 'API' },
+          { value: 'Theme', text: 'New Theme', selected: suggestion },
         ],
         required: true,
+        disabled: suggestion,
       },
       {
         type: 'textarea',
         label: 'Suggestion',
         placeholder: 'What feature would you like to see added or improved?',
         required: true,
-        selectAll: true,
+        selectAll: !suggestion,
+        disabled: suggestion,
+        defaultValue: suggestion || '',
       }
     ],
     buttons: [
