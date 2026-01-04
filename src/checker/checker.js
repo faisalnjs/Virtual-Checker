@@ -524,13 +524,16 @@ try {
       option.setAttribute('due', segment.due || '');
       segments.append(option);
     });
-    segments.value = segmentsArray.find(s => {
-      if (!s.due) return false;
-      return (new Date(`${s.due}T00:00:00`).toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' }) === new Date().toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric', }) && new Date().getTime() <= periodRange[1]);
-    })?.id || segmentsArray.find(s => {
-      if (!s.due) return false;
-      return (new Date(`${s.due}T00:00:00`).getTime() > periodRange[1] && new Date(`${s.due}T00:00:00`).getTime() <= periodRange[0] + 86400000);
-    })?.id || segmentsArray.find(s => !s.due)?.id || segmentsArray[0]?.id;
+    const today = new Date();
+    const todayString = today.toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' });
+    const sortedSegments = segmentsArray.filter(s => s.due).sort((a, b) => new Date(`${a.due}T00:00:00`) - new Date(`${b.due}T00:00:00`));
+    segments.value = sortedSegments.find(s => {
+      const dueDate = new Date(`${s.due}T00:00:00`);
+      return dueDate.toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' }) === todayString && today.getTime() <= periodRange[1];
+    })?.id || sortedSegments.find(s => {
+      const dueDate = new Date(`${s.due}T00:00:00`);
+      return dueDate.getTime() > periodRange[1];
+    })?.id || sortedSegments[0]?.id || segmentsArray[0]?.id;
     segments.removeEventListener("change", updateSegment);
     segments.addEventListener("change", updateSegment);
     // Update history feed
