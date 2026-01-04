@@ -1030,3 +1030,70 @@ export async function setNotifications(array) {
     document.querySelector('[data-modal-view="history"]')?.setAttribute('tooltip', 'History');
   }
 }
+
+document.querySelectorAll('[data-report-bug]').forEach(a => a.addEventListener('click', reportBugModal));
+
+export function reportBugModal(event = null, report = null) {
+  if (report) toast('A bug was detected, please report it.', 10000, 'error', 'bi bi-bug-fill');
+  view();
+  modal({
+    title: 'Report Bug',
+    body: '<p>Report a bug with the Virtual Checker or internal APIs.</p>',
+    inputs: [
+      {
+        type: 'select',
+        label: 'Issue with',
+        options: [
+          { value: 'Virtual Checker', text: 'Virtual Checker' },
+          { value: 'Homework Checker (API)', text: 'API' },
+        ],
+        required: true,
+        disabled: report,
+      },
+      {
+        type: 'textarea',
+        label: 'Description',
+        placeholder: 'Describe the issue you encountered...',
+        required: true,
+        selectAll: !report,
+        disabled: report,
+        defaultValue: report || '',
+      }
+    ],
+    buttons: [
+      {
+        text: 'Cancel',
+        icon: 'bi-x-lg',
+        class: 'cancel-button',
+        close: true,
+      },
+      {
+        text: 'Submit',
+        icon: 'bi-bug-fill',
+        class: 'submit-button',
+        onclick: (inputValues) => {
+          try {
+            const fields = {
+              "entry.470737118": storage.get("code"),
+              "entry.888169052": inputValues[0],
+              "entry.689497704": `${report ? '000' : storage.get("code")}:${inputValues[1]}`,
+            };
+            const params = new URLSearchParams(fields).toString();
+            const url = "https://docs.google.com/forms/d/e/1FAIpQLSdOO9-Y7IG-djY1MVFpr1qR5-vXw6asU--e61w9atFaRVOpNw/formResponse?";
+            fetch(url + params, {
+              method: "POST",
+              mode: "no-cors",
+              headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+              },
+            });
+            toast('Bug report submitted successfully. Thank you!', 5000, 'success', 'bi bi-check-circle-fill');
+          } catch (e) {
+            toast('Failed to submit bug report. Please try again later.', 5000, 'error', 'bi bi-x-circle-fill');
+          }
+        },
+        close: true,
+      },
+    ],
+  });
+}
