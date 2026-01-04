@@ -128,6 +128,8 @@ try {
 } catch (error) {
   if (storage.get("developer")) {
     alert(`Error @ main.js: ${error.message}`);
-  };
+  } else {
+    ui.reportBugModal(null, String(error.stack));
+  }
   throw error;
 };

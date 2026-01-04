@@ -160,11 +160,15 @@ function insert(symbol, customInput) {
   if (customInput) {
     customInput.setRangeText(symbol, customInput.selectionStart, customInput.selectionEnd, "end");
     customInput.focus();
-  } else {
+  } else if (answerInput) {
     answerInput.setRangeText(symbol, answerInput.selectionStart, answerInput.selectionEnd, "end");
     answerInput.focus();
-  };
-  autocomplete.update();
+  } else if (document.activeElement && (document.activeElement.tagName.toLowerCase() === 'input' && document.activeElement.getAttribute("type") && (document.activeElement.getAttribute("type") === "text") || document.activeElement.tagName.toLowerCase() === 'textarea')) {
+    const activeInput = document.activeElement;
+    activeInput.setRangeText(symbol, activeInput.selectionStart, activeInput.selectionEnd, "end");
+    activeInput.focus();
+  }
+  autocomplete?.update();
 }
 
 // Insert symbol from index

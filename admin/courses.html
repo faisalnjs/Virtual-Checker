@@ -123,6 +123,7 @@
     <button data-modal-view="settings/reset">Reset</button>
     <button data-modal-view="settings/credits">Credits</button>
     <button data-modal-view="settings/admin">Admin Settings</button>
+    <button data-report-bug>Report Bug</button>
     <button data-logout>Log Out</button>
     <div data-modal-page="code" data-page-title="Seat Code">
       <input type="text" inputmode="numeric" placeholder="000" maxlength="3" id="code-input" />
@@ -219,11 +220,9 @@
       </div>
     </div>
     <div data-modal-page="keybinds" data-page-title="Keyboard Shortcuts">
-      <p><kbd>Ctrl</kbd> + <kbd>Enter</kbd> Submit check</p>
       <p><kbd>Alt</kbd> + <kbd>1-9</kbd> Insert nth symbol</p>
       <p><kbd>Ctrl</kbd> + <kbd>/</kbd> Open Keyboard Shortcuts</p>
       <p><kbd>Ctrl</kbd> + <kbd>,</kbd> Open Settings</p>
-      <p><kbd>Ctrl</kbd> + <kbd>.</kbd> Open History</p>
       <p><kbd>Shift</kbd> + <kbd>R</kbd> Reset theme and cache</p>
       <p><kbd>Ctrl</kbd> + <kbd>S</kbd> Launch Speed Mode</p>
       <p><kbd>[</kbd> Hide Island</p>
@@ -235,6 +234,7 @@
       <p><kbd>y</kbd> Mark response correct</p>
       <p><kbd>n</kbd> Mark response incorrect</p>
       <p><kbd>q</kbd> Open response question</p>
+      <p><kbd>Ctrl</kbd> + <kbd>b</kbd> Open Report Bug</p>
     </div>
     <div data-modal-page="reset" data-page-title="Reset">
       <button data-reset="all">Reset All Settings</button>
@@ -298,10 +298,9 @@
         href="https://status.dangoweb.com/">server maintenance</a>, or contact support below.
     </p>
     <div class="row center" style="gap: 7.5px; margin-top: 5px;">
-      <a href="https://github.com/faisalnjs/virtual-checker/issues" class="icon" tooltip="GitHub Issues"><i
-          class="bi bi-github"></i></a>
-      <a href="https://dangoweb.com/community" class="icon" tooltip="Support Communities"><i
-          class="bi bi-life-preserver"></i></a>
+      <a href="https://github.com/users/faisalnjs/projects/4/views/7?filterQuery=-status%3ADone%2CAbandoned"
+        class="icon" tooltip="Track Project"><i class="bi bi-github"></i></a>
+      <a href="https://dangoweb.com/community" class="icon" tooltip="Support"><i class="bi bi-life-preserver"></i></a>
       <a href="mailto:contact@faisaln.com" class="icon" tooltip="Email"><i class="bi bi-envelope-fill"></i></a>
     </div>
   </dialog>

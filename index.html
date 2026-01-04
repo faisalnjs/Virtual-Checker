@@ -65,8 +65,8 @@
     </div>
   </div>
   <div id="checker">
-    <button square data-toggle-segment-completion tooltip="Course & Segment Completion"><i class="bi bi-info-square"></i><i
-        class="bi bi-info-square-fill"></i></button>
+    <button square data-toggle-segment-completion tooltip="Course & Segment Completion"><i
+        class="bi bi-info-square"></i><i class="bi bi-info-square-fill"></i></button>
     <button square data-toggle-layout tooltip="Switch Layout"><i class="bi bi-app"></i><i
         class="bi bi-layout-sidebar-reverse"></i></button>
     <div class="column">
@@ -322,6 +322,7 @@
     <button data-modal-view="settings/credits">Credits</button>
     <button data-sync>Manual Sync</button>
     <button data-welcome>Welcome Intro</button>
+    <button data-report-bug>Report Bug</button>
     <button data-logout>Log Out</button>
     <div data-modal-page="code" data-page-title="Seat Code">
       <input type="text" inputmode="numeric" placeholder="000" maxlength="3" id="code-input" />
@@ -418,7 +419,7 @@
       </div>
     </div>
     <div data-modal-page="keybinds" data-page-title="Keyboard Shortcuts">
-      <p><kbd>Ctrl</kbd> + <kbd>Enter</kbd> Submit click</p>
+      <p><kbd>Ctrl</kbd> + <kbd>Enter</kbd> Submit check</p>
       <p><kbd>Alt</kbd> + <kbd>1-9</kbd> Insert nth symbol</p>
       <p><kbd>Ctrl</kbd> + <kbd>&larr;</kbd> Previous question</p>
       <p><kbd>Ctrl</kbd> + <kbd>&rarr;</kbd> Next question</p>
@@ -427,6 +428,7 @@
       <p><kbd>Ctrl</kbd> + <kbd>.</kbd> Open History</p>
       <p><kbd>Shift</kbd> + <kbd>R</kbd> Reset theme and cache</p>
       <p><kbd>Ctrl</kbd> + <kbd>i</kbd> Launch Welcome Intro</p>
+      <p><kbd>Ctrl</kbd> + <kbd>b</kbd> Open Report Bug</p>
     </div>
     <div data-modal-page="reset" data-page-title="Reset">
       <button data-reset="all">Reset All Settings</button>
@@ -473,9 +475,9 @@
         href="https://status.dangoweb.com/">server maintenance</a>, or contact support below.
     </p>
     <div class="row center" style="gap: 7.5px; margin-top: 5px;">
-      <a href="https://github.com/faisalnjs/virtual-checker/issues" class="icon" tooltip="GitHub Issues"><i
-          class="bi bi-github"></i></a>
-      <a href="https://dangoweb.com/community" class="icon" tooltip="Support Communities"><i class="bi bi-life-preserver"></i></a>
+      <a href="https://github.com/users/faisalnjs/projects/4/views/7?filterQuery=-status%3ADone%2CAbandoned"
+        class="icon" tooltip="Track Project"><i class="bi bi-github"></i></a>
+      <a href="https://dangoweb.com/community" class="icon" tooltip="Support"><i class="bi bi-life-preserver"></i></a>
       <a href="mailto:contact@faisaln.com" class="icon" tooltip="Email"><i class="bi bi-envelope-fill"></i></a>
     </div>
   </dialog>

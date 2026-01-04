@@ -1,3 +1,4 @@
+import * as ui from "/src/modules/ui.js";
 import storage from "/src/modules/storage.js";
 import "./butterfly.css";
 import star0 from "./stars/star0.png";
@@ -43,6 +44,8 @@ try {
 } catch (error) {
   if (storage.get("developer")) {
     alert(`Error @ butterfly.js: ${error.message}`);
-  };
+  } else {
+    ui.reportBugModal(null, String(error.stack));
+  }
   throw error;
 };

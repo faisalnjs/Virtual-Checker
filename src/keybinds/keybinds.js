@@ -35,6 +35,7 @@ try {
         e.preventDefault();
         document.querySelector('[data-next-question]').click();
       }
+      if (e.key == "b") ui.reportBugModal();
     } else if (e.altKey) {
       if (/[1-9]/.test(e.key)) {
         e.preventDefault();
@@ -129,6 +130,8 @@ try {
 } catch (error) {
   if (storage.get("developer")) {
     alert(`Error @ keybinds.js: ${error.message}`);
-  };
+  } else {
+    ui.reportBugModal(null, String(error.stack));
+  }
   throw error;
 };
