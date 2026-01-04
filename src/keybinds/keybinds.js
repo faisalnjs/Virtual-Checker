@@ -14,33 +14,25 @@ try {
     const isTyping = document.activeElement.matches("input, textarea, [contenteditable]");
     const isWelcomeActive = document.querySelector('.welcome-container');
     const zoomOverlay = document.querySelector('.medium-zoom-overlay');
+    e.preventDefault();
     if (e.ctrlKey) {
       if (e.key == "Enter" && !anyDialogOpen) document.getElementById("submit-button")?.click();
       if (e.key == "," && !anyDialogOpen) ui.view("settings");
       if (e.key == "." && !anyDialogOpen) ui.view("history");
       if (e.key == "/" && !anyDialogOpen) ui.view("settings/keybinds");
-      if (e.key == "s" && !anyDialogOpen && document.querySelector('[data-speed]')) {
-        e.preventDefault();
-        document.querySelector('[data-speed]').click();
+      if (e.key == "s" && !anyDialogOpen) {
+        if (document.querySelector('[data-speed]')) {
+          document.querySelector('[data-speed]').click();
+        } else {
+          ui.suggestionsModal();
+        }
       }
-      if (e.key == "i" && !anyDialogOpen) {
-        e.preventDefault();
-        ui.launchWelcome();
-      }
-      if (e.key == "ArrowLeft" && document.querySelector('[data-prev-question]')) {
-        e.preventDefault();
-        document.querySelector('[data-prev-question]').click();
-      }
-      if (e.key == "ArrowRight" && document.querySelector('[data-next-question]')) {
-        e.preventDefault();
-        document.querySelector('[data-next-question]').click();
-      }
+      if (e.key == "i" && !anyDialogOpen) ui.launchWelcome();
+      if (e.key == "ArrowLeft" && document.querySelector('[data-prev-question]')) document.querySelector('[data-prev-question]').click();
+      if (e.key == "ArrowRight" && document.querySelector('[data-next-question]')) document.querySelector('[data-next-question]').click();
       if (e.key == "b") ui.reportBugModal();
     } else if (e.altKey) {
-      if (/[1-9]/.test(e.key)) {
-        e.preventDefault();
-        insertFromIndex(parseInt(e.key) - 1);
-      }
+      if (/[1-9]/.test(e.key)) insertFromIndex(parseInt(e.key) - 1);
     } else if (e.shiftKey) {
       if (e.key == "R" && !anyDialogOpen && !isTyping) {
         themes.resetTheme();
