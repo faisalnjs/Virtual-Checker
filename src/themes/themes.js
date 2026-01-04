@@ -5,6 +5,7 @@ import themes from "./themes.json";
 import "./butterfly/butterfly.js";
 import "./festive/festive.js";
 
+import * as ui from "/src/modules/ui.js";
 import storage from "/src/modules/storage.js";
 import * as auth from "/src/modules/auth.js";
 import Element from "/src/modules/element.js";
@@ -122,8 +123,8 @@ function updateThemeCode() {
 
 function sortKeys(obj) {
   return Object.keys(obj).sort().reduce((acc, key) => {
-      acc[key] = obj[key];
-      return acc;
+    acc[key] = obj[key];
+    return acc;
   }, {});
 }
 
@@ -333,6 +334,8 @@ try {
 } catch (error) {
   if (storage.get("developer")) {
     alert(`Error @ themes.js: ${error.message}`);
-  };
+  } else {
+    ui.reportBugModal(null, String(error.stack));
+  }
   throw error;
 };

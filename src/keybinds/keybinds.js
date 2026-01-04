@@ -129,6 +129,8 @@ try {
 } catch (error) {
   if (storage.get("developer")) {
     alert(`Error @ keybinds.js: ${error.message}`);
-  };
+  } else {
+    ui.reportBugModal(null, String(error.stack));
+  }
   throw error;
 };
