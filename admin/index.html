@@ -280,6 +280,7 @@
     <button data-modal-view="settings/credits">Credits</button>
     <button data-modal-view="settings/admin">Admin Settings</button>
     <button data-report-bug>Report Bug</button>
+    <button data-suggestions>Make Suggestion</button>
     <button data-logout>Log Out</button>
     <div data-modal-page="code" data-page-title="Seat Code">
       <input type="text" inputmode="numeric" placeholder="000" maxlength="3" id="code-input" />
@@ -370,6 +371,9 @@
           <input type="text" id="theme-code" />
         </label>
         <div data-modal-actions>
+          <button data-suggest-theme>Suggest Theme</button>
+        </div>
+        <div data-modal-actions>
           <button id="editor-reset">Reset</button>
           <button id="editor-apply">Apply</button>
         </div>
@@ -391,6 +395,7 @@
       <p><kbd>n</kbd> Mark response incorrect</p>
       <p><kbd>q</kbd> Open response question</p>
       <p><kbd>Ctrl</kbd> + <kbd>b</kbd> Open Report Bug</p>
+      <p><kbd>Ctrl</kbd> + <kbd>s</kbd> Open Make Suggestion</p>
     </div>
     <div data-modal-page="reset" data-page-title="Reset">
       <button data-reset="all">Reset All Settings</button>

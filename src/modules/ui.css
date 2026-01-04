@@ -132,7 +132,8 @@ dialog > button[data-modal-view]:not(.icon),
 dialog > button[data-logout],
 dialog > button[data-sync],
 dialog > button[data-welcome],
-dialog > button[data-report-bug] {
+dialog > button[data-report-bug],
+dialog > button[data-suggestions] {
   text-align: unset;
 }
 

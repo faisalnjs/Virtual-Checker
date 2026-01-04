@@ -1079,7 +1079,7 @@ export function reportBugModal(event = null, report = null) {
               "entry.689497704": `${report ? '000' : storage.get("code")}:${inputValues[1]}`,
             };
             const params = new URLSearchParams(fields).toString();
-            const url = "https://docs.google.com/forms/d/e/1FAIpQLSdOO9-Y7IG-djY1MVFpr1qR5-vXw6asU--e61w9atFaRVOpNw/formResponse?";
+            const url = "https://docsd.google.com/forms/d/e/1FAIpQLSdOO9-Y7IG-djY1MVFpr1qR5-vXw6asU--e61w9atFaRVOpNw/formResponse?";
             fetch(url + params, {
               method: "POST",
               mode: "no-cors",
@@ -1090,6 +1090,78 @@ export function reportBugModal(event = null, report = null) {
             toast('Bug report submitted successfully. Thank you!', 5000, 'success', 'bi bi-check-circle-fill');
           } catch (e) {
             toast('Failed to submit bug report. Please try again later.', 5000, 'error', 'bi bi-x-circle-fill');
+          }
+        },
+        close: true,
+      },
+    ],
+  });
+}
+
+document.querySelectorAll('[data-suggestions]').forEach(a => a.addEventListener('click', suggestionsModal));
+
+document.querySelectorAll('[data-suggest-theme]').forEach(a => a.addEventListener('click', () => {
+  suggestionsModal(null, `I would like to suggest a theme for publication in the theme store. Theme Code:\n${a.parentElement.parentElement.querySelector('#theme-code').value}`);
+}));
+
+export function suggestionsModal(event = null, suggestion = null) {
+  view();
+  modal({
+    title: 'Make Suggestion',
+    body: '<p>Make a suggestion for the Virtual Checker or internal APIs.</p>',
+    inputs: [
+      {
+        type: 'select',
+        label: 'Suggestion for',
+        options: [
+          { value: 'Virtual Checker', text: 'Virtual Checker' },
+          { value: 'Homework Checker (API)', text: 'API' },
+          { value: 'Theme', text: 'New Theme', selected: suggestion },
+        ],
+        required: true,
+        disabled: suggestion,
+      },
+      {
+        type: 'textarea',
+        label: 'Suggestion',
+        placeholder: 'What feature would you like to see added or improved?',
+        required: true,
+        selectAll: !suggestion,
+        disabled: suggestion,
+        defaultValue: suggestion || '',
+      }
+    ],
+    buttons: [
+      {
+        text: 'Cancel',
+        icon: 'bi-x-lg',
+        class: 'cancel-button',
+        close: true,
+      },
+      {
+        text: 'Submit',
+        icon: 'bi-chat-left-quote-fill',
+        class: 'submit-button',
+        onclick: (inputValues) => {
+          try {
+            const fields = {
+              "entry.470737118": storage.get("code"),
+              "entry.888169052": inputValues[0],
+              "entry.689497704": `${storage.get("code")}:${inputValues[1]}`,
+            };
+            const params = new URLSearchParams(fields).toString();
+            const url = "https://docs.google.com/forms/d/e/1FAIpQLSf5hoON2TQWxpzb1wMjW4EY2BbDtM-KLe-B7kUJj4FM6aExDw/formResponse?";
+            fetch(url + params, {
+              method: "POST",
+              mode: "no-cors",
+              headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+              },
+            });
+            toast('Suggestion submitted successfully!', 5000, 'success', 'bi bi-check-circle-fill');
+          } catch (e) {
+            toast('Failed to submit suggestion. Please try again later.', 5000, 'error', 'bi bi-x-circle-fill');
+            reportBugModal(null, `Suggestion Submission Error: ${e.message}`);
           }
         },
         close: true,

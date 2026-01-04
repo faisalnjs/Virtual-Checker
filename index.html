@@ -323,6 +323,7 @@
     <button data-sync>Manual Sync</button>
     <button data-welcome>Welcome Intro</button>
     <button data-report-bug>Report Bug</button>
+    <button data-suggestions>Make Suggestion</button>
     <button data-logout>Log Out</button>
     <div data-modal-page="code" data-page-title="Seat Code">
       <input type="text" inputmode="numeric" placeholder="000" maxlength="3" id="code-input" />
@@ -413,6 +414,9 @@
           <input type="text" id="theme-code" />
         </label>
         <div data-modal-actions>
+          <button data-suggest-theme>Suggest Theme</button>
+        </div>
+        <div data-modal-actions>
           <button id="editor-reset">Reset</button>
           <button id="editor-apply">Apply</button>
         </div>
@@ -429,6 +433,7 @@
       <p><kbd>Shift</kbd> + <kbd>R</kbd> Reset theme and cache</p>
       <p><kbd>Ctrl</kbd> + <kbd>i</kbd> Launch Welcome Intro</p>
       <p><kbd>Ctrl</kbd> + <kbd>b</kbd> Open Report Bug</p>
+      <p><kbd>Ctrl</kbd> + <kbd>s</kbd> Open Make Suggestion</p>
     </div>
     <div data-modal-page="reset" data-page-title="Reset">
       <button data-reset="all">Reset All Settings</button>

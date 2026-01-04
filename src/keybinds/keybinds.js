@@ -15,13 +15,30 @@ try {
     const isWelcomeActive = document.querySelector('.welcome-container');
     const zoomOverlay = document.querySelector('.medium-zoom-overlay');
     if (e.ctrlKey) {
-      if (e.key == "Enter" && !anyDialogOpen) document.getElementById("submit-button")?.click();
-      if (e.key == "," && !anyDialogOpen) ui.view("settings");
-      if (e.key == "." && !anyDialogOpen) ui.view("history");
-      if (e.key == "/" && !anyDialogOpen) ui.view("settings/keybinds");
-      if (e.key == "s" && !anyDialogOpen && document.querySelector('[data-speed]')) {
+      if (e.key == "Enter" && !anyDialogOpen) {
         e.preventDefault();
-        document.querySelector('[data-speed]').click();
+        document.getElementById("submit-button")?.click();
+      }
+      if (e.key == "," && !anyDialogOpen) {
+        e.preventDefault();
+        ui.view("settings");
+      }
+      if (e.key == "." && !anyDialogOpen) {
+        e.preventDefault();
+        ui.view("history");
+      }
+      if (e.key == "/" && !anyDialogOpen) {
+        e.preventDefault();
+        ui.view("settings/keybinds");
+      }
+      if (e.key == "s" && !anyDialogOpen) {
+        if (document.querySelector('[data-speed]')) {
+          e.preventDefault();
+          document.querySelector('[data-speed]').click();
+        } else {
+          e.preventDefault();
+          ui.suggestionsModal();
+        }
       }
       if (e.key == "i" && !anyDialogOpen) {
         e.preventDefault();
@@ -35,7 +52,10 @@ try {
         e.preventDefault();
         document.querySelector('[data-next-question]').click();
       }
-      if (e.key == "b") ui.reportBugModal();
+      if (e.key == "b") {
+        e.preventDefault();
+        ui.reportBugModal();
+      }
     } else if (e.altKey) {
       if (/[1-9]/.test(e.key)) {
         e.preventDefault();
@@ -43,6 +63,7 @@ try {
       }
     } else if (e.shiftKey) {
       if (e.key == "R" && !anyDialogOpen && !isTyping) {
+        e.preventDefault();
         themes.resetTheme();
         await storage.idbReady;
         storage.idbDelete("cache").catch((e) => console.error('IDB delete failed', e));
@@ -51,15 +72,25 @@ try {
         storage.delete("lastAdminBulkLoad");
         location.reload();
       }
-      if (e.key == "{" && islandOpen && !isTyping) moveFromCurrent(-1);
-      if (e.key == "}" && islandOpen && !isTyping) moveFromCurrent(1);
+      if (e.key == "{" && islandOpen && !isTyping) {
+        e.preventDefault();
+        moveFromCurrent(-1);
+      }
+      if (e.key == "}" && islandOpen && !isTyping) {
+        e.preventDefault();
+        moveFromCurrent(1);
+      }
     } else if (e.key == "Enter" && anyDialogOpen) {
+      e.preventDefault();
       document.querySelector('dialog[open] .submit-button')?.click();
     } else if (e.key == "[" && island && islandOpen && !isTyping) {
+      e.preventDefault();
       island.classList.remove('visible');
     } else if (e.key == "]" && island && !islandOpen && !isTyping) {
+      e.preventDefault();
       island.classList.add('visible');
     } else if (e.key == "Backspace" && !isTyping && !anyDialogOpen) {
+      e.preventDefault();
       const filterSegmentInput = document.getElementById("filter-segment-input");
       if (filterSegmentInput) {
         filterSegmentInput.value = "";
@@ -88,34 +119,43 @@ try {
       const filterReportResponses = document.getElementById("filter-report-responses");
       if (filterReportResponses) filterReportResponses.children[0].click();
     } else if (e.key == "ArrowRight" && isWelcomeActive) {
+      e.preventDefault();
       ui.clearWelcomeTimeouts();
       ui.toWelcomeSlide(Number(isWelcomeActive.getAttribute('step')) + 1);
     } else if (e.key == "ArrowLeft" && isWelcomeActive) {
+      e.preventDefault();
       ui.clearWelcomeTimeouts();
       ui.toWelcomeSlide(Number(isWelcomeActive.getAttribute('step')) - 1);
     } else if (e.key == "Escape" && isWelcomeActive) {
+      e.preventDefault();
       ui.removeWelcome();
     } else if (e.key == "=" && island && islandOpen && !isTyping) {
+      e.preventDefault();
       island.querySelectorAll('.extra').forEach(el => {
         el.classList.toggle('hidden');
       });
       renderExtras();
     } else if (e.key == "ArrowRight" && zoomOverlay) {
+      e.preventDefault();
       var next = document.querySelector('.medium-zoom-image--hidden').nextElementSibling;
       zoomOverlay.click();
       if (next) setTimeout(() => next.click(), 500);
     } else if (e.key == "ArrowLeft" && zoomOverlay) {
+      e.preventDefault();
       var next = document.querySelector('.medium-zoom-image--hidden').previousElementSibling;
       zoomOverlay.click();
       if (next) setTimeout(() => next.click(), 500);
     } else if (e.key == "y" && island && islandOpen && !isTyping) {
+      e.preventDefault();
       document.querySelector('.island-extends #mark-correct-button')?.click();
     } else if (e.key == "n" && island && islandOpen && !isTyping) {
+      e.preventDefault();
       document.querySelector('.island-extends #mark-incorrect-button')?.click();
       setTimeout(() => {
         if (document.querySelector(".dialog-input.selectAll")) document.querySelector(".dialog-input.selectAll").value = '';
       }, 100);
     } else if (e.key == "q" && island && islandOpen && !isTyping) {
+      e.preventDefault();
       var responseData = document.querySelector('.island-extends #response-question-input');
       if (!responseData || !responseData.getAttribute('data-segment') || !responseData.getAttribute('data-question-id')) return;
       const url = `/${window.location.pathname.startsWith('/ta/') ? 'ta' : 'admin'}/questions?segment=${responseData.getAttribute('data-segment')}&question=${responseData.getAttribute('data-question-id')}`;
