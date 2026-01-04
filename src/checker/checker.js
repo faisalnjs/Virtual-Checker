@@ -598,7 +598,10 @@ try {
       document.querySelector('[data-segment-due]').innerHTML = `<i class="bi bi-calendar3"></i> Due ${new Date(`${selectedSegment.due}T00:00:00`).toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })}`;
       if (document.querySelector('[data-segment-due]')._interval) clearInterval(document.querySelector('[data-segment-due]')._interval);
       document.querySelector('[data-segment-due]')._interval = setInterval(() => {
-        const dueTime = new Date(`${selectedSegment.due}T00:00:00`).getTime();
+        const periodRange = getExtendedPeriodRange(null, Number(storage.get("code").slice(0, 1)));
+        const timeObj = new Date(periodRange[0]);
+        const dateObj = new Date(`${selectedSegment.due}T00:00:00`);
+        const dueTime = new Date(dateObj.getFullYear(), dateObj.getMonth(), dateObj.getDate(), timeObj.getHours(), timeObj.getMinutes(), timeObj.getSeconds()).getTime();
         const currentTime = new Date().getTime();
         var timeDiff = dueTime - currentTime;
         var prefix = 'in ';
