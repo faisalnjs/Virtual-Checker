@@ -153,6 +153,15 @@ if (document.querySelector("#symbols-grid")) {
   for (let i = 0; i < emptySpaces; i++) {
     document.querySelector("#symbols-grid").append(document.createElement("div"));
   }
+
+  // Add suggest symbols button
+  const suggestButton = new Element("button", "Suggest Symbol", {
+    click: () => {
+      ui.suggestionsModal();
+    },
+  }).element;
+  suggestButton.style.marginTop = "5px";
+  document.querySelector("#symbols-grid").parentElement.append(suggestButton);
 }
 
 // Insert symbol at cursor position
