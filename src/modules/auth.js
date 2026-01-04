@@ -752,7 +752,6 @@ export async function bulkLoad(fields = [], usr = null, pwd = null, isAdmin = fa
         const cacheIds = {};
         const cache = (await storage.idbGet((isAdmin || isTA) ? "adminCache" : "cache")) ||
             storage.get((isAdmin || isTA) ? "adminCache" : "cache") || {};
-
         for (const table in cache) {
             if (Array.isArray(cache[table] || []))
                 cacheIds[table] = (cache[table] || []).map(data =>
@@ -787,6 +786,17 @@ export async function bulkLoad(fields = [], usr = null, pwd = null, isAdmin = fa
     if (fetchedBulkLoad.maintenanceMode) {
         ui.startLoader();
         ui.view("maintenance-mode");
+        return false;
+    }
+    if (!((await storage.idbGet((isAdmin || isTA) ? "adminCache" : "cache")) ||
+        storage.get((isAdmin || isTA) ? "adminCache" : "cache") || {})?.['courses']?.length && !fetchedBulkLoad?.courses?.length) {
+        console.log('🔴 Bulk load out of sync, reloading');
+        await storage.idbReady;
+        storage.idbDelete("cache").catch((e) => console.error('IDB delete failed', e));
+        storage.delete("lastBulkLoad");
+        storage.idbDelete("adminCache").catch((e) => console.error('IDB delete failed', e));
+        storage.delete("lastAdminBulkLoad");
+        location.reload();
         return false;
     }
     var updatedBulkLoad = {};
