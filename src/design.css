@@ -1233,8 +1233,13 @@ hidden,
   opacity: 0.75;
 }
 
-.history-feed button button i {
+.history-feed button button .bi-flag-fill {
   font-size: 12px;
+}
+
+.history-feed button button .bi-bookmark-check-fill,
+.history-feed button button .bi-bookmark-plus-fill {
+  font-size: 14px;
 }
 
 #checker:not(.timestamps) [data-time-taken] {

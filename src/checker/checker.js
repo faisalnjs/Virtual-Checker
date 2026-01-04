@@ -886,7 +886,8 @@ try {
         button.id = r.id;
         button.classList = (r.status === "Incorrect") ? 'incorrect' : (r.status === "Correct") ? 'correct' : '';
         if (r.flagged) button.classList.add('flagged');
-        var response = `<b>Status:</b> ${r.status.includes('Unknown') ? r.status.split('Unknown, ')[1] : r.status} at ${unixToString(r.timestamp)}${(r.reason) ? `</p>\n<p><b>Response:</b> ${r.reason}<br>` : ''}</p><button data-flag-response><i class="bi bi-flag-fill"></i> ${r.flagged ? 'Unflag Response' : 'Flag for Review'}</button>`;
+        if (r.review_later) button.classList.add('reviewLater');
+        var response = `<b>Status:</b> ${r.status.includes('Unknown') ? r.status.split('Unknown, ')[1] : r.status} at ${unixToString(r.timestamp)}${(r.reason) ? `</p>\n<p><b>Response:</b> ${r.reason}<br>` : ''}</p><div data-modal-actions style="margin-top: -0.25rem;"><button data-flag-response><i class="bi bi-flag-fill"></i> ${r.flagged ? 'Unflag Response' : 'Flag for Review'}</button><button data-review-later-response><i class="bi ${r.review_later ? 'bi-bookmark-check-fill' : 'bi-bookmark-plus-fill'}"></i> ${r.review_later ? 'Mark Reviewed' : 'Review Later'}</button></div>`;
         switch (r.mode) {
           case 'latex':
             button.innerHTML = `${convertLatexToMarkup(r.response)}\n<p class="hint">(Equation may not display properly)</p>\n<p>${response}`;
@@ -906,6 +907,7 @@ try {
         // Resubmit check
         button.addEventListener("click", async (event) => {
           if (event.target.hasAttribute('data-flag-response')) return r.flagged ? unflagResponse(event, true) : flagResponse(event, true);
+          if (event.target.hasAttribute('data-review-later-response')) return r.review_later ? unReviewLaterResponse(event, true) : reviewLaterResponse(event, true);
           await resubmitCheck(r);
           window.scrollTo(0, document.body.scrollHeight);
         });
@@ -1131,7 +1133,8 @@ try {
       button.id = r.id;
       button.classList = (r.status === "Incorrect") ? 'incorrect' : (r.status === "Correct") ? 'correct' : '';
       if (r.flagged) button.classList.add('flagged');
-      var response = `<b>Status:</b> ${r.status.includes('Unknown') ? r.status.split('Unknown, ')[1] : r.status}${(r.reason) ? `</p>\n<p><b>Response:</b> ${r.reason}<br>` : ''}</p><button data-flag-response><i class="bi bi-flag-fill"></i> ${r.flagged ? 'Unflag Response' : 'Flag for Review'}</button>`;
+      if (r.review_later) button.classList.add('reviewLater');
+      var response = `<b>Status:</b> ${r.status.includes('Unknown') ? r.status.split('Unknown, ')[1] : r.status}${(r.reason) ? `</p>\n<p><b>Response:</b> ${r.reason}<br>` : ''}</p><div data-modal-actions style="margin-top: -0.25rem;"><button data-flag-response><i class="bi bi-flag-fill"></i> ${r.flagged ? 'Unflag Response' : 'Flag for Review'}</button><button data-review-later-response><i class="bi ${r.review_later ? 'bi-bookmark-check-fill' : 'bi-bookmark-plus-fill'}"></i> ${r.review_later ? 'Mark Reviewed' : 'Review Later'}</button></div>`;
       var segmentNumber = segmentsArray.find(s => (String(s.id) === String(r.segment)) && (courses.find(c => JSON.parse(c.periods).includes(Number(String(r.seatCode).slice(0, 1)))) ? (String(s.course) === String(courses.find(c => JSON.parse(c.periods).includes(Number(String(r.seatCode).slice(0, 1)))).id)) : true)) ? (segmentsArray.find(s => (String(s.id) === String(r.segment)) && (courses.find(c => JSON.parse(c.periods).includes(Number(String(r.seatCode).slice(0, 1)))) ? (String(s.course) === String(courses.find(c => JSON.parse(c.periods).includes(Number(String(r.seatCode).slice(0, 1)))).id)) : true)).number || r.segment) : (segmentsArray.find(s => (courses.find(c => JSON.parse(c.periods).includes(Number(String(r.seatCode).slice(0, 1)))) ? (String(s.course) === String(courses.find(c => JSON.parse(c.periods).includes(Number(String(r.seatCode).slice(0, 1)))).id)) : false) && JSON.parse(s.question_ids || [])?.find(q => String(q.id) === String(r.question_id)))?.number || null);
       var questionNumber = JSON.parse(segmentsArray.find(s => String(s.id) === String(r.segment))?.question_ids || '[]').find(q => String(q.id) === String(r.question_id))?.name || questionsArray.find(question => String(question.id) === String(r.question_id)).number;
       switch (r.mode) {
@@ -1153,6 +1156,7 @@ try {
       // Resubmit check
       button.addEventListener("click", async (event) => {
         if (event.target.hasAttribute('data-flag-response')) return r.flagged ? unflagResponse(event) : flagResponse(event);
+        if (event.target.hasAttribute('data-review-later-response')) return r.review_later ? unReviewLaterResponse(event) : reviewLaterResponse(event);
         ui.view("");
         await resubmitCheck(r);
         window.scrollTo(0, document.body.scrollHeight);
@@ -1266,13 +1270,17 @@ try {
       body: JSON.stringify({
         usr: storage.get("code"),
         pwd: storage.get("password"),
-        question_id: event.srcElement.parentElement.id,
+        question_id: event.srcElement.parentElement.parentElement.id,
       }),
     })
       .then(q => q.json())
-      .then(() => {
+      .then(async () => {
         ui.setUnsavedChanges(false);
         ui.toast("Flagged response for review.", 3000, "success", "bi bi-flag-fill");
+        await auth.bulkLoad(["courses", "segments", "questions", "responses"], storage.get("code"), storage.get("password"));
+        await storage.idbReady;
+        const _cache = (await storage.idbGet('cache')) || storage.get('cache') || {};
+        history = (_cache).responses || [];
         isInQuestion ? updateQuestion() : updateHistory();
       })
       .catch((e) => {
@@ -1292,13 +1300,77 @@ try {
       body: JSON.stringify({
         usr: storage.get("code"),
         pwd: storage.get("password"),
-        question_id: event.srcElement.parentElement.id,
+        question_id: event.srcElement.parentElement.parentElement.id,
       }),
     })
       .then(q => q.json())
-      .then(() => {
+      .then(async () => {
         ui.setUnsavedChanges(false);
         ui.toast("Unflagged response.", 3000, "success", "bi bi-flag-fill");
+        await auth.bulkLoad(["courses", "segments", "questions", "responses"], storage.get("code"), storage.get("password"));
+        await storage.idbReady;
+        const _cache = (await storage.idbGet('cache')) || storage.get('cache') || {};
+        history = (_cache).responses || [];
+        isInQuestion ? updateQuestion() : updateHistory();
+      })
+      .catch((e) => {
+        console.error(e);
+        ui.view("api-fail");
+      });
+  }
+
+  function reviewLaterResponse(event, isInQuestion = false) {
+    event.srcElement.disabled = true;
+    ui.setUnsavedChanges(true);
+    fetch(domain + '/reviewLater', {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        usr: storage.get("code"),
+        pwd: storage.get("password"),
+        question_id: event.srcElement.parentElement.parentElement.id,
+      }),
+    })
+      .then(q => q.json())
+      .then(async () => {
+        ui.setUnsavedChanges(false);
+        ui.toast("Marked response to review later.", 3000, "success", "bi bi-bookmark-plus-fill");
+        await auth.bulkLoad(["courses", "segments", "questions", "responses"], storage.get("code"), storage.get("password"));
+        await storage.idbReady;
+        const _cache = (await storage.idbGet('cache')) || storage.get('cache') || {};
+        history = (_cache).responses || [];
+        isInQuestion ? updateQuestion() : updateHistory();
+      })
+      .catch((e) => {
+        console.error(e);
+        ui.view("api-fail");
+      });
+  }
+
+  function unReviewLaterResponse(event, isInQuestion = false) {
+    event.srcElement.disabled = true;
+    ui.setUnsavedChanges(true);
+    fetch(domain + '/unReviewLater', {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        usr: storage.get("code"),
+        pwd: storage.get("password"),
+        question_id: event.srcElement.parentElement.parentElement.id,
+      }),
+    })
+      .then(q => q.json())
+      .then(async () => {
+        ui.setUnsavedChanges(false);
+        ui.toast("Marked response as reviewed.", 3000, "success", "bi bi-bookmark-check-fill");
+        await auth.bulkLoad(["courses", "segments", "questions", "responses"], storage.get("code"), storage.get("password"));
+        await storage.idbReady;
+        const _cache = (await storage.idbGet('cache')) || storage.get('cache') || {};
+        history = (_cache).responses || [];
         isInQuestion ? updateQuestion() : updateHistory();
       })
       .catch((e) => {
