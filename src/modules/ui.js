@@ -429,6 +429,7 @@ export function view(path = "") {
     });
   }
   show(document.querySelector(`[data-modal-page="${pages[0]}"]`), title, buttons);
+  if ((path === 'api-fail') || (path === 'no-course') || (path === 'maintenance-mode')) view();
   if ((path === 'api-fail') || (path === 'no-course') || (path === 'maintenance-mode')) startLoader();
   const event = new Event("view");
   target.dispatchEvent(event);
