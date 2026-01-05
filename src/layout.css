@@ -345,6 +345,15 @@ body:has(.island.visible) #checker {
   line-height: normal;
 }
 
+.history-feed > button.flagged > p,
+.history-feed > button.reviewLater > p {
+  width: calc(100% - 30px);
+}
+
+#question-history-feed > button.reviewLater.flagged > p {
+  width: calc(100% - 60px);
+}
+
 .history-feed > button > p:empty {
   display: none;
 }
@@ -383,6 +392,11 @@ body:has(.island.visible) #checker {
 
 .history-feed > button.reviewLater.flagged::after {
   top: 45px;
+}
+
+#question-history-feed > button.reviewLater.flagged::after {
+  top: 15px;
+  right: 40px;
 }
 
 .history-feed > .flagged-response-alert {
