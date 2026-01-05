@@ -536,7 +536,7 @@ try {
     })?.id || sortedSegments.find(s => {
       const dueDate = new Date(`${s.due}T00:00:00`);
       return dueDate.getTime() > periodRange[1];
-    })?.id || sortedSegments[0]?.id || courseSegmentsArray[0]?.id;
+    })?.id || (sortedSegments.every(s => new Date(`${s.due}T00:00:00`) < today) ? sortedSegments[sortedSegments.length - 1]?.id : null) || sortedSegments[0]?.id || courseSegmentsArray[0]?.id;
     segments.removeEventListener("change", updateSegment);
     segments.addEventListener("change", updateSegment);
     // Update history feed
