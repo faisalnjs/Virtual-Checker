@@ -789,7 +789,7 @@ export async function bulkLoad(fields = [], usr = null, pwd = null, isAdmin = fa
         return false;
     }
     if (!((await storage.idbGet((isAdmin || isTA) ? "adminCache" : "cache")) ||
-        storage.get((isAdmin || isTA) ? "adminCache" : "cache") || {})?.['courses']?.length && !fetchedBulkLoad?.courses?.length) {
+        fields.includes('courses') ? (storage.get(((isAdmin || isTA) ? "adminCache" : "cache") || {})?.['courses']?.length && !fetchedBulkLoad?.courses?.length) : true)) {
         console.log('🔴 Bulk load out of sync, reloading');
         await storage.idbReady;
         storage.idbDelete("cache").catch((e) => console.error('IDB delete failed', e));
