@@ -1138,7 +1138,6 @@ try {
       if (r.flagged) button.classList.add('flagged');
       if (r.review_later) button.classList.add('reviewLater');
       var response = `<b>Status:</b> ${r.status.includes('Unknown') ? r.status.split('Unknown, ')[1] : r.status}${(r.reason) ? `</p>\n<p><b>Response:</b> ${r.reason}<br>` : ''}</p>${(String(r.seatCode) === String(storage.get("code"))) ? `<div data-modal-actions style="margin-top: -0.25rem;"><button data-flag-response><i class="bi bi-flag-fill"></i> ${r.flagged ? 'Unflag Response' : 'Report Error'}</button><button data-review-later-response><i class="bi ${r.review_later ? 'bi-bookmark-check-fill' : 'bi-bookmark-plus-fill'}"></i> ${r.review_later ? 'Mark Reviewed' : 'Review Later'}</button></div>` : ''}`;
-      console.log(segmentsArray, r.segment, segmentsArray.find(s => String(s.id) === String(r.segment)))
       var segmentNumber = segmentsArray.find(s => String(s.id) === String(r.segment))?.number || segmentsArray.find(s => JSON.parse(s.question_ids || [])?.find(q => String(q.id) === String(r.question_id)))?.number || null;
       var questionNumber = JSON.parse(segmentsArray.find(s => String(s.id) === String(r.segment))?.question_ids || '[]').find(q => String(q.id) === String(r.question_id))?.name || questionsArray.find(question => String(question.id) === String(r.question_id)).number;
       switch (r.mode) {
