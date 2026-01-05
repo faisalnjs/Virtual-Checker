@@ -375,7 +375,7 @@ try {
   document.getElementById("save-code-button")?.addEventListener("click", saveCode);
 
   // Save seat code
-  function saveCode() {
+  async function saveCode() {
     const input = document.getElementById("code-input").value;
     // Tests for valid seat code
     const regex = /^[1-9][0-6][0-5]$/;
@@ -399,7 +399,8 @@ try {
             {
               text: `Use ${input}`,
               class: 'submit-button',
-              onclick: () => {
+              onclick: async () => {
+                if (storage.get("code") !== input) await auth.clearBulkLoad();
                 storage.set("code", input);
                 init();
                 // Close all modals
@@ -417,6 +418,7 @@ try {
       } else {
         // Close all modals
         ui.view("");
+        if (storage.get("code") !== input) await auth.clearBulkLoad();
         storage.set("code", input);
         init();
         // Update URL parameters with seat code

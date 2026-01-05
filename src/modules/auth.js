@@ -790,11 +790,7 @@ export async function bulkLoad(fields = [], usr = null, pwd = null, isAdmin = fa
     }
     if (fields.includes('courses') ? (!(await storage.idbGet((isAdmin || isTA) ? "adminCache" : "cache") || {})?.['courses']?.length && !fetchedBulkLoad?.courses?.length) : false) {
         console.log('🔴 Bulk load out of sync, reloading');
-        await storage.idbReady;
-        storage.idbDelete("cache").catch((e) => console.error('IDB delete failed', e));
-        storage.delete("lastBulkLoad");
-        storage.idbDelete("adminCache").catch((e) => console.error('IDB delete failed', e));
-        storage.delete("lastAdminBulkLoad");
+        await clearBulkLoad();
         location.reload();
         return false;
     }
@@ -837,4 +833,13 @@ export async function bulkLoad(fields = [], usr = null, pwd = null, isAdmin = fa
     const loadTime = ((Date.now() - startTime) / 1000).toFixed(2);
     console.log(`${(loadTime < 1) ? '🟢' : ((loadTime > 5) ? '🔴' : '🟡')} Bulk load fetched in ${loadTime}s`);
     return true;
+}
+
+export async function clearBulkLoad() {
+    await storage.idbReady;
+    await storage.idbDelete("cache").catch((e) => console.error('IDB delete failed', e));
+    storage.delete("lastBulkLoad");
+    await storage.idbDelete("adminCache").catch((e) => console.error('IDB delete failed', e));
+    storage.delete("lastAdminBulkLoad");
+    console.log('🟢 Bulk load cleared');
 }
