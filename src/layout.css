@@ -345,6 +345,15 @@ body:has(.island.visible) #checker {
   line-height: normal;
 }
 
+.history-feed > button.flagged > p,
+.history-feed > button.reviewLater > p {
+  width: calc(100% - 30px);
+}
+
+#question-history-feed > button.reviewLater.flagged > p {
+  width: calc(100% - 60px);
+}
+
 .history-feed > button > p:empty {
   display: none;
 }
@@ -354,8 +363,8 @@ body:has(.island.visible) #checker {
   position: relative;
 }
 
-.history-feed > button.flagged::after,
-.history-feed > button.reviewLater:not(.flagged)::after {
+.history-feed > button.flagged::before,
+.history-feed > button.reviewLater::after {
   display: inline-block;
   font-family: bootstrap-icons !important;
   font-style: normal;
@@ -373,12 +382,21 @@ body:has(.island.visible) #checker {
   right: 15px;
 }
 
-.history-feed > button.flagged::after {
+.history-feed > button.flagged::before {
   content: "\f3cb";
 }
 
-.history-feed > button.reviewLater:not(.flagged)::after {
+.history-feed > button.reviewLater::after {
   content: "\F19F";
+}
+
+.history-feed > button.reviewLater.flagged::after {
+  top: 45px;
+}
+
+#question-history-feed > button.reviewLater.flagged::after {
+  top: 15px;
+  right: 40px;
 }
 
 .history-feed > .flagged-response-alert {

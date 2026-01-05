@@ -33,6 +33,7 @@ try {
 
   var courses = [];
   var segmentsArray = [];
+  var courseSegmentsArray = [];
   var questionsArray = [];
   let currentAnswerMode;
   let currentSetType = "brackets";
@@ -374,7 +375,7 @@ try {
   document.getElementById("save-code-button")?.addEventListener("click", saveCode);
 
   // Save seat code
-  function saveCode() {
+  async function saveCode() {
     const input = document.getElementById("code-input").value;
     // Tests for valid seat code
     const regex = /^[1-9][0-6][0-5]$/;
@@ -398,7 +399,8 @@ try {
             {
               text: `Use ${input}`,
               class: 'submit-button',
-              onclick: () => {
+              onclick: async () => {
+                if (storage.get("code") !== input) await auth.clearBulkLoad();
                 storage.set("code", input);
                 init();
                 // Close all modals
@@ -416,6 +418,7 @@ try {
       } else {
         // Close all modals
         ui.view("");
+        if (storage.get("code") !== input) await auth.clearBulkLoad();
         storage.set("code", input);
         init();
         // Update URL parameters with seat code
@@ -498,9 +501,9 @@ try {
         document.querySelector('.alert').setAttribute('hidden', '');
       }
     }
-    segmentsArray = segmentsArray.filter(s => String(s.course) === String(course.id));
+    courseSegmentsArray = segmentsArray.filter(s => String(s.course) === String(course.id));
     segments.innerHTML = '';
-    segmentsArray.sort((a, b) => a.order - b.order).forEach(segment => {
+    courseSegmentsArray.sort((a, b) => a.order - b.order).forEach(segment => {
       const option = document.createElement('option');
       option.value = segment.id;
       var questionStatuses = [];
@@ -526,14 +529,14 @@ try {
     });
     const today = new Date();
     const todayString = today.toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' });
-    const sortedSegments = segmentsArray.filter(s => s.due).sort((a, b) => new Date(`${a.due}T00:00:00`) - new Date(`${b.due}T00:00:00`));
+    const sortedSegments = courseSegmentsArray.filter(s => s.due).sort((a, b) => new Date(`${a.due}T00:00:00`) - new Date(`${b.due}T00:00:00`));
     segments.value = sortedSegments.find(s => {
       const dueDate = new Date(`${s.due}T00:00:00`);
       return dueDate.toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' }) === todayString && today.getTime() <= periodRange[1];
     })?.id || sortedSegments.find(s => {
       const dueDate = new Date(`${s.due}T00:00:00`);
       return dueDate.getTime() > periodRange[1];
-    })?.id || sortedSegments[0]?.id || segmentsArray[0]?.id;
+    })?.id || sortedSegments[0]?.id || courseSegmentsArray[0]?.id;
     segments.removeEventListener("change", updateSegment);
     segments.addEventListener("change", updateSegment);
     // Update history feed
@@ -559,7 +562,7 @@ try {
   }
 
   async function updateSegment(event, sameSegment = false) {
-    const selectedSegment = segmentsArray.find(s => String(s.id) === String(segments.value));
+    const selectedSegment = courseSegmentsArray.find(s => String(s.id) === String(segments.value));
     const selectedQuestionOption = questions.querySelector('option:checked');
     questions.innerHTML = '';
     if (!selectedSegment) return updateQuestion();
@@ -734,11 +737,11 @@ try {
     document.getElementById("segments-completed").classList.remove('incomplete');
     document.getElementById("segments-completed").classList.remove('complete');
     document.getElementById("segments-completed").classList.remove('mastery');
-    if (segmentsArray && segmentsArray.length > 0) {
+    if (courseSegmentsArray && courseSegmentsArray.length > 0) {
       var anyQuestionsInCourse = false;
       const masterySegments = [];
       const completedSegments = [];
-      segmentsArray.forEach(segment => {
+      courseSegmentsArray.forEach(segment => {
         const questionIds = JSON.parse(segment.question_ids || '[]');
         const segmentQuestions = questionIds.map(qi => questionsArray.find(q => String(q.id) === String(qi.id))).filter(q => q && !questionsArray.find(q2 => String(q2.stem) === String(q.id)));
         const totalQuestions = segmentQuestions.length;
@@ -887,7 +890,7 @@ try {
         button.classList = (r.status === "Incorrect") ? 'incorrect' : (r.status === "Correct") ? 'correct' : '';
         if (r.flagged) button.classList.add('flagged');
         if (r.review_later) button.classList.add('reviewLater');
-        var response = `<b>Status:</b> ${r.status.includes('Unknown') ? r.status.split('Unknown, ')[1] : r.status} at ${unixToString(r.timestamp)}${(r.reason) ? `</p>\n<p><b>Response:</b> ${r.reason}<br>` : ''}</p><div data-modal-actions style="margin-top: -0.25rem;"><button data-flag-response><i class="bi bi-flag-fill"></i> ${r.flagged ? 'Unflag Response' : 'Flag for Review'}</button><button data-review-later-response><i class="bi ${r.review_later ? 'bi-bookmark-check-fill' : 'bi-bookmark-plus-fill'}"></i> ${r.review_later ? 'Mark Reviewed' : 'Review Later'}</button></div>`;
+        var response = `<b>Status:</b> ${r.status.includes('Unknown') ? r.status.split('Unknown, ')[1] : r.status} at ${unixToString(r.timestamp)}${(r.reason) ? `</p>\n<p><b>Response:</b> ${r.reason}<br>` : ''}</p><div data-modal-actions style="margin-top: -0.25rem;"><button data-flag-response><i class="bi bi-flag-fill"></i> ${r.flagged ? 'Unflag Response' : 'Report Error'}</button><button data-review-later-response><i class="bi ${r.review_later ? 'bi-bookmark-check-fill' : 'bi-bookmark-plus-fill'}"></i> ${r.review_later ? 'Mark Reviewed' : 'Review Later'}</button></div>`;
         switch (r.mode) {
           case 'latex':
             button.innerHTML = `${convertLatexToMarkup(r.response)}\n<p class="hint">(Equation may not display properly)</p>\n<p>${response}`;
@@ -1134,8 +1137,8 @@ try {
       button.classList = (r.status === "Incorrect") ? 'incorrect' : (r.status === "Correct") ? 'correct' : '';
       if (r.flagged) button.classList.add('flagged');
       if (r.review_later) button.classList.add('reviewLater');
-      var response = `<b>Status:</b> ${r.status.includes('Unknown') ? r.status.split('Unknown, ')[1] : r.status}${(r.reason) ? `</p>\n<p><b>Response:</b> ${r.reason}<br>` : ''}</p><div data-modal-actions style="margin-top: -0.25rem;"><button data-flag-response><i class="bi bi-flag-fill"></i> ${r.flagged ? 'Unflag Response' : 'Flag for Review'}</button><button data-review-later-response><i class="bi ${r.review_later ? 'bi-bookmark-check-fill' : 'bi-bookmark-plus-fill'}"></i> ${r.review_later ? 'Mark Reviewed' : 'Review Later'}</button></div>`;
-      var segmentNumber = segmentsArray.find(s => (String(s.id) === String(r.segment)) && (courses.find(c => JSON.parse(c.periods).includes(Number(String(r.seatCode).slice(0, 1)))) ? (String(s.course) === String(courses.find(c => JSON.parse(c.periods).includes(Number(String(r.seatCode).slice(0, 1)))).id)) : true)) ? (segmentsArray.find(s => (String(s.id) === String(r.segment)) && (courses.find(c => JSON.parse(c.periods).includes(Number(String(r.seatCode).slice(0, 1)))) ? (String(s.course) === String(courses.find(c => JSON.parse(c.periods).includes(Number(String(r.seatCode).slice(0, 1)))).id)) : true)).number || r.segment) : (segmentsArray.find(s => (courses.find(c => JSON.parse(c.periods).includes(Number(String(r.seatCode).slice(0, 1)))) ? (String(s.course) === String(courses.find(c => JSON.parse(c.periods).includes(Number(String(r.seatCode).slice(0, 1)))).id)) : false) && JSON.parse(s.question_ids || [])?.find(q => String(q.id) === String(r.question_id)))?.number || null);
+      var response = `<b>Status:</b> ${r.status.includes('Unknown') ? r.status.split('Unknown, ')[1] : r.status}${(r.reason) ? `</p>\n<p><b>Response:</b> ${r.reason}<br>` : ''}</p>${(String(r.seatCode) === String(storage.get("code"))) ? `<div data-modal-actions style="margin-top: -0.25rem;"><button data-flag-response><i class="bi bi-flag-fill"></i> ${r.flagged ? 'Unflag Response' : 'Report Error'}</button><button data-review-later-response><i class="bi ${r.review_later ? 'bi-bookmark-check-fill' : 'bi-bookmark-plus-fill'}"></i> ${r.review_later ? 'Mark Reviewed' : 'Review Later'}</button></div>` : ''}`;
+      var segmentNumber = segmentsArray.find(s => String(s.id) === String(r.segment))?.number || segmentsArray.find(s => JSON.parse(s.question_ids || [])?.find(q => String(q.id) === String(r.question_id)))?.number || null;
       var questionNumber = JSON.parse(segmentsArray.find(s => String(s.id) === String(r.segment))?.question_ids || '[]').find(q => String(q.id) === String(r.question_id))?.name || questionsArray.find(question => String(question.id) === String(r.question_id)).number;
       switch (r.mode) {
         case 'latex':
