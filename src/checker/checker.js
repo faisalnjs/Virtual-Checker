@@ -604,6 +604,7 @@ try {
       document.querySelector('[data-segment-due]').innerHTML = `<i class="bi bi-calendar3"></i> Due ${new Date(`${selectedSegment.due}T00:00:00`).toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })}`;
       if (document.querySelector('[data-segment-due]')._interval) clearInterval(document.querySelector('[data-segment-due]')._interval);
       document.querySelector('[data-segment-due]')._interval = setInterval(() => {
+        if (!storage.get("code")) return;
         const periodRange = getExtendedPeriodRange(null, Number(storage.get("code").slice(0, 1)));
         const timeObj = new Date(periodRange[0]);
         const dateObj = new Date(`${selectedSegment.due}T00:00:00`);
@@ -783,7 +784,7 @@ try {
         }
         const li = document.createElement('li');
         li.classList.add(statusLabel.replace(/\s+/g, '-').toLowerCase());
-        li.innerHTML = `${icon} <b>${segment.number} - ${segment.name}:</b>&nbsp;${statusLabel}<span style="float: right; font-weight: 600;">${attemptedCount}/${totalQuestions} Answered • ${correctCount}/${totalQuestions} Correct (${(totalQuestions > 0) ? Math.round((correctCount / totalQuestions) * 100) : 0}%)</span>`;
+        li.innerHTML = `${icon} <b>${segment.number} - ${segment.name.length > 50 ? segment.name.substring(0, 50 - 3).trim() + '...' : segment.name}:</b><p>${statusLabel}</p><span style="float: right; font-weight: 600;">${attemptedCount}/${totalQuestions} Answered • ${correctCount}/${totalQuestions} Correct (${(totalQuestions > 0) ? Math.round((correctCount / totalQuestions) * 100) : 0}%)</span>`;
         document.getElementById("segments-completed").querySelector('ul').append(li);
       });
       if (anyQuestionsInCourse && (masterySegments.length > 0) && masterySegments.every(Boolean)) {
