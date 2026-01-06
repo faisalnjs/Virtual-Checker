@@ -188,7 +188,7 @@
     <img src="../banner.png" alt="Virtual Checker Banner">
     <span class="version" id="version-string"></span>
     <!-- <button data-modal-view="settings/code">Seat Code</button> -->
-    <button data-modal-view="settings/theme">Theme</button>
+    <button data-modal-view="store">Theme Store</button>
     <button data-modal-view="settings/keybinds">Keyboard Shortcuts</button>
     <button data-modal-view="settings/reset">Reset</button>
     <button data-modal-view="settings/credits">Credits</button>
@@ -218,79 +218,6 @@
         <p>Where do you sit?</p>
         <p class="hint">Screen</p>
         <div id="seat-grid"></div>
-      </div>
-    </div>
-    <div data-modal-page="theme" data-page-title="Theme">
-      <div id="theme-preview">
-        <h1 class="text-placeholder">000</h1>
-        <p class="text-placeholder">Question</p>
-        <div class="control-placeholder"></div>
-        <div class="control-placeholder"></div>
-        <p class="text-placeholder">Answer</p>
-        <div class="control-placeholder"></div>
-        <div class="control-placeholder pill"></div>
-      </div>
-      <div id="theme-selector">
-        <button data-modal-view="settings/theme/editor">Custom</button>
-      </div>
-      <div data-modal-actions>
-        <button id="theme-reset">Reset</button>
-        <button id="theme-apply">Apply</button>
-      </div>
-      <div data-modal-page="editor" data-page-title="Custom Theme">
-        <div id="editor-preview">
-          <h1 class="text-placeholder">000</h1>
-          <p class="text-placeholder">Question</p>
-          <div class="control-placeholder"></div>
-          <div class="control-placeholder"></div>
-          <p class="text-placeholder">Answer</p>
-          <div class="control-placeholder"></div>
-          <div class="control-placeholder pill"></div>
-        </div>
-        <div id="theme-editor">
-          <label>
-            Color Scheme
-            <select name="color-scheme">
-              <option value="light">Light</option>
-              <option value="dark">Dark</option>
-            </select>
-          </label>
-          <label>
-            Text
-            <div data-color-input="text-color"></div>
-          </label>
-          <label>
-            Background
-            <div data-color-input="background-color"></div>
-          </label>
-          <label>
-            Surface
-            <div data-color-input="surface-color"></div>
-          </label>
-          <label>
-            Accent
-            <div data-color-input="accent-color"></div>
-          </label>
-          <label>
-            Accent Text
-            <div data-color-input="accent-text-color"></div>
-          </label>
-          <label>
-            Error
-            <div data-color-input="error-color"></div>
-          </label>
-        </div>
-        <label>
-          Theme Code
-          <input type="text" id="theme-code" />
-        </label>
-        <div data-modal-actions>
-          <button data-suggest-theme>Suggest Theme</button>
-        </div>
-        <div data-modal-actions>
-          <button id="editor-reset">Reset</button>
-          <button id="editor-apply">Apply</button>
-        </div>
       </div>
     </div>
     <div data-modal-page="keybinds" data-page-title="Keyboard Shortcuts">
@@ -383,6 +310,82 @@
     <p>
       The Virtual Checker is undergoing maintenance. Please try again later.
     </p>
+  </dialog>
+  <!-- Theme Store -->
+  <dialog data-modal-page="store" data-page-title="Theme Store">
+    <div data-modal-page="theme" data-page-title="Your Themes">
+      <div id="theme-preview">
+        <h1 class="text-placeholder">000</h1>
+        <p class="text-placeholder">Question</p>
+        <div class="control-placeholder"></div>
+        <div class="control-placeholder"></div>
+        <p class="text-placeholder">Answer</p>
+        <div class="control-placeholder"></div>
+        <div class="control-placeholder pill"></div>
+      </div>
+      <div id="theme-selector">
+        <button data-modal-view="settings/store/editor">Custom</button>
+      </div>
+      <div data-modal-actions>
+        <button id="theme-reset">Reset</button>
+        <button id="theme-apply">Apply</button>
+      </div>
+    </div>
+    <div data-modal-page="editor" data-page-title="Custom Theme">
+      <div id="editor-preview">
+        <h1 class="text-placeholder">000</h1>
+        <p class="text-placeholder">Question</p>
+        <div class="control-placeholder"></div>
+        <div class="control-placeholder"></div>
+        <p class="text-placeholder">Answer</p>
+        <div class="control-placeholder"></div>
+        <div class="control-placeholder pill"></div>
+      </div>
+      <div id="theme-editor">
+        <label>
+          Color Scheme
+          <select name="color-scheme">
+            <option value="light">Light</option>
+            <option value="dark">Dark</option>
+          </select>
+        </label>
+        <label>
+          Text
+          <div data-color-input="text-color"></div>
+        </label>
+        <label>
+          Background
+          <div data-color-input="background-color"></div>
+        </label>
+        <label>
+          Surface
+          <div data-color-input="surface-color"></div>
+        </label>
+        <label>
+          Accent
+          <div data-color-input="accent-color"></div>
+        </label>
+        <label>
+          Accent Text
+          <div data-color-input="accent-text-color"></div>
+        </label>
+        <label>
+          Error
+          <div data-color-input="error-color"></div>
+        </label>
+      </div>
+      <label>
+        Theme Code
+        <input type="text" id="theme-code" />
+      </label>
+      <div data-modal-actions>
+        <button data-suggest-theme>Suggest Theme</button>
+      </div>
+      <div data-modal-actions>
+        <button id="editor-reset">Reset</button>
+        <button id="editor-apply">Apply</button>
+      </div>
+    </div>
   </dialog>
   <dialog data-modal-page="menu" data-page-title="Virtual Checker">
     <div class="menu-icons">
