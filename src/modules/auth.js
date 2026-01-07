@@ -797,29 +797,21 @@ export async function bulkLoad(fields = [], usr = null, pwd = null, isAdmin = fa
     var updatedBulkLoad = {};
     for (const table in fetchedBulkLoad) {
         if (table === 'asOf' || table === 'syncDeleted') continue;
-        if (storage.get((isAdmin || isTA) ? "lastAdminBulkLoad" : "lastBulkLoad") || null) {
-            var deletedData;
-            var existingData;
-            var mergedData;
-            if (!Array.isArray(fetchedBulkLoad[table] || [])) {
-                updatedBulkLoad[table] = fetchedBulkLoad[table];
-                continue;
-            }
-            deletedData = fetchedBulkLoad.syncDeleted?.[table] || [];
-            const cacheObj = (await storage.idbGet((isAdmin || isTA) ? "adminCache" : "cache")) || storage.get((isAdmin || isTA) ? "adminCache" : "cache") || {};
-            existingData = (Array.isArray(cacheObj[table]) ? cacheObj[table] : []).filter(item => {
-                return !deletedData.includes(String(item.id || item.seatCode || item.period || item.key || item.username || 0));
+        const currentCacheKey = (isAdmin || isTA) ? "adminCache" : "cache";
+        const lastBulkLoadKey = (isAdmin || isTA) ? "lastAdminBulkLoad" : "lastBulkLoad";
+        if (storage.get(lastBulkLoadKey)) {
+            let deletedData = fetchedBulkLoad.syncDeleted?.[table] || [];
+            const cacheObj = (await storage.idbGet(currentCacheKey)) || storage.get(currentCacheKey) || {};
+            const deletedSet = new Set(deletedData.map(item => String(item.id || item.seatCode || item.period || item.key || item.username || 0)));
+            const existingData = Array.isArray(cacheObj[table]) ? cacheObj[table].filter(item => !deletedSet.has(String(item.id || item.seatCode || item.period || item.key || item.username || 0))) : [];
+            const mergedMap = {};
+            existingData.forEach(item => {
+                mergedMap[String(item.id || item.seatCode || item.period || item.key || item.username || 0)] = item;
             });
-            mergedData = [...existingData];
             (fetchedBulkLoad[table] || []).forEach(newItem => {
-                const index = mergedData.findIndex(item => String(item.id || item.seatCode || item.period || item.key || item.username || 0) === String(newItem.id || newItem.seatCode || newItem.period || newItem.key || newItem.username || 0));
-                if (index !== -1) {
-                    mergedData[index] = newItem;
-                } else {
-                    mergedData.push(newItem);
-                }
+                mergedMap[String(newItem.id || newItem.seatCode || newItem.period || newItem.key || newItem.username || 0)] = newItem;
             });
-            updatedBulkLoad[table] = mergedData;
+            updatedBulkLoad[table] = Object.values(mergedMap);
         } else {
             updatedBulkLoad[table] = fetchedBulkLoad[table];
         }
