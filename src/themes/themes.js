@@ -350,7 +350,7 @@ try {
     const checks = 0;
     const checksText = document.createElement("p");
     checksText.classList = 'checks-text';
-    checksText.innerHTML = `<i class="bi bi-check2-circle"></i> ${checks} Checks Available`;
+    checksText.innerHTML = `<i class="bi bi-check2-circle"></i> You've got ${checks} Checks`;
     store.appendChild(checksText);
     if (featuredTheme) {
       const promo = document.createElement("div");
@@ -385,7 +385,7 @@ try {
       themeItem.classList = 'theme-item';
       themeItem.setAttribute("data-theme", value);
       themeItem.setAttribute('tooltip', `${name} Theme (${theme[3] ? `${theme[3]} Checks` : 'Free'})`);
-      themeItem.innerHTML = `${theme[2] ? `<i class="bi bi-${theme[2]}"></i>` : ''}<h5>${name}</h5><p>${theme[3] ? `${theme[3]} Checks` : 'Free'}</p>`;
+      themeItem.innerHTML = `${theme[2] ? `<i class="bi bi-${theme[2]}"></i>` : ''}<h5>${name}</h5><p>${theme[3] ? `${theme[3]} Checks` : 'Free'}</p>${theme[4] && theme[4].length ? `<small>Requires: ${theme[4].map(t => themes.find(th => th[0] == t)[1] || t).join(', ')}</small>` : ''}`;
       if (value === initialTheme) themeItem.classList.add('selected');
       const themeButton = document.createElement("button");
       themeButton.textContent = "Preview";

@@ -126,7 +126,8 @@ div[data-modal-page] {
 [data-modal-page="store"]:has(.promo button:hover) .theme-item:not(:has(button:hover)),
 [data-modal-page="store"]:has(.promo button:hover) [data-modal-buttons],
 [data-modal-page="store"]:has(.themes-grid .theme-item button:hover) .promo:not(:has(button:hover)),
-[data-modal-page="store"]:has(.themes-grid .theme-item button:hover) .theme-item:not(:has(button:hover)),
+[data-modal-page="store"]:has(.themes-grid .theme-item button:hover)
+  .theme-item:not(:has(button:hover)),
 [data-modal-page="store"]:has(.themes-grid .theme-item button:hover) [data-modal-buttons] {
   opacity: 0;
   transition: 0.25s opacity;
@@ -161,7 +162,7 @@ div[data-modal-page] {
 
 [data-modal-page="store"] .promo .promo-inner {
   color: var(--text-color);
-  background: var(--background-color);
+  background: var(--surface-color);
   width: fit-content;
   padding: 15px 25px;
   font-size: 50px;
@@ -197,8 +198,11 @@ div[data-modal-page] {
 }
 
 [data-modal-page="store"] .themes-grid .theme-item {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
   color: var(--text-color);
-  padding: 15px;
+  padding: 20px 15px;
   border-radius: 10px;
   background: linear-gradient(90deg, var(--background-color) 0%, var(--surface-color) 100%);
   background-color: var(--background-color);
@@ -235,8 +239,16 @@ div[data-modal-page] {
 
 [data-modal-page="store"] .themes-grid .theme-item button {
   color: var(--text-color);
-  margin-top: 5px;
+  margin-top: auto;
   transition: background-color 0.25s ease-in-out;
+}
+
+[data-modal-page="store"] .themes-grid .theme-item small {
+  margin-bottom: 5px;
+}
+
+[data-modal-page="store"] .themes-grid .theme-item:not(:has(small)) p {
+  margin-bottom: 5px;
 }
 
 [data-modal-page="store"] .themes-grid .theme-item button:hover {
