@@ -281,6 +281,14 @@ div[data-modal-page] {
   --error-color: #fa8796;
 }
 
+[data-modal-page="store"] .cost-info {
+  margin-top: 10px;
+}
+
+[data-modal-page="store"] .cost-info i {
+  margin-left: -20px;
+}
+
 div[data-modal-menu] {
   display: flex;
   flex-direction: row;

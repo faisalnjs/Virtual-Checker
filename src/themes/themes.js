@@ -349,6 +349,13 @@ try {
   if (store) {
     storage.idbReady.then(async () => {
       const checks = (await storage.idbGet("cache"))?.checksCount || 0;
+      const ownedThemes = (await storage.idbGet("cache"))?.ownedThemes || [];
+      if (document.body.getAttribute('data-theme') && !ownedThemes.includes(document.body.getAttribute('data-theme')) && themes.find(theme => theme[0] === document.body.getAttribute('data-theme'))?.[3]) {
+        storage.set("theme", '');
+        ui.toast("Applied theme is not owned.", 2000, "error", "bi bi-exclamation-triangle-fill");
+        document.body.setAttribute('data-theme', '');
+        await auth.syncPush("theme", true);
+      }
       const checksText = document.createElement("p");
       checksText.classList = 'checks-text';
       checksText.innerHTML = `<i class="bi bi-check2-circle"></i> You've got ${checks} Check${checks == 1 ? '' : 's'} available to spend!`;
@@ -385,19 +392,29 @@ try {
         const themeItem = document.createElement("div");
         themeItem.classList = 'theme-item';
         themeItem.setAttribute("data-theme", value);
-        themeItem.setAttribute('tooltip', theme[5] ? `HD Theme${theme[4].length ? ` - ${theme[4].map(t => themes.find(th => th[0] == t)[1] || t).join(', ')} Required` : ''}` : `${name} Theme (${theme[3] ? `${theme[3]} Check${theme[3] == 1 ? '' : 's'}` : 'Free'})`);
+        themeItem.setAttribute('tooltip', theme[3] ? `${checks}/${theme[3]} Check${theme[3] == 1 ? '' : 's'}` : 'Free');
         themeItem.innerHTML = `${theme[2] ? `<i class="bi bi-${theme[2]}"></i>` : ''}${theme[5] ? `<i class="bi bi-badge-hd-fill hd"></i>` : ''}<h5>${name}</h5><p>${theme[3] ? `${theme[3]} Check${theme[3] == 1 ? '' : 's'}` : 'Free'}</p>${theme[4] && theme[4].length ? `<small>Requires: ${theme[4].map(t => themes.find(th => th[0] == t)[1] || t).join(', ')}</small>` : ''}`;
         if (value === initialTheme) themeItem.classList.add('selected');
         const themeButton = document.createElement("button");
-        themeButton.textContent = "Preview";
+        themeButton.textContent = (value === initialTheme) ? "Applied" : (ownedThemes.includes(theme[0]) ? "Owned" : "Preview");
         themeButton.addEventListener("mouseover", () => {
           initialTheme = document.body.getAttribute('data-theme') || '';
           document.body.setAttribute('data-theme', theme[0] || '');
-          themeButton.textContent = theme[3] ? `Get (${theme[3] ? `${theme[3]} Check${theme[3] == 1 ? '' : 's'}` : 'Free'})` : 'Apply Now';
+          if (themeItem.classList.contains('selected')) {
+            themeButton.textContent = "Applied";
+          } else if (ownedThemes.includes(theme[0]) || !theme[3]) {
+            themeButton.textContent = "Apply Now";
+          } else if (theme[4] && theme[4].length && !theme[4].some(t => ownedThemes.includes(t))) {
+            themeButton.textContent = "Locked (Missing Requirements)";
+          } else if (checks >= theme[3]) {
+            themeButton.textContent = `Purchase for ${theme[3]} Check${theme[3] == 1 ? '' : 's'}`;
+          } else {
+            themeButton.textContent = "Insufficient Checks";
+          }
         });
         themeButton.addEventListener("mouseout", () => {
           document.body.setAttribute('data-theme', initialTheme);
-          themeButton.textContent = "Preview";
+          themeButton.textContent = themeItem.classList.contains('selected') ? "Applied" : (ownedThemes.includes(theme[0]) ? "Owned" : "Preview");
         });
         themeItem.appendChild(themeButton);
         if (theme[3]) premiumThemesGrid.append(themeItem);
@@ -411,6 +428,10 @@ try {
       premiumThemesGridText.innerText = 'Premium Themes';
       store.appendChild(premiumThemesGridText);
       store.appendChild(premiumThemesGrid);
+      const costInfo = document.createElement("ul");
+      costInfo.classList = 'cost-info';
+      costInfo.innerHTML = `<i class="bi bi-info-circle"></i> Information<li>Checks can be obtained by responding to a question correctly, at any time.</li><li>Checks conversion rate is 1 Check to 1 correct answer.</li><li>Checks may only be obtained on the Virtual Checker platform.</li><li>If your response is marked correct late, you will get your Checks at that time.</li><li>If your response is falsely marked as correct and later marked incorrect, your Checks balance will be deducted from.</li><li>The minimum Checks balance is 0.</li><li>Themes marked as "Free" can be applied without spending any Checks.</li><li>Premium themes require you to spend your available Checks to unlock and use them.</li><li>Themes that have requirements need you to own the specified themes before you can purchase them.</li><li>HD themes may require more resources to run smoothly, and cost more Checks.</li><li>All theme images are licensed Free To Use.</li><li>The cost for themes are based on average student correct answer data.</li>`;
+      store.appendChild(costInfo);
     });
   }
 } catch (error) {
