@@ -309,6 +309,17 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
   background: url(/store/backdrop/jellyfish.png) !important;
 }
 
+[data-theme="jellyfish-2"] {
+  color-scheme: dark;
+  --text-color: #ffffff;
+  --background-color: #000815;
+  --surface-color: #5f74e3;
+  --accent-color: #575ed3;
+  --accent-text-color: #ffffff;
+  --error-color: #eb324b;
+  background: url(/store/backdrop/jellyfish-2.png) !important;
+}
+
 [data-theme="jellyfish-pro"] {
   color-scheme: dark;
   --text-color: #ffffff;
@@ -452,4 +463,26 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
   --accent-text-color: #474747;
   --error-color: #eb324b;
   background: url(/store/backdrop/snow.png) !important;
+}
+
+[data-theme="shells"] {
+  color-scheme: light;
+  --text-color: #2c2c2c;
+  --background-color: #f1e8db;
+  --surface-color: #ddd3c6;
+  --accent-color: #b28766;
+  --accent-text-color: #2c2c2c;
+  --error-color: #eb324b;
+  background: url(/store/backdrop/shells.png) !important;
+}
+
+[data-theme="tides"] {
+  color-scheme: dark;
+  --text-color: #fafafa;
+  --background-color: #112628;
+  --surface-color: #204445;
+  --accent-color: #2e9993;
+  --accent-text-color: #fafafa;
+  --error-color: #eb324b;
+  background: url(/store/backdrop/tides.png) !important;
 }
