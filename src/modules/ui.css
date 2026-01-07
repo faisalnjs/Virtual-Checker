@@ -122,12 +122,10 @@ div[data-modal-page] {
   transition: 0.25s background-color;
 }
 
-[data-modal-page="store"]:has(.promo button:hover) .promo:not(:has(button:hover)),
 [data-modal-page="store"]:has(.promo button:hover) .theme-item:not(:has(button:hover)),
 [data-modal-page="store"]:has(.promo button:hover) [data-modal-buttons],
-[data-modal-page="store"]:has(.themes-grid .theme-item button:hover) .promo:not(:has(button:hover)),
-[data-modal-page="store"]:has(.themes-grid .theme-item button:hover)
-  .theme-item:not(:has(button:hover)),
+[data-modal-page="store"]:has(.themes-grid .theme-item button:hover) .promo,
+[data-modal-page="store"]:has(.themes-grid .theme-item button:hover) .theme-item:not(:has(button:hover)),
 [data-modal-page="store"]:has(.themes-grid .theme-item button:hover) [data-modal-buttons] {
   opacity: 0;
   transition: 0.25s opacity;
@@ -158,6 +156,11 @@ div[data-modal-page] {
   color: var(--text-color);
   font-size: 20px;
   font-weight: bold;
+}
+
+[data-modal-page="store"] .promo:has(button:hover) {
+  background-image: none !important;
+  border-color: transparent;
 }
 
 [data-modal-page="store"] .promo .promo-inner {

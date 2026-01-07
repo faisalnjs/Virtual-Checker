@@ -347,10 +347,11 @@ try {
   // Render Theme Store
   const store = document.querySelector(`[data-modal-page="store"]`);
   if (store) {
-    const checks = 0;
+    await storage.idbReady;
+    const checks = (await storage.idbGet("cache"))?.checksCount || 0;
     const checksText = document.createElement("p");
     checksText.classList = 'checks-text';
-    checksText.innerHTML = `<i class="bi bi-check2-circle"></i> You've got ${checks} Checks`;
+    checksText.innerHTML = `<i class="bi bi-check2-circle"></i> You've got ${checks} Check${checks == 1 ? '' : 's'} available to spend!`;
     store.appendChild(checksText);
     if (featuredTheme) {
       const promo = document.createElement("div");
@@ -365,7 +366,7 @@ try {
       promoButton.addEventListener("mouseover", () => {
         initialTheme = document.body.getAttribute('data-theme') || '';
         document.body.setAttribute('data-theme', featuredTheme[0] || '');
-        promoButton.textContent = `Get Theme (${featuredTheme[3] ? `${featuredTheme[3]} Checks` : 'Free'})`;
+        promoButton.textContent = `Get Theme (${featuredTheme[3] ? `${featuredTheme[3]} Check${featuredTheme[3] == 1 ? '' : 's'}` : 'Free'})`;
       });
       promoButton.addEventListener("mouseout", () => {
         document.body.setAttribute('data-theme', initialTheme);
@@ -384,15 +385,15 @@ try {
       const themeItem = document.createElement("div");
       themeItem.classList = 'theme-item';
       themeItem.setAttribute("data-theme", value);
-      themeItem.setAttribute('tooltip', `${name} Theme (${theme[3] ? `${theme[3]} Checks` : 'Free'})`);
-      themeItem.innerHTML = `${theme[2] ? `<i class="bi bi-${theme[2]}"></i>` : ''}<h5>${name}</h5><p>${theme[3] ? `${theme[3]} Checks` : 'Free'}</p>${theme[4] && theme[4].length ? `<small>Requires: ${theme[4].map(t => themes.find(th => th[0] == t)[1] || t).join(', ')}</small>` : ''}`;
+      themeItem.setAttribute('tooltip', `${name} Theme (${theme[3] ? `${theme[3]} Check${theme[3] == 1 ? '' : 's'}` : 'Free'})`);
+      themeItem.innerHTML = `${theme[2] ? `<i class="bi bi-${theme[2]}"></i>` : ''}<h5>${name}</h5><p>${theme[3] ? `${theme[3]} Check${theme[3] == 1 ? '' : 's'}` : 'Free'}</p>${theme[4] && theme[4].length ? `<small>Requires: ${theme[4].map(t => themes.find(th => th[0] == t)[1] || t).join(', ')}</small>` : ''}`;
       if (value === initialTheme) themeItem.classList.add('selected');
       const themeButton = document.createElement("button");
       themeButton.textContent = "Preview";
       themeButton.addEventListener("mouseover", () => {
         initialTheme = document.body.getAttribute('data-theme') || '';
         document.body.setAttribute('data-theme', theme[0] || '');
-        themeButton.textContent = `Get (${theme[3] ? `${theme[3]} Checks` : 'Free'})`;
+        themeButton.textContent = theme[3] ? `Get (${theme[3] ? `${theme[3]} Check${theme[3] == 1 ? '' : 's'}` : 'Free'})` : 'Apply Now';
       });
       themeButton.addEventListener("mouseout", () => {
         document.body.setAttribute('data-theme', initialTheme);
