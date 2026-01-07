@@ -797,6 +797,11 @@ export async function bulkLoad(fields = [], usr = null, pwd = null, isAdmin = fa
     var updatedBulkLoad = {};
     for (const table in fetchedBulkLoad) {
         if (table === 'asOf' || table === 'syncDeleted') continue;
+        const fetchedTableData = fetchedBulkLoad[table];
+        if (!Array.isArray(fetchedTableData)) {
+            updatedBulkLoad[table] = fetchedTableData;
+            continue;
+        }
         const currentCacheKey = (isAdmin || isTA) ? "adminCache" : "cache";
         const lastBulkLoadKey = (isAdmin || isTA) ? "lastAdminBulkLoad" : "lastBulkLoad";
         if (storage.get(lastBulkLoadKey)) {
