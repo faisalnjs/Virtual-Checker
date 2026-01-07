@@ -221,7 +221,7 @@ div[data-modal-page] {
   transition: border-right-width 0.25s ease-in-out;
 }
 
-[data-modal-page="store"] .themes-grid .theme-item i {
+[data-modal-page="store"] .themes-grid .theme-item i:not(.hd) {
   position: absolute;
   bottom: 10px;
   right: 20px;
@@ -230,9 +230,16 @@ div[data-modal-page] {
   transition: opacity 0.25s ease-in-out;
 }
 
-[data-modal-page="store"] .themes-grid .theme-item:hover i {
+[data-modal-page="store"] .themes-grid .theme-item:hover i:not(.hd) {
   opacity: 1;
   transition: opacity 0.25s ease-in-out;
+}
+
+[data-modal-page="store"] .themes-grid .theme-item i.hd {
+  position: absolute;
+  top: 10px;
+  right: 20px;
+  font-size: 25px;
 }
 
 [data-modal-page="store"] .themes-grid .theme-item h5,

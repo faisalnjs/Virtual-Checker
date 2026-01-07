@@ -486,3 +486,47 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
   --error-color: #eb324b;
   background: url(/store/backdrop/tides.png) !important;
 }
+
+[data-theme="northern-lights"] {
+  color-scheme: dark;
+  --text-color: #dedede;
+  --background-color: #08161f;
+  --surface-color: #104943;
+  --accent-color: #1e644a;
+  --accent-text-color: #e4e4e4;
+  --error-color: #eb324b;
+  background: url(/store/backdrop/northern-lights.png) !important;
+}
+
+[data-theme="galaxy"] {
+  color-scheme: dark;
+  --text-color: #dee3fc;
+  --background-color: #0d1627;
+  --surface-color: #526aa2;
+  --accent-color: #6269af;
+  --accent-text-color: #dee3fc;
+  --error-color: #eb324b;
+  background: url(/store/backdrop/galaxy.png) !important;
+}
+
+[data-theme="galaxy-2"] {
+  color-scheme: dark;
+  --text-color: #e5e4cd;
+  --background-color: #0a141e;
+  --surface-color: #755853;
+  --accent-color: #bb9890;
+  --accent-text-color: #e5e4cd;
+  --error-color: #eb324b;
+  background: url(/store/backdrop/galaxy-2.png) !important;
+}
+
+[data-theme="milky-way"] {
+  color-scheme: dark;
+  --text-color: #a89c90;
+  --background-color: #171719;
+  --surface-color: #5c606c;
+  --accent-color: #a5978e;
+  --accent-text-color: #171719;
+  --error-color: #eb324b;
+  background: url(/store/backdrop/milky-way.png) !important;
+}

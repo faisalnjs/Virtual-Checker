@@ -385,8 +385,8 @@ try {
         const themeItem = document.createElement("div");
         themeItem.classList = 'theme-item';
         themeItem.setAttribute("data-theme", value);
-        themeItem.setAttribute('tooltip', `${name} Theme (${theme[3] ? `${theme[3]} Check${theme[3] == 1 ? '' : 's'}` : 'Free'})`);
-        themeItem.innerHTML = `${theme[2] ? `<i class="bi bi-${theme[2]}"></i>` : ''}<h5>${name}</h5><p>${theme[3] ? `${theme[3]} Check${theme[3] == 1 ? '' : 's'}` : 'Free'}</p>${theme[4] && theme[4].length ? `<small>Requires: ${theme[4].map(t => themes.find(th => th[0] == t)[1] || t).join(', ')}</small>` : ''}`;
+        themeItem.setAttribute('tooltip', theme[5] ? `HD Theme${theme[4].length ? ` - ${theme[4].map(t => themes.find(th => th[0] == t)[1] || t).join(', ')} Required` : ''}` : `${name} Theme (${theme[3] ? `${theme[3]} Check${theme[3] == 1 ? '' : 's'}` : 'Free'})`);
+        themeItem.innerHTML = `${theme[2] ? `<i class="bi bi-${theme[2]}"></i>` : ''}${theme[5] ? `<i class="bi bi-badge-hd-fill hd"></i>` : ''}<h5>${name}</h5><p>${theme[3] ? `${theme[3]} Check${theme[3] == 1 ? '' : 's'}` : 'Free'}</p>${theme[4] && theme[4].length ? `<small>Requires: ${theme[4].map(t => themes.find(th => th[0] == t)[1] || t).join(', ')}</small>` : ''}`;
         if (value === initialTheme) themeItem.classList.add('selected');
         const themeButton = document.createElement("button");
         themeButton.textContent = "Preview";
