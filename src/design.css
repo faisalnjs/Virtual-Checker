@@ -29,7 +29,7 @@
 }
 
 ::-webkit-scrollbar-track {
-  background-color: transparent;
+  background-color: var(--background-color);
 }
 
 ::-webkit-scrollbar-thumb {
@@ -53,6 +53,13 @@ body {
     sans-serif;
   line-height: 1.5;
   gap: 50px !important;
+}
+
+body[data-theme] {
+  background-position: center !important;
+  background-size: cover !important;
+  background-attachment: fixed !important;
+  background-repeat: no-repeat !important;
 }
 
 body.enable-transitions {
@@ -939,7 +946,7 @@ div.ML__keyboard {
 .hiddenOnLoad.show {
   max-height: 100000px;
   overflow: visible;
-  transition: 0.5s var(--easing);
+  transition: 0.5s max-height var(--easing);
 }
 
 .questions .section [data-remove-question-input] {

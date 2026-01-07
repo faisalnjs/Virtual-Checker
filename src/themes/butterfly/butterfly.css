@@ -17,6 +17,10 @@
   --accent-text-color: #ffffff;
   --error-color: #cb2b25;
   --backlight-color: #9d87da;
+  background-image: url("./background.png") !important;
+  background-position: center !important;
+  background-size: cover !important;
+  background-attachment: fixed !important;
 }
 
 #virtual-checker-butterfly {
@@ -25,8 +29,6 @@
 
 body[data-theme="butterfly"] {
   background-image: url("./background.png");
-  background-position: center;
-  background-size: cover;
   font-family: "typerwriter";
   font-weight: normal;
 }
