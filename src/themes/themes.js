@@ -331,6 +331,86 @@ try {
     seasonalThemeButton.setAttribute("tooltip", `${seasonalName} Theme (Limited Time)`);
     document.getElementById("controls-container")?.appendChild(seasonalThemeButton);
   }
+
+  setTimeout(() => {
+    ui.view("store");
+  }, 2000);
+
+  var featuredTheme = themes.filter(t => t[3])[Math.floor(Math.random() * themes.filter(t => t[3]).length)];
+
+  document.querySelector('[data-modal-view="store"]')?.addEventListener("click", () => {
+    ui.view();
+  });
+
+  var initialTheme = storage.get("theme") || "classic";
+
+  // Render Theme Store
+  const store = document.querySelector(`[data-modal-page="store"]`);
+  if (store) {
+    const checks = 0;
+    const checksText = document.createElement("p");
+    checksText.classList = 'checks-text';
+    checksText.innerHTML = `<i class="bi bi-check2-circle"></i> ${checks} Checks Available`;
+    store.appendChild(checksText);
+    if (featuredTheme) {
+      const promo = document.createElement("div");
+      promo.classList = 'promo';
+      promo.setAttribute('data-theme', featuredTheme[0] || '');
+      const promoInner = document.createElement("div");
+      promoInner.classList = 'promo-inner';
+      promoInner.innerHTML = `<i class="bi bi-${featuredTheme[2] || 'backpack'}"></i>${featuredTheme[1] || featuredTheme[0]}<i class="bi bi-${featuredTheme[2] || 'backpack'}"></i>`;
+      promo.appendChild(promoInner);
+      const promoButton = document.createElement("button");
+      promoButton.textContent = "Preview Theme";
+      promoButton.addEventListener("mouseover", () => {
+        initialTheme = document.body.getAttribute('data-theme') || '';
+        document.body.setAttribute('data-theme', featuredTheme[0] || '');
+        promoButton.textContent = `Get Theme (${featuredTheme[3] ? `${featuredTheme[3]} Checks` : 'Free'})`;
+      });
+      promoButton.addEventListener("mouseout", () => {
+        document.body.setAttribute('data-theme', initialTheme);
+        promoButton.textContent = "Preview Theme";
+      });
+      promo.appendChild(promoButton);
+      store.appendChild(promo);
+    }
+    const freeThemesGrid = document.createElement("div");
+    freeThemesGrid.classList = 'themes-grid';
+    const premiumThemesGrid = document.createElement("div");
+    premiumThemesGrid.classList = 'themes-grid';
+    themes.forEach(theme => {
+      const value = theme[0];
+      const name = theme[1] || theme[0];
+      const themeItem = document.createElement("div");
+      themeItem.classList = 'theme-item';
+      themeItem.setAttribute("data-theme", value);
+      themeItem.setAttribute('tooltip', `${name} Theme (${theme[3] ? `${theme[3]} Checks` : 'Free'})`);
+      themeItem.innerHTML = `${theme[2] ? `<i class="bi bi-${theme[2]}"></i>` : ''}<h5>${name}</h5><p>${theme[3] ? `${theme[3]} Checks` : 'Free'}</p>`;
+      if (value === initialTheme) themeItem.classList.add('selected');
+      const themeButton = document.createElement("button");
+      themeButton.textContent = "Preview";
+      themeButton.addEventListener("mouseover", () => {
+        initialTheme = document.body.getAttribute('data-theme') || '';
+        document.body.setAttribute('data-theme', theme[0] || '');
+        themeButton.textContent = `Get (${theme[3] ? `${theme[3]} Checks` : 'Free'})`;
+      });
+      themeButton.addEventListener("mouseout", () => {
+        document.body.setAttribute('data-theme', initialTheme);
+        themeButton.textContent = "Preview";
+      });
+      themeItem.appendChild(themeButton);
+      if (theme[3]) premiumThemesGrid.append(themeItem);
+      if (!theme[3]) freeThemesGrid.append(themeItem);
+    });
+    const freeThemesGridText = document.createElement("b");
+    freeThemesGridText.innerText = 'Free Themes';
+    store.appendChild(freeThemesGridText);
+    store.appendChild(freeThemesGrid);
+    const premiumThemesGridText = document.createElement("b");
+    premiumThemesGridText.innerText = 'Premium Themes';
+    store.appendChild(premiumThemesGridText);
+    store.appendChild(premiumThemesGrid);
+  }
 } catch (error) {
   if (storage.get("developer")) {
     alert(`Error @ themes.js: ${error.message}`);
