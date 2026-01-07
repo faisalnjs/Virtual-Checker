@@ -347,70 +347,71 @@ try {
   // Render Theme Store
   const store = document.querySelector(`[data-modal-page="store"]`);
   if (store) {
-    await storage.idbReady;
-    const checks = (await storage.idbGet("cache"))?.checksCount || 0;
-    const checksText = document.createElement("p");
-    checksText.classList = 'checks-text';
-    checksText.innerHTML = `<i class="bi bi-check2-circle"></i> You've got ${checks} Check${checks == 1 ? '' : 's'} available to spend!`;
-    store.appendChild(checksText);
-    if (featuredTheme) {
-      const promo = document.createElement("div");
-      promo.classList = 'promo';
-      promo.setAttribute('data-theme', featuredTheme[0] || '');
-      const promoInner = document.createElement("div");
-      promoInner.classList = 'promo-inner';
-      promoInner.innerHTML = `<i class="bi bi-${featuredTheme[2] || 'backpack'}"></i>${featuredTheme[1] || featuredTheme[0]}<i class="bi bi-${featuredTheme[2] || 'backpack'}"></i>`;
-      promo.appendChild(promoInner);
-      const promoButton = document.createElement("button");
-      promoButton.textContent = "Preview Theme";
-      promoButton.addEventListener("mouseover", () => {
-        initialTheme = document.body.getAttribute('data-theme') || '';
-        document.body.setAttribute('data-theme', featuredTheme[0] || '');
-        promoButton.textContent = `Get Theme (${featuredTheme[3] ? `${featuredTheme[3]} Check${featuredTheme[3] == 1 ? '' : 's'}` : 'Free'})`;
-      });
-      promoButton.addEventListener("mouseout", () => {
-        document.body.setAttribute('data-theme', initialTheme);
+    storage.idbReady.then(async () => {
+      const checks = (await storage.idbGet("cache"))?.checksCount || 0;
+      const checksText = document.createElement("p");
+      checksText.classList = 'checks-text';
+      checksText.innerHTML = `<i class="bi bi-check2-circle"></i> You've got ${checks} Check${checks == 1 ? '' : 's'} available to spend!`;
+      store.appendChild(checksText);
+      if (featuredTheme) {
+        const promo = document.createElement("div");
+        promo.classList = 'promo';
+        promo.setAttribute('data-theme', featuredTheme[0] || '');
+        const promoInner = document.createElement("div");
+        promoInner.classList = 'promo-inner';
+        promoInner.innerHTML = `<i class="bi bi-${featuredTheme[2] || 'backpack'}"></i>${featuredTheme[1] || featuredTheme[0]}<i class="bi bi-${featuredTheme[2] || 'backpack'}"></i>`;
+        promo.appendChild(promoInner);
+        const promoButton = document.createElement("button");
         promoButton.textContent = "Preview Theme";
-      });
-      promo.appendChild(promoButton);
-      store.appendChild(promo);
-    }
-    const freeThemesGrid = document.createElement("div");
-    freeThemesGrid.classList = 'themes-grid';
-    const premiumThemesGrid = document.createElement("div");
-    premiumThemesGrid.classList = 'themes-grid';
-    themes.forEach(theme => {
-      const value = theme[0];
-      const name = theme[1] || theme[0];
-      const themeItem = document.createElement("div");
-      themeItem.classList = 'theme-item';
-      themeItem.setAttribute("data-theme", value);
-      themeItem.setAttribute('tooltip', `${name} Theme (${theme[3] ? `${theme[3]} Check${theme[3] == 1 ? '' : 's'}` : 'Free'})`);
-      themeItem.innerHTML = `${theme[2] ? `<i class="bi bi-${theme[2]}"></i>` : ''}<h5>${name}</h5><p>${theme[3] ? `${theme[3]} Check${theme[3] == 1 ? '' : 's'}` : 'Free'}</p>${theme[4] && theme[4].length ? `<small>Requires: ${theme[4].map(t => themes.find(th => th[0] == t)[1] || t).join(', ')}</small>` : ''}`;
-      if (value === initialTheme) themeItem.classList.add('selected');
-      const themeButton = document.createElement("button");
-      themeButton.textContent = "Preview";
-      themeButton.addEventListener("mouseover", () => {
-        initialTheme = document.body.getAttribute('data-theme') || '';
-        document.body.setAttribute('data-theme', theme[0] || '');
-        themeButton.textContent = theme[3] ? `Get (${theme[3] ? `${theme[3]} Check${theme[3] == 1 ? '' : 's'}` : 'Free'})` : 'Apply Now';
-      });
-      themeButton.addEventListener("mouseout", () => {
-        document.body.setAttribute('data-theme', initialTheme);
+        promoButton.addEventListener("mouseover", () => {
+          initialTheme = document.body.getAttribute('data-theme') || '';
+          document.body.setAttribute('data-theme', featuredTheme[0] || '');
+          promoButton.textContent = `Get Theme (${featuredTheme[3] ? `${featuredTheme[3]} Check${featuredTheme[3] == 1 ? '' : 's'}` : 'Free'})`;
+        });
+        promoButton.addEventListener("mouseout", () => {
+          document.body.setAttribute('data-theme', initialTheme);
+          promoButton.textContent = "Preview Theme";
+        });
+        promo.appendChild(promoButton);
+        store.appendChild(promo);
+      }
+      const freeThemesGrid = document.createElement("div");
+      freeThemesGrid.classList = 'themes-grid';
+      const premiumThemesGrid = document.createElement("div");
+      premiumThemesGrid.classList = 'themes-grid';
+      themes.forEach(theme => {
+        const value = theme[0];
+        const name = theme[1] || theme[0];
+        const themeItem = document.createElement("div");
+        themeItem.classList = 'theme-item';
+        themeItem.setAttribute("data-theme", value);
+        themeItem.setAttribute('tooltip', `${name} Theme (${theme[3] ? `${theme[3]} Check${theme[3] == 1 ? '' : 's'}` : 'Free'})`);
+        themeItem.innerHTML = `${theme[2] ? `<i class="bi bi-${theme[2]}"></i>` : ''}<h5>${name}</h5><p>${theme[3] ? `${theme[3]} Check${theme[3] == 1 ? '' : 's'}` : 'Free'}</p>${theme[4] && theme[4].length ? `<small>Requires: ${theme[4].map(t => themes.find(th => th[0] == t)[1] || t).join(', ')}</small>` : ''}`;
+        if (value === initialTheme) themeItem.classList.add('selected');
+        const themeButton = document.createElement("button");
         themeButton.textContent = "Preview";
+        themeButton.addEventListener("mouseover", () => {
+          initialTheme = document.body.getAttribute('data-theme') || '';
+          document.body.setAttribute('data-theme', theme[0] || '');
+          themeButton.textContent = theme[3] ? `Get (${theme[3] ? `${theme[3]} Check${theme[3] == 1 ? '' : 's'}` : 'Free'})` : 'Apply Now';
+        });
+        themeButton.addEventListener("mouseout", () => {
+          document.body.setAttribute('data-theme', initialTheme);
+          themeButton.textContent = "Preview";
+        });
+        themeItem.appendChild(themeButton);
+        if (theme[3]) premiumThemesGrid.append(themeItem);
+        if (!theme[3]) freeThemesGrid.append(themeItem);
       });
-      themeItem.appendChild(themeButton);
-      if (theme[3]) premiumThemesGrid.append(themeItem);
-      if (!theme[3]) freeThemesGrid.append(themeItem);
+      const freeThemesGridText = document.createElement("b");
+      freeThemesGridText.innerText = 'Free Themes';
+      store.appendChild(freeThemesGridText);
+      store.appendChild(freeThemesGrid);
+      const premiumThemesGridText = document.createElement("b");
+      premiumThemesGridText.innerText = 'Premium Themes';
+      store.appendChild(premiumThemesGridText);
+      store.appendChild(premiumThemesGrid);
     });
-    const freeThemesGridText = document.createElement("b");
-    freeThemesGridText.innerText = 'Free Themes';
-    store.appendChild(freeThemesGridText);
-    store.appendChild(freeThemesGrid);
-    const premiumThemesGridText = document.createElement("b");
-    premiumThemesGridText.innerText = 'Premium Themes';
-    store.appendChild(premiumThemesGridText);
-    store.appendChild(premiumThemesGrid);
   }
 } catch (error) {
   if (storage.get("developer")) {
