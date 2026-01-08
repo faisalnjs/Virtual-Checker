@@ -840,3 +840,42 @@ export async function clearBulkLoad() {
     storage.delete("lastAdminBulkLoad");
     console.log('🟢 Bulk load cleared');
 }
+
+export async function buyTheme(theme = null, cost = 0) {
+    if (!theme || !cost || !storage.get("code")) return;
+    await fetch(domain + '/buy_theme', {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+            "seatCode": storage.get("code"),
+            "password": storage.get("password"),
+            "theme": theme,
+            "cost": cost,
+        })
+    })
+        .then(async (r) => {
+            if (!r.ok) {
+                try {
+                    var re = await r.json();
+                    if (re.error || re.message) {
+                        ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+                        if ((re.error === "Access denied.") || (re.message === "Access denied.")) {
+                            if (storage.get("password")) storage.delete("password");
+                        }
+                        throw new Error(re.error || re.message);
+                    } else {
+                        throw new Error("API error");
+                    }
+                } catch (e) {
+                    throw new Error(e.message || "API error");
+                }
+            }
+            return await r.json();
+        })
+        .catch((e) => {
+            console.error(e);
+            if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        });
+}
