@@ -1099,6 +1099,26 @@ body:has(.topbar) #checker.horizontal .column:last-child {
   transition: border-right-width 0.25s ease-in-out;
 }
 
+[data-modal-page="store"] .themes-grid .theme-item.suggest-theme {
+  border: 2px dashed var(--accent-color) !important;
+  background: transparent !important;
+  cursor: pointer;
+  transition: background-color 0.25s ease-in-out;
+}
+
+[data-modal-page="store"] .themes-grid .theme-item.suggest-theme:hover {
+  background: var(--surface-color) !important;
+  transition: background-color 0.25s ease-in-out;
+}
+
+[data-modal-page="store"] .themes-grid .theme-item.suggest-theme i {
+  position: relative !important;
+  margin: auto;
+  padding: 0;
+  top: 0;
+  left: 0;
+}
+
 [data-modal-page="store"] .themes-grid .theme-item i:not(.hd) {
   position: absolute;
   bottom: 10px;
