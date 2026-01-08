@@ -435,7 +435,7 @@ export function view(path = "") {
   target.dispatchEvent(event);
 }
 
-export function modeless(icon, message, description = null) {
+export function modeless(icon, message, description = null, stayOpen = false) {
   document.querySelector("div.modeless")?.remove();
   const element = document.createElement("div");
   const keyframes = [{ opacity: 0 }, { opacity: 1 }];
@@ -448,7 +448,7 @@ export function modeless(icon, message, description = null) {
     duration: 100,
     fill: "forwards",
   });
-  setTimeout(() => {
+  if (!stayOpen) setTimeout(() => {
     element.animate(keyframes, {
       duration: 100,
       direction: "reverse",

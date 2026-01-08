@@ -2882,6 +2882,7 @@ try {
     const top = (window.screen.height / 2) - (height / 2);
     const windowFeatures = `width=${width},height=${height},resizable=no,scrollbars=no,status=yes,left=${left},top=${top}`;
     const newWindow = window.open(url, '_blank', windowFeatures);
+    ui.modeless(`<i class="bi bi-window-stack"></i>`, "Speed Mode Started", "Waiting for window to close...", true);
     let uploadSuccessful = false;
     let endingQuestionId = startingQuestionId || null;
     let endingQuestion = startingQuestion || null;
@@ -2889,7 +2890,7 @@ try {
       if (event.origin !== (window.location.protocol + '//' + window.location.hostname + (window.location.port ? ':' + window.location.port : ''))) return;
       if (event.data && (String(event.data) === 'uploadSuccess')) {
         uploadSuccessful = true;
-        init();
+        // init();
       } else if (event.data && String(event.data).includes(';+;')) {
         [endingQuestionId, endingQuestion] = event.data.split(';+;');
       } else if (event.data === 'exitToCourse') {
