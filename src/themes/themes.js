@@ -332,12 +332,6 @@ try {
     document.getElementById("controls-container")?.appendChild(seasonalThemeButton);
   }
 
-  setTimeout(() => {
-    ui.view("store");
-  }, 2000);
-
-  var featuredTheme = themes.filter(t => t[3])[Math.floor(Math.random() * themes.filter(t => t[3]).length)];
-
   document.querySelector('[data-modal-view="store"]')?.addEventListener("click", () => {
     ui.view();
   });

@@ -3,6 +3,7 @@
 import * as ui from "/src/modules/ui.js";
 import storage from "/src/modules/storage.js";
 import * as auth from "/src/modules/auth.js";
+import * as themes from "/src/themes/themes.js";
 import Element from "/src/modules/element.js";
 import extendedSchedule from "/src/periods/extendedSchedule.json";
 
@@ -558,7 +559,11 @@ try {
     document.getElementById("answer-suggestion").addEventListener("click", () => answerInput.focus());
     document.querySelector("[data-sync]").addEventListener("click", () => auth.syncManual());
     ui.reloadUnsavedInputs();
-    ui.reloadUnsavedInputs();
+    // Render Theme Store
+    themes.renderStore();
+    setTimeout(() => {
+      ui.view("store");
+    }, 2000);
   }
 
   async function updateSegment(event, sameSegment = false) {
