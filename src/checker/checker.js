@@ -3,9 +3,9 @@
 import * as ui from "/src/modules/ui.js";
 import storage from "/src/modules/storage.js";
 import * as auth from "/src/modules/auth.js";
-import * as themes from "/src/themes/themes.js";
 import Element from "/src/modules/element.js";
 import extendedSchedule from "/src/periods/extendedSchedule.json";
+import * as themes from "/src/themes/themes.js";
 
 import { autocomplete, uniqueSymbols } from "/src/symbols/symbols.js";
 import { unixToString, unixToTimeString } from "/src/modules/time.js";
@@ -561,9 +561,6 @@ try {
     ui.reloadUnsavedInputs();
     // Render Theme Store
     themes.renderStore();
-    setTimeout(() => {
-      ui.view("store");
-    }, 2000);
   }
 
   async function updateSegment(event, sameSegment = false) {
