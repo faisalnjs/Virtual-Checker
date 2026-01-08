@@ -798,7 +798,7 @@ export async function bulkLoad(fields = [], usr = null, pwd = null, isAdmin = fa
     for (const table in fetchedBulkLoad) {
         if (table === 'asOf' || table === 'syncDeleted') continue;
         const fetchedTableData = fetchedBulkLoad[table];
-        if (!Array.isArray(fetchedTableData)) {
+        if (!Array.isArray(fetchedTableData) || (fetchedTableData.length > 0 && (typeof fetchedTableData[0] !== 'object' || Array.isArray(fetchedTableData[0])))) {
             updatedBulkLoad[table] = fetchedTableData;
             continue;
         }
