@@ -243,7 +243,8 @@ div[data-modal-page] {
 }
 
 [data-modal-page="store"] .themes-grid .theme-item h5,
-[data-modal-page="store"] .themes-grid .theme-item p {
+[data-modal-page="store"] .themes-grid .theme-item p,
+[data-modal-page="store"] .themes-grid .theme-item small {
   background: none;
 }
 
