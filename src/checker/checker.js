@@ -880,12 +880,6 @@ try {
 
     resetInputs();
 
-    if (question.nonscored) {
-      document.querySelector('.column:has(#answer-mode-selector)').setAttribute('hidden', '');
-    } else {
-      document.querySelector('.column:has(#answer-mode-selector)').removeAttribute('hidden');
-    }
-
     const feed = document.getElementById('question-history-feed');
     var latestResponses = history.filter(r => (String(r.segment) === String(segments.value)) && (String(r.question_id) === String(question.id))).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
     feed.innerHTML = "";
