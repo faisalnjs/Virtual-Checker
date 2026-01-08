@@ -94,6 +94,7 @@ function updateEditorFields() {
 
 function updateEditorPreview(theme = customTheme) {
   const preview = document.getElementById("editor-preview");
+  if (!preview) return;
   Object.entries(theme).forEach(([key, value]) => {
     const prefix = key == "color-scheme" ? "" : "--";
     preview?.style.setProperty(prefix + key, value);
@@ -188,6 +189,7 @@ export function initializeThemeEditor() {
 export async function renderStore() {
   const store = document.querySelector(`[data-modal-page="store"]`);
   if (!store) return;
+  store.innerHTML = "";
   await storage.idbReady;
   var initialTheme = storage.get("theme") || "default";
   var checks = (await storage.idbGet("cache"))?.checksCount || 0;

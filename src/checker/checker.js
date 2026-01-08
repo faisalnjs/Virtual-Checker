@@ -597,7 +597,7 @@ try {
           questionOption.innerHTML += ` - Non-scoring`;
         }
         if (highestStatusClass !== "") questionOption.classList.add(highestStatusClass);
-        questionStatuses.push({ "segment": selectedSegment.id, "question": questionId.id, "status": highestStatus });
+        questionStatuses.push({ "segment": selectedSegment.id, "question": questionId.id, "status": highestStatus, "nonscored": question.nonscored });
         questions.append(questionOption);
       }
     });
@@ -747,7 +747,7 @@ try {
       const completedSegments = [];
       courseSegmentsArray.forEach(segment => {
         const questionIds = JSON.parse(segment.question_ids || '[]');
-        const segmentQuestions = questionIds.map(qi => questionsArray.find(q => String(q.id) === String(qi.id))).filter(q => q && !questionsArray.find(q2 => String(q2.stem) === String(q.id)));
+        const segmentQuestions = questionIds.map(qi => questionsArray.find(q => String(q.id) === String(qi.id))).filter(q => q && !questionsArray.find(q2 => String(q2.stem) === String(q.id)) && !q.nonscored);
         const totalQuestions = segmentQuestions.length;
         if (totalQuestions > 0) anyQuestionsInCourse = true;
         var correctCount = 0;
@@ -879,6 +879,12 @@ try {
     }
 
     resetInputs();
+
+    if (question.nonscored) {
+      document.querySelector('.column:has(#answer-mode-selector)').setAttribute('hidden', '');
+    } else {
+      document.querySelector('.column:has(#answer-mode-selector)').removeAttribute('hidden');
+    }
 
     const feed = document.getElementById('question-history-feed');
     var latestResponses = history.filter(r => (String(r.segment) === String(segments.value)) && (String(r.question_id) === String(question.id))).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
