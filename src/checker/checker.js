@@ -344,6 +344,7 @@ try {
         } else {
           updateQuestion();
         }
+        themes.renderStore();
         setTimeout(() => {
           document.getElementById("submit-button").disabled = false;
         }, 3000);
