@@ -797,29 +797,26 @@ export async function bulkLoad(fields = [], usr = null, pwd = null, isAdmin = fa
     var updatedBulkLoad = {};
     for (const table in fetchedBulkLoad) {
         if (table === 'asOf' || table === 'syncDeleted') continue;
-        if (storage.get((isAdmin || isTA) ? "lastAdminBulkLoad" : "lastBulkLoad") || null) {
-            var deletedData;
-            var existingData;
-            var mergedData;
-            if (!Array.isArray(fetchedBulkLoad[table] || [])) {
-                updatedBulkLoad[table] = fetchedBulkLoad[table];
-                continue;
-            }
-            deletedData = fetchedBulkLoad.syncDeleted?.[table] || [];
-            const cacheObj = (await storage.idbGet((isAdmin || isTA) ? "adminCache" : "cache")) || storage.get((isAdmin || isTA) ? "adminCache" : "cache") || {};
-            existingData = (Array.isArray(cacheObj[table]) ? cacheObj[table] : []).filter(item => {
-                return !deletedData.includes(String(item.id || item.seatCode || item.period || item.key || item.username || 0));
+        const fetchedTableData = fetchedBulkLoad[table];
+        if (!Array.isArray(fetchedTableData) || (fetchedTableData.length > 0 && (typeof fetchedTableData[0] !== 'object' || Array.isArray(fetchedTableData[0])))) {
+            updatedBulkLoad[table] = fetchedTableData;
+            continue;
+        }
+        const currentCacheKey = (isAdmin || isTA) ? "adminCache" : "cache";
+        const lastBulkLoadKey = (isAdmin || isTA) ? "lastAdminBulkLoad" : "lastBulkLoad";
+        if (storage.get(lastBulkLoadKey)) {
+            let deletedData = fetchedBulkLoad.syncDeleted?.[table] || [];
+            const cacheObj = (await storage.idbGet(currentCacheKey)) || storage.get(currentCacheKey) || {};
+            const deletedSet = new Set(deletedData.map(item => String(item.id || item.seatCode || item.period || item.key || item.username || 0)));
+            const existingData = Array.isArray(cacheObj[table]) ? cacheObj[table].filter(item => !deletedSet.has(String(item.id || item.seatCode || item.period || item.key || item.username || 0))) : [];
+            const mergedMap = {};
+            existingData.forEach(item => {
+                mergedMap[String(item.id || item.seatCode || item.period || item.key || item.username || 0)] = item;
             });
-            mergedData = [...existingData];
             (fetchedBulkLoad[table] || []).forEach(newItem => {
-                const index = mergedData.findIndex(item => String(item.id || item.seatCode || item.period || item.key || item.username || 0) === String(newItem.id || newItem.seatCode || newItem.period || newItem.key || newItem.username || 0));
-                if (index !== -1) {
-                    mergedData[index] = newItem;
-                } else {
-                    mergedData.push(newItem);
-                }
+                mergedMap[String(newItem.id || newItem.seatCode || newItem.period || newItem.key || newItem.username || 0)] = newItem;
             });
-            updatedBulkLoad[table] = mergedData;
+            updatedBulkLoad[table] = Object.values(mergedMap);
         } else {
             updatedBulkLoad[table] = fetchedBulkLoad[table];
         }
@@ -842,4 +839,43 @@ export async function clearBulkLoad() {
     await storage.idbDelete("adminCache").catch((e) => console.error('IDB delete failed', e));
     storage.delete("lastAdminBulkLoad");
     console.log('🟢 Bulk load cleared');
+}
+
+export async function buyTheme(theme = null, cost = 0) {
+    if (!theme || !cost || !storage.get("code")) return;
+    await fetch(domain + '/buy_theme', {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+            "seatCode": storage.get("code"),
+            "password": storage.get("password"),
+            "theme": theme,
+            "cost": cost,
+        })
+    })
+        .then(async (r) => {
+            if (!r.ok) {
+                try {
+                    var re = await r.json();
+                    if (re.error || re.message) {
+                        ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+                        if ((re.error === "Access denied.") || (re.message === "Access denied.")) {
+                            if (storage.get("password")) storage.delete("password");
+                        }
+                        throw new Error(re.error || re.message);
+                    } else {
+                        throw new Error("API error");
+                    }
+                } catch (e) {
+                    throw new Error(e.message || "API error");
+                }
+            }
+            return await r.json();
+        })
+        .catch((e) => {
+            console.error(e);
+            if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        });
 }

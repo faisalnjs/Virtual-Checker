@@ -5,6 +5,7 @@ import storage from "/src/modules/storage.js";
 import * as auth from "/src/modules/auth.js";
 import Element from "/src/modules/element.js";
 import extendedSchedule from "/src/periods/extendedSchedule.json";
+import * as themes from "/src/themes/themes.js";
 
 import { autocomplete, uniqueSymbols } from "/src/symbols/symbols.js";
 import { unixToString, unixToTimeString } from "/src/modules/time.js";
@@ -343,6 +344,7 @@ try {
         } else {
           updateQuestion();
         }
+        themes.renderStore();
         setTimeout(() => {
           document.getElementById("submit-button").disabled = false;
         }, 3000);
@@ -536,7 +538,7 @@ try {
     })?.id || sortedSegments.find(s => {
       const dueDate = new Date(`${s.due}T00:00:00`);
       return dueDate.getTime() > periodRange[1];
-    })?.id || sortedSegments[0]?.id || courseSegmentsArray[0]?.id;
+    })?.id || (sortedSegments.every(s => new Date(`${s.due}T00:00:00`) < today) ? sortedSegments[sortedSegments.length - 1]?.id : null) || sortedSegments[0]?.id || courseSegmentsArray[0]?.id;
     segments.removeEventListener("change", updateSegment);
     segments.addEventListener("change", updateSegment);
     // Update history feed
@@ -558,7 +560,8 @@ try {
     document.getElementById("answer-suggestion").addEventListener("click", () => answerInput.focus());
     document.querySelector("[data-sync]").addEventListener("click", () => auth.syncManual());
     ui.reloadUnsavedInputs();
-    ui.reloadUnsavedInputs();
+    // Render Theme Store
+    themes.renderStore();
   }
 
   async function updateSegment(event, sameSegment = false) {
@@ -594,7 +597,7 @@ try {
           questionOption.innerHTML += ` - Non-scoring`;
         }
         if (highestStatusClass !== "") questionOption.classList.add(highestStatusClass);
-        questionStatuses.push({ "segment": selectedSegment.id, "question": questionId.id, "status": highestStatus });
+        questionStatuses.push({ "segment": selectedSegment.id, "question": questionId.id, "status": highestStatus, "nonscored": question.nonscored });
         questions.append(questionOption);
       }
     });
@@ -604,6 +607,7 @@ try {
       document.querySelector('[data-segment-due]').innerHTML = `<i class="bi bi-calendar3"></i> Due ${new Date(`${selectedSegment.due}T00:00:00`).toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })}`;
       if (document.querySelector('[data-segment-due]')._interval) clearInterval(document.querySelector('[data-segment-due]')._interval);
       document.querySelector('[data-segment-due]')._interval = setInterval(() => {
+        if (!storage.get("code")) return;
         const periodRange = getExtendedPeriodRange(null, Number(storage.get("code").slice(0, 1)));
         const timeObj = new Date(periodRange[0]);
         const dateObj = new Date(`${selectedSegment.due}T00:00:00`);
@@ -743,7 +747,7 @@ try {
       const completedSegments = [];
       courseSegmentsArray.forEach(segment => {
         const questionIds = JSON.parse(segment.question_ids || '[]');
-        const segmentQuestions = questionIds.map(qi => questionsArray.find(q => String(q.id) === String(qi.id))).filter(q => q && !questionsArray.find(q2 => String(q2.stem) === String(q.id)));
+        const segmentQuestions = questionIds.map(qi => questionsArray.find(q => String(q.id) === String(qi.id))).filter(q => q && !questionsArray.find(q2 => String(q2.stem) === String(q.id)) && !q.nonscored);
         const totalQuestions = segmentQuestions.length;
         if (totalQuestions > 0) anyQuestionsInCourse = true;
         var correctCount = 0;
@@ -783,7 +787,7 @@ try {
         }
         const li = document.createElement('li');
         li.classList.add(statusLabel.replace(/\s+/g, '-').toLowerCase());
-        li.innerHTML = `${icon} <b>${segment.number} - ${segment.name}:</b>&nbsp;${statusLabel}<span style="float: right; font-weight: 600;">${attemptedCount}/${totalQuestions} Answered • ${correctCount}/${totalQuestions} Correct (${(totalQuestions > 0) ? Math.round((correctCount / totalQuestions) * 100) : 0}%)</span>`;
+        li.innerHTML = `${icon} <b>${segment.number} - ${segment.name.length > 50 ? segment.name.substring(0, 50 - 3).trim() + '...' : segment.name}:</b><p>${statusLabel}</p><span style="float: right; font-weight: 600;">${attemptedCount}/${totalQuestions} Answered • ${correctCount}/${totalQuestions} Correct (${(totalQuestions > 0) ? Math.round((correctCount / totalQuestions) * 100) : 0}%)</span>`;
         document.getElementById("segments-completed").querySelector('ul').append(li);
       });
       if (anyQuestionsInCourse && (masterySegments.length > 0) && masterySegments.every(Boolean)) {
@@ -875,6 +879,12 @@ try {
     }
 
     resetInputs();
+
+    if (question.nonscored) {
+      document.querySelector('.column:has(#answer-mode-selector)').setAttribute('hidden', '');
+    } else {
+      document.querySelector('.column:has(#answer-mode-selector)').removeAttribute('hidden');
+    }
 
     const feed = document.getElementById('question-history-feed');
     var latestResponses = history.filter(r => (String(r.segment) === String(segments.value)) && (String(r.question_id) === String(question.id))).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));

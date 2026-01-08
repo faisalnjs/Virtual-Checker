@@ -295,3 +295,238 @@ body[data-theme="dune-2"] #atreides-logo {
 body[data-theme="dune-2"] #header > .virtual-checker-logo {
   display: none;
 }
+
+/* Premium Themes */
+
+[data-theme="jellyfish"] {
+  color-scheme: dark;
+  --text-color: #ffffff;
+  --background-color: #000067;
+  --surface-color: #213e8e;
+  --accent-color: #054dc6;
+  --accent-text-color: #7bace5;
+  --error-color: #eb324b;
+  background: url(/store/backdrop/jellyfish.png) !important;
+}
+
+[data-theme="jellyfish-2"] {
+  color-scheme: dark;
+  --text-color: #ffffff;
+  --background-color: #000815;
+  --surface-color: #5f74e3;
+  --accent-color: #575ed3;
+  --accent-text-color: #ffffff;
+  --error-color: #eb324b;
+  background: url(/store/backdrop/jellyfish-2.png) !important;
+}
+
+[data-theme="jellyfish-pro"] {
+  color-scheme: dark;
+  --text-color: #ffffff;
+  --background-color: #000815;
+  --surface-color: #5f74e3;
+  --accent-color: #575ed3;
+  --accent-text-color: #ffffff;
+  --error-color: #eb324b;
+  background: url(/store/backdrop/jellyfish-pro.png) !important;
+}
+
+[data-theme="black-sand"] {
+  color-scheme: dark;
+  --text-color: #ffffff;
+  --background-color: #1f1f1f;
+  --surface-color: #2d2f30;
+  --accent-color: #444d58;
+  --accent-text-color: #ffffff;
+  --error-color: #eb324b;
+  background: url(/store/backdrop/black-sand.png) !important;
+}
+
+[data-theme="blizzard-pro"] {
+  color-scheme: light;
+  --text-color: #2c2c2c;
+  --background-color: #cde7f5;
+  --surface-color: #abd0e6;
+  --accent-color: #71b2d3;
+  --accent-text-color: #2c2c2c;
+  --error-color: #eb324b;
+  background: url(/store/backdrop/blizzard-pro.png) !important;
+}
+
+[data-theme="sage-pro"] {
+  color-scheme: light;
+  --text-color: #2c2c2c;
+  --background-color: #bacbb0;
+  --surface-color: #a0b395;
+  --accent-color: #5c8a5b;
+  --accent-text-color: #2c2c2c;
+  --error-color: #eb324b;
+  background: url(/store/backdrop/sage-pro.png) !important;
+}
+
+[data-theme="sandy-beach"] {
+  color-scheme: light;
+  --text-color: #f0f0f0;
+  --background-color: #9c8460;
+  --surface-color: #574832;
+  --accent-color: #a58d6b;
+  --accent-text-color: #2c2c2c;
+  --error-color: #eb324b;
+  background: url(/store/backdrop/sandy-beach.png) !important;
+}
+
+[data-theme="rose-pro"] {
+  color-scheme: dark;
+  --text-color: #ffffff;
+  --background-color: #f30837;
+  --surface-color: #d74d4d;
+  --accent-color: #ff6767;
+  --accent-text-color: #ffffff;
+  --error-color: #eb324b;
+  background: url(/store/backdrop/rose-pro.png) !important;
+}
+
+[data-theme="lavender-pro"] {
+  color-scheme: light;
+  --text-color: #e8e8e8;
+  --background-color: #b996d6;
+  --surface-color: #a88ada;
+  --accent-color: #866ed5;
+  --accent-text-color: #d7d7d7;
+  --error-color: #eb324b;
+  background: url(/store/backdrop/lavender-pro.png) !important;
+}
+
+[data-theme="stealth-2"] {
+  color-scheme: dark;
+  --text-color: #f2f2f2;
+  --background-color: #818181;
+  --surface-color: #5e5047;
+  --accent-color: #4c4746;
+  --accent-text-color: #f2f2f2;
+  --error-color: #eb324b;
+  background: url(/store/backdrop/stealth-2.png) !important;
+}
+
+[data-theme="synthwave-pro"] {
+  color-scheme: dark;
+  --text-color: #2de2e6;
+  --background-color: #0d0221;
+  --surface-color: #920075;
+  --accent-color: #540d6e;
+  --accent-text-color: #2de2e6;
+  --error-color: #ea1b2d;
+  --backlight-color: #ff00ec;
+  background: url(/store/backdrop/synthwave-pro.png) !important;
+}
+
+[data-theme="aeroplane"] {
+  color-scheme: dark;
+  --text-color: #f2f2f2;
+  --background-color: #0a0a0a;
+  --surface-color: #141414;
+  --accent-color: #f2f2f2;
+  --accent-text-color: #1c1c1c;
+  --error-color: #eb324b;
+  --backlight-color: #141414;
+  background: url(/store/backdrop/aeroplane.png) !important;
+}
+
+[data-theme="lavender-2"] {
+  color-scheme: light;
+  --text-color: #2c2c2c;
+  --background-color: #d9c4ed;
+  --surface-color: #b68cc9;
+  --accent-color: #825895;
+  --accent-text-color: #e4e4e4;
+  --error-color: #eb324b;
+  background: url(/store/backdrop/lavender-2.png) !important;
+}
+
+[data-theme="rainy-day"] {
+  color-scheme: dark;
+  --text-color: #dedede;
+  --background-color: #203c26;
+  --surface-color: #3a9cb7;
+  --accent-color: #2d8ba5;
+  --accent-text-color: #e4e4e4;
+  --error-color: #eb324b;
+  background: url(/store/backdrop/rainy-day.png) !important;
+}
+
+[data-theme="snow"] {
+  color-scheme: light;
+  --text-color: #2c2c2c;
+  --background-color: #c1becc;
+  --surface-color: #87acc9;
+  --accent-color: #9cb7d2;
+  --accent-text-color: #474747;
+  --error-color: #eb324b;
+  background: url(/store/backdrop/snow.png) !important;
+}
+
+[data-theme="shells"] {
+  color-scheme: light;
+  --text-color: #2c2c2c;
+  --background-color: #f1e8db;
+  --surface-color: #ddd3c6;
+  --accent-color: #b28766;
+  --accent-text-color: #2c2c2c;
+  --error-color: #eb324b;
+  background: url(/store/backdrop/shells.png) !important;
+}
+
+[data-theme="tides"] {
+  color-scheme: dark;
+  --text-color: #fafafa;
+  --background-color: #112628;
+  --surface-color: #204445;
+  --accent-color: #2e9993;
+  --accent-text-color: #fafafa;
+  --error-color: #eb324b;
+  background: url(/store/backdrop/tides.png) !important;
+}
+
+[data-theme="northern-lights"] {
+  color-scheme: dark;
+  --text-color: #dedede;
+  --background-color: #08161f;
+  --surface-color: #104943;
+  --accent-color: #1e644a;
+  --accent-text-color: #e4e4e4;
+  --error-color: #eb324b;
+  background: url(/store/backdrop/northern-lights.png) !important;
+}
+
+[data-theme="galaxy"] {
+  color-scheme: dark;
+  --text-color: #dee3fc;
+  --background-color: #0d1627;
+  --surface-color: #526aa2;
+  --accent-color: #6269af;
+  --accent-text-color: #dee3fc;
+  --error-color: #eb324b;
+  background: url(/store/backdrop/galaxy.png) !important;
+}
+
+[data-theme="galaxy-2"] {
+  color-scheme: dark;
+  --text-color: #e5e4cd;
+  --background-color: #0a141e;
+  --surface-color: #755853;
+  --accent-color: #bb9890;
+  --accent-text-color: #e5e4cd;
+  --error-color: #eb324b;
+  background: url(/store/backdrop/galaxy-2.png) !important;
+}
+
+[data-theme="milky-way"] {
+  color-scheme: dark;
+  --text-color: #a89c90;
+  --background-color: #171719;
+  --surface-color: #5c606c;
+  --accent-color: #a5978e;
+  --accent-text-color: #171719;
+  --error-color: #eb324b;
+  background: url(/store/backdrop/milky-way.png) !important;
+}
