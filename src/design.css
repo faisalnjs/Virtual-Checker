@@ -485,6 +485,11 @@ div.ML__keyboard {
   width: -webkit-fill-available;
 }
 
+.input-group.row {
+  flex-direction: row;
+  gap: 0.25em;
+}
+
 [square] {
   width: 2.25em !important;
   min-width: 36px;
