@@ -1543,6 +1543,7 @@ hidden,
   overflow: hidden;
   width: -webkit-fill-available;
   max-width: max-content;
+  cursor: pointer;
 }
 
 #segment-completed li p,

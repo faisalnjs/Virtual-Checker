@@ -789,6 +789,10 @@ try {
         li.classList.add(statusLabel.replace(/\s+/g, '-').toLowerCase());
         li.innerHTML = `${icon} <b>${segment.number} - ${segment.name.length > 50 ? segment.name.substring(0, 50 - 3).trim() + '...' : segment.name}:</b><p>${statusLabel}</p><span style="float: right; font-weight: 600;">${attemptedCount}/${totalQuestions} Answered • ${correctCount}/${totalQuestions} Correct (${(totalQuestions > 0) ? Math.round((correctCount / totalQuestions) * 100) : 0}%)</span>`;
         document.getElementById("segments-completed").querySelector('ul').append(li);
+        li.addEventListener('click', () => {
+          segments.value = segment.id;
+          updateSegment();
+        });
       });
       if (anyQuestionsInCourse && (masterySegments.length > 0) && masterySegments.every(Boolean)) {
         document.getElementById("segments-completed").classList.add('mastery');
