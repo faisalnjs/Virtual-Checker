@@ -38,5 +38,8 @@
   "gamma": "γ",
   "kappa": "κ",
   "omega": "ω",
-  "omegacap": "Ω"
+  "omegacap": "Ω",
+  "ihat": "î",
+  "jhat": "ĵ",
+  "khat": "k̂"
 }
