@@ -7,7 +7,7 @@ import Element from "/src/modules/element.js";
 import extendedSchedule from "/src/periods/extendedSchedule.json";
 import * as themes from "/src/themes/themes.js";
 
-import { autocomplete, uniqueSymbols } from "/src/symbols/symbols.js";
+import { autocomplete, uniqueSymbols, insertFromIndex } from "/src/symbols/symbols.js";
 import { unixToString, unixToTimeString } from "/src/modules/time.js";
 import { getExtendedPeriodRange } from "/src/periods/periods";
 import { convertLatexToAsciiMath, convertLatexToMarkup, renderMathInElement } from "mathlive";

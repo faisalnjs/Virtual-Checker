@@ -211,12 +211,19 @@
                 <i class="bi bi-three-dots"></i>
               </button>
             </div>
-            <div id="set-type-selector" data-button-select>
-              <button aria-selected="true" data-value="brackets">&lcub; Brackets &rcub;</button>
-              <button aria-selected="false" data-value="vector">&lt; Vector &gt;</button>
-              <button aria-selected="false" data-value="array">&lbrack; Array &rbrack;</button>
-              <button aria-selected="false" data-value="coordinate">&lpar; Coordinate &rpar;</button>
-              <button aria-selected="false" data-value="product">&lang; Product &rang;</button>
+            <div class="row">
+              <div id="set-type-selector" data-button-select>
+                <button aria-selected="true" data-value="brackets">&lcub; Brackets &rcub;</button>
+                <button aria-selected="false" data-value="vector">&lt; Vector &gt;</button>
+                <button aria-selected="false" data-value="array">&lbrack; Array &rbrack;</button>
+                <button aria-selected="false" data-value="coordinate">&lpar; Coordinate &rpar;</button>
+                <button aria-selected="false" data-value="product">&lang; Product &rang;</button>
+              </div>
+              <div class="button-grid" style="width: fit-content; margin-left: auto;">
+                <button data-insert-symbol="40" data-target-input="set-input"></button>
+                <button data-insert-symbol="41" data-target-input="set-input"></button>
+                <button data-insert-symbol="42" data-target-input="set-input"></button>
+              </div>
             </div>
             <div class="button-grid">
               <input type="text" autocomplete="off" id="set-input" data-set-input="1" />
