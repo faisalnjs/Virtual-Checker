@@ -7,7 +7,7 @@ import Element from "/src/modules/element.js";
 import extendedSchedule from "/src/periods/extendedSchedule.json";
 import * as themes from "/src/themes/themes.js";
 
-import { autocomplete, uniqueSymbols, insertFromIndex } from "/src/symbols/symbols.js";
+import { autocomplete, uniqueSymbols } from "/src/symbols/symbols.js";
 import { unixToString, unixToTimeString } from "/src/modules/time.js";
 import { getExtendedPeriodRange } from "/src/periods/periods";
 import { convertLatexToAsciiMath, convertLatexToMarkup, renderMathInElement } from "mathlive";
@@ -1433,14 +1433,15 @@ try {
       newSetInput.setAttribute('type', 'text');
       newSetInput.setAttribute('autocomplete', 'off');
       newSetInput.setAttribute('data-set-input', Number(highestDataElement.getAttribute('data-set-input')) + 1);
-      const buttonGrid = document.querySelectorAll('[data-answer-mode="set"] .button-grid')[1];
+      const buttonGrid = document.querySelector('[data-answer-mode="set"] .button-grid:has([id="set-input"])');
+      if (!buttonGrid) return;
       const insertBeforePosition = buttonGrid.children.length - 2;
       if (insertBeforePosition > 0) {
         buttonGrid.insertBefore(newSetInput, buttonGrid.children[insertBeforePosition]);
       } else {
         buttonGrid.appendChild(newSetInput);
       }
-      document.querySelectorAll('[data-answer-mode="set"] .button-grid')[1].style.flexWrap = (setInputs.length > 9) ? 'wrap' : 'nowrap';
+      buttonGrid.style.flexWrap = (setInputs.length > 9) ? 'wrap' : 'nowrap';
       newSetInput.focus();
       document.querySelector("[data-remove-set-input]").disabled = false;
     }
