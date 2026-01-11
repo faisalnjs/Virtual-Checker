@@ -268,7 +268,7 @@ body:has(.island.visible) #checker {
   width: fit-content;
   overflow: hidden;
   align-self: center;
-  position: sticky;
+  position: fixed;
   bottom: 25px;
 }
 

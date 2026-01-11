@@ -7,7 +7,7 @@ import Element from "/src/modules/element.js";
 import extendedSchedule from "/src/periods/extendedSchedule.json";
 import * as themes from "/src/themes/themes.js";
 
-import { autocomplete, uniqueSymbols } from "/src/symbols/symbols.js";
+import { autocomplete, uniqueSymbols, insertFromIndex } from "/src/symbols/symbols.js";
 import { unixToString, unixToTimeString } from "/src/modules/time.js";
 import { getExtendedPeriodRange } from "/src/periods/periods";
 import { convertLatexToAsciiMath, convertLatexToMarkup, renderMathInElement } from "mathlive";
@@ -879,12 +879,6 @@ try {
     }
 
     resetInputs();
-
-    if (question.nonscored) {
-      document.querySelector('.column:has(#answer-mode-selector)').setAttribute('hidden', '');
-    } else {
-      document.querySelector('.column:has(#answer-mode-selector)').removeAttribute('hidden');
-    }
 
     const feed = document.getElementById('question-history-feed');
     var latestResponses = history.filter(r => (String(r.segment) === String(segments.value)) && (String(r.question_id) === String(question.id))).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));

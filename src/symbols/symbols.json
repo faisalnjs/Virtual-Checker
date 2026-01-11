@@ -36,5 +36,10 @@
   "mu": "μ",
   "lambda": "λ",
   "gamma": "γ",
-  "kappa": "κ"
+  "kappa": "κ",
+  "omega": "ω",
+  "omegacap": "Ω",
+  "ihat": "î",
+  "jhat": "ĵ",
+  "khat": "k̂"
 }

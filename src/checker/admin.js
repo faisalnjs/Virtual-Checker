@@ -1100,6 +1100,9 @@ try {
   // Save
   document.querySelectorAll("#save-button").forEach(w => w.addEventListener("click", save));
   document.querySelectorAll("#create-button").forEach(w => w.addEventListener("click", createSegment));
+  document.querySelectorAll("#create-and-exit-button").forEach(w => w.addEventListener("click", () => {
+    createSegment(null, true);
+  }));
 
   async function save(event, hideResult) {
     if (!active) return;
@@ -2882,6 +2885,7 @@ try {
     const top = (window.screen.height / 2) - (height / 2);
     const windowFeatures = `width=${width},height=${height},resizable=no,scrollbars=no,status=yes,left=${left},top=${top}`;
     const newWindow = window.open(url, '_blank', windowFeatures);
+    ui.modeless(`<i class="bi bi-window-stack"></i>`, "Speed Mode Started", "Waiting for window to close...", true);
     let uploadSuccessful = false;
     let endingQuestionId = startingQuestionId || null;
     let endingQuestion = startingQuestion || null;
@@ -2889,7 +2893,7 @@ try {
       if (event.origin !== (window.location.protocol + '//' + window.location.hostname + (window.location.port ? ':' + window.location.port : ''))) return;
       if (event.data && (String(event.data) === 'uploadSuccess')) {
         uploadSuccessful = true;
-        init();
+        // init();
       } else if (event.data && String(event.data).includes(';+;')) {
         [endingQuestionId, endingQuestion] = event.data.split(';+;');
       } else if (event.data === 'exitToCourse') {
@@ -3782,7 +3786,7 @@ try {
     ui.reloadUnsavedInputs();
   }
 
-  function createSegment() {
+  function createSegment(event = null, exitToCourse = false) {
     if (!active) return;
     const course = document.getElementById("course-period-input");
     const number = document.getElementById("segment-number-input");
@@ -3802,6 +3806,7 @@ try {
       return name.focus();
     }
     document.querySelector("#create-button").disabled = true;
+    document.querySelector("#create-and-exit-button").disabled = true;
     const question_ids = JSON.stringify(Array.from(document.querySelectorAll('.question')).filter(q => (q.querySelectorAll('input')[1].value.length > 0) && (q.querySelectorAll('input')[1].value != ' ')).map(q => {
       return {
         name: q.querySelectorAll('input')[1].value,
@@ -3847,7 +3852,11 @@ try {
       .then((r) => {
         ui.setUnsavedChanges(false);
         ui.toast(loadedSegmentEditor ? "Segment updated successfully." : "Segment created successfully.", 3000, "success", "bi bi-check-circle-fill");
-        editSegment(null, loadedSegmentEditor ? loadedSegment.id : (r.id || null));
+        if (exitToCourse) {
+          window.location.href = '/admin/';
+        } else {
+          editSegment(null, loadedSegmentEditor ? loadedSegment.id : (r.id || null));
+        }
       })
       .catch((e) => {
         console.error(e);
@@ -3888,6 +3897,7 @@ try {
     document.getElementById("question-list").innerHTML = '';
     JSON.parse(loadedSegment.question_ids).filter((item, index, self) => index === self.findIndex((t) => (t.id === item.id))).forEach(q => addExistingQuestion(q.id));
     document.getElementById("create-button").innerText = "Save";
+    document.getElementById("create-and-exit-button").innerText = "Save and Exit";
     document.querySelector('[data-delete-segment]')?.addEventListener('click', deleteSegmentConfirm);
     document.querySelector('[edit-segment-questions]')?.addEventListener('click', () => {
       if (ui.unsavedChanges) return ui.toast("You have unsaved changes. Please save or discard them before editing questions.", 3000, "error", "bi bi-exclamation-triangle-fill");
