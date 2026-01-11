@@ -1297,7 +1297,7 @@ hidden,
 }
 
 .color-info {
-  display: flex;
+  display: flex !important;
   align-items: center;
   gap: 7.5px 10px;
   flex-wrap: wrap;
@@ -1332,6 +1332,10 @@ hidden,
 
 .color-box.waiting {
   background: darkorange;
+}
+
+.color-box.info {
+  background: royalblue;
 }
 
 .seat-code-reports {
