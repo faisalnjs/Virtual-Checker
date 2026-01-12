@@ -28,7 +28,7 @@ export function resetTheme() {
   disableTransitions();
   document.body.removeAttribute("data-theme");
   removeCustomTheme();
-  document.getElementById("theme-preview").removeAttribute("data-theme");
+  document.getElementById("theme-preview")?.removeAttribute("data-theme");
   enableTransitions();
   storage.set("theme", "default");
   storage.delete("custom-theme");
