@@ -119,6 +119,16 @@ button.error {
   background: indianred !important;
 }
 
+button.fill {
+  background: var(--accent-color) !important;
+  color: var(--accent-text-color) !important;
+}
+
+button.fill:hover {
+  background: var(--text-color) !important;
+  color: var(--surface-color) !important;
+}
+
 button:disabled {
   opacity: 0.75;
   pointer-events: none;
@@ -1334,6 +1344,10 @@ hidden,
   background: darkorange;
 }
 
+.color-box.info {
+  background: royalblue;
+}
+
 .seat-code-reports {
   gap: 12.5px !important;
 }
@@ -1543,6 +1557,7 @@ hidden,
   overflow: hidden;
   width: -webkit-fill-available;
   max-width: max-content;
+  cursor: pointer;
 }
 
 #segment-completed li p,
@@ -1563,23 +1578,23 @@ hidden,
   max-width: max-content;
 }
 
-#segment-completed:not(.incomplete) > *:not(ul).incomplete,
-#segments-completed:not(.incomplete) > *:not(ul).incomplete {
+#segment-completed:not(.incomplete) > *:not(ul):not(.color-info):not(button).incomplete,
+#segments-completed:not(.incomplete) > *:not(ul):not(.color-info):not(button).incomplete {
   display: none;
 }
 
-#segment-completed.incomplete > *:not(ul):not(.incomplete),
-#segments-completed.incomplete > *:not(ul):not(.incomplete) {
+#segment-completed.incomplete > *:not(ul):not(.color-info):not(button):not(.incomplete),
+#segments-completed.incomplete > *:not(ul):not(.color-info):not(button):not(.incomplete) {
   display: none;
 }
 
-#segment-completed:not(.complete) > *:not(ul).complete,
-#segments-completed:not(.complete) > *:not(ul).complete {
+#segment-completed:not(.complete) > *:not(ul):not(.color-info):not(button).complete,
+#segments-completed:not(.complete) > *:not(ul):not(.color-info):not(button).complete {
   display: none;
 }
 
-#segment-completed.complete > *:not(ul):not(.complete),
-#segments-completed.complete > *:not(ul):not(.complete) {
+#segment-completed.complete > *:not(ul):not(.color-info):not(button):not(.complete),
+#segments-completed.complete > *:not(ul):not(.color-info):not(button):not(.complete) {
   display: none;
 }
 

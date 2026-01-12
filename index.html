@@ -117,7 +117,30 @@
         <i class="bi bi-patch-check mastery"></i>
         <h3 class="mastery">Course Completed, Mastery Achieved</h3>
         <p class="mastery">You have answered all questions in all segments in this course correctly.</p>
+        <div class="color-info">
+          <div class="color">
+            <span class="color-box correct"></span>
+            <span class="color-name">Mastery</span>
+          </div>
+          <div class="color">
+            <span class="color-box info"></span>
+            <span class="color-name">Completed</span>
+          </div>
+          <div class="color">
+            <span class="color-box waiting"></span>
+            <span class="color-name">Incomplete, Overdue</span>
+          </div>
+          <div class="color">
+            <span class="color-box incorrect"></span>
+            <span class="color-name">Not Started, Overdue</span>
+          </div>
+          <div class="color">
+            <span class="color-box other"></span>
+            <span class="color-name">Not Due</span>
+          </div>
+        </div>
         <ul></ul>
+        <button class="fill" data-manual-reset-cache>Refresh Data</button>
       </div>
       <div id="segment-completed" class="input-group" hidden>
         <i class="incomplete bi bi-question-octagon"></i>
@@ -130,6 +153,7 @@
         <h3 class="mastery">Segment Completed, Mastery Achieved</h3>
         <p class="mastery">You have answered all questions in this segment correctly.</p>
         <ul></ul>
+        <button class="fill" data-manual-reset-cache>Refresh Data</button>
       </div>
       <h6 data-segment-due hidden></h6>
       <h6 data-question-title hidden></h6>
@@ -303,6 +327,7 @@
   <dialog data-modal-page="history" data-page-title="History">
     <h2 id="history-date"></h2>
     <div class="col history-feed" id="history-feed"></div>
+    <button data-reset="cache">Refresh Data</button>
     <div id="history-navigation" class="row center">
       <button class="icon" id="history-first">
         <i class="bi bi-chevron-double-left"></i>

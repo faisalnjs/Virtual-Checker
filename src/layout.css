@@ -318,6 +318,10 @@ body:has(.island.visible) #checker {
   display: none;
 }
 
+#history-navigation {
+  margin-top: 10px;
+}
+
 #history-feed {
   height: 400px;
 }

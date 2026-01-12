@@ -7,7 +7,7 @@ import Element from "/src/modules/element.js";
 import extendedSchedule from "/src/periods/extendedSchedule.json";
 import * as themes from "/src/themes/themes.js";
 
-import { autocomplete, uniqueSymbols, insertFromIndex } from "/src/symbols/symbols.js";
+import { autocomplete, uniqueSymbols } from "/src/symbols/symbols.js";
 import { unixToString, unixToTimeString } from "/src/modules/time.js";
 import { getExtendedPeriodRange } from "/src/periods/periods";
 import { convertLatexToAsciiMath, convertLatexToMarkup, renderMathInElement } from "mathlive";
@@ -787,8 +787,13 @@ try {
         }
         const li = document.createElement('li');
         li.classList.add(statusLabel.replace(/\s+/g, '-').toLowerCase());
+        li.style.color = (correctCount === totalQuestions) ? 'mediumseagreen' : (attemptedCount === totalQuestions) ? 'royalblue' : ((segment.due && (new Date(`${segment.due}T00:00:00`).getTime() < new Date().setHours(0, 0, 0, 0))) ? ((attemptedCount === 0) ? 'indianred' : 'darkorange') : '');
         li.innerHTML = `${icon} <b>${segment.number} - ${segment.name.length > 50 ? segment.name.substring(0, 50 - 3).trim() + '...' : segment.name}:</b><p>${statusLabel}</p><span style="float: right; font-weight: 600;">${attemptedCount}/${totalQuestions} Answered • ${correctCount}/${totalQuestions} Correct (${(totalQuestions > 0) ? Math.round((correctCount / totalQuestions) * 100) : 0}%)</span>`;
         document.getElementById("segments-completed").querySelector('ul').append(li);
+        li.addEventListener('click', () => {
+          segments.value = segment.id;
+          updateSegment();
+        });
       });
       if (anyQuestionsInCourse && (masterySegments.length > 0) && masterySegments.every(Boolean)) {
         document.getElementById("segments-completed").classList.add('mastery');
@@ -1433,14 +1438,15 @@ try {
       newSetInput.setAttribute('type', 'text');
       newSetInput.setAttribute('autocomplete', 'off');
       newSetInput.setAttribute('data-set-input', Number(highestDataElement.getAttribute('data-set-input')) + 1);
-      const buttonGrid = document.querySelectorAll('[data-answer-mode="set"] .button-grid')[1];
+      const buttonGrid = document.querySelector('[data-answer-mode="set"] .button-grid:has([id="set-input"])');
+      if (!buttonGrid) return;
       const insertBeforePosition = buttonGrid.children.length - 2;
       if (insertBeforePosition > 0) {
         buttonGrid.insertBefore(newSetInput, buttonGrid.children[insertBeforePosition]);
       } else {
         buttonGrid.appendChild(newSetInput);
       }
-      document.querySelectorAll('[data-answer-mode="set"] .button-grid')[1].style.flexWrap = (setInputs.length > 9) ? 'wrap' : 'nowrap';
+      buttonGrid.style.flexWrap = (setInputs.length > 9) ? 'wrap' : 'nowrap';
       newSetInput.focus();
       document.querySelector("[data-remove-set-input]").disabled = false;
     }
