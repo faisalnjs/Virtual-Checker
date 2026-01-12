@@ -860,9 +860,7 @@ try {
                 ${(segmentResponses.filter(r => r.status === 'Incorrect').length != 0) ? `<div class="barcount incorrect" style="width: calc(${segmentResponses.filter(r => r.status === 'Incorrect').length / total} * 100%)">${segmentResponses.filter(r => r.status === 'Incorrect').length}</div>` : ''}
               </div>
             </div>
-            ${(JSON.parse(segment.question_ids).length != 0) ? `<div class="section detailed-report" id="segment-${segment.id}">
-              ${'Rendering...'}
-            </div>` : ''}`;
+            ${(JSON.parse(segment.question_ids).length != 0) ? `<div class="section detailed-report" id="segment-${segment.id}">Rendering...</div>` : ''}`;
           }
         });
       }
@@ -2388,9 +2386,7 @@ try {
         var seatCodeDetailedReport = document.createElement('div');
         seatCodeDetailedReport.classList = 'seat-code-report';
         seatCodeDetailedReport.setAttribute('report', `seat-code-${seatCode.code}`);
-        seatCodeDetailedReport.innerHTML = `<div class="section detailed-report" id="seat-code-${seatCode.code}">
-          ${'Rendering...'}
-        </div>`;
+        seatCodeDetailedReport.innerHTML = `<div class="section detailed-report" id="seat-code-${seatCode.code}">Rendering...</div>`;
         document.querySelector('.seat-code-reports').appendChild(seatCodeDetailedReport);
       });
     }
@@ -3550,9 +3546,7 @@ try {
           ${(questionResponses.filter(r => r.status === 'Incorrect').length != 0) ? `<div class="barcount incorrect" style="width: calc(${questionResponses.filter(r => r.status === 'Incorrect').length / total} * 100%)">${questionResponses.filter(r => r.status === 'Incorrect').length}</div>` : ''}
         </div>
       </div>
-      ${(questionResponses.length != 0) ? `<div class="section detailed-report" id="question-${question.id}">
-        ${'Rendering...'}
-      </div>` : ''}`;
+      ${(questionResponses.length != 0) ? `<div class="section detailed-report" id="question-${question.id}">Rendering...</div>` : ''}`;
     });
     expandedReports.forEach(er => {
       if (document.getElementById(er)) {
