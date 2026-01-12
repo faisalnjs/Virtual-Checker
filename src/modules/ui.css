@@ -1200,3 +1200,38 @@ body:has(.topbar) #checker.horizontal .column:last-child {
 [data-manual-reset-cache] {
   margin-top: 10px;
 }
+
+details.section {
+  align-items: stretch;
+}
+
+summary {
+  display: block;
+  font-size: 1.75rem;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+summary::after {
+  display: inline-block;
+  font-family: bootstrap-icons !important;
+  font-size: 1rem;
+  font-style: normal;
+  font-weight: normal !important;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1;
+  vertical-align: -0.125em;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  content: "\F10E";
+  transition: transform 0.25s ease-in-out;
+  margin-left: 10px;
+  transform: scale(-1, 1);
+}
+
+.segment-marked-for-review-count {
+  display: flex;
+  gap: 5px;
+  margin-left: auto;
+}
