@@ -66,6 +66,10 @@ body.enable-transitions {
   --easing: cubic-bezier(0.32, 0, 0.67, 0);
 }
 
+body > *:not([id]):not(dialog) {
+  position: fixed;
+}
+
 h1 {
   font-size: 1.75rem;
 }
