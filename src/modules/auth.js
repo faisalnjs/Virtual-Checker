@@ -263,7 +263,14 @@ export async function sync(hideWelcome = true, returnFunction = null) {
                             Object.entries(r.settings).forEach(([key, value]) => {
                                 if (key !== "password" && key !== "code" && key !== "usr" && key !== "pwd" && key !== "history" && key !== "questionsAnswered" && key !== "developer" && key !== "cache" && key !== "lastBulkLoad" && key !== "adminCache" && key !== "lastAdminBulkLoad") storage.set(key, value);
                             });
-                            await themes.syncTheme();
+                            await themes.syncTheme()
+                                .catch(error => {
+                                    if (storage.get("developer")) {
+                                        alert(`Error @ auth.js: ${error.message}`);
+                                    } else {
+                                        ui.reportBugModal(null, String(error.stack));
+                                    }
+                                });
                             if (document.getElementById('checker')) document.getElementById('checker').classList = r.settings['layout'] || '';
                         }
                         ui.setUnsavedChanges(false);
@@ -331,7 +338,14 @@ export async function sync(hideWelcome = true, returnFunction = null) {
                                 ui.stopLoader();
                                 ui.toast(r.message, 3000, "success", "bi bi-key");
                                 ui.setUnsavedChanges(false);
-                                await ui.launchWelcome(returnFunction);
+                                await ui.launchWelcome(returnFunction)
+                                    .catch(error => {
+                                        if (storage.get("developer")) {
+                                            alert(`Error @ auth.js: ${error.message}`);
+                                        } else {
+                                            ui.reportBugModal(null, String(error.stack));
+                                        }
+                                    });
                             })
                             .catch((e) => {
                                 console.error(e);
@@ -746,90 +760,102 @@ export async function loadAdminSettings(courses) {
 }
 
 export async function bulkLoad(fields = [], usr = null, pwd = null, isAdmin = false, isTA = false, ifAccessDenied = () => { }) {
-    const startTime = Date.now();
-    await storage.idbReady;
-    const syncDeleted = async () => {
-        const cacheIds = {};
-        const cache = (await storage.idbGet((isAdmin || isTA) ? "adminCache" : "cache")) ||
-            storage.get((isAdmin || isTA) ? "adminCache" : "cache") || {};
-        for (const table in cache) {
-            if (Array.isArray(cache[table] || []))
-                cacheIds[table] = (cache[table] || []).map(data =>
-                    String(data.id || data.seatCode || data.period || data.key || data.username || 0));
-        }
-        return cacheIds;
-    };
-    var bulkLoadResponse;
     try {
-        bulkLoadResponse = await fetch(`${domain}/bulk_load${isTA ? '?ta=true' : ''}`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                usr,
-                pwd,
-                fields,
-                lastFetched: storage.get((isAdmin || isTA) ? "lastAdminBulkLoad" : "lastBulkLoad") || null,
-                syncDeleted: await syncDeleted(),
-            }),
-        });
+        const startTime = Date.now();
+        await storage.idbReady;
+        const syncDeleted = async () => {
+            const cacheIds = {};
+            const cache = (await storage.idbGet((isAdmin || isTA) ? "adminCache" : "cache")) ||
+                storage.get((isAdmin || isTA) ? "adminCache" : "cache") || {};
+            for (const table in cache) {
+                if (Array.isArray(cache[table] || []))
+                    cacheIds[table] = (cache[table] || []).map(data =>
+                        String(data.id || data.seatCode || data.period || data.key || data.username || 0));
+            }
+            return cacheIds;
+        };
+        var bulkLoadResponse;
+        try {
+            bulkLoadResponse = await fetch(`${domain}/bulk_load${isTA ? '?ta=true' : ''}`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    usr,
+                    pwd,
+                    fields,
+                    lastFetched: storage.get((isAdmin || isTA) ? "lastAdminBulkLoad" : "lastBulkLoad") || null,
+                    syncDeleted: await syncDeleted(),
+                }),
+            });
+        } catch (e) {
+            console.error(e);
+            ui.view("api-fail");
+            return false;
+        }
+        var fetchedBulkLoad = await bulkLoadResponse.json();
+        if (!bulkLoadResponse.ok) {
+            if (!fetchedBulkLoad.message || (fetchedBulkLoad.message && !fetchedBulkLoad.message.includes("."))) ui.view("api-fail");
+            if ((fetchedBulkLoad.error === "Access denied.") || (fetchedBulkLoad.message === "Access denied.")) ifAccessDenied();
+            return false;
+        }
+        if (fetchedBulkLoad.maintenanceMode) {
+            ui.startLoader();
+            ui.view("maintenance-mode");
+            return false;
+        }
+        if (fields.includes('courses') ? (!(await storage.idbGet((isAdmin || isTA) ? "adminCache" : "cache") || {})?.['courses']?.length && !fetchedBulkLoad?.courses?.length) : false) {
+            console.log('🔴 Bulk load out of sync, reloading');
+            await clearBulkLoad()
+                .catch(error => {
+                    if (storage.get("developer")) {
+                        alert(`Error @ auth.js: ${error.message}`);
+                    } else {
+                        ui.reportBugModal(null, String(error.stack));
+                    }
+                });
+            location.reload();
+            return false;
+        }
+        var updatedBulkLoad = {};
+        for (const table in fetchedBulkLoad) {
+            if (table === 'asOf' || table === 'syncDeleted') continue;
+            const fetchedTableData = fetchedBulkLoad[table];
+            if (!Array.isArray(fetchedTableData) || (fetchedTableData.length > 0 && (typeof fetchedTableData[0] !== 'object' || Array.isArray(fetchedTableData[0])))) {
+                updatedBulkLoad[table] = fetchedTableData;
+                continue;
+            }
+            const currentCacheKey = (isAdmin || isTA) ? "adminCache" : "cache";
+            const lastBulkLoadKey = (isAdmin || isTA) ? "lastAdminBulkLoad" : "lastBulkLoad";
+            if (storage.get(lastBulkLoadKey)) {
+                let deletedData = fetchedBulkLoad.syncDeleted?.[table] || [];
+                const cacheObj = (await storage.idbGet(currentCacheKey)) || storage.get(currentCacheKey) || {};
+                const deletedSet = new Set(deletedData.map(item => String(item.id || item.seatCode || item.period || item.key || item.username || 0)));
+                const existingData = Array.isArray(cacheObj[table]) ? cacheObj[table].filter(item => !deletedSet.has(String(item.id || item.seatCode || item.period || item.key || item.username || 0))) : [];
+                const mergedMap = {};
+                existingData.forEach(item => {
+                    mergedMap[String(item.id || item.seatCode || item.period || item.key || item.username || 0)] = item;
+                });
+                (fetchedBulkLoad[table] || []).forEach(newItem => {
+                    mergedMap[String(newItem.id || newItem.seatCode || newItem.period || newItem.key || newItem.username || 0)] = newItem;
+                });
+                updatedBulkLoad[table] = Object.values(mergedMap);
+            } else {
+                updatedBulkLoad[table] = fetchedBulkLoad[table];
+            }
+        }
+        storage.set((isAdmin || isTA) ? "lastAdminBulkLoad" : "lastBulkLoad", fetchedBulkLoad.asOf || null);
+        try {
+            await storage.idbSet((isAdmin || isTA) ? "adminCache" : "cache", updatedBulkLoad || fetchedBulkLoad || {});
+        } catch (e) {
+            storage.set((isAdmin || isTA) ? "adminCache" : "cache", updatedBulkLoad || fetchedBulkLoad || {});
+        }
+        const loadTime = ((Date.now() - startTime) / 1000).toFixed(2);
+        console.log(`${(loadTime < 1) ? '🟢' : ((loadTime > 5) ? '🔴' : '🟡')} Bulk load fetched in ${loadTime}s`);
+        return true;
     } catch (e) {
         console.error(e);
-        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
         return false;
     }
-    var fetchedBulkLoad = await bulkLoadResponse.json();
-    if (!bulkLoadResponse.ok) {
-        if (!fetchedBulkLoad.message || (fetchedBulkLoad.message && !fetchedBulkLoad.message.includes("."))) ui.view("api-fail");
-        if ((fetchedBulkLoad.error === "Access denied.") || (fetchedBulkLoad.message === "Access denied.")) ifAccessDenied();
-        return false;
-    }
-    if (fetchedBulkLoad.maintenanceMode) {
-        ui.startLoader();
-        ui.view("maintenance-mode");
-        return false;
-    }
-    if (fields.includes('courses') ? (!(await storage.idbGet((isAdmin || isTA) ? "adminCache" : "cache") || {})?.['courses']?.length && !fetchedBulkLoad?.courses?.length) : false) {
-        console.log('🔴 Bulk load out of sync, reloading');
-        await clearBulkLoad();
-        location.reload();
-        return false;
-    }
-    var updatedBulkLoad = {};
-    for (const table in fetchedBulkLoad) {
-        if (table === 'asOf' || table === 'syncDeleted') continue;
-        const fetchedTableData = fetchedBulkLoad[table];
-        if (!Array.isArray(fetchedTableData) || (fetchedTableData.length > 0 && (typeof fetchedTableData[0] !== 'object' || Array.isArray(fetchedTableData[0])))) {
-            updatedBulkLoad[table] = fetchedTableData;
-            continue;
-        }
-        const currentCacheKey = (isAdmin || isTA) ? "adminCache" : "cache";
-        const lastBulkLoadKey = (isAdmin || isTA) ? "lastAdminBulkLoad" : "lastBulkLoad";
-        if (storage.get(lastBulkLoadKey)) {
-            let deletedData = fetchedBulkLoad.syncDeleted?.[table] || [];
-            const cacheObj = (await storage.idbGet(currentCacheKey)) || storage.get(currentCacheKey) || {};
-            const deletedSet = new Set(deletedData.map(item => String(item.id || item.seatCode || item.period || item.key || item.username || 0)));
-            const existingData = Array.isArray(cacheObj[table]) ? cacheObj[table].filter(item => !deletedSet.has(String(item.id || item.seatCode || item.period || item.key || item.username || 0))) : [];
-            const mergedMap = {};
-            existingData.forEach(item => {
-                mergedMap[String(item.id || item.seatCode || item.period || item.key || item.username || 0)] = item;
-            });
-            (fetchedBulkLoad[table] || []).forEach(newItem => {
-                mergedMap[String(newItem.id || newItem.seatCode || newItem.period || newItem.key || newItem.username || 0)] = newItem;
-            });
-            updatedBulkLoad[table] = Object.values(mergedMap);
-        } else {
-            updatedBulkLoad[table] = fetchedBulkLoad[table];
-        }
-    }
-    storage.set((isAdmin || isTA) ? "lastAdminBulkLoad" : "lastBulkLoad", fetchedBulkLoad.asOf || null);
-    try {
-        await storage.idbSet((isAdmin || isTA) ? "adminCache" : "cache", updatedBulkLoad || fetchedBulkLoad || {});
-    } catch (e) {
-        storage.set((isAdmin || isTA) ? "adminCache" : "cache", updatedBulkLoad || fetchedBulkLoad || {});
-    }
-    const loadTime = ((Date.now() - startTime) / 1000).toFixed(2);
-    console.log(`${(loadTime < 1) ? '🟢' : ((loadTime > 5) ? '🔴' : '🟡')} Bulk load fetched in ${loadTime}s`);
-    return true;
 }
 
 export async function clearBulkLoad() {

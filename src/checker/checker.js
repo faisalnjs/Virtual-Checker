@@ -107,7 +107,14 @@ try {
       ui.view("settings/code");
       return;
     }
-    await auth.sync(false, updateCode);
+    await auth.sync(false, updateCode)
+      .catch(error => {
+        if (storage.get("developer")) {
+          alert(`Error @ checker.js: ${error.message}`);
+        } else {
+          ui.reportBugModal(null, String(error.stack));
+        }
+      });
   };
 
   init();
@@ -337,14 +344,35 @@ try {
         await storage.idbReady;
         const _cache = (await storage.idbGet('cache')) || storage.get('cache') || {};
         history = (_cache).responses || [];
-        await updateHistory();
-        await updateSegment(null, true);
+        await updateHistory()
+          .catch(error => {
+            if (storage.get("developer")) {
+              alert(`Error @ checker.js: ${error.message}`);
+            } else {
+              ui.reportBugModal(null, String(error.stack));
+            }
+          });
+        await updateSegment(null, true)
+          .catch(error => {
+            if (storage.get("developer")) {
+              alert(`Error @ checker.js: ${error.message}`);
+            } else {
+              ui.reportBugModal(null, String(error.stack));
+            }
+          });
         if ((typeof r.correct === 'undefined') || r.correct || (typeof r.error !== 'undefined')) {
           nextQuestion(null, true);
         } else {
           updateQuestion();
         }
-        themes.renderStore();
+        themes.renderStore()
+          .catch(error => {
+            if (storage.get("developer")) {
+              alert(`Error @ checker.js: ${error.message}`);
+            } else {
+              ui.reportBugModal(null, String(error.stack));
+            }
+          });
         setTimeout(() => {
           document.getElementById("submit-button").disabled = false;
         }, 3000);
@@ -544,8 +572,22 @@ try {
     // Update history feed
     await storage.idbReady;
     history = ((await storage.idbGet('cache')) || storage.get("cache") || {}).responses || [];
-    await updateHistory();
-    await updateSegment();
+    await updateHistory()
+      .catch(error => {
+        if (storage.get("developer")) {
+          alert(`Error @ clicker.js: ${error.message}`);
+        } else {
+          ui.reportBugModal(null, String(error.stack));
+        }
+      });
+    await updateSegment()
+      .catch(error => {
+        if (storage.get("developer")) {
+          alert(`Error @ clicker.js: ${error.message}`);
+        } else {
+          ui.reportBugModal(null, String(error.stack));
+        }
+      });
     // Show clear data fix guide
     // if (storage.get("created")) {
     //   document.querySelector(`[data-modal-view="clear-data-fix"]`).remove();
@@ -561,7 +603,14 @@ try {
     document.querySelector("[data-sync]").addEventListener("click", () => auth.syncManual());
     ui.reloadUnsavedInputs();
     // Render Theme Store
-    themes.renderStore();
+    themes.renderStore()
+      .catch(error => {
+        if (storage.get("developer")) {
+          alert(`Error @ checker.js: ${error.message}`);
+        } else {
+          ui.reportBugModal(null, String(error.stack));
+        }
+      });
   }
 
   async function updateSegment(event, sameSegment = false) {
@@ -636,7 +685,14 @@ try {
     };
     questions.removeEventListener("change", updateQuestion);
     questions.addEventListener("change", updateQuestion);
-    await updateQuestion();
+    await updateQuestion()
+      .catch(error => {
+        if (storage.get("developer")) {
+          alert(`Error @ checker.js: ${error.message}`);
+        } else {
+          ui.reportBugModal(null, String(error.stack));
+        }
+      });
     const count = 200;
     const textColor = getComputedStyle(document.body).getPropertyValue('--text-color').trim();
     var defaults = {
@@ -920,7 +976,14 @@ try {
         button.addEventListener("click", async (event) => {
           if (event.target.hasAttribute('data-flag-response')) return r.flagged ? unflagResponse(event, true) : flagResponse(event, true);
           if (event.target.hasAttribute('data-review-later-response')) return r.review_later ? unReviewLaterResponse(event, true) : reviewLaterResponse(event, true);
-          await resubmitCheck(r);
+          await resubmitCheck(r)
+            .catch(error => {
+              if (storage.get("developer")) {
+                alert(`Error @ checker.js: ${error.message}`);
+              } else {
+                ui.reportBugModal(null, String(error.stack));
+              }
+            });
           window.scrollTo(0, document.body.scrollHeight);
         });
       });
@@ -935,9 +998,30 @@ try {
     }
 
     if (ui.getNotifications().includes(question.id)) {
-      await clearNotifications([question.id]);
-      await ui.setNotifications(ui.getNotifications().filter(notification => notification !== question.id));
-      await updateSegment(null, true);
+      await clearNotifications([question.id])
+        .catch(error => {
+          if (storage.get("developer")) {
+            alert(`Error @ checker.js: ${error.message}`);
+          } else {
+            ui.reportBugModal(null, String(error.stack));
+          }
+        });
+      await ui.setNotifications(ui.getNotifications().filter(notification => notification !== question.id))
+        .catch(error => {
+          if (storage.get("developer")) {
+            alert(`Error @ checker.js: ${error.message}`);
+          } else {
+            ui.reportBugModal(null, String(error.stack));
+          }
+        });
+      await updateSegment(null, true)
+        .catch(error => {
+          if (storage.get("developer")) {
+            alert(`Error @ checker.js: ${error.message}`);
+          } else {
+            ui.reportBugModal(null, String(error.stack));
+          }
+        });
     }
 
     ui.setUnsavedChanges(false);
@@ -1067,27 +1151,62 @@ try {
   }
 
   document.querySelector('[data-modal-view="history"]')?.addEventListener("click", async () => {
-    await updateNotifications(await updateHistory(true));
+    await updateNotifications(await updateHistory(true))
+      .catch(error => {
+        if (storage.get("developer")) {
+          alert(`Error @ checker.js: ${error.message}`);
+        } else {
+          ui.reportBugModal(null, String(error.stack));
+        }
+      });
   });
 
   document.getElementById("history-first")?.addEventListener("click", async () => {
     historyIndex = getHistoryDates().length - 1;
-    await updateNotifications(await updateHistory());
+    await updateNotifications(await updateHistory())
+      .catch(error => {
+        if (storage.get("developer")) {
+          alert(`Error @ checker.js: ${error.message}`);
+        } else {
+          ui.reportBugModal(null, String(error.stack));
+        }
+      });
   });
 
   document.getElementById("history-backward")?.addEventListener("click", async () => {
     historyIndex++;
-    await updateNotifications(await updateHistory());
+    await updateNotifications(await updateHistory())
+      .catch(error => {
+        if (storage.get("developer")) {
+          alert(`Error @ checker.js: ${error.message}`);
+        } else {
+          ui.reportBugModal(null, String(error.stack));
+        }
+      });
   });
 
   document.getElementById("history-forward")?.addEventListener("click", async () => {
     historyIndex--;
-    await updateNotifications(await updateHistory());
+    await updateNotifications(await updateHistory())
+      .catch(error => {
+        if (storage.get("developer")) {
+          alert(`Error @ checker.js: ${error.message}`);
+        } else {
+          ui.reportBugModal(null, String(error.stack));
+        }
+      });
   });
 
   document.getElementById("history-last")?.addEventListener("click", async () => {
     historyIndex = 0;
-    await updateNotifications(await updateHistory());
+    await updateNotifications(await updateHistory())
+      .catch(error => {
+        if (storage.get("developer")) {
+          alert(`Error @ checker.js: ${error.message}`);
+        } else {
+          ui.reportBugModal(null, String(error.stack));
+        }
+      });
   });
 
   // Count number of unique days
@@ -1170,7 +1289,14 @@ try {
         if (event.target.hasAttribute('data-flag-response')) return r.flagged ? unflagResponse(event) : flagResponse(event);
         if (event.target.hasAttribute('data-review-later-response')) return r.review_later ? unReviewLaterResponse(event) : reviewLaterResponse(event);
         ui.view("");
-        await resubmitCheck(r);
+        await resubmitCheck(r)
+          .catch(error => {
+            if (storage.get("developer")) {
+              alert(`Error @ checker.js: ${error.message}`);
+            } else {
+              ui.reportBugModal(null, String(error.stack));
+            }
+          });
         window.scrollTo(0, document.body.scrollHeight);
         setTimeout(() => {
           document.querySelector(`[data-answer-mode="${r.mode === 'text' ? 'input' : r.mode}"]`)?.querySelector('input, textarea, math-field')?.focus();
@@ -1590,9 +1716,30 @@ try {
     var notifications = ui.getNotifications();
     var notificationsToClear = notifications.filter(notification => filteredHistory.find(r => Number(r.question_id) === Number(notification)));
     if (notificationsToClear.length > 0) {
-      await clearNotifications(notificationsToClear);
-      await ui.setNotifications(notifications.filter(notification => !notificationsToClear.includes(notification)));
-      await updateSegment(null, true);
+      await clearNotifications(notificationsToClear)
+        .catch(error => {
+          if (storage.get("developer")) {
+            alert(`Error @ checker.js: ${error.message}`);
+          } else {
+            ui.reportBugModal(null, String(error.stack));
+          }
+        });
+      await ui.setNotifications(notifications.filter(notification => !notificationsToClear.includes(notification)))
+        .catch(error => {
+          if (storage.get("developer")) {
+            alert(`Error @ checker.js: ${error.message}`);
+          } else {
+            ui.reportBugModal(null, String(error.stack));
+          }
+        });
+      await updateSegment(null, true)
+        .catch(error => {
+          if (storage.get("developer")) {
+            alert(`Error @ checker.js: ${error.message}`);
+          } else {
+            ui.reportBugModal(null, String(error.stack));
+          }
+        });
     }
   }
 

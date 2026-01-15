@@ -124,6 +124,10 @@ try {
     storage.set("developer", true);
     updateVersionString(true);
   }
+
+  window.onerror = function (error, url, line) {
+    ui.reportBugModal(null, `${String(error)} at ${url} line ${line}`);
+  }
 } catch (error) {
   if (storage.get("developer")) {
     alert(`Error @ ta.js: ${error.message}`);
