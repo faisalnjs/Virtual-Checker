@@ -1447,7 +1447,7 @@ try {
                 subtitleLatex: question.latex,
                 description: question.description,
                 attachments: question.images,
-                lists: [
+                lists: questions.find(q1 => String(q1.stem) === String(question.id)) ? [] : [
                   {
                     title: 'Correct Answers',
                     items: answers.find(a => a.id === question.id)?.correct_answers
@@ -1683,7 +1683,7 @@ try {
               subtitleLatex: question.latex,
               description: question.description,
               attachments: question.images,
-              lists: [
+              lists: questions.find(q1 => String(q1.stem) === String(question.id)) ? [] : [
                 {
                   title: 'Correct Answers',
                   items: answers.find(a => a.id === question.id)?.correct_answers
@@ -3598,7 +3598,7 @@ try {
             subtitleLatex: question.latex,
             description: question.description,
             attachments: question.images,
-            lists: [
+            lists: questions.find(q1 => String(q1.stem) === String(question.id)) ? [] : [
               {
                 title: 'Correct Answers',
                 items: answers.find(a => a.id === question.id)?.correct_answers
@@ -3644,7 +3644,7 @@ try {
             subtitleLatex: question.latex,
             description: question.description,
             attachments: question.images,
-            lists: [
+            lists: questions.find(q1 => String(q1.stem) === String(question.id)) ? [] : [
               {
                 title: 'Correct Answers',
                 items: answers.find(a => a.id === question.id)?.correct_answers
@@ -3691,7 +3691,7 @@ try {
               subtitleLatex: question.latex,
               description: question.description,
               attachments: question.images,
-              lists: [
+              lists: questions.find(q1 => String(q1.stem) === String(question.id)) ? [] : [
                 {
                   title: 'Correct Answers',
                   items: answers.find(a => a.id === question.id)?.correct_answers
