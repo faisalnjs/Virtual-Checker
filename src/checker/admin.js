@@ -352,22 +352,8 @@ try {
       if (document.getElementById("export-report-course")) document.getElementById("export-report-course").value = (storage.get('period') && courses.find(c => String(c.id) === String(storage.get('period')))) ? storage.get('period') : (((ui.defaultCourse !== null) && courses.find(c => String(c.id) === String(ui.defaultCourse))) ? ui.defaultCourse : courses.find(c => responses.some(r => JSON.parse(c.periods).includes(Number(String(r.seatCode)[0])))) ? courses.find(c => responses.some(r => JSON.parse(c.periods).includes(Number(String(r.seatCode)[0])))).id : courses.sort((a, b) => a.id - b.id)[0]?.id);
     }
     if ((document.getElementById("course-period-input") && !loadedSegmentEditor && !loadedSegmentCreator && !noReloadCourse) || noReloadCourse) await updateResponses();
-    if (document.querySelector('.segment-reports')) updateSegments()
-      .catch(error => {
-        if (storage.get("developer")) {
-          alert(`Error @ admin.js: ${error.message}`);
-        } else {
-          ui.reportBugModal(null, String(error.stack));
-        }
-      });
-    if (document.querySelector('.question-reports')) updateQuestionReports()
-      .catch(error => {
-        if (storage.get("developer")) {
-          alert(`Error @ admin.js: ${error.message}`);
-        } else {
-          ui.reportBugModal(null, String(error.stack));
-        }
-      });
+    if (document.querySelector('.segment-reports')) updateSegments();
+    if (document.querySelector('.question-reports')) updateQuestionReports();
     active = true;
     ui.stopLoader();
     if (!polling) ui.toast("Data restored.", 1000, "info", "bi bi-cloud-arrow-down");
@@ -385,14 +371,7 @@ try {
       document.querySelectorAll('[data-remove-segment-input]').forEach(a => a.removeEventListener('click', removeSegment));
       document.querySelectorAll('[data-remove-segment-input]').forEach(a => a.addEventListener('click', removeSegment));
       if (document.getElementById("course-input")) document.getElementById("course-input").value = courses.find(c => String(c.id) === document.getElementById("course-period-input").value).name;
-      updateSegments()
-        .catch(error => {
-          if (storage.get("developer")) {
-            alert(`Error @ admin.js: ${error.message}`);
-          } else {
-            ui.reportBugModal(null, String(error.stack));
-          }
-        });
+      updateSegments();
     }
     if (document.getElementById("sort-segments-types")) document.getElementById("sort-segments-types").value = await getSettings('sort-segments')
       .catch(error => {
