@@ -306,6 +306,9 @@
   </div>
   <!-- Controls -->
   <div id="controls-container" class="pill">
+    <button class="icon" data-modal-view="store" tooltip="Theme Store">
+      <i class="bi bi-shop-window"></i>
+    </button>
     <button class="icon" data-modal-view="settings" tooltip="Settings">
       <i class="bi bi-gear"></i>
     </button>
@@ -314,6 +317,9 @@
     </button>
     <button class="icon" data-modal-view="history" tooltip="History">
       <i class="bi bi-clock-history"></i>
+    </button>
+    <button class="icon" data-modal-view="review-later" tooltip="Review Later">
+      <i class="bi bi-bookmark"></i>
     </button>
     <!-- <button class="icon" data-modal-view="clear-data-fix" tooltip="Clear Data Fix">
         <i class="bi bi-exclamation-triangle"></i>
@@ -342,6 +348,11 @@
         <i class="bi bi-chevron-double-right"></i>
       </button>
     </div>
+  </dialog>
+  <!-- Review Later -->
+  <dialog data-modal-page="review-later" data-page-title="Review Later">
+    <div class="col history-feed" id="review-later-feed"></div>
+    <button data-reset="cache">Refresh Data</button>
   </dialog>
   <!-- Settings -->
   <dialog data-modal-page="settings" data-page-title="Settings">

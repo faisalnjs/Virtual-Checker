@@ -924,7 +924,14 @@ export async function launchWelcome(returnFunction = null) {
     toWelcomeSlide(Number(welcomeContainer.getAttribute('step')) + 1);
   }));
   welcomeContainer.querySelector('[data-finish]').addEventListener('click', async () => {
-    await auth.syncPush("theme");
+    await auth.syncPush("theme")
+      .catch(error => {
+        if (storage.get("developer")) {
+          alert(`Error @ ui.js: ${error.message}`);
+        } else {
+          reportBugModal(null, String(error.stack));
+        }
+      });
     unsavedChanges = false;
     removeWelcome();
     if (returnFunction) returnFunction();
@@ -986,7 +993,14 @@ export function toWelcomeSlide(n) {
       [...welcomeContainer.querySelectorAll('#theme-preview')].find(a => document.getElementById('checker')?.classList.toString() ? a.classList.contains(document.getElementById('checker')?.classList.toString()) : true)?.classList.add('selected');
       break;
     case maxN:
-      themes.renderThemesGrid(originalTheme || "stealth");
+      themes.renderThemesGrid(originalTheme || "stealth")
+        .catch(error => {
+          if (storage.get("developer")) {
+            alert(`Error @ ui.js: ${error.message}`);
+          } else {
+            reportBugModal(null, String(error.stack));
+          }
+        });
       if (originalTheme) welcomeContainer.setAttribute('data-theme', originalTheme);
       break;
   }

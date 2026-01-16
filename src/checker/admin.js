@@ -263,7 +263,14 @@ try {
       ui.stopLoader();
       active = true;
     }
-    await auth.loadAdminSettings(courses);
+    await auth.loadAdminSettings(courses)
+      .catch(error => {
+        if (storage.get("developer")) {
+          alert(`Error @ admin.js: ${error.message}`);
+        } else {
+          ui.reportBugModal(null, String(error.stack));
+        }
+      });
     if (document.querySelector('.users')) {
       ui.reloadUnsavedInputs();
       return;
@@ -330,7 +337,14 @@ try {
     }
     if (document.getElementById("speed-mode-starting-question")) updateSpeedModeStartingQuestion();
     if (document.querySelector('.questions.section')) {
-      await updateQuestions();
+      await updateQuestions()
+        .catch(error => {
+          if (storage.get("developer")) {
+            alert(`Error @ admin.js: ${error.message}`);
+          } else {
+            ui.reportBugModal(null, String(error.stack));
+          }
+        });
       if (params?.question) toggleQuestion(null, params.question);
     }
     if (document.getElementById("course-period-input") && !loadedSegmentEditor && !noReloadCourse) {
@@ -338,8 +352,22 @@ try {
       if (document.getElementById("export-report-course")) document.getElementById("export-report-course").value = (storage.get('period') && courses.find(c => String(c.id) === String(storage.get('period')))) ? storage.get('period') : (((ui.defaultCourse !== null) && courses.find(c => String(c.id) === String(ui.defaultCourse))) ? ui.defaultCourse : courses.find(c => responses.some(r => JSON.parse(c.periods).includes(Number(String(r.seatCode)[0])))) ? courses.find(c => responses.some(r => JSON.parse(c.periods).includes(Number(String(r.seatCode)[0])))).id : courses.sort((a, b) => a.id - b.id)[0]?.id);
     }
     if ((document.getElementById("course-period-input") && !loadedSegmentEditor && !loadedSegmentCreator && !noReloadCourse) || noReloadCourse) await updateResponses();
-    if (document.querySelector('.segment-reports')) updateSegments();
-    if (document.querySelector('.question-reports')) updateQuestionReports();
+    if (document.querySelector('.segment-reports')) updateSegments()
+      .catch(error => {
+        if (storage.get("developer")) {
+          alert(`Error @ admin.js: ${error.message}`);
+        } else {
+          ui.reportBugModal(null, String(error.stack));
+        }
+      });
+    if (document.querySelector('.question-reports')) updateQuestionReports()
+      .catch(error => {
+        if (storage.get("developer")) {
+          alert(`Error @ admin.js: ${error.message}`);
+        } else {
+          ui.reportBugModal(null, String(error.stack));
+        }
+      });
     active = true;
     ui.stopLoader();
     if (!polling) ui.toast("Data restored.", 1000, "info", "bi bi-cloud-arrow-down");
@@ -357,9 +385,23 @@ try {
       document.querySelectorAll('[data-remove-segment-input]').forEach(a => a.removeEventListener('click', removeSegment));
       document.querySelectorAll('[data-remove-segment-input]').forEach(a => a.addEventListener('click', removeSegment));
       if (document.getElementById("course-input")) document.getElementById("course-input").value = courses.find(c => String(c.id) === document.getElementById("course-period-input").value).name;
-      updateSegments();
+      updateSegments()
+        .catch(error => {
+          if (storage.get("developer")) {
+            alert(`Error @ admin.js: ${error.message}`);
+          } else {
+            ui.reportBugModal(null, String(error.stack));
+          }
+        });
     }
-    if (document.getElementById("sort-segments-types")) document.getElementById("sort-segments-types").value = await getSettings('sort-segments');
+    if (document.getElementById("sort-segments-types")) document.getElementById("sort-segments-types").value = await getSettings('sort-segments')
+      .catch(error => {
+        if (storage.get("developer")) {
+          alert(`Error @ admin.js: ${error.message}`);
+        } else {
+          ui.reportBugModal(null, String(error.stack));
+        }
+      });
     if (document.getElementById("filter-segment-input") && document.getElementById("sort-question-input")) document.getElementById("filter-segment-input").addEventListener("change", () => {
       document.getElementById("sort-question-input").value = "";
       const event = new Event('input', { bubbles: true });
@@ -601,7 +643,14 @@ try {
         document.querySelector('[data-clicker-announcement-image-remove]')?.removeAttribute('hidden');
         document.querySelector('[data-clicker-announcement-image-remove]')?.addEventListener("click", async () => {
           ui.setUnsavedChanges(true);
-          await save(null, true);
+          await save(null, true)
+            .catch(error => {
+              if (storage.get("developer")) {
+                alert(`Error @ admin.js: ${error.message}`);
+              } else {
+                ui.reportBugModal(null, String(error.stack));
+              }
+            });
           fetch(domain + '/announcement', {
             method: "DELETE",
             headers: {
@@ -652,7 +701,14 @@ try {
         document.querySelector('[data-checker-announcement-image-remove]')?.removeAttribute('hidden');
         document.querySelector('[data-checker-announcement-image-remove]')?.addEventListener("click", async () => {
           ui.setUnsavedChanges(true);
-          await save(null, true);
+          await save(null, true)
+            .catch(error => {
+              if (storage.get("developer")) {
+                alert(`Error @ admin.js: ${error.message}`);
+              } else {
+                ui.reportBugModal(null, String(error.stack));
+              }
+            });
           fetch(domain + '/announcement', {
             method: "DELETE",
             headers: {
@@ -1270,7 +1326,14 @@ try {
     document.querySelectorAll("#save-button").forEach(w => w.disabled = true);
     window.scroll(0, 0);
     if (typeof hideResult != 'boolean') ui.modeless(`<i class="bi bi-check-lg"></i>`, "Saved");
-    await init();
+    await init()
+      .catch(error => {
+        if (storage.get("developer")) {
+          alert(`Error @ admin.js: ${error.message}`);
+        } else {
+          ui.reportBugModal(null, String(error.stack));
+        }
+      });
     setTimeout(() => {
       document.querySelectorAll("#save-button").forEach(w => w.disabled = false);
     }, 2500);
@@ -1447,7 +1510,7 @@ try {
                 subtitleLatex: question.latex,
                 description: question.description,
                 attachments: question.images,
-                lists: [
+                lists: questions.find(q1 => String(q1.stem) === String(question.id)) ? [] : [
                   {
                     title: 'Correct Answers',
                     items: answers.find(a => a.id === question.id)?.correct_answers
@@ -1683,7 +1746,7 @@ try {
               subtitleLatex: question.latex,
               description: question.description,
               attachments: question.images,
-              lists: [
+              lists: questions.find(q1 => String(q1.stem) === String(question.id)) ? [] : [
                 {
                   title: 'Correct Answers',
                   items: answers.find(a => a.id === question.id)?.correct_answers
@@ -1892,7 +1955,14 @@ try {
   }
 
   async function toggleQuestion(event = null, questionId = null) {
-    if (questionId) await goToPage(document.querySelector('.questions #current-page'), pageQuestionIsOn(document.querySelector('.questions #current-page'), questionId));
+    if (questionId) await goToPage(document.querySelector('.questions #current-page'), pageQuestionIsOn(document.querySelector('.questions #current-page'), questionId))
+      .catch(error => {
+        if (storage.get("developer")) {
+          alert(`Error @ admin.js: ${error.message}`);
+        } else {
+          ui.reportBugModal(null, String(error.stack));
+        }
+      });
     const questionContainer = questionId ? document.querySelector(`#question-${questionId}`) : this.parentElement.parentElement;
     if (!questionContainer) return;
     if (questionContainer.classList.contains('expanded')) {
@@ -1978,7 +2048,14 @@ try {
 
   async function renderPond() {
     if (!active) return;
-    await save(null, true);
+    await save(null, true)
+      .catch(error => {
+        if (storage.get("developer")) {
+          alert(`Error @ admin.js: ${error.message}`);
+        } else {
+          ui.reportBugModal(null, String(error.stack));
+        }
+      });
     document.querySelector(`#question-${this.id} [data-toggle-question]`).click();
     const url = '/admin/upload?question=' + this.id;
     const width = 600;
@@ -2013,7 +2090,14 @@ try {
     const clickYRelativeToElement = event.clientY - rect.top;
     const distanceFromBottom = rect.height - clickYRelativeToElement;
     if (distanceFromBottom <= 26) {
-      await save(null, true);
+      await save(null, true)
+        .catch(error => {
+          if (storage.get("developer")) {
+            alert(`Error @ admin.js: ${error.message}`);
+          } else {
+            ui.reportBugModal(null, String(error.stack));
+          }
+        });
       ui.setUnsavedChanges(true);
       await fetch(domain + '/upload', {
         method: "DELETE",
@@ -2909,7 +2993,14 @@ try {
           } else {
             renderSpeedPond(segment);
           }
-          await init();
+          await init()
+            .catch(error => {
+              if (storage.get("developer")) {
+                alert(`Error @ admin.js: ${error.message}`);
+              } else {
+                ui.reportBugModal(null, String(error.stack));
+              }
+            });
           if ((segment === 0) && endingQuestionId) addExistingQuestion(endingQuestionId);
         } else {
           init();
@@ -2921,7 +3012,14 @@ try {
 
   async function renderSyllabusPond() {
     if (!active) return;
-    await save(null, true);
+    await save(null, true)
+      .catch(error => {
+        if (storage.get("developer")) {
+          alert(`Error @ admin.js: ${error.message}`);
+        } else {
+          ui.reportBugModal(null, String(error.stack));
+        }
+      });
     const url = '/admin/upload?syllabus=' + document.getElementById("course-period-input").value;
     const width = 600;
     const height = 217;
@@ -2950,7 +3048,14 @@ try {
   async function renderAnnouncementPond(platform) {
     if (!active) return;
     if (!platform) return;
-    await save(null, true);
+    await save(null, true)
+      .catch(error => {
+        if (storage.get("developer")) {
+          alert(`Error @ admin.js: ${error.message}`);
+        } else {
+          ui.reportBugModal(null, String(error.stack));
+        }
+      });
     const url = '/admin/upload?course=' + document.getElementById("course-period-input").value + '&platform=' + platform;
     const width = 600;
     const height = 217;
@@ -2996,8 +3101,22 @@ try {
 
   async function sortSegments(event, sortAs) {
     if (!active) return;
-    await settingsPush('sort-segments', sortAs || document.getElementById('sort-segments-types').value);
-    await save(null, true);
+    await settingsPush('sort-segments', sortAs || document.getElementById('sort-segments-types').value)
+      .catch(error => {
+        if (storage.get("developer")) {
+          alert(`Error @ admin.js: ${error.message}`);
+        } else {
+          ui.reportBugModal(null, String(error.stack));
+        }
+      });
+    await save(null, true)
+      .catch(error => {
+        if (storage.get("developer")) {
+          alert(`Error @ admin.js: ${error.message}`);
+        } else {
+          ui.reportBugModal(null, String(error.stack));
+        }
+      });
     var updatedSegments = [...segments];
     switch (sortAs || document.getElementById('sort-segments-types').value) {
       case 'az':
@@ -3186,7 +3305,14 @@ try {
   async function toggleDetailedReport() {
     if (!active || !this.getAttribute('report') || !document.getElementById(this.getAttribute('report'))) return;
     document.getElementById(this.getAttribute('report')).classList.toggle('active');
-    await renderDetailedReport(this.getAttribute('report'));
+    await renderDetailedReport(this.getAttribute('report'))
+      .catch(error => {
+        if (storage.get("developer")) {
+          alert(`Error @ admin.js: ${error.message}`);
+        } else {
+          ui.reportBugModal(null, String(error.stack));
+        }
+      });
     syncExpandAllReportsButton();
   }
 
@@ -3598,7 +3724,7 @@ try {
             subtitleLatex: question.latex,
             description: question.description,
             attachments: question.images,
-            lists: [
+            lists: questions.find(q1 => String(q1.stem) === String(question.id)) ? [] : [
               {
                 title: 'Correct Answers',
                 items: answers.find(a => a.id === question.id)?.correct_answers
@@ -3644,7 +3770,7 @@ try {
             subtitleLatex: question.latex,
             description: question.description,
             attachments: question.images,
-            lists: [
+            lists: questions.find(q1 => String(q1.stem) === String(question.id)) ? [] : [
               {
                 title: 'Correct Answers',
                 items: answers.find(a => a.id === question.id)?.correct_answers
@@ -3691,7 +3817,7 @@ try {
               subtitleLatex: question.latex,
               description: question.description,
               attachments: question.images,
-              lists: [
+              lists: questions.find(q1 => String(q1.stem) === String(question.id)) ? [] : [
                 {
                   title: 'Correct Answers',
                   items: answers.find(a => a.id === question.id)?.correct_answers
@@ -5520,7 +5646,14 @@ try {
           class: 'submit-button',
           onclick: async () => {
             for (var i = 0; i < archivingList.length; i++) {
-              await archive(archivingList[i].type, String(archivingList[i].id), archivingList[i].name);
+              await archive(archivingList[i].type, String(archivingList[i].id), archivingList[i].name)
+                .catch(error => {
+                  if (storage.get("developer")) {
+                    alert(`Error @ admin.js: ${error.message}`);
+                  } else {
+                    ui.reportBugModal(null, String(error.stack));
+                  }
+                });
             }
           },
           close: true,
@@ -5667,7 +5800,14 @@ try {
           class: 'submit-button',
           onclick: async () => {
             for (var i = 0; i < unarchivingList.length; i++) {
-              await unarchive(unarchivingList[i].type, String(unarchivingList[i].id), unarchivingList[i].name);
+              await unarchive(unarchivingList[i].type, String(unarchivingList[i].id), unarchivingList[i].name)
+                .catch(error => {
+                  if (storage.get("developer")) {
+                    alert(`Error @ admin.js: ${error.message}`);
+                  } else {
+                    ui.reportBugModal(null, String(error.stack));
+                  }
+                });
             }
           },
           close: true,
@@ -6217,7 +6357,14 @@ try {
     if (document.querySelector(`#${platform}-announcement [data-${platform}-announcement-image-remove]:not([hidden])`)) {
       document.querySelector(`#${platform}-announcement [data-${platform}-announcement-image-remove]:not([hidden])`).click();
     } else {
-      await save(null);
+      await save(null)
+        .catch(error => {
+          if (storage.get("developer")) {
+            alert(`Error @ admin.js: ${error.message}`);
+          } else {
+            ui.reportBugModal(null, String(error.stack));
+          }
+        });
       ui.setUnsavedChanges(false);
     }
   }
@@ -6242,7 +6389,14 @@ try {
           text: 'Save',
           class: 'submit-button',
           onclick: async () => {
-            await save(null, false);
+            await save(null, false)
+              .catch(error => {
+                if (storage.get("developer")) {
+                  alert(`Error @ admin.js: ${error.message}`);
+                } else {
+                  ui.reportBugModal(null, String(error.stack));
+                }
+              });
             previousPage(paginationSection);
           },
           close: true,
@@ -6278,7 +6432,14 @@ try {
           text: 'Save',
           class: 'submit-button',
           onclick: async () => {
-            await save(null, false);
+            await save(null, false)
+              .catch(error => {
+                if (storage.get("developer")) {
+                  alert(`Error @ admin.js: ${error.message}`);
+                } else {
+                  ui.reportBugModal(null, String(error.stack));
+                }
+              });
             nextPage(paginationSection);
           },
           close: true,

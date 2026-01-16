@@ -91,7 +91,14 @@ try {
     questions = bulkLoad.questions;
     answers = bulkLoad.answers;
     responses = bulkLoad.responses;
-    await auth.loadAdminSettings(courses);
+    await auth.loadAdminSettings(courses)
+      .catch(error => {
+        if (storage.get("developer")) {
+          alert(`Error @ ta.js: ${error.message}`);
+        } else {
+          ui.reportBugModal(null, String(error.stack));
+        }
+      });
     if (document.getElementById("course-period-input") && !noReloadCourse) {
       document.getElementById("course-period-input").innerHTML = "";
       courses.sort((a, b) => a.id - b.id).forEach(course => {
@@ -110,11 +117,25 @@ try {
     if (document.getElementById("filter-segment-input")) updateCourses();
     if (responses.find(response => String(response.seatCode).includes('xx'))) document.getElementById("checker").classList.add("anonymous");
     if (document.querySelector('.questions.section')) {
-      await updateQuestions();
+      await updateQuestions()
+        .catch(error => {
+          if (storage.get("developer")) {
+            alert(`Error @ ta.js: ${error.message}`);
+          } else {
+            ui.reportBugModal(null, String(error.stack));
+          }
+        });
       if (params?.question) toggleQuestion(null, params.question);
     }
     if (document.getElementById("course-period-input") && !noReloadCourse) document.getElementById("course-period-input").value = (storage.get('period') && courses.find(c => String(c.id) === String(storage.get('period')))) ? storage.get('period') : (((ui.defaultCourse !== null) && courses.find(c => String(c.id) === String(ui.defaultCourse))) ? ui.defaultCourse : courses.find(c => JSON.parse(c.periods).includes(Number(String(responses.sort((a, b) => String(a.seatCode)[0] - String(b.seatCode)[0])[0]?.seatCode)[0]))) ? courses.find(c => JSON.parse(c.periods).includes(Number(String(responses.sort((a, b) => String(a.seatCode)[0] - String(b.seatCode)[0])[0]?.seatCode)[0]))).id : 0);
-    if (document.getElementById("course-period-input")) await updateResponses();
+    if (document.getElementById("course-period-input")) await updateResponses()
+      .catch(error => {
+        if (storage.get("developer")) {
+          alert(`Error @ ta.js: ${error.message}`);
+        } else {
+          ui.reportBugModal(null, String(error.stack));
+        }
+      });
     active = true;
     ui.stopLoader();
     ui.toast("Data restored.", 1000, "info", "bi bi-cloud-arrow-down");
@@ -188,7 +209,14 @@ try {
               text: `Use ${input}`,
               class: 'submit-button',
               onclick: async () => {
-                if (storage.get("code") !== input) await auth.clearBulkLoad();
+                if (storage.get("code") !== input) await auth.clearBulkLoad()
+                  .catch(error => {
+                    if (storage.get("developer")) {
+                      alert(`Error @ ta.js: ${error.message}`);
+                    } else {
+                      ui.reportBugModal(null, String(error.stack));
+                    }
+                  });
                 storage.set("code", input);
                 init();
                 // Close all modals
@@ -206,7 +234,14 @@ try {
       } else {
         // Close all modals
         ui.view("");
-        if (storage.get("code") !== input) await auth.clearBulkLoad();
+        if (storage.get("code") !== input) await auth.clearBulkLoad()
+          .catch(error => {
+            if (storage.get("developer")) {
+              alert(`Error @ ta.js: ${error.message}`);
+            } else {
+              ui.reportBugModal(null, String(error.stack));
+            }
+          });
         storage.set("code", input);
         init();
         // Update URL parameters with seat code
@@ -359,7 +394,14 @@ try {
     document.querySelectorAll("#save-button").forEach(w => w.disabled = true);
     window.scroll(0, 0);
     if (typeof hideResult != 'boolean') ui.modeless(`<i class="bi bi-check-lg"></i>`, "Saved");
-    await init();
+    await init()
+      .catch(error => {
+        if (storage.get("developer")) {
+          alert(`Error @ ta.js: ${error.message}`);
+        } else {
+          ui.reportBugModal(null, String(error.stack));
+        }
+      });
     setTimeout(() => {
       document.querySelectorAll("#save-button").forEach(w => w.disabled = false);
     }, 2500);
@@ -421,7 +463,7 @@ try {
                 subtitleLatex: question.latex,
                 description: question.description,
                 attachments: question.images,
-                lists: [
+                lists: questions.find(q1 => String(q1.stem) === String(question.id)) ? [] : [
                   {
                     title: 'Correct Answers',
                     items: answers.find(a => a.id === question.id)?.correct_answers
@@ -610,7 +652,14 @@ try {
   }
 
   async function toggleQuestion(event = null, questionId = null) {
-    if (questionId) await goToPage(document.querySelector('.questions #current-page'), pageQuestionIsOn(document.querySelector('.questions #current-page'), questionId));
+    if (questionId) await goToPage(document.querySelector('.questions #current-page'), pageQuestionIsOn(document.querySelector('.questions #current-page'), questionId))
+      .catch(error => {
+        if (storage.get("developer")) {
+          alert(`Error @ ta.js: ${error.message}`);
+        } else {
+          ui.reportBugModal(null, String(error.stack));
+        }
+      });
     const questionContainer = questionId ? document.querySelector(`#question-${questionId}`) : this.parentElement.parentElement;
     if (!questionContainer) return;
     if (questionContainer.classList.contains('expanded')) {

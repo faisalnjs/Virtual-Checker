@@ -45,7 +45,7 @@
 
 body {
   min-height: 100%;
-  padding: 50px 7.5% 25px 7.5%;
+  padding: 50px 7.5% 125px 7.5%;
   color: var(--text-color);
   background-color: var(--background-color);
   font:
@@ -64,6 +64,10 @@ body[data-theme] {
 
 body.enable-transitions {
   --easing: cubic-bezier(0.32, 0, 0.67, 0);
+}
+
+body:has(#header) > *:not([id]):not(dialog) {
+  position: fixed;
 }
 
 h1 {
