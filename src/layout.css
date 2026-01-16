@@ -359,6 +359,10 @@ body:has(.island.visible) #checker {
   margin-top: 10px;
 }
 
+dialog:has(.history-feed) > button {
+  margin-top: 5px;
+}
+
 #history-feed {
   height: 400px;
 }
