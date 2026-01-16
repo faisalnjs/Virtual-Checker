@@ -1247,14 +1247,19 @@ try {
     document.getElementById("history-date").textContent = date;
 
     const feed = document.getElementById("history-feed");
-    if (filteredHistory.length === 0) {
-      feed.innerHTML = "<p>Submitted clicks will show up here!</p>";
+    feed.innerHTML = "";
+    if (filteredHistory.length === 0) feed.innerHTML = "<p>Submitted checks will show up here!</p>";
+
+    const reviewLaterFeed = document.getElementById("review-later-feed");
+    reviewLaterFeed.innerHTML = "";
+    if (filteredHistory.filter(r => r.review_later).length === 0) reviewLaterFeed.innerHTML = "<p>Checks marked to review later will show up here!</p>";
+
+    if ((filteredHistory.length === 0) && (filteredHistory.filter(r => r.review_later).length === 0)) {
       ui.reloadUnsavedInputs();
       return filteredHistory;
     }
 
     var sortedHistory = filteredHistory.sort((a, b) => a.timestamp - b.timestamp);
-    feed.innerHTML = "";
     sortedHistory.forEach(r => {
       if (r.error) {
         console.log(r.error);
@@ -1283,9 +1288,11 @@ try {
           break;
       }
       feed.prepend(button);
+      const button2 = button.cloneNode(true);
+      if (r.review_later) reviewLaterFeed.prepend(button2);
       renderMathInElement(button);
       // Resubmit check
-      button.addEventListener("click", async (event) => {
+      [button, button2].forEach(b => b.addEventListener("click", async (event) => {
         if (event.target.hasAttribute('data-flag-response')) return r.flagged ? unflagResponse(event) : flagResponse(event);
         if (event.target.hasAttribute('data-review-later-response')) return r.review_later ? unReviewLaterResponse(event) : reviewLaterResponse(event);
         ui.view("");
@@ -1301,7 +1308,7 @@ try {
         setTimeout(() => {
           document.querySelector(`[data-answer-mode="${r.mode === 'text' ? 'input' : r.mode}"]`)?.querySelector('input, textarea, math-field')?.focus();
         }, 500);
-      });
+      }));
     });
     if (sortedHistory.find(r => r.flagged)) {
       var p = document.createElement("p");
