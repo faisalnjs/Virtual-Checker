@@ -193,7 +193,7 @@ export async function renderStore() {
   await storage.idbReady;
   var initialTheme = storage.get("theme") || "default";
   var checks = (await storage.idbGet("cache"))?.checksCount || 0;
-  document.querySelector('#controls-container .pill')?.setAttribute('checks', checks);
+  document.getElementById("controls-container")?.setAttribute('checks', checks);
   var ownedThemes = (await storage.idbGet("cache"))?.ownedThemes || [];
   if (document.body.getAttribute('data-theme') && !ownedThemes.includes(document.body.getAttribute('data-theme')) && themes.find(theme => theme[0] === document.body.getAttribute('data-theme'))?.[3]) {
     resetTheme();
