@@ -3284,14 +3284,7 @@ try {
   async function toggleDetailedReport() {
     if (!active || !this.getAttribute('report') || !document.getElementById(this.getAttribute('report'))) return;
     document.getElementById(this.getAttribute('report')).classList.toggle('active');
-    await renderDetailedReport(this.getAttribute('report'))
-      .catch(error => {
-        if (storage.get("developer")) {
-          alert(`Error @ admin.js: ${error.message}`);
-        } else {
-          ui.reportBugModal(null, String(error.stack));
-        }
-      });
+    await renderDetailedReport(this.getAttribute('report'));
     syncExpandAllReportsButton();
   }
 
