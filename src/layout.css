@@ -270,25 +270,28 @@ body:has(.island.visible) #checker {
   align-self: center;
   position: fixed;
   bottom: 25px;
-  padding-left: 5px;
   transition: 0.5s;
 }
 
-#controls-container:has(> :last-child:hover) {
+#controls-container[checks] {
+  padding-left: 5px;
+}
+
+#controls-container[checks]:has(> :last-child:hover) {
   transition: 0.1s;
 }
 
-#controls-container:not(:has(> :last-child:hover)) {
+#controls-container[checks]:not(:has(> :last-child:hover)) {
   padding-right: 5px;
   transition: 0.1s;
 }
 
-#controls-container:hover {
+#controls-container[checks]:hover {
   border-radius: 0 100vh 100vh 0;
   transition: 0.5s;
 }
 
-#controls-container::before {
+#controls-container[checks]::before {
   content: attr(checks);
   position: absolute;
   bottom: 0;
@@ -303,7 +306,7 @@ body:has(.island.visible) #checker {
   transition: 0.5s;
 }
 
-#controls-container:hover::before {
+#controls-container[checks]:hover::before {
   right: 100%;
   background-color: var(--accent-color);
   transition: 0.5s;
