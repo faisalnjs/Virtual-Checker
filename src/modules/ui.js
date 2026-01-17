@@ -1144,6 +1144,12 @@ export function suggestionsModal(event = null, suggestion = null) {
         selectAll: !suggestion,
         disabled: suggestion,
         defaultValue: suggestion || '',
+      },
+      {
+        type: 'text',
+        label: 'Contact Information (Optional)',
+        placeholder: 'Email address, Instagram handle, Discord username, etc.',
+        required: false,
       }
     ],
     buttons: [
@@ -1163,6 +1169,7 @@ export function suggestionsModal(event = null, suggestion = null) {
               "entry.470737118": storage.get("code"),
               "entry.888169052": inputValues[0],
               "entry.689497704": `${storage.get("code")}:${inputValues[1]}`,
+              "entry.1640008306": `${storage.get("code")}:${inputValues[2]}`,
             };
             const params = new URLSearchParams(fields).toString();
             const url = "https://docs.google.com/forms/d/e/1FAIpQLSf5hoON2TQWxpzb1wMjW4EY2BbDtM-KLe-B7kUJj4FM6aExDw/formResponse?";
