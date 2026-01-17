@@ -844,7 +844,7 @@ try {
         const li = document.createElement('li');
         li.classList.add(statusLabel.replace(/\s+/g, '-').toLowerCase());
         li.style.color = (correctCount === totalQuestions) ? 'mediumseagreen' : (attemptedCount === totalQuestions) ? 'royalblue' : ((segment.due && (new Date(`${segment.due}T00:00:00`).getTime() < new Date().setHours(0, 0, 0, 0))) ? ((attemptedCount === 0) ? 'indianred' : 'darkorange') : '');
-        li.innerHTML = `${icon} <b>${segment.number} - ${segment.name.length > 50 ? segment.name.substring(0, 50 - 3).trim() + '...' : segment.name}:</b><p>${statusLabel}</p><span style="float: right; font-weight: 600;">${attemptedCount}/${totalQuestions} Answered • ${correctCount}/${totalQuestions} Correct (${(totalQuestions > 0) ? Math.round((correctCount / totalQuestions) * 100) : 0}%)</span>`;
+        li.innerHTML = `${icon} <b>${segment.number} - ${segment.name.length > 50 ? segment.name.substring(0, 50 - 3).trim() + '...' : segment.name}:</b><p>${statusLabel}</p><span style="float: right; font-weight: 600;">${attemptedCount}/${totalQuestions} Answered • ${correctCount}/${attemptedCount} Correct (${(totalQuestions > 0) ? Math.round((correctCount / totalQuestions) * 100) : 0}%)</span>`;
         document.getElementById("segments-completed").querySelector('ul').append(li);
         li.addEventListener('click', () => {
           segments.value = segment.id;
@@ -1252,15 +1252,16 @@ try {
 
     const reviewLaterFeed = document.getElementById("review-later-feed");
     reviewLaterFeed.innerHTML = "";
-    if (filteredHistory.filter(r => r.review_later).length === 0) reviewLaterFeed.innerHTML = "<p>Checks marked to review later will show up here!</p>";
+    if (history.filter(r => r.review_later).length === 0) reviewLaterFeed.innerHTML = "<p>Checks marked to review later will show up here!</p>";
 
-    if ((filteredHistory.length === 0) && (filteredHistory.filter(r => r.review_later).length === 0)) {
+    if ((filteredHistory.length === 0) && (history.filter(r => r.review_later).length === 0)) {
       ui.reloadUnsavedInputs();
       return filteredHistory;
     }
 
-    var sortedHistory = filteredHistory.sort((a, b) => a.timestamp - b.timestamp);
-    sortedHistory.forEach(r => {
+    var sortedHistory = history.sort((a, b) => a.timestamp - b.timestamp);
+    var sortedFilteredHistory = filteredHistory.sort((a, b) => a.timestamp - b.timestamp);
+    sortedHistory.filter(r => filteredHistory.find(r1 => r1.id === r.id) || r.review_later).forEach(r => {
       if (r.error) {
         console.log(r.error);
         return filteredHistory;
@@ -1275,19 +1276,19 @@ try {
       var questionNumber = JSON.parse(segmentsArray.find(s => String(s.id) === String(r.segment))?.question_ids || '[]').find(q => String(q.id) === String(r.question_id))?.name || questionsArray.find(question => String(question.id) === String(r.question_id)).number;
       switch (r.mode) {
         case 'latex':
-          button.innerHTML = `${(String(r.seatCode) !== String(storage.get("code"))) ? `<p><b>${courses.find(c => JSON.parse(c.periods).includes(Number(String(r.seatCode).slice(0, 1))))?.name}</b></p>\n` : ''}<p><b>${segmentNumber ? `Segment ${segmentNumber}` : 'Deleted Segment'} Question #${questionNumber}.</b> ${unixToTimeString(r.timestamp)} (${r.seatCode})</p>\n${convertLatexToMarkup(r.response)}\n<p class="hint">(Equation may not display properly)</p>\n<p>${response}`;
+          button.innerHTML = `${(String(r.seatCode) !== String(storage.get("code"))) ? `<p><b>${courses.find(c => JSON.parse(c.periods).includes(Number(String(r.seatCode).slice(0, 1))))?.name}</b></p>\n` : ''}<p><b>${segmentNumber ? `Segment ${segmentNumber}` : 'Deleted Segment'} Question #${questionNumber}.</b> ${(new Date().toDateString() === new Date(r.timestamp).toDateString()) ? unixToTimeString(r.timestamp) : unixToString(r.timestamp)} (${r.seatCode})</p>\n${convertLatexToMarkup(r.response)}\n<p class="hint">(Equation may not display properly)</p>\n<p>${response}`;
           break;
         case 'array':
-          button.innerHTML = `${(String(r.seatCode) !== String(storage.get("code"))) ? `<p><b>${courses.find(c => JSON.parse(c.periods).includes(Number(String(r.seatCode).slice(0, 1))))?.name}</b></p>\n` : ''}<p><b>${segmentNumber ? `Segment ${segmentNumber}` : 'Deleted Segment'} Question #${questionNumber}.</b> ${unixToTimeString(r.timestamp)} (${r.seatCode})</p>\n<p>${JSON.parse(`[${r.response.slice(1, -1).split(', ')}]`).join(', ')}</p>\n<p>${response}`;
+          button.innerHTML = `${(String(r.seatCode) !== String(storage.get("code"))) ? `<p><b>${courses.find(c => JSON.parse(c.periods).includes(Number(String(r.seatCode).slice(0, 1))))?.name}</b></p>\n` : ''}<p><b>${segmentNumber ? `Segment ${segmentNumber}` : 'Deleted Segment'} Question #${questionNumber}.</b> ${(new Date().toDateString() === new Date(r.timestamp).toDateString()) ? unixToTimeString(r.timestamp) : unixToString(r.timestamp)} (${r.seatCode})</p>\n<p>${JSON.parse(`[${r.response.slice(1, -1).split(', ')}]`).join(', ')}</p>\n<p>${response}`;
           break;
         case 'matrix':
-          button.innerHTML = `${(String(r.seatCode) !== String(storage.get("code"))) ? `<p><b>${courses.find(c => JSON.parse(c.periods).includes(Number(String(r.seatCode).slice(0, 1))))?.name}</b></p>\n` : ''}<p><b>${segmentNumber ? `Segment ${segmentNumber}` : 'Deleted Segment'} Question #${questionNumber}.</b> ${unixToTimeString(r.timestamp)} (${r.seatCode})</p>\n<p>${JSON.stringify(JSON.parse(r.response).map(innerArray => innerArray.map(numString => String(numString)))).replaceAll('["', '[').replaceAll('","', ', ').replaceAll('"]', ']')}</p>\n<p>${response}`;
+          button.innerHTML = `${(String(r.seatCode) !== String(storage.get("code"))) ? `<p><b>${courses.find(c => JSON.parse(c.periods).includes(Number(String(r.seatCode).slice(0, 1))))?.name}</b></p>\n` : ''}<p><b>${segmentNumber ? `Segment ${segmentNumber}` : 'Deleted Segment'} Question #${questionNumber}.</b> ${(new Date().toDateString() === new Date(r.timestamp).toDateString()) ? unixToTimeString(r.timestamp) : unixToString(r.timestamp)} (${r.seatCode})</p>\n<p>${JSON.stringify(JSON.parse(r.response).map(innerArray => innerArray.map(numString => String(numString)))).replaceAll('["', '[').replaceAll('","', ', ').replaceAll('"]', ']')}</p>\n<p>${response}`;
           break;
         default:
-          button.innerHTML = `${(String(r.seatCode) !== String(storage.get("code"))) ? `<p><b>${courses.find(c => JSON.parse(c.periods).includes(Number(String(r.seatCode).slice(0, 1))))?.name}</b></p>\n` : ''}<p><b>${segmentNumber ? `Segment ${segmentNumber}` : 'Deleted Segment'} Question #${questionNumber}.</b> ${unixToTimeString(r.timestamp)} (${r.seatCode})</p>\n<p>${escapeHTML(r.response)}</p>\n<p>${response}`;
+          button.innerHTML = `${(String(r.seatCode) !== String(storage.get("code"))) ? `<p><b>${courses.find(c => JSON.parse(c.periods).includes(Number(String(r.seatCode).slice(0, 1))))?.name}</b></p>\n` : ''}<p><b>${segmentNumber ? `Segment ${segmentNumber}` : 'Deleted Segment'} Question #${questionNumber}.</b> ${(new Date().toDateString() === new Date(r.timestamp).toDateString()) ? unixToTimeString(r.timestamp) : unixToString(r.timestamp)} (${r.seatCode})</p>\n<p>${escapeHTML(r.response)}</p>\n<p>${response}`;
           break;
       }
-      feed.prepend(button);
+      if (filteredHistory.find(r1 => r1.id === r.id)) feed.prepend(button);
       const button2 = button.cloneNode(true);
       if (r.review_later) reviewLaterFeed.prepend(button2);
       renderMathInElement(button);
@@ -1310,7 +1311,7 @@ try {
         }, 500);
       }));
     });
-    if (sortedHistory.find(r => r.flagged)) {
+    if (sortedFilteredHistory.find(r => r.flagged)) {
       var p = document.createElement("p");
       p.classList = "flagged-response-alert";
       p.innerText = "You have flagged responses to review.";
