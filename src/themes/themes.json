@@ -45,5 +45,6 @@
   ["galaxy", "Galaxy", "moon-stars", 70, [], true],
   ["galaxy-2", "Galaxy 2", "moon-stars", 70, ["galaxy"], true],
   ["northern-lights", "Northern Lights", "moon-stars", 80, ["galaxy", "galaxy-2"], true],
-  ["milky-way", "Milky Way", "moon-stars", 80, ["galaxy", "galaxy-2"], true]
+  ["milky-way", "Milky Way", "moon-stars", 80, ["galaxy", "galaxy-2"], true],
+  ["siege", "Siege", "gun", 90, [], false]
 ]
