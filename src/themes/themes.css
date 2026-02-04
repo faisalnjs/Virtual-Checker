@@ -552,3 +552,25 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
   --error-color: #eb324b;
   background: url(/store/backdrop/snowflakes.png) !important;
 }
+
+[data-theme="chocolate-hearts"] {
+  color-scheme: light;
+  --text-color: #ffffff;
+  --background-color: #ff2352;
+  --surface-color: #d50035;
+  --accent-color: #fd1e54;
+  --accent-text-color: #ffffff;
+  --error-color: #b90024;
+  background: url(/store/backdrop/chocolate-hearts.png) !important;
+}
+
+[data-theme="chocolate-hearts-2"] {
+  color-scheme: light;
+  --text-color: #ff3462;
+  --background-color: #820024;
+  --surface-color: #f4e6ec;
+  --accent-color: #cc0039;
+  --accent-text-color: #ffffff;
+  --error-color: #b90024;
+  background: url(/store/backdrop/chocolate-hearts-2.png) !important;
+}

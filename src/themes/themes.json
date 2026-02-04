@@ -46,6 +46,8 @@
   ["galaxy-2", "Galaxy 2", "moon-stars", 70, ["galaxy"], true],
   ["northern-lights", "Northern Lights", "moon-stars", 80, ["galaxy", "galaxy-2"], true],
   ["milky-way", "Milky Way", "moon-stars", 80, ["galaxy", "galaxy-2"], true],
-  ["siege", "Siege", "gun", 90, [], false],
-  ["snowflakes", "Snowflakes", "snowflake", 80, ["snow"], true]
+  ["siege", "Siege", "gun", 60, [], false],
+  ["snowflakes", "Snowflakes", "snowflake", 80, ["snow"], true],
+  ["chocolate-hearts", "Chocolate Hearts", "heart", 80, ["rose-pro"], true],
+  ["chocolate-hearts-2", "Chocolate Hearts 2", "heart", 80, ["rose-pro", "chocolate-hearts"], true]
 ]
