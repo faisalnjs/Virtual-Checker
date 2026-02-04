@@ -541,3 +541,14 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
   --error-color: #cb5a4f;
   background: url(/store/backdrop/siege.png) !important;
 }
+
+[data-theme="snowflakes"] {
+  color-scheme: light;
+  --text-color: #2c2c2c;
+  --background-color: #79bddf;
+  --surface-color: #d2d4da;
+  --accent-color: #73b9dc;
+  --accent-text-color: #e7e4ec;
+  --error-color: #eb324b;
+  background: url(/store/backdrop/snowflakes.png) !important;
+}
