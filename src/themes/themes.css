@@ -284,6 +284,26 @@
   --backlight-color: yellow;
 }
 
+[data-theme="neon-red"] {
+  color-scheme: dark;
+  --text-color: #e61c4a;
+  --background-color: #450015;
+  --surface-color: #5c001a;
+  --accent-color: #b70033;
+  --accent-text-color: #ffffff;
+  --error-color: #b90024;
+}
+
+[data-theme="strawberry"] {
+  color-scheme: light;
+  --text-color: #ff6084;
+  --background-color: #ffc7d8;
+  --surface-color: #f4e6ec;
+  --accent-color: #ff6691;
+  --accent-text-color: #ffffff;
+  --error-color: #b90024;
+}
+
 #atreides-logo {
   display: none;
 }
