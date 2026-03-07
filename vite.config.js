@@ -40,6 +40,7 @@ export default {
         archive: new URL('admin/archive.html', import.meta.url).pathname,
         courses: new URL('admin/courses.html', import.meta.url).pathname,
         taQuestions: new URL('ta/questions.html', import.meta.url).pathname,
+        drawings: new URL('admin/drawings.html', import.meta.url).pathname,
       },
     },
   },

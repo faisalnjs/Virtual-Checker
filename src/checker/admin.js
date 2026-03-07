@@ -6,6 +6,8 @@ import storage from "/src/modules/storage.js";
 import * as time from "/src/modules/time.js";
 import * as auth from "/src/modules/auth.js";
 import island from "/src/modules/island.js";
+import * as themes from "/src/themes/themes.js";
+import { getExtendedPeriod } from "/src/periods/periods";
 import { convertLatexToMarkup, renderMathInElement } from "mathlive";
 import { createSwapy } from "swapy";
 import Quill from "quill";
@@ -14,6 +16,7 @@ import "faz-quill-emoji/autoregister";
 const domain = ((window.location.hostname.search('check') != -1) || (window.location.hostname.search('127') != -1)) ? 'https://api.check.vssfalcons.com' : `http://${document.domain}:5000`;
 if (window.location.pathname.split('?')[0].endsWith('/admin')) window.location.pathname = '/admin/';
 const params = Object.fromEntries((new URL(location)).searchParams);
+const ws = new WebSocket(`${domain}/ws?${new URLSearchParams({ role: 'admin' }).toString()}`);
 
 var archiveTypeSelected = null;
 var courses = [];
@@ -45,6 +48,10 @@ var pagination = {
 var questionsToDelete = [];
 var keepSegment = null;
 var fromAwaitingScoring = false;
+const liveDrawingPeriods = document.getElementById('live-drawing-periods');
+const savedLiveDrawingSessions = document.getElementById('saved-live-drawing-sessions');
+var hideSeatCodes = false;
+const liveDrawingSessions = {};
 
 var draggableQuestionList = null;
 var draggableSegmentReorder = null;
@@ -354,6 +361,19 @@ try {
     if ((document.getElementById("course-period-input") && !loadedSegmentEditor && !loadedSegmentCreator && !noReloadCourse) || noReloadCourse) await updateResponses();
     if (document.querySelector('.segment-reports')) updateSegments();
     if (document.querySelector('.question-reports')) updateQuestionReports();
+    if (document.getElementById('live-drawing-periods')) {
+      courses.flatMap(course => JSON.parse(course.periods).map(period => { return { period, name: course.name } })).sort((a, b) => a.period - b.period).forEach(coursePeriod => {
+        document.getElementById("period-input").innerHTML += `<option value="${coursePeriod.period}">Period ${coursePeriod.period} - ${coursePeriod.name}</option>`;
+      });
+      var currentPeriod = getExtendedPeriod();
+      if (currentPeriod != -1) {
+        document.getElementById("period-input").value = getExtendedPeriod() + 1;
+      } else if (document.querySelectorAll('#live-drawing-periods .sessions').length) {
+        document.getElementById("period-input").value = Array.from(document.querySelectorAll('#live-drawing-periods .sessions')).sort((a, b) => a.children.length - b.children.length)[0].getAttribute('data-period');
+      }
+      document.getElementById("period-input").addEventListener("change", syncLiveDrawingPeriod);
+      syncLiveDrawingPeriod();
+    }
     active = true;
     ui.stopLoader();
     if (!polling) ui.toast("Data restored.", 1000, "info", "bi bi-cloud-arrow-down");
@@ -6495,6 +6515,277 @@ try {
     const group = Array.from(paginationSection.parentElement.parentElement.classList).find(a => Object.keys(pagination).includes(a));
     if (!group) return;
     goToPage(paginationSection, Math.ceil(pagination[group].total / (storage.get("rowsPerPage") ? Number(storage.get("rowsPerPage")) : pagination[group].perPage)) - 1);
+  }
+
+  function getOrCreateGroup(period, source) {
+    let el = document.querySelector(`[data-period="${period}"]`);
+    if (el) return el;
+    el = document.createElement('div');
+    el.className = 'sessions';
+    el.setAttribute('data-period', period);
+    liveDrawingPeriods.appendChild(el);
+    return el;
+  }
+
+  function createSession(data, sessionKey) {
+    const [source, seatCode] = sessionKey.split('::');
+    if ((data.data.meta.source || 'unknown') !== 'clicker') return;
+    const sessions = getOrCreateGroup(Number(seatCode.slice(0, 1)), data.data.meta.source || 'unknown');
+    const sessionDiv = document.createElement('div');
+    sessionDiv.className = 'session';
+    sessionDiv.innerHTML = `<span class="meta">${data.data.meta.seatCode}</span><div class="canvas-wrapper"></div><div class="overlays"></div>`;
+    sessions.appendChild(sessionDiv);
+    liveDrawingSessions[sessionKey] = { wrapper: sessionDiv, canvas: null, strokes: [] };
+    sessionDiv.querySelector('.meta').addEventListener('click', () => {
+      sessionDiv.classList.toggle('collapsed');
+      const wrap = sessionDiv.querySelector('.canvas-wrapper');
+      wrap.style.display = wrap.style.display === 'none' ? 'flex' : 'none';
+    });
+    const overlays = sessionDiv.querySelector('.overlays');
+    const toggleBtn = document.createElement('button');
+    toggleBtn.id = 'toggle-seat-code-button';
+    toggleBtn.setAttribute('square', '');
+    toggleBtn.setAttribute('tooltip', 'Show/Hide Seat Code');
+    toggleBtn.innerHTML = '<i class="bi bi-eye"></i>';
+    toggleBtn.addEventListener('click', () => {
+      const hideMeta = liveDrawingSessions[sessionKey].wrapper.querySelector('.meta').style.opacity === '100';
+      liveDrawingSessions[sessionKey].wrapper.querySelectorAll('.meta').forEach(el => el.style.opacity = hideMeta ? '0' : '100');
+      if (!hideMeta) {
+        hideSeatCodes = false;
+        document.getElementById('hide-seat-codes').checked = false;
+      }
+      if (Array.from(document.querySelectorAll('.session .meta')).every(el => el.style.opacity === '0')) document.getElementById('hide-seat-codes').checked = true;
+    });
+    overlays.appendChild(toggleBtn);
+    liveDrawingSessions[sessionKey].strokes = data.data.strokes.slice();
+    console.log('admin: rendering strokes from sessionSync for', sessionKey, liveDrawingSessions[sessionKey].strokes.length);
+    renderStrokesIntoSession(sessionKey, data.data.strokes);
+  }
+
+  if (document.getElementById('live-drawing-periods')) ws.addEventListener('message', (e) => {
+    const data = JSON.parse(e.data);
+    if (data.type === 'studentDraw') {
+      const { sessionKey, meta, stroke } = data;
+      if ((meta.source || 'unknown') !== 'clicker') return;
+      console.log(liveDrawingSessions, sessionKey)
+      if (!liveDrawingSessions[sessionKey]) createSession(data, sessionKey);
+      const info = liveDrawingSessions[sessionKey];
+      info.strokes = info.strokes || [];
+      info.strokes.push({ stroke });
+      renderStrokesIntoSession(sessionKey, info.strokes);
+      info.wrapper.querySelectorAll('.meta').forEach(el => el.style.display = hideSeatCodes ? 'none' : 'block');
+    } else if (data.type === 'sessionSync') {
+      if (!data || !data.data || !data.data.meta || !data.data.meta.source || !data.data.meta.seatCode || !data.data.strokes || !Array.isArray(data.data.strokes) || !data.data.strokes.length) return;
+      const sessionKey = data.sessionKey;
+      console.log('admin: sessionSync', data.sessionKey, data.data && data.data.meta, data.data && data.data.lastSeen);
+      if (!liveDrawingSessions[sessionKey]) createSession(data, sessionKey);
+    } else if (data.type === 'studentClear') {
+      const { sessionKey } = data;
+      const info = liveDrawingSessions[sessionKey];
+      if (info) {
+        info.strokes = [];
+        renderStrokesIntoSession(sessionKey, info.strokes);
+      }
+    } else if (data.type === 'resetPeriod') {
+      const period = String(data.period);
+      Object.keys(liveDrawingSessions).forEach(sessionKey => {
+        const parts = sessionKey.split('::');
+        const seat = parts[1] || '';
+        if (String(seat).startsWith(period)) {
+          const info = liveDrawingSessions[sessionKey];
+          if (info && info.canvas) {
+            const ctx = info.canvas.getContext('2d');
+            ctx.clearRect(0, 0, info.canvas.width, info.canvas.height);
+          }
+          if (info) info.strokes = [];
+        }
+      });
+    } else if (data.type === 'studentUndo') {
+      const { sessionKey, strokeId } = data;
+      const info = liveDrawingSessions[sessionKey];
+      if (info && Array.isArray(info.strokes)) {
+        const before = info.strokes.length;
+        info.strokes = info.strokes.filter(s => {
+          const seg = s.stroke || s;
+          if (!seg) return true;
+          return String(seg.id) !== String(strokeId);
+        });
+        if (info.strokes.length !== before) {
+          renderStrokesIntoSession(sessionKey, info.strokes);
+        }
+      }
+    }
+  });
+
+  function renderStrokesIntoSession(sessionKey, strokes) {
+    const info = liveDrawingSessions[sessionKey];
+    if (!info) return;
+    if (!info.canvas) {
+      const wrap = info.wrapper.querySelector('.canvas-wrapper');
+      var canvas = document.createElement('canvas');
+      canvas.width = 300;
+      canvas.height = 200;
+      canvas.style.width = '300px';
+      canvas.style.height = '200px';
+      canvas.style.padding = '0';
+      canvas.style.borderRadius = '0.5rem';
+      canvas.style.backgroundColor = themes.getCurrentTheme().surfaceColor;
+      canvas.style.touchAction = 'none';
+      wrap.appendChild(canvas);
+      info.canvas = canvas;
+    }
+    canvas = info.canvas;
+    const context = canvas.getContext('2d');
+    context.clearRect(0, 0, canvas.width, canvas.height);
+    console.log('admin: renderStrokesIntoSession', sessionKey, 'strokes=', strokes && strokes.length, 'canvas=', canvas.width, canvas.height);
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    const lines = [];
+    strokes.forEach(seg => {
+      if (seg.stroke && seg.stroke.from && seg.stroke.to) {
+        const f = seg.stroke.from, t = seg.stroke.to;
+        minX = Math.min(minX, f.x, t.x);
+        minY = Math.min(minY, f.y, t.y);
+        maxX = Math.max(maxX, f.x, t.x);
+        maxY = Math.max(maxY, f.y, t.y);
+        lines.push({ from: f, to: t, width: seg.stroke.width || 3, color: themes.getCurrentTheme().textColor });
+      }
+      if (seg.stroke && seg.stroke.clear) context.clearRect(0, 0, canvas.width, canvas.height);
+    });
+    if (lines.length === 0) return;
+    console.log('admin: bbox', { minX, minY, maxX, maxY });
+    if (!isFinite(minX) || !isFinite(minY) || !isFinite(maxX) || !isFinite(maxY)) return;
+    const srcW = (maxX - minX) || 1;
+    const srcH = (maxY - minY) || 1;
+    const padding = 10;
+    const scale = Math.min((canvas.width - padding * 2) / srcW, (canvas.height - padding * 2) / srcH);
+    console.log('admin: srcW,srcH,scale', srcW, srcH, scale);
+    const offsetX = (canvas.width - srcW * scale) / 2 - minX * scale;
+    const offsetY = (canvas.height - srcH * scale) / 2 - minY * scale;
+    console.log('admin: offsets', offsetX, offsetY);
+    lines.forEach(line => {
+      context.beginPath();
+      context.moveTo(line.from.x * scale + offsetX, line.from.y * scale + offsetY);
+      context.lineTo(line.to.x * scale + offsetX, line.to.y * scale + offsetY);
+      context.lineWidth = Math.max(1, (line.width || 3) * scale * 0.9);
+      context.strokeStyle = themes.getCurrentTheme().textColor;
+      context.stroke();
+    });
+  }
+
+  document.getElementById('hide-seat-codes')?.addEventListener('change', (e) => {
+    hideSeatCodes = !!e.target.checked;
+    document.querySelectorAll('.session .meta').forEach(el => el.style.opacity = hideSeatCodes ? '0' : '100');
+    // document.querySelectorAll('.session #toggle-seat-code-button').forEach(btn => btn.style.display = hideSeatCodes ? 'flex' : 'none');
+  });
+
+  document.querySelector('[save-live-drawings]')?.addEventListener('click', async () => {
+    const images = [];
+    Object.keys(liveDrawingSessions).forEach(sessionKey => {
+      const info = liveDrawingSessions[sessionKey];
+      if (!info || !info.canvas) return;
+      try {
+        const dataUrl = info.canvas.toDataURL('image/png');
+        images.push({ dataUrl, sessionKey });
+      } catch (e) {
+        console.warn('Failed to read canvas for', sessionKey, e);
+      }
+    });
+    if (images.length === 0) {
+      ui.toast('No drawings available to save', 3000, 'warning', 'bi bi-exclamation-triangle-fill');
+      return;
+    }
+    const saveSession = await fetch(domain + '/draw/save', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        images,
+        meta: {
+          created: new Date().toISOString(),
+          period: document.getElementById('period-input').value || null,
+          name: `Live Drawing Session - Period ${document.getElementById('period-input').value || 0} - ${new Date().toLocaleString()}`,
+        }
+      })
+    });
+    const saveSessionJSON = await saveSession.json();
+    ui.toast(saveSessionJSON.ok ? (saveSessionJSON.message || 'Saved all drawings') : (saveSessionJSON.error || 'Save failed'), 5000, saveSessionJSON.ok ? 'success' : 'error', saveSessionJSON.ok ? 'bi bi-check-lg' : 'bi bi-exclamation-triangle-fill');
+  });
+
+  document.getElementById('reset-live-drawings')?.addEventListener('click', async () => {
+    const period = document.getElementById('period-input').value;
+    if (!period) {
+      ui.toast('Please select a period first', 3000, 'warning', 'bi bi-exclamation-triangle-fill');
+      return;
+    }
+    const resetting = Object.values(liveDrawingSessions).map(session => session.wrapper.querySelector('.meta').innerText).filter(session => session.slice(0, 1) === period);
+    ui.modal({
+      title: `Reset Period ${period} Drawings?`,
+      body: `<p>Clear all drawings for seat code${(resetting.length === 1) ? '' : 's'} ${resetting.join(', ')}? This cannot be undone.</p>`,
+      buttons: [
+        {
+          text: 'Cancel',
+          class: 'cancel-button',
+          close: true,
+        },
+        {
+          text: 'Continue',
+          class: 'submit-button',
+          onclick: async () => {
+            try {
+              const usr = storage.get('usr');
+              const pwd = storage.get('pwd');
+              const resetDrawings = await fetch(domain + '/draw/reset', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ usr, pwd, period })
+              });
+              const resetDrawingsJSON = await resetDrawings.json();
+              if (resetDrawings.ok) {
+                ui.toast(resetDrawingsJSON.message || 'Cleared drawings', 3000, 'success', 'bi bi-check-lg');
+                Object.values(liveDrawingSessions).forEach(info => {
+                  if (!info || !info.canvas) return;
+                  const context = info.canvas.getContext('2d');
+                  context.clearRect(0, 0, info.canvas.width, info.canvas.height);
+                  info.strokes = [];
+                });
+              } else {
+                ui.toast(resetDrawingsJSON.error || 'Reset failed', 5000, 'error', 'bi bi-exclamation-triangle-fill');
+              }
+            } catch (e) {
+              ui.toast('Reset request failed', 5000, 'error', 'bi bi-exclamation-triangle-fill');
+              console.error(e);
+            }
+          },
+          close: true,
+        },
+      ],
+    });
+  });
+
+  document.querySelector('[refresh-live-drawing-sessions]')?.addEventListener('click', async () => {
+    const refreshSessions = await fetch(domain + '/draw/sessions');
+    const refreshSessionsJSON = await refreshSessions.json();
+    savedLiveDrawingSessions.innerHTML = '';
+    if (refreshSessionsJSON.sessions) {
+      refreshSessionsJSON.sessions.forEach(s => {
+        const div = document.createElement('div');
+        div.innerHTML = `<b>${s.name}</b><button data-id="${s.id}">View</button>`;
+        savedLiveDrawingSessions.appendChild(div);
+        div.querySelector('button').addEventListener('click', async () => {
+          const savedSession = await fetch(domain + '/draw/sessions/' + s.id);
+          const savedSessionJSON = await savedSession.json();
+          if (savedSessionJSON.session) {
+            const modal = window.open('', '_blank');
+            modal.document.write(`<html><body><h1>${savedSessionJSON.session.name}</h1>` + savedSessionJSON.session.files.map(f => `<img src="${f}" style="max-width:100%">`).join('') + `</body></html>`);
+          }
+        });
+      });
+    }
+  });
+
+  function syncLiveDrawingPeriod() {
+    const period = document.getElementById('period-input').value;
+    document.querySelectorAll('[data-period]').forEach(sessions => {
+      sessions.style.display = (sessions.getAttribute('data-period') === period) ? 'grid' : 'none';
+    });
   }
 } catch (error) {
   if (storage.get("developer")) {
