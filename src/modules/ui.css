@@ -285,7 +285,7 @@ div[data-color-input] > div[data-color-preview]:hover {
   margin-bottom: -100px;
   width: 120px;
   height: 4px;
-  background: #ffffff40;
+  background: var(--surface-color);
   border-radius: 2px;
   overflow: hidden;
   animation: fadeIn 0.5s ease-out 0.25s both;
@@ -294,7 +294,7 @@ div[data-color-input] > div[data-color-preview]:hover {
 #loader .loader-bar {
   height: 100%;
   width: 40%;
-  background: #ffffffe6;
+  background: var(--accent-color);
   border-radius: 2px;
   animation: loader-bar-back-forth 2s ease-in-out infinite;
 }
