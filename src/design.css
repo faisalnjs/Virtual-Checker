@@ -507,6 +507,7 @@ div.ML__keyboard {
 [square] {
   width: 2.25em !important;
   min-width: 36px;
+  min-height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -547,6 +548,7 @@ div.ML__keyboard {
 #checker button {
   width: inherit;
   min-width: 36px;
+  min-height: 36px;
 }
 
 [data-multiple-choice="a"]:hover::before {
