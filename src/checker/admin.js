@@ -48,8 +48,6 @@ var pagination = {
 var questionsToDelete = [];
 var keepSegment = null;
 var fromAwaitingScoring = false;
-const liveDrawingPeriods = document.getElementById('live-drawing-periods');
-const savedLiveDrawingSessions = document.getElementById('saved-live-drawing-sessions');
 var hideSeatCodes = false;
 const liveDrawingSessions = {};
 
@@ -361,18 +359,39 @@ try {
     if ((document.getElementById("course-period-input") && !loadedSegmentEditor && !loadedSegmentCreator && !noReloadCourse) || noReloadCourse) await updateResponses();
     if (document.querySelector('.segment-reports')) updateSegments();
     if (document.querySelector('.question-reports')) updateQuestionReports();
+    if (document.getElementById("period-input")) courses.flatMap(course => JSON.parse(course.periods).map(period => { return { period, name: course.name } })).sort((a, b) => a.period - b.period).forEach(coursePeriod => {
+      document.getElementById("period-input").innerHTML += `<option value="${coursePeriod.period}">Period ${coursePeriod.period} - ${coursePeriod.name}</option>`;
+    });
     if (document.getElementById('live-drawing-periods')) {
-      courses.flatMap(course => JSON.parse(course.periods).map(period => { return { period, name: course.name } })).sort((a, b) => a.period - b.period).forEach(coursePeriod => {
-        document.getElementById("period-input").innerHTML += `<option value="${coursePeriod.period}">Period ${coursePeriod.period} - ${coursePeriod.name}</option>`;
-      });
       var currentPeriod = getExtendedPeriod();
-      if (currentPeriod != -1) {
+      if ((currentPeriod != -1) && courses.flatMap(course => JSON.parse(course.periods).map(period => { return { period, name: course.name } })).some(coursePeriod => coursePeriod.period === (currentPeriod + 1))) {
         document.getElementById("period-input").value = getExtendedPeriod() + 1;
       } else if (document.querySelectorAll('#live-drawing-periods .sessions').length) {
         document.getElementById("period-input").value = Array.from(document.querySelectorAll('#live-drawing-periods .sessions')).sort((a, b) => a.children.length - b.children.length)[0].getAttribute('data-period');
       }
       document.getElementById("period-input").addEventListener("change", syncLiveDrawingPeriod);
       syncLiveDrawingPeriod();
+      refreshSavedLiveDrawingSessions();
+    }
+    if (document.getElementById('saved-live-drawings') && params && params.id) {
+      const sessionId = params.id;
+      const savedSession = await fetch(domain + '/draw/sessions/' + sessionId);
+      const savedSessionJSON = await savedSession.json();
+      document.title = `${savedSessionJSON.session.name} - Virtual Checker`;
+      document.querySelector('.section h1').innerText = savedSessionJSON.session.name;
+      document.getElementById("period-input").value = savedSessionJSON.session.meta.period;
+      liveDrawingSessions[sessionId] = savedSessionJSON.session;
+      savedSessionJSON.session.strokes.forEach(session => {
+        createSession({
+          data: {
+            meta: {
+              seatCode: session.seatCode.split('::')[1],
+              source: session.seatCode.split('::')[0],
+            },
+            strokes: session.strokes
+          }
+        }, session.seatCode);
+      });
     }
     active = true;
     ui.stopLoader();
@@ -6523,7 +6542,7 @@ try {
     el = document.createElement('div');
     el.className = 'sessions';
     el.setAttribute('data-period', period);
-    liveDrawingPeriods.appendChild(el);
+    (document.getElementById('live-drawing-periods') || document.getElementById('saved-live-drawings')).appendChild(el);
     return el;
   }
 
@@ -6557,9 +6576,10 @@ try {
       if (Array.from(document.querySelectorAll('.session .meta')).every(el => el.style.opacity === '0')) document.getElementById('hide-seat-codes').checked = true;
     });
     overlays.appendChild(toggleBtn);
-    liveDrawingSessions[sessionKey].strokes = data.data.strokes.slice();
-    console.log('admin: rendering strokes from sessionSync for', sessionKey, liveDrawingSessions[sessionKey].strokes.length);
-    renderStrokesIntoSession(sessionKey, data.data.strokes);
+    if (data.data.strokes) {
+      liveDrawingSessions[sessionKey].strokes = data.data.strokes.slice();
+      renderStrokesIntoSession(sessionKey, data.data.strokes);
+    }
   }
 
   if (document.getElementById('live-drawing-periods')) ws.addEventListener('message', (e) => {
@@ -6567,8 +6587,7 @@ try {
     if (data.type === 'studentDraw') {
       const { sessionKey, meta, stroke } = data;
       if ((meta.source || 'unknown') !== 'clicker') return;
-      console.log(liveDrawingSessions, sessionKey)
-      if (!liveDrawingSessions[sessionKey]) createSession(data, sessionKey);
+      if (!liveDrawingSessions[sessionKey]) createSession({ data }, sessionKey);
       const info = liveDrawingSessions[sessionKey];
       info.strokes = info.strokes || [];
       info.strokes.push({ stroke });
@@ -6577,7 +6596,6 @@ try {
     } else if (data.type === 'sessionSync') {
       if (!data || !data.data || !data.data.meta || !data.data.meta.source || !data.data.meta.seatCode || !data.data.strokes || !Array.isArray(data.data.strokes) || !data.data.strokes.length) return;
       const sessionKey = data.sessionKey;
-      console.log('admin: sessionSync', data.sessionKey, data.data && data.data.meta, data.data && data.data.lastSeen);
       if (!liveDrawingSessions[sessionKey]) createSession(data, sessionKey);
     } else if (data.type === 'studentClear') {
       const { sessionKey } = data;
@@ -6637,39 +6655,44 @@ try {
     canvas = info.canvas;
     const context = canvas.getContext('2d');
     context.clearRect(0, 0, canvas.width, canvas.height);
-    console.log('admin: renderStrokesIntoSession', sessionKey, 'strokes=', strokes && strokes.length, 'canvas=', canvas.width, canvas.height);
-    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-    const lines = [];
-    strokes.forEach(seg => {
-      if (seg.stroke && seg.stroke.from && seg.stroke.to) {
-        const f = seg.stroke.from, t = seg.stroke.to;
-        minX = Math.min(minX, f.x, t.x);
-        minY = Math.min(minY, f.y, t.y);
-        maxX = Math.max(maxX, f.x, t.x);
-        maxY = Math.max(maxY, f.y, t.y);
-        lines.push({ from: f, to: t, width: seg.stroke.width || 3, color: themes.getCurrentTheme().textColor });
-      }
-      if (seg.stroke && seg.stroke.clear) context.clearRect(0, 0, canvas.width, canvas.height);
-    });
-    if (lines.length === 0) return;
-    console.log('admin: bbox', { minX, minY, maxX, maxY });
-    if (!isFinite(minX) || !isFinite(minY) || !isFinite(maxX) || !isFinite(maxY)) return;
-    const srcW = (maxX - minX) || 1;
-    const srcH = (maxY - minY) || 1;
-    const padding = 10;
-    const scale = Math.min((canvas.width - padding * 2) / srcW, (canvas.height - padding * 2) / srcH);
-    console.log('admin: srcW,srcH,scale', srcW, srcH, scale);
-    const offsetX = (canvas.width - srcW * scale) / 2 - minX * scale;
-    const offsetY = (canvas.height - srcH * scale) / 2 - minY * scale;
-    console.log('admin: offsets', offsetX, offsetY);
-    lines.forEach(line => {
-      context.beginPath();
-      context.moveTo(line.from.x * scale + offsetX, line.from.y * scale + offsetY);
-      context.lineTo(line.to.x * scale + offsetX, line.to.y * scale + offsetY);
-      context.lineWidth = Math.max(1, (line.width || 3) * scale * 0.9);
-      context.strokeStyle = themes.getCurrentTheme().textColor;
-      context.stroke();
-    });
+    if (Array.isArray(strokes)) {
+      let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+      const lines = [];
+      strokes.forEach(seg => {
+        if (seg.stroke && seg.stroke.from && seg.stroke.to) {
+          const f = seg.stroke.from, t = seg.stroke.to;
+          minX = Math.min(minX, f.x, t.x);
+          minY = Math.min(minY, f.y, t.y);
+          maxX = Math.max(maxX, f.x, t.x);
+          maxY = Math.max(maxY, f.y, t.y);
+          lines.push({ from: f, to: t, width: seg.stroke.width || 3, color: themes.getCurrentTheme().textColor });
+        }
+        if (seg.stroke && seg.stroke.clear) context.clearRect(0, 0, canvas.width, canvas.height);
+      });
+      if (lines.length === 0) return;
+      if (!isFinite(minX) || !isFinite(minY) || !isFinite(maxX) || !isFinite(maxY)) return;
+      const srcW = (maxX - minX) || 1;
+      const srcH = (maxY - minY) || 1;
+      const padding = 10;
+      const scale = Math.min((canvas.width - padding * 2) / srcW, (canvas.height - padding * 2) / srcH);
+      const offsetX = (canvas.width - srcW * scale) / 2 - minX * scale;
+      const offsetY = (canvas.height - srcH * scale) / 2 - minY * scale;
+      lines.forEach(line => {
+        context.beginPath();
+        context.moveTo(line.from.x * scale + offsetX, line.from.y * scale + offsetY);
+        context.lineTo(line.to.x * scale + offsetX, line.to.y * scale + offsetY);
+        context.lineWidth = Math.max(1, (line.width || 3) * scale * 0.9);
+        context.strokeStyle = themes.getCurrentTheme().textColor;
+        context.stroke();
+      });
+    } else {
+      var img = new Image();
+      img.onload = function () {
+        context.clearRect(0, 0, canvas.width, canvas.height);
+        context.drawImage(img, 0, 0, canvas.width, canvas.height);
+      };
+      img.src = strokes;
+    }
   }
 
   document.getElementById('hide-seat-codes')?.addEventListener('change', (e) => {
@@ -6691,7 +6714,7 @@ try {
       }
     });
     if (images.length === 0) {
-      ui.toast('No drawings available to save', 3000, 'warning', 'bi bi-exclamation-triangle-fill');
+      ui.toast('No drawings available to save.', 3000, 'warning', 'bi bi-exclamation-triangle-fill');
       return;
     }
     const saveSession = await fetch(domain + '/draw/save', {
@@ -6706,13 +6729,14 @@ try {
       })
     });
     const saveSessionJSON = await saveSession.json();
-    ui.toast(saveSessionJSON.ok ? (saveSessionJSON.message || 'Saved all drawings') : (saveSessionJSON.error || 'Save failed'), 5000, saveSessionJSON.ok ? 'success' : 'error', saveSessionJSON.ok ? 'bi bi-check-lg' : 'bi bi-exclamation-triangle-fill');
+    ui.toast(saveSessionJSON.ok ? (saveSessionJSON.message || 'Saved all drawings.') : (saveSessionJSON.error || 'Save failed.'), 5000, saveSessionJSON.ok ? 'success' : 'error', saveSessionJSON.ok ? 'bi bi-check-lg' : 'bi bi-exclamation-triangle-fill');
+    refreshSavedLiveDrawingSessions();
   });
 
   document.getElementById('reset-live-drawings')?.addEventListener('click', async () => {
     const period = document.getElementById('period-input').value;
     if (!period) {
-      ui.toast('Please select a period first', 3000, 'warning', 'bi bi-exclamation-triangle-fill');
+      ui.toast('No period selected.', 3000, 'warning', 'bi bi-exclamation-triangle-fill');
       return;
     }
     const resetting = Object.values(liveDrawingSessions).map(session => session.wrapper.querySelector('.meta').innerText).filter(session => session.slice(0, 1) === period);
@@ -6739,7 +6763,7 @@ try {
               });
               const resetDrawingsJSON = await resetDrawings.json();
               if (resetDrawings.ok) {
-                ui.toast(resetDrawingsJSON.message || 'Cleared drawings', 3000, 'success', 'bi bi-check-lg');
+                ui.toast(resetDrawingsJSON.message || 'Drawings cleared.', 3000, 'success', 'bi bi-check-lg');
                 Object.values(liveDrawingSessions).forEach(info => {
                   if (!info || !info.canvas) return;
                   const context = info.canvas.getContext('2d');
@@ -6747,10 +6771,10 @@ try {
                   info.strokes = [];
                 });
               } else {
-                ui.toast(resetDrawingsJSON.error || 'Reset failed', 5000, 'error', 'bi bi-exclamation-triangle-fill');
+                ui.toast(resetDrawingsJSON.error || 'Reset failed.', 5000, 'error', 'bi bi-exclamation-triangle-fill');
               }
             } catch (e) {
-              ui.toast('Reset request failed', 5000, 'error', 'bi bi-exclamation-triangle-fill');
+              ui.toast('Reset request failed.', 5000, 'error', 'bi bi-exclamation-triangle-fill');
               console.error(e);
             }
           },
@@ -6760,25 +6784,38 @@ try {
     });
   });
 
-  document.querySelector('[refresh-live-drawing-sessions]')?.addEventListener('click', async () => {
+  async function refreshSavedLiveDrawingSessions() {
     const refreshSessions = await fetch(domain + '/draw/sessions');
     const refreshSessionsJSON = await refreshSessions.json();
-    savedLiveDrawingSessions.innerHTML = '';
-    if (refreshSessionsJSON.sessions) {
-      refreshSessionsJSON.sessions.forEach(s => {
-        const div = document.createElement('div');
-        div.innerHTML = `<b>${s.name}</b><button data-id="${s.id}">View</button>`;
-        savedLiveDrawingSessions.appendChild(div);
-        div.querySelector('button').addEventListener('click', async () => {
-          const savedSession = await fetch(domain + '/draw/sessions/' + s.id);
-          const savedSessionJSON = await savedSession.json();
-          if (savedSessionJSON.session) {
-            const modal = window.open('', '_blank');
-            modal.document.write(`<html><body><h1>${savedSessionJSON.session.name}</h1>` + savedSessionJSON.session.files.map(f => `<img src="${f}" style="max-width:100%">`).join('') + `</body></html>`);
-          }
+    document.querySelector('.saved-live-drawing-sessions').innerHTML = '';
+    if (refreshSessionsJSON.sessions && refreshSessionsJSON.sessions.length) {
+      document.getElementById('no-saved-live-drawing-sessions').setAttribute('hidden', '');
+      document.querySelector('.saved-live-drawing-sessions').removeAttribute('hidden');
+      refreshSessionsJSON.sessions = refreshSessionsJSON.sessions.sort((a, b) => b.created - a.created);
+      refreshSessionsJSON.sessions.forEach(session => {
+        document.querySelector('.saved-live-drawing-sessions').innerHTML += `<div class="enhanced-item" id="${session.id}">
+              <span class="sessionName">${session.name}</span>
+              <span class="actions">
+                <button class="icon" data-open-session tooltip="Open Session">
+                  <i class="bi bi-box-arrow-up-right"></i>
+                </button>
+              </span>
+            </div>`;
+      });
+      refreshSessionsJSON.sessions.forEach(session => {
+        document.querySelector(`.saved-live-drawing-sessions [id='${session.id}'] [data-open-session]`).addEventListener('click', async () => {
+          window.open(`/admin/session?id=${session.id}`, '_blank');
         });
       });
+    } else {
+      document.getElementById('no-saved-live-drawing-sessions').removeAttribute('hidden');
+      document.querySelector('.saved-live-drawing-sessions').setAttribute('hidden', '');
     }
+  }
+
+  document.querySelector('[refresh-live-drawing-saved-sessions]')?.addEventListener('click', async () => {
+    await refreshSavedLiveDrawingSessions();
+    ui.toast('Saved sessions refreshed.', 3000, 'success', 'bi bi-check-lg');
   });
 
   function syncLiveDrawingPeriod() {

@@ -519,8 +519,8 @@ label:has(i) {
   gap: 10px;
 }
 
-.enhanced-list .header > *:not(.fit),
-.enhanced-list .enhanced-item > *:not(.fit) {
+.enhanced-list .header > *:not(.fit):not(.actions),
+.enhanced-list .enhanced-item > *:not(.fit):not(.actions) {
   flex: 1;
 }
 
