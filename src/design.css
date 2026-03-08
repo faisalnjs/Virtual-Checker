@@ -435,7 +435,7 @@ div.ML__keyboard {
 
 [data-button-select] > button {
   height: unset;
-  min-height: 1.75em;
+  min-height: 1.75em !important;
   border-radius: 0.25rem;
   cursor: pointer;
 }

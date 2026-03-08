@@ -16,7 +16,9 @@ import "faz-quill-emoji/autoregister";
 const domain = ((window.location.hostname.search('check') != -1) || (window.location.hostname.search('127') != -1)) ? 'https://api.check.vssfalcons.com' : `http://${document.domain}:5000`;
 if (window.location.pathname.split('?')[0].endsWith('/admin')) window.location.pathname = '/admin/';
 const params = Object.fromEntries((new URL(location)).searchParams);
-const ws = new WebSocket(`${domain}/ws?${new URLSearchParams({ role: 'admin' }).toString()}`);
+var ws = null;
+var reconnectAttempts = 0;
+var createWebSocket;
 
 var archiveTypeSelected = null;
 var courses = [];
@@ -103,6 +105,86 @@ try {
       }
     }
 
+    createWebSocket = function () {
+      try {
+        const usr = storage.get('usr') || '';
+        const pwd = storage.get('pwd') || '';
+        const params = new URLSearchParams({ role: 'admin', usr, pwd }).toString();
+        if (ws && ((ws.readyState === WebSocket.OPEN) || (ws.readyState === WebSocket.CONNECTING))) return;
+        if (ws) ws.close();
+        ws = new WebSocket(`${domain}/ws?${params}`);
+        ws.addEventListener('open', () => {
+          reconnectAttempts = 0;
+        });
+        ws.addEventListener('message', (e) => {
+          const data = JSON.parse(e.data);
+          if (data.type === 'studentDraw') {
+            const { sessionKey, meta, stroke } = data;
+            if ((meta.source || 'unknown') !== 'clicker') return;
+            if (!liveDrawingSessions[sessionKey]) createSession({ data }, sessionKey);
+            const info = liveDrawingSessions[sessionKey];
+            info.strokes = info.strokes || [];
+            info.strokes.push({ stroke });
+            renderStrokesIntoSession(sessionKey, info.strokes);
+            info.wrapper.querySelectorAll('.meta').forEach(el => el.style.display = hideSeatCodes ? 'none' : 'block');
+          } else if (data.type === 'sessionSync') {
+            if (!data || !data.data || !data.data.meta || !data.data.meta.source || !data.data.meta.seatCode || !data.data.strokes || !Array.isArray(data.data.strokes) || !data.data.strokes.length) return;
+            const sessionKey = data.sessionKey;
+            if (!liveDrawingSessions[sessionKey]) createSession(data, sessionKey);
+          } else if (data.type === 'studentUndo') {
+            const { sessionKey, strokeId } = data;
+            const info = liveDrawingSessions[sessionKey];
+            if (!info) return;
+            info.strokes = info.strokes || [];
+            info.strokes = info.strokes.filter(s => {
+              const st = s.stroke || s;
+              if (!st) return true;
+              if (Array.isArray(st)) return !st.some(i => (i && i.id && String(i.id) === String(strokeId)));
+              if (st && st.id && String(st.id) === String(strokeId)) return false;
+              return true;
+            });
+            renderStrokesIntoSession(sessionKey, info.strokes);
+          } else if (data.type === 'studentClear') {
+            const { sessionKey } = data;
+            const info = liveDrawingSessions[sessionKey];
+            if (!info) return;
+            info.strokes = [];
+            renderStrokesIntoSession(sessionKey, info.strokes || []);
+          } else if (data.type === 'resetPeriod') {
+            const period = String(data.period);
+            Object.values(liveDrawingSessions).forEach(info => {
+              const seat = info?.meta?.seatCode?.toString?.() || '';
+              if (seat && seat.startsWith(period)) {
+                if (info && info.canvas) {
+                  const context = info.canvas.getContext('2d');
+                  context.clearRect(0, 0, info.canvas.width, info.canvas.height);
+                  info.strokes = [];
+                }
+              }
+            });
+          }
+        });
+        ws.addEventListener('close', () => {
+          console.warn('Admin websocket closed, scheduling reconnect');
+          scheduleAdminReconnect();
+        });
+        ws.addEventListener('error', (err) => {
+          console.error('Admin websocket error', err);
+          try { ws.close(); } catch (e) { console.warn('adminWs close failed', e); }
+        });
+      } catch (e) {
+        scheduleAdminReconnect();
+      }
+    }
+
+    function scheduleAdminReconnect() {
+      reconnectAttempts = (reconnectAttempts || 0) + 1;
+      const delay = Math.min(30000, Math.pow(2, Math.min(reconnectAttempts, 6)) * 1000);
+      setTimeout(() => {
+        createWebSocket();
+      }, delay);
+    }
+
     if (!(await auth.bulkLoad(getAdminFields(), storage.get("usr"), storage.get("pwd"), true, false, () => {
       auth.admin(init);
       pollingOff();
@@ -124,7 +206,6 @@ try {
     settings = bulkLoad.settings || {};
     if (document.querySelector('.users')) {
       if (document.getElementById('add-user-button')) document.getElementById('add-user-button').addEventListener('click', addUserModal);
-
       document.querySelector('.users').innerHTML = '<div class="row header"><span>User</span><span>Role</span><span>Partial Access</span><span>Full Access</span><span>Anonymous</span><span>Actions</span></div>';
       if (users.length > 0) {
         document.getElementById('no-users').setAttribute('hidden', '');
@@ -178,7 +259,6 @@ try {
     }
     if (document.querySelector('.passwords')) {
       if (document.getElementById('remove-passwords')) document.getElementById('remove-passwords').addEventListener('click', removePasswordsModal);
-
       document.querySelector('.passwords').innerHTML = '<div class="row header"><span>Seat Code</span><span>Saved Settings</span><span>Actions</span></div>';
       if (passwords.length > 0) {
         document.getElementById('no-passwords').setAttribute('hidden', '');
@@ -363,6 +443,9 @@ try {
       document.getElementById("period-input").innerHTML += `<option value="${coursePeriod.period}">Period ${coursePeriod.period} - ${coursePeriod.name}</option>`;
     });
     if (document.getElementById('live-drawing-periods')) {
+      courses.flatMap(course => JSON.parse(course.periods)).forEach(period => {
+        getOrCreateGroup(period);
+      })
       var currentPeriod = getExtendedPeriod();
       if ((currentPeriod != -1) && courses.flatMap(course => JSON.parse(course.periods).map(period => { return { period, name: course.name } })).some(coursePeriod => coursePeriod.period === (currentPeriod + 1))) {
         document.getElementById("period-input").value = getExtendedPeriod() + 1;
@@ -375,7 +458,7 @@ try {
     }
     if (document.getElementById('saved-live-drawings') && params && params.id) {
       const sessionId = params.id;
-      const savedSession = await fetch(domain + '/draw/sessions/' + sessionId);
+      const savedSession = await fetch(domain + '/draw/sessions/' + sessionId + '?usr=' + encodeURIComponent(storage.get('usr')) + '&pwd=' + encodeURIComponent(storage.get('pwd')));
       const savedSessionJSON = await savedSession.json();
       document.title = `${savedSessionJSON.session.name} - Virtual Checker`;
       document.querySelector('.section h1').innerText = savedSessionJSON.session.name;
@@ -432,7 +515,17 @@ try {
     ui.reloadUnsavedInputs();
   }
 
-  init();
+  init()
+    .then(() => {
+      const initializeWebSocket = () => {
+        if (typeof createWebSocket === 'function') {
+          createWebSocket();
+        } else {
+          setTimeout(initializeWebSocket, 200);
+        }
+      };
+      initializeWebSocket();
+    });
 
   window.addEventListener('beforeunload', function (event) {
     if (!ui.unsavedChanges) return;
@@ -677,6 +770,8 @@ try {
             body: JSON.stringify({
               course_id: course.id,
               platform: 'clicker',
+              usr: storage.get('usr'),
+              pwd: storage.get('pwd')
             }),
           })
             .then(async (r) => {
@@ -735,6 +830,8 @@ try {
             body: JSON.stringify({
               course_id: course.id,
               platform: 'checker',
+              usr: storage.get('usr'),
+              pwd: storage.get('pwd')
             }),
           })
             .then(async (r) => {
@@ -6536,7 +6633,7 @@ try {
     goToPage(paginationSection, Math.ceil(pagination[group].total / (storage.get("rowsPerPage") ? Number(storage.get("rowsPerPage")) : pagination[group].perPage)) - 1);
   }
 
-  function getOrCreateGroup(period, source) {
+  function getOrCreateGroup(period) {
     let el = document.querySelector(`[data-period="${period}"]`);
     if (el) return el;
     el = document.createElement('div');
@@ -6549,7 +6646,7 @@ try {
   function createSession(data, sessionKey) {
     const [source, seatCode] = sessionKey.split('::');
     if ((data.data.meta.source || 'unknown') !== 'clicker') return;
-    const sessions = getOrCreateGroup(Number(seatCode.slice(0, 1)), data.data.meta.source || 'unknown');
+    const sessions = getOrCreateGroup(Number(seatCode.slice(0, 1)));
     const sessionDiv = document.createElement('div');
     sessionDiv.className = 'session';
     sessionDiv.innerHTML = `<span class="meta">${data.data.meta.seatCode}</span><div class="canvas-wrapper"></div><div class="overlays"></div>`;
@@ -6582,58 +6679,7 @@ try {
     }
   }
 
-  if (document.getElementById('live-drawing-periods')) ws.addEventListener('message', (e) => {
-    const data = JSON.parse(e.data);
-    if (data.type === 'studentDraw') {
-      const { sessionKey, meta, stroke } = data;
-      if ((meta.source || 'unknown') !== 'clicker') return;
-      if (!liveDrawingSessions[sessionKey]) createSession({ data }, sessionKey);
-      const info = liveDrawingSessions[sessionKey];
-      info.strokes = info.strokes || [];
-      info.strokes.push({ stroke });
-      renderStrokesIntoSession(sessionKey, info.strokes);
-      info.wrapper.querySelectorAll('.meta').forEach(el => el.style.display = hideSeatCodes ? 'none' : 'block');
-    } else if (data.type === 'sessionSync') {
-      if (!data || !data.data || !data.data.meta || !data.data.meta.source || !data.data.meta.seatCode || !data.data.strokes || !Array.isArray(data.data.strokes) || !data.data.strokes.length) return;
-      const sessionKey = data.sessionKey;
-      if (!liveDrawingSessions[sessionKey]) createSession(data, sessionKey);
-    } else if (data.type === 'studentClear') {
-      const { sessionKey } = data;
-      const info = liveDrawingSessions[sessionKey];
-      if (info) {
-        info.strokes = [];
-        renderStrokesIntoSession(sessionKey, info.strokes);
-      }
-    } else if (data.type === 'resetPeriod') {
-      const period = String(data.period);
-      Object.keys(liveDrawingSessions).forEach(sessionKey => {
-        const parts = sessionKey.split('::');
-        const seat = parts[1] || '';
-        if (String(seat).startsWith(period)) {
-          const info = liveDrawingSessions[sessionKey];
-          if (info && info.canvas) {
-            const ctx = info.canvas.getContext('2d');
-            ctx.clearRect(0, 0, info.canvas.width, info.canvas.height);
-          }
-          if (info) info.strokes = [];
-        }
-      });
-    } else if (data.type === 'studentUndo') {
-      const { sessionKey, strokeId } = data;
-      const info = liveDrawingSessions[sessionKey];
-      if (info && Array.isArray(info.strokes)) {
-        const before = info.strokes.length;
-        info.strokes = info.strokes.filter(s => {
-          const seg = s.stroke || s;
-          if (!seg) return true;
-          return String(seg.id) !== String(strokeId);
-        });
-        if (info.strokes.length !== before) {
-          renderStrokesIntoSession(sessionKey, info.strokes);
-        }
-      }
-    }
-  });
+  // Live drawing websocket messages are handled on the adminWs created by createAdminWS()
 
   function renderStrokesIntoSession(sessionKey, strokes) {
     const info = liveDrawingSessions[sessionKey];
@@ -6725,7 +6771,9 @@ try {
           created: new Date().toISOString(),
           period: document.getElementById('period-input').value || null,
           name: `Live Drawing Session - Period ${document.getElementById('period-input').value || 0} - ${new Date().toLocaleString()}`,
-        }
+        },
+        usr: storage.get('usr'),
+        pwd: storage.get('pwd')
       })
     });
     const saveSessionJSON = await saveSession.json();
@@ -6785,7 +6833,7 @@ try {
   });
 
   async function refreshSavedLiveDrawingSessions() {
-    const refreshSessions = await fetch(domain + '/draw/sessions');
+    const refreshSessions = await fetch(domain + '/draw/sessions?usr=' + encodeURIComponent(storage.get('usr')) + '&pwd=' + encodeURIComponent(storage.get('pwd')));
     const refreshSessionsJSON = await refreshSessions.json();
     document.querySelector('.saved-live-drawing-sessions').innerHTML = '';
     if (refreshSessionsJSON.sessions && refreshSessionsJSON.sessions.length) {

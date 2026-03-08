@@ -349,6 +349,8 @@
                 if (platform) item.setMetadata('platform', platform);
                 if (uploaderQuestionId && (uploader.querySelector('[data-question-number]').value || uploaderQuestion)) item.setMetadata('startingQuestionId', uploaderQuestionId);
                 if (uploaderQuestionId && (uploader.querySelector('[data-question-number]').value || uploaderQuestion)) item.setMetadata('startingQuestion', uploader.querySelector('[data-question-number]').value || uploaderQuestion);
+                item.setMetadata('usr', storage.get('usr') || '');
+                item.setMetadata('pwd', storage.get('pwd') || '');
             });
             pond.on('processfilestart', (file) => {
                 if (uploaderQuestionId && uploaderQuestion && !file.getMetadata('title')) {
