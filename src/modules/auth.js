@@ -2,7 +2,7 @@ import * as ui from "./ui.js";
 import storage from "./storage.js";
 import * as themes from "../themes/themes.js";
 
-const domain = ((window.location.hostname.search('check') != -1) || (window.location.hostname.search('127') != -1)) ? 'https://api.check.vssfalcons.com' : `http://${document.domain}:5000`;
+const domain = ((window.location.hostname.search('check') != -1) || (window.location.hostname.search('127') != -1)) ? `https://${(window.location.hostname.search('beta') != -1) ? 'beta' : ''}api.check.vssfalcons.com` : `http://${document.domain}:5000`;
 
 var authModalOpen = false;
 var hasPassword = false;

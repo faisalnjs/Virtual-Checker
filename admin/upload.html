@@ -238,7 +238,7 @@
         const originalWindowX = urlParams.get('l');
         const allowMultiple = startingQuestion && startingQuestionId && originalWindowHeight && originalWindowY && originalWindowX;
         if (!question && !syllabus && !segment && !period && !course) window.location.href = '/admin';
-        const domain = ((window.location.hostname.search('check') != -1) || (window.location.hostname.search('127') != -1)) ? 'https://api.check.vssfalcons.com' : `http://${document.domain}:5000`;
+        const domain = ((window.location.hostname.search('check') != -1) || (window.location.hostname.search('127') != -1)) ? `https://${(window.location.hostname.search('beta') != -1) ? 'beta' : ''}api.check.vssfalcons.com` : `http://${document.domain}:5000`;
         const server = domain + (course ? '/announcement' : question ? '/upload' : segment ? '/speedModeUpload' : syllabus ? '/syllabus' : '/roster');
         var submitSuccess = false;
         var uploaders = [];
