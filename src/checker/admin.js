@@ -1296,6 +1296,7 @@ try {
   document.querySelectorAll("#create-and-exit-button").forEach(w => w.addEventListener("click", () => {
     createSegment(null, true);
   }));
+  document.querySelectorAll("#maintenance-mode").forEach(w => w.addEventListener("change", save));
 
   async function save(event, hideResult) {
     if (!active) return;
