@@ -1279,13 +1279,13 @@ canvas[disabled] {
   transition: opacity 0.25s ease-in-out;
 }
 
-@media (max-width: 1024px) and (min-width: 769px) {
+@media (max-width: 1024px) and (min-width: 900px) {
   .sessions {
     grid-template-columns: repeat(2, 1fr);
   }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 900px) {
   .sessions {
     grid-template-columns: repeat(1, 1fr);
   }

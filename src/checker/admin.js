@@ -112,23 +112,36 @@ try {
         const pwd = storage.get('pwd') || '';
         const params = new URLSearchParams({ role: 'admin', usr, pwd }).toString();
         if (ws && ws.connected) return;
-        if (ws) try { ws.disconnect(); } catch (e) { console.warn('ws.disconnect failed', e); }
+        if (ws) ws.disconnect();
         if (typeof io === 'undefined') return;
         ws = io(`${domain}/ws`, { query: Object.fromEntries(new URLSearchParams(params)), transports: ['websocket'] });
         ws.on('connect', () => {
           reconnectAttempts = 0;
+          setTimeout(() => {
+            var currentPeriod = getExtendedPeriod();
+            if ((currentPeriod != -1) && courses.flatMap(course => JSON.parse(course.periods).map(period => { return { period, name: course.name } })).some(coursePeriod => coursePeriod.period === (currentPeriod + 1))) {
+              document.getElementById("period-input").value = getExtendedPeriod() + 1;
+            } else if (document.querySelectorAll('#live-drawing-periods .sessions').length) {
+              document.getElementById("period-input").value = Array.from(document.querySelectorAll('#live-drawing-periods .sessions')).sort((a, b) => b.children.length - a.children.length)[0].getAttribute('data-period');
+            }
+            document.getElementById("period-input").addEventListener("change", syncLiveDrawingPeriod);
+            syncLiveDrawingPeriod();
+            refreshSavedLiveDrawingSessions();
+            active = true;
+            ui.stopLoader();
+          }, 1000);
         });
         ws.on('studentDraw', (data) => {
-          const { sessionKey, meta, stroke, created_ts, rowid } = data;
+          const { sessionKey, meta, stroke, timestamp, rowid } = data;
           if ((meta.source || 'unknown') !== 'clicker') return;
           if (!liveDrawingSessions[sessionKey]) createSession({ data }, sessionKey);
           const info = liveDrawingSessions[sessionKey];
           info.strokes = info.strokes || [];
-          info.strokes.push({ stroke, created_ts: created_ts || Date.now(), rowid: rowid || 0 });
+          info.strokes.push({ stroke, timestamp: timestamp || Date.now(), rowid: rowid || 0 });
           info.strokes.sort((a, b) => {
-            const ta = Number(a.created_ts || 0);
-            const tb = Number(b.created_ts || 0);
-            if (ta !== tb) return ta - tb;
+            const firstStrokeTime = Number(a.timestamp || 0);
+            const secondStrokeTime = Number(b.timestamp || 0);
+            if (firstStrokeTime !== secondStrokeTime) return firstStrokeTime - secondStrokeTime;
             return (Number(a.rowid || 0) - Number(b.rowid || 0));
           });
           renderStrokesIntoSession(sessionKey, info.strokes);
@@ -137,15 +150,16 @@ try {
         ws.on('sessionSync', (data) => {
           if (!data || !data.data || !data.data.meta || !data.data.meta.source || !data.data.meta.seatCode || !data.data.strokes || !Array.isArray(data.data.strokes) || !data.data.strokes.length) return;
           const sessionKey = data.sessionKey;
-          const normalized = (data.data.strokes || []).map(s => ({ stroke: s.stroke || s, created_ts: s.created || s.created_ts || Date.now(), rowid: s.rowid || 0 }));
-          normalized.sort((a, b) => { const ta = Number(a.created_ts || 0), tb = Number(b.created_ts || 0); if (ta !== tb) return ta - tb; return Number(a.rowid || 0) - Number(b.rowid || 0); });
-          data.data.strokes = normalized.map(s => ({ stroke: s.stroke, created_ts: s.created_ts, rowid: s.rowid }));
-          if (!liveDrawingSessions[sessionKey]) createSession(data, sessionKey);
-          else {
+          const normalized = (data.data.strokes || []).map(s => ({ stroke: s.stroke || s, timestamp: s.created || s.timestamp || Date.now(), rowid: s.rowid || 0 }));
+          normalized.sort((a, b) => { const ta = Number(a.timestamp || 0), tb = Number(b.timestamp || 0); if (ta !== tb) return ta - tb; return Number(a.rowid || 0) - Number(b.rowid || 0); });
+          data.data.strokes = normalized.map(s => ({ stroke: s.stroke, timestamp: s.timestamp, rowid: s.rowid }));
+          if (!liveDrawingSessions[sessionKey]) {
+            createSession(data, sessionKey);
+          } else {
             const info = liveDrawingSessions[sessionKey];
             info.strokes = info.strokes || [];
-            const merged = info.strokes.concat(data.data.strokes.map(s => ({ stroke: s.stroke, created_ts: s.created_ts, rowid: s.rowid })));
-            merged.sort((a, b) => { const ta = Number(a.created_ts || 0), tb = Number(b.created_ts || 0); if (ta !== tb) return ta - tb; return Number(a.rowid || 0) - Number(b.rowid || 0); });
+            const merged = info.strokes.concat(data.data.strokes.map(s => ({ stroke: s.stroke, timestamp: s.timestamp, rowid: s.rowid })));
+            merged.sort((a, b) => { const ta = Number(a.timestamp || 0), tb = Number(b.timestamp || 0); if (ta !== tb) return ta - tb; return Number(a.rowid || 0) - Number(b.rowid || 0); });
             info.strokes = merged;
             renderStrokesIntoSession(sessionKey, info.strokes);
           }
@@ -156,10 +170,10 @@ try {
           if (!info) return;
           info.strokes = info.strokes || [];
           info.strokes = info.strokes.filter(s => {
-            const st = s.stroke || s;
-            if (!st) return true;
-            if (Array.isArray(st)) return !st.some(i => (i && i.id && String(i.id) === String(strokeId)));
-            if (st && st.id && String(st.id) === String(strokeId)) return false;
+            const stroke = s.stroke || s;
+            if (!stroke) return true;
+            if (Array.isArray(stroke)) return !stroke.some(i => (i && i.id && String(i.id) === String(strokeId)));
+            if (stroke && stroke.id && String(stroke.id) === String(strokeId)) return false;
             return true;
           });
           renderStrokesIntoSession(sessionKey, info.strokes);
@@ -174,8 +188,8 @@ try {
         ws.on('resetPeriod', (data) => {
           const period = String(data.period);
           Object.values(liveDrawingSessions).forEach(info => {
-            const seat = info?.meta?.seatCode?.toString?.() || '';
-            if (seat && seat.startsWith(period)) {
+            const seatCode = info?.meta?.seatCode?.toString?.() || '';
+            if (seatCode && seatCode.startsWith(period)) {
               if (info && info.canvas) {
                 const context = info.canvas.getContext('2d');
                 context.clearRect(0, 0, info.canvas.width, info.canvas.height);
@@ -189,7 +203,7 @@ try {
         });
         ws.on('error', (err) => {
           console.error(err);
-          try { ws.disconnect(); } catch (e) { console.warn('adminWs disconnect failed', e); }
+          ws.disconnect();
         });
       } catch (e) {
         scheduleAdminReconnect();
@@ -465,15 +479,15 @@ try {
       courses.flatMap(course => JSON.parse(course.periods)).forEach(period => {
         getOrCreateGroup(period);
       })
-      var currentPeriod = getExtendedPeriod();
-      if ((currentPeriod != -1) && courses.flatMap(course => JSON.parse(course.periods).map(period => { return { period, name: course.name } })).some(coursePeriod => coursePeriod.period === (currentPeriod + 1))) {
-        document.getElementById("period-input").value = getExtendedPeriod() + 1;
-      } else if (document.querySelectorAll('#live-drawing-periods .sessions').length) {
-        document.getElementById("period-input").value = Array.from(document.querySelectorAll('#live-drawing-periods .sessions')).sort((a, b) => a.children.length - b.children.length)[0].getAttribute('data-period');
-      }
-      document.getElementById("period-input").addEventListener("change", syncLiveDrawingPeriod);
-      syncLiveDrawingPeriod();
-      refreshSavedLiveDrawingSessions();
+      const initializeWebSocket = () => {
+        if (typeof createWebSocket === 'function') {
+          createWebSocket();
+        } else {
+          setTimeout(initializeWebSocket, 200);
+        }
+      };
+      initializeWebSocket();
+      return;
     }
     if (document.getElementById('saved-live-drawings') && params && params.id) {
       const sessionId = params.id;
@@ -534,17 +548,7 @@ try {
     ui.reloadUnsavedInputs();
   }
 
-  init()
-    .then(() => {
-      const initializeWebSocket = () => {
-        if (typeof createWebSocket === 'function') {
-          createWebSocket();
-        } else {
-          setTimeout(initializeWebSocket, 200);
-        }
-      };
-      initializeWebSocket();
-    });
+  init();
 
   window.addEventListener('beforeunload', function (event) {
     if (!ui.unsavedChanges) return;
