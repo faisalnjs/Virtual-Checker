@@ -798,7 +798,7 @@ export async function bulkLoad(fields = [], usr = null, pwd = null, isAdmin = fa
             if ((fetchedBulkLoad.error === "Access denied.") || (fetchedBulkLoad.message === "Access denied.")) ifAccessDenied();
             return false;
         }
-        if (fetchedBulkLoad.maintenanceMode) {
+        if (fetchedBulkLoad.maintenanceMode && (window.location.pathName !== '/admin/logs')) {
             ui.startLoader();
             ui.view("maintenance-mode");
             return false;
