@@ -12,6 +12,7 @@ import { convertLatexToMarkup, renderMathInElement } from "mathlive";
 import { createSwapy } from "swapy";
 import Quill from "quill";
 import "faz-quill-emoji/autoregister";
+import { io } from 'socket.io-client';
 
 const domain = ((window.location.hostname.search('check') != -1) || (window.location.hostname.search('127') != -1)) ? 'https://api.check.vssfalcons.com' : `http://${document.domain}:5000`;
 if (window.location.pathname.split('?')[0].endsWith('/admin')) window.location.pathname = '/admin/';
@@ -110,67 +111,85 @@ try {
         const usr = storage.get('usr') || '';
         const pwd = storage.get('pwd') || '';
         const params = new URLSearchParams({ role: 'admin', usr, pwd }).toString();
-        if (ws && ((ws.readyState === WebSocket.OPEN) || (ws.readyState === WebSocket.CONNECTING))) return;
-        if (ws) ws.close();
-        ws = new WebSocket(`${domain}/ws?${params}`);
-        ws.addEventListener('open', () => {
+        if (ws && ws.connected) return;
+        if (ws) try { ws.disconnect(); } catch (e) { console.warn('ws.disconnect failed', e); }
+        if (typeof io === 'undefined') return;
+        ws = io(`${domain}/ws`, { query: Object.fromEntries(new URLSearchParams(params)), transports: ['websocket'] });
+        ws.on('connect', () => {
           reconnectAttempts = 0;
         });
-        ws.addEventListener('message', (e) => {
-          const data = JSON.parse(e.data);
-          if (data.type === 'studentDraw') {
-            const { sessionKey, meta, stroke } = data;
-            if ((meta.source || 'unknown') !== 'clicker') return;
-            if (!liveDrawingSessions[sessionKey]) createSession({ data }, sessionKey);
+        ws.on('studentDraw', (data) => {
+          const { sessionKey, meta, stroke, created_ts, rowid } = data;
+          if ((meta.source || 'unknown') !== 'clicker') return;
+          if (!liveDrawingSessions[sessionKey]) createSession({ data }, sessionKey);
+          const info = liveDrawingSessions[sessionKey];
+          info.strokes = info.strokes || [];
+          info.strokes.push({ stroke, created_ts: created_ts || Date.now(), rowid: rowid || 0 });
+          info.strokes.sort((a, b) => {
+            const ta = Number(a.created_ts || 0);
+            const tb = Number(b.created_ts || 0);
+            if (ta !== tb) return ta - tb;
+            return (Number(a.rowid || 0) - Number(b.rowid || 0));
+          });
+          renderStrokesIntoSession(sessionKey, info.strokes);
+          info.wrapper.querySelectorAll('.meta').forEach(el => el.style.display = hideSeatCodes ? 'none' : 'block');
+        });
+        ws.on('sessionSync', (data) => {
+          if (!data || !data.data || !data.data.meta || !data.data.meta.source || !data.data.meta.seatCode || !data.data.strokes || !Array.isArray(data.data.strokes) || !data.data.strokes.length) return;
+          const sessionKey = data.sessionKey;
+          const normalized = (data.data.strokes || []).map(s => ({ stroke: s.stroke || s, created_ts: s.created || s.created_ts || Date.now(), rowid: s.rowid || 0 }));
+          normalized.sort((a, b) => { const ta = Number(a.created_ts || 0), tb = Number(b.created_ts || 0); if (ta !== tb) return ta - tb; return Number(a.rowid || 0) - Number(b.rowid || 0); });
+          data.data.strokes = normalized.map(s => ({ stroke: s.stroke, created_ts: s.created_ts, rowid: s.rowid }));
+          if (!liveDrawingSessions[sessionKey]) createSession(data, sessionKey);
+          else {
             const info = liveDrawingSessions[sessionKey];
             info.strokes = info.strokes || [];
-            info.strokes.push({ stroke });
+            const merged = info.strokes.concat(data.data.strokes.map(s => ({ stroke: s.stroke, created_ts: s.created_ts, rowid: s.rowid })));
+            merged.sort((a, b) => { const ta = Number(a.created_ts || 0), tb = Number(b.created_ts || 0); if (ta !== tb) return ta - tb; return Number(a.rowid || 0) - Number(b.rowid || 0); });
+            info.strokes = merged;
             renderStrokesIntoSession(sessionKey, info.strokes);
-            info.wrapper.querySelectorAll('.meta').forEach(el => el.style.display = hideSeatCodes ? 'none' : 'block');
-          } else if (data.type === 'sessionSync') {
-            if (!data || !data.data || !data.data.meta || !data.data.meta.source || !data.data.meta.seatCode || !data.data.strokes || !Array.isArray(data.data.strokes) || !data.data.strokes.length) return;
-            const sessionKey = data.sessionKey;
-            if (!liveDrawingSessions[sessionKey]) createSession(data, sessionKey);
-          } else if (data.type === 'studentUndo') {
-            const { sessionKey, strokeId } = data;
-            const info = liveDrawingSessions[sessionKey];
-            if (!info) return;
-            info.strokes = info.strokes || [];
-            info.strokes = info.strokes.filter(s => {
-              const st = s.stroke || s;
-              if (!st) return true;
-              if (Array.isArray(st)) return !st.some(i => (i && i.id && String(i.id) === String(strokeId)));
-              if (st && st.id && String(st.id) === String(strokeId)) return false;
-              return true;
-            });
-            renderStrokesIntoSession(sessionKey, info.strokes);
-          } else if (data.type === 'studentClear') {
-            const { sessionKey } = data;
-            const info = liveDrawingSessions[sessionKey];
-            if (!info) return;
-            info.strokes = [];
-            renderStrokesIntoSession(sessionKey, info.strokes || []);
-          } else if (data.type === 'resetPeriod') {
-            const period = String(data.period);
-            Object.values(liveDrawingSessions).forEach(info => {
-              const seat = info?.meta?.seatCode?.toString?.() || '';
-              if (seat && seat.startsWith(period)) {
-                if (info && info.canvas) {
-                  const context = info.canvas.getContext('2d');
-                  context.clearRect(0, 0, info.canvas.width, info.canvas.height);
-                  info.strokes = [];
-                }
-              }
-            });
           }
         });
-        ws.addEventListener('close', () => {
-          console.warn('Admin websocket closed, scheduling reconnect');
+        ws.on('studentUndo', (data) => {
+          const { sessionKey, strokeId } = data;
+          const info = liveDrawingSessions[sessionKey];
+          if (!info) return;
+          info.strokes = info.strokes || [];
+          info.strokes = info.strokes.filter(s => {
+            const st = s.stroke || s;
+            if (!st) return true;
+            if (Array.isArray(st)) return !st.some(i => (i && i.id && String(i.id) === String(strokeId)));
+            if (st && st.id && String(st.id) === String(strokeId)) return false;
+            return true;
+          });
+          renderStrokesIntoSession(sessionKey, info.strokes);
+        });
+        ws.on('studentClear', (data) => {
+          const { sessionKey } = data;
+          const info = liveDrawingSessions[sessionKey];
+          if (!info) return;
+          info.strokes = [];
+          renderStrokesIntoSession(sessionKey, info.strokes || []);
+        });
+        ws.on('resetPeriod', (data) => {
+          const period = String(data.period);
+          Object.values(liveDrawingSessions).forEach(info => {
+            const seat = info?.meta?.seatCode?.toString?.() || '';
+            if (seat && seat.startsWith(period)) {
+              if (info && info.canvas) {
+                const context = info.canvas.getContext('2d');
+                context.clearRect(0, 0, info.canvas.width, info.canvas.height);
+                info.strokes = [];
+              }
+            }
+          });
+        });
+        ws.on('disconnect', () => {
           scheduleAdminReconnect();
         });
-        ws.addEventListener('error', (err) => {
-          console.error('Admin websocket error', err);
-          try { ws.close(); } catch (e) { console.warn('adminWs close failed', e); }
+        ws.on('error', (err) => {
+          console.error(err);
+          try { ws.disconnect(); } catch (e) { console.warn('adminWs disconnect failed', e); }
         });
       } catch (e) {
         scheduleAdminReconnect();
