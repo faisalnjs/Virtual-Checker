@@ -51,5 +51,9 @@
   ["chocolate-hearts", "Chocolate Hearts", "heart", 80, ["rose-pro"], true],
   ["chocolate-hearts-2", "Chocolate Hearts 2", "heart", 80, ["rose-pro", "chocolate-hearts"], true],
   ["neon-red", "Neon Red", "", 0, [], false],
-  ["strawberry", "Strawberry", "", 0, [], false]
+  ["strawberry", "Strawberry", "", 0, [], false],
+  ["rocket-league", "Rocket League", "rocket", 60, [], false],
+  ["rocket-league-2", "Rocket League 2", "rocket", 70, ["rocket-league"], false],
+  ["rocket-league-ice", "Rocket League Ice", "rocket", 80, ["rocket-league", "rocket-league-2", "blizzard-pro"], true],
+  ["rocket-league-synthwave", "Rocket League Synthwave", "rocket", 80, ["rocket-league", "rocket-league-2", "synthwave-pro"], true]
 ]

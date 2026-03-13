@@ -594,3 +594,47 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
   --error-color: #b90024;
   background: url(/store/backdrop/chocolate-hearts-2.png) !important;
 }
+
+[data-theme="rocket-league"] {
+  color-scheme: light;
+  --text-color: #ffffff;
+  --background-color: #006e37;
+  --surface-color: #0043b6;
+  --accent-color: #eb9100;
+  --accent-text-color: #ffffff;
+  --error-color: #b90024;
+  background: url(/store/backdrop/rocket-league.png) !important;
+}
+
+[data-theme="rocket-league-2"] {
+  color-scheme: light;
+  --text-color: #ffffff;
+  --background-color: #a66400;
+  --surface-color: #003248;
+  --accent-color: #2567ff;
+  --accent-text-color: #ffffff;
+  --error-color: #b90024;
+  background: url(/store/backdrop/rocket-league-2.png) !important;
+}
+
+[data-theme="rocket-league-ice"] {
+  color-scheme: light;
+  --text-color: #fffffb;
+  --background-color: #8c88a2;
+  --surface-color: #295486;
+  --accent-color: #db131f;
+  --accent-text-color: #2c2c2c;
+  --error-color: #db131f;
+  background: url(/store/backdrop/rocket-league-ice.png) !important;
+}
+
+[data-theme="rocket-league-synthwave"] {
+  color-scheme: dark;
+  --text-color: #f3e24a;
+  --background-color: #0d0221;
+  --surface-color: #0061cc;
+  --accent-color: #811b80;
+  --accent-text-color: #2de2e6;
+  --error-color: #ea1b2d;
+  background: url(/store/backdrop/rocket-league-synthwave.png) !important;
+}
