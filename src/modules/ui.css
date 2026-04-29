@@ -1184,6 +1184,10 @@ body:has(.topbar) #checker.horizontal .column:last-child {
   margin-bottom: 5px;
 }
 
+[data-modal-page="store"] .themes-grid .theme-item:has(.hd) h5 {
+	max-width: calc(100% - 45px);
+}
+
 [data-modal-page="store"] .themes-grid .theme-item button:hover {
   color: var(--accent-text-color);
   transition: background-color 0.25s ease-in-out;
