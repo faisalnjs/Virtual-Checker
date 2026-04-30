@@ -638,3 +638,15 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
   --error-color: #ea1b2d;
   background: url(/store/backdrop/rocket-league-synthwave.png) !important;
 }
+
+[data-theme="friends"] {
+  color-scheme: dark;
+  --text-color: #f6f8df;
+  --background-color: #3d386e;
+  --surface-color: #2f8170;
+  --accent-color: #660940;
+  --accent-text-color: #f8f3d9;
+  --error-color: #ea1b2d;
+  background: url(/store/backdrop/friends.png) !important;
+}
+
