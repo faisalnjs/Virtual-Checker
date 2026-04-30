@@ -1065,6 +1065,10 @@ body:has(.topbar) #checker.horizontal .column:last-child {
   border-color: transparent;
 }
 
+[data-modal-page="store"] .promo:has(button:hover)::before {
+  opacity: 0;
+}
+
 [data-modal-page="store"] .promo .promo-inner {
   color: var(--text-color);
   background: var(--surface-color);
