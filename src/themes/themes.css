@@ -650,3 +650,25 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
   background: url(/store/backdrop/friends.png) !important;
 }
 
+[data-theme="lebron"] {
+  color-scheme: dark;
+  --text-color: #fff;
+  --background-color: #000;
+  --surface-color: #6a6665;
+  --accent-color: #fff;
+  --accent-text-color: #000;
+  --error-color: #e21b00;
+  background: url(/store/backdrop/lebron.jpg) !important;
+}
+
+[data-theme="lebron-pro"] {
+  color-scheme: dark;
+  --text-color: #fff;
+  --background-color: #000;
+  --surface-color: #2d0000;
+  --accent-color: #e21b00;
+  --accent-text-color: #000;
+  --error-color: #e21b00;
+  background: url(/store/backdrop/lebron-pro.jpg) !important;
+}
+
