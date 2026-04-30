@@ -46,14 +46,14 @@
   ["galaxy-2", "Galaxy 2", "moon-stars", 70, ["galaxy"], true],
   ["northern-lights", "Northern Lights", "moon-stars", 80, ["galaxy", "galaxy-2"], true],
   ["milky-way", "Milky Way", "moon-stars", 80, ["galaxy", "galaxy-2"], true],
-  ["siege", "Siege", "gun", 60, [], false],
-  ["snowflakes", "Snowflakes", "snowflake", 80, ["snow"], true],
+  ["siege", "Siege", "controller", 60, [], false],
+  ["snowflakes", "Snowflakes", "snow", 80, ["snow"], true],
   ["chocolate-hearts", "Chocolate Hearts", "heart", 80, ["rose-pro"], true],
   ["chocolate-hearts-2", "Chocolate Hearts 2", "heart", 80, ["rose-pro", "chocolate-hearts"], true],
   ["neon-red", "Neon Red", "", 0, [], false],
   ["strawberry", "Strawberry", "", 0, [], false],
-  ["rocket-league", "Rocket League", "rocket", 60, [], false],
-  ["rocket-league-2", "Rocket League 2", "rocket", 70, ["rocket-league"], false],
-  ["rocket-league-ice", "Rocket League Ice", "rocket", 80, ["rocket-league", "rocket-league-2", "blizzard-pro"], true],
-  ["rocket-league-synthwave", "Rocket League Synthwave", "rocket", 80, ["rocket-league", "rocket-league-2", "synthwave-pro"], true]
+  ["rocket-league", "Rocket League", "controller", 60, [], false],
+  ["rocket-league-2", "Rocket League 2", "controller", 70, ["rocket-league"], false],
+  ["rocket-league-ice", "Rocket League Ice", "controller", 80, ["rocket-league", "rocket-league-2", "blizzard-pro"], true],
+  ["rocket-league-synthwave", "Rocket League Synthwave", "controller", 80, ["rocket-league", "rocket-league-2", "synthwave-pro"], true]
 ]
