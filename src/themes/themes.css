@@ -672,3 +672,24 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
   background: url(/store/backdrop/lebron-pro.jpg) !important;
 }
 
+[data-theme="messi"] {
+  color-scheme: dark;
+  --text-color: #fff;
+  --background-color: #25b5ff;
+  --surface-color: #276cf9;
+  --accent-color: #efee87;
+  --accent-text-color: #000;
+  --error-color: #ee1c36;
+  background: url(/store/backdrop/messi.png) !important;
+}
+
+[data-theme="messi-neymar"] {
+  color-scheme: dark;
+  --text-color: #fff;
+  --background-color: #21221d;
+  --surface-color: #335280;
+  --accent-color: #f3dc15;
+  --accent-text-color: #70161d;
+  --error-color: #a21b2a;
+  background: url(/store/backdrop/messi-neymar.jpg) !important;
+}

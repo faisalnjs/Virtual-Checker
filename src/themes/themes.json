@@ -58,5 +58,7 @@
   ["rocket-league-synthwave", "Rocket League Synthwave", "controller", 80, ["rocket-league", "rocket-league-2", "synthwave-pro"], true],
   ["friends", "Friends", "film", 60, [], false],
   ["lebron", "LeBron", "star", 60, [], false],
-  ["lebron-pro", "LeBron Pro", "star", 70, ["lebron"], false]
+  ["lebron-pro", "LeBron Pro", "star", 70, ["lebron"], false],
+  ["messi", "Messi", "star", 60, [], false],
+  ["messi-neymar", "Messi & Neymar", "star", 70, ["messi"], false]
 ]
