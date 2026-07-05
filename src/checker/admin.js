@@ -369,6 +369,9 @@ try {
         if (document.getElementById('hide-seat-codes')) document.getElementById('hide-seat-codes').checked = true;
         draw.connect(HTTPSockServerDomain);
       });
+      document.querySelector('[stop-live-drawings]')?.addEventListener('click', () => {
+        draw.close();
+      });
     }
     if (document.getElementById('saved-live-drawings') && params && params.id) {
       const sessionId = params.id;

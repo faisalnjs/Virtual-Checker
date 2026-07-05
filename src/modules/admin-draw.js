@@ -9,6 +9,13 @@ var connected = false;
 var reconnectInterval = null;
 var period = null;
 
+const reconnect = document.querySelector('.live-drawings-reconnect');
+const startLiveDrawingsButton = document.querySelector('[start-live-drawings]');
+const stopLiveDrawingsButton = document.querySelector('[stop-live-drawings]');
+const saveLiveDrawingsButton = document.querySelector('[save-live-drawings]');
+const hideSeatCodesButton = document.getElementById('hide-seat-codes');
+const liveDrawingPeriods = document.getElementById('live-drawing-periods');
+
 var hideSeatCodes = false;
 export var liveDrawingSessions = {};
 export var previousLiveDrawingSessions = {};
@@ -52,6 +59,7 @@ export async function connect(drawDomain) {
                     if (!connected) {
                         console.log('🟢 Connected to Live Drawings server!');
                         connected = true;
+                        reconnect.classList.add('connected');
                         if (!reconnectInterval) reconnectInterval = setInterval(() => {
                             connect(domain);
                         }, 5000);
@@ -71,7 +79,7 @@ export async function connect(drawDomain) {
         }
     } catch (error) {
         if (storage.get("developer")) {
-            alert(`Error @ draw.js: ${error.message}`);
+            alert(`Error @ admin-draw.js: ${error.message}`);
         } else {
             ui.reportBugModal(null, String(error.stack));
         }
@@ -80,11 +88,11 @@ export async function connect(drawDomain) {
 }
 
 async function updateSession(sessionKey, strokes = []) {
-    document.querySelector('[stop-live-drawings]')?.removeAttribute('hidden');
-    document.querySelector('[stop-live-drawings]')?.removeAttribute('disabled');
-    document.getElementById('hide-seat-codes')?.parentElement?.removeAttribute('hidden');
-    document.querySelector('[save-live-drawings]')?.parentElement?.removeAttribute('hidden');
-    document.getElementById('live-drawing-periods')?.removeAttribute('hidden');
+    stopLiveDrawingsButton?.removeAttribute('hidden');
+    stopLiveDrawingsButton?.removeAttribute('disabled');
+    hideSeatCodesButton?.parentElement?.removeAttribute('hidden');
+    saveLiveDrawingsButton?.parentElement?.removeAttribute('hidden');
+    liveDrawingPeriods?.removeAttribute('hidden');
     if (!strokes.length) return;
     var newSeatCodes = [];
     for (const stroke of strokes) {
@@ -105,7 +113,7 @@ async function updateSession(sessionKey, strokes = []) {
         group = document.createElement('div');
         group.className = 'sessions';
         group.setAttribute('data-period', period);
-        document.getElementById('live-drawing-periods')?.appendChild(group);
+        liveDrawingPeriods?.appendChild(group);
     }
     for (const seatCode in liveDrawingSessions) {
         if (newSeatCodes.includes(seatCode)) {
@@ -117,7 +125,6 @@ async function updateSession(sessionKey, strokes = []) {
         const newStrokes = (liveDrawingSessions[seatCode].strokes || []).filter(s => {
             return !mappedStrokes.includes(s.id);
         });
-        console.log(oldStrokes, newStrokes);
         if (!newStrokes.length) continue;
         updateSingleSession(group, seatCode, oldStrokes, newStrokes);
     }
@@ -234,7 +241,7 @@ async function updateSession(sessionKey, strokes = []) {
 //     el = document.createElement('div');
 //     el.className = 'sessions';
 //     el.setAttribute('data-period', period);
-//     (document.getElementById('live-drawing-periods') || document.getElementById('saved-live-drawings')).appendChild(el);
+//     (liveDrawingPeriods || document.getElementById('saved-live-drawings')).appendChild(el);
 //     return el;
 // }
 
@@ -262,9 +269,9 @@ async function updateSingleSession(group, seatCode, oldStrokes = [], newStrokes 
             liveDrawingSessions[seatCode].wrapper.querySelectorAll('.meta').forEach(el => el.style.opacity = hideMeta ? '0' : '1');
             if (!hideMeta) {
                 hideSeatCodes = false;
-                document.getElementById('hide-seat-codes').checked = false;
+                hideSeatCodesButton.checked = false;
             }
-            if (Array.from(document.querySelectorAll('.session .meta')).every(el => el.style.opacity === '0')) document.getElementById('hide-seat-codes').checked = true;
+            if (Array.from(document.querySelectorAll('.session .meta')).every(el => el.style.opacity === '0')) hideSeatCodesButton.checked = true;
         });
         overlays.appendChild(toggleBtn);
     }
@@ -330,13 +337,13 @@ async function renderStrokesIntoSession(seatCode, oldStrokes = [], newStrokes = 
     }
 }
 
-document.getElementById('hide-seat-codes')?.addEventListener('change', (e) => {
+hideSeatCodesButton?.addEventListener('change', (e) => {
     hideSeatCodes = !!e.target.checked;
     document.querySelectorAll('.session .meta').forEach(el => el.style.opacity = hideSeatCodes ? '0' : '1');
     // document.querySelectorAll('.session #toggle-seat-code-button').forEach(btn => btn.style.display = hideSeatCodes ? 'flex' : 'none');
 });
 
-document.querySelector('[save-live-drawings]')?.addEventListener('click', async () => {
+saveLiveDrawingsButton?.addEventListener('click', async () => {
     const images = [];
     Object.keys(liveDrawingSessions).forEach(sessionKey => {
         const info = liveDrawingSessions[sessionKey];
@@ -459,5 +466,59 @@ function syncLiveDrawingPeriod() {
     const period = document.getElementById('period-input').value;
     document.querySelectorAll('[data-period]').forEach(sessions => {
         sessions.style.display = (sessions.getAttribute('data-period') === period) ? 'grid' : 'none';
+    });
+}
+
+export async function close(err = null, retry = false) {
+    stopLiveDrawingsButton?.setAttribute('hidden', '');
+    stopLiveDrawingsButton?.setAttribute('disabled', '');
+    hideSeatCodesButton?.parentElement?.setAttribute('hidden', '');
+    saveLiveDrawingsButton?.parentElement?.setAttribute('hidden', '');
+    liveDrawingPeriods?.setAttribute('hidden', '');
+    startLiveDrawingsButton.removeAttribute('hidden');
+    startLiveDrawingsButton.removeAttribute('disabled');
+    document.getElementById('period-input')?.removeAttribute('disabled');
+    try {
+        reconnectInterval && clearInterval(reconnectInterval);
+        if (!retry) {
+            console.log('Live Drawings server connection closed');
+        } else if (connected) {
+            console.log('Server disconnected, retrying', err || '');
+            setTimeout(() => {
+                connect(domain);
+            }, 5000);
+        } else {
+            reconnect.classList.remove('connected');
+            ui.view('draw-session-closed');
+        }
+        connected = false;
+        broadcaster = null;
+    } catch (error) {
+        if (storage.get("developer")) {
+            alert(`Error @ admin-draw.js: ${error.message}`);
+        } else {
+            ui.reportBugModal(null, String(error.stack));
+        }
+        throw error;
+    }
+    await fetch(`${domain}/${period}/lock`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            usr: storage.get('usr') || '',
+            pwd: storage.get('pwd') || '',
+        })
+    }).then(async (res) => {
+        const responseJSON = await res.json();
+        if (!res.ok) throw new Error(responseJSON.error || 'Failed to lock the room.');
+        return responseJSON;
+    }).then(() => {
+        console.log(`Room ${period} locked successfully.`);
+        ui.modeless('<i class="bi bi-lock"></i>', 'Ended');
+    }).catch((error) => {
+        console.error('Error locking the room:', error);
+        throw error;
     });
 }

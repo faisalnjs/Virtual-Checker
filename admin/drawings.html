@@ -71,7 +71,8 @@
         <div class="space button-grid">
           <select id="period-input"></select>
           <button class="space fit" start-live-drawings><i class="bi bi-arrow-right"></i> Start Session</button>
-          <button class="space fit" stop-live-drawings hidden disabled><i class="bi bi-x-octagon"></i> Stop Session</button>
+          <button class="space fit" stop-live-drawings hidden disabled><i class="bi bi-x-octagon"></i> Stop
+            Session</button>
         </div>
       </div>
       <label class="checkboxGroup" hidden><input type="checkbox" id="hide-seat-codes" hidden>
@@ -250,15 +251,10 @@
       <a href="/" tooltip="Exit"><i class="bi bi-door-open"></i></a>
     </div>
   </dialog>
-  <dialog data-modal-page="speed" data-page-title="Speed Mode">
-    <p>
-      Rapidly create new questions by pasting or uploading images - one for each. Images will be saved to a new
-      integer numbered question. To quit, close the popup. Enter the first question name (e.g. 39):
-    </p>
-    <input type="number" id="speed-mode-starting-question-id" step="1" min="1" disabled hidden>
-    <input type="text" id="speed-mode-starting-question">
+  <dialog data-modal-page="draw-session-closed" data-page-title="Session Closed">
+    <p>The host is not accepting drawings from your period.</p>
     <div data-modal-actions>
-      <button class="submit-button" id="enable-speed-mode-button">Start</button>
+      <button class="submit-button" id="reconnect-draw-session"><i class="bi bi-arrow-clockwise"></i> Retry</button>
     </div>
   </dialog>
   <div id="loader" class="active">
