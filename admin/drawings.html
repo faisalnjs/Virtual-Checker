@@ -68,23 +68,26 @@
       <h1>Live Drawings</h1>
       <div class="input-group">
         <label for="period-input">Period</label>
-        <div class="space" id="question-container">
+        <div class="space button-grid">
           <select id="period-input"></select>
+          <button class="space fit" start-live-drawings><i class="bi bi-arrow-right"></i> Start Session</button>
+          <button class="space fit" stop-live-drawings hidden disabled><i class="bi bi-x-octagon"></i> Stop Session</button>
         </div>
       </div>
-      <label class="checkboxGroup"><input type="checkbox" id="hide-seat-codes" hidden checked>
+      <label class="checkboxGroup" hidden><input type="checkbox" id="hide-seat-codes" hidden>
         <div class="checkbox"></div> Hide Seat Codes
       </label>
-      <div class="button-grid wrap">
+      <div class="button-grid wrap" hidden>
         <button class="space fit" save-live-drawings><i class="bi bi-floppy"></i> Save Session</button>
         <button class="space fit" id="reset-live-drawings"><i class="bi bi-x-lg"></i> Reset Session</button>
       </div>
-      <div id="live-drawing-periods"></div>
+      <div id="live-drawing-periods" hidden></div>
     </div>
-    <div class="section">
+    <div class="section" hidden>
       <h1>Saved Sessions</h1>
       <div class="button-grid wrap">
-        <button class="space fit" refresh-live-drawing-saved-sessions><i class="bi bi-arrow-clockwise"></i> Refresh</button>
+        <button class="space fit" refresh-live-drawing-saved-sessions><i class="bi bi-arrow-clockwise"></i>
+          Refresh</button>
       </div>
       <div id="no-saved-live-drawing-sessions" class="row">
         <p>No saved sessions found.</p>
@@ -97,16 +100,6 @@
   <div id="controls-container" class="pill">
     <button class="icon" data-modal-view="settings" tooltip="Settings">
       <i class="bi bi-gear"></i>
-    </button>
-    <button class="icon" data-speed data-modal-view="speed-mode" tooltip="Speed Mode">
-      <i class="bi bi-lightning-charge"></i>
-      <i class="bi bi-lightning-charge-fill" style="display: none;"></i>
-    </button>
-    <button class="icon" data-delete-segment tooltip="Delete Segment">
-      <i class="bi bi-trash"></i>
-    </button>
-    <button class="icon" data-archive-segment tooltip="Archive Segment">
-      <i class="bi bi-archive"></i>
     </button>
   </div>
   <!-- Symbols -->

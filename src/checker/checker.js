@@ -19,7 +19,6 @@ import "faz-quill-emoji/autoregister";
 
 try {
   const domain = ((window.location.hostname.search('check') != -1) || (window.location.hostname.search('127') != -1)) ? `https://${(window.location.hostname.search('beta') != -1) ? 'beta.' : ''}api.check.vssfalcons.com` : `http://${document.domain}:5000`;
-  const HTTPSockServerDomain = ((window.location.hostname.search('check') != -1) || (window.location.hostname.search('127') != -1)) ? `https://${(window.location.hostname.search('beta') != -1) ? 'beta.' : ''}ws.api.check.vssfalcons.com` : `http://${document.domain}:1234`;
   const segments = document.getElementById("segment-input");
   const segmentInput = document.getElementById("segment-input");
   const questions = document.getElementById("question-input");

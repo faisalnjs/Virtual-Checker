@@ -12,14 +12,12 @@ import { convertLatexToMarkup, renderMathInElement } from "mathlive";
 import { createSwapy } from "swapy";
 import Quill from "quill";
 import "faz-quill-emoji/autoregister";
-import { io } from 'socket.io-client';
+import * as draw from '/src/modules/admin-draw.js';
 
 const domain = ((window.location.hostname.search('check') != -1) || (window.location.hostname.search('127') != -1)) ? `https://${(window.location.hostname.search('beta') != -1) ? 'beta.' : ''}api.check.vssfalcons.com` : `http://${document.domain}:5000`;
+const HTTPSockServerDomain = ((window.location.hostname.search('check') != -1) || (window.location.hostname.search('127') != -1)) ? `https://${(window.location.hostname.search('beta') != -1) ? 'beta.' : ''}ws.api.check.vssfalcons.com` : `http://${document.domain}:1234`;
 if (window.location.pathname.split('?')[0].endsWith('/admin')) window.location.pathname = '/admin/';
 const params = Object.fromEntries((new URL(location)).searchParams);
-var ws = null;
-var reconnectAttempts = 0;
-var createWebSocket;
 
 var archiveTypeSelected = null;
 var courses = [];
@@ -51,8 +49,6 @@ var pagination = {
 var questionsToDelete = [];
 var keepSegment = null;
 var fromAwaitingScoring = false;
-var hideSeatCodes = false;
-const liveDrawingSessions = {};
 
 var draggableQuestionList = null;
 var draggableSegmentReorder = null;
@@ -104,118 +100,6 @@ try {
         default:
           return ["courses", "segments", "questions", "users", "logs", "ai", "passwords", "backups", "rosters", "answers", "responses", "settings"];
       }
-    }
-
-    createWebSocket = function () {
-      try {
-        const usr = storage.get('usr') || '';
-        const pwd = storage.get('pwd') || '';
-        const params = new URLSearchParams({ role: 'admin', usr, pwd }).toString();
-        if (ws && ws.connected) return;
-        if (ws) ws.disconnect();
-        if (typeof io === 'undefined') return;
-        ws = io(`${domain}/ws`, { query: Object.fromEntries(new URLSearchParams(params)), transports: ['websocket'] });
-        ws.on('connect', () => {
-          reconnectAttempts = 0;
-          setTimeout(() => {
-            var currentPeriod = getExtendedPeriod();
-            if ((currentPeriod != -1) && courses.flatMap(course => JSON.parse(course.periods).map(period => { return { period, name: course.name } })).some(coursePeriod => coursePeriod.period === (currentPeriod + 1))) {
-              document.getElementById("period-input").value = getExtendedPeriod() + 1;
-            } else if (document.querySelectorAll('#live-drawing-periods .sessions').length) {
-              document.getElementById("period-input").value = Array.from(document.querySelectorAll('#live-drawing-periods .sessions')).sort((a, b) => b.children.length - a.children.length)[0].getAttribute('data-period');
-            }
-            document.getElementById("period-input").addEventListener("change", syncLiveDrawingPeriod);
-            syncLiveDrawingPeriod();
-            refreshSavedLiveDrawingSessions();
-            active = true;
-            ui.stopLoader();
-          }, 1000);
-        });
-        ws.on('studentDraw', (data) => {
-          const { sessionKey, meta, stroke, timestamp, rowid } = data;
-          if ((meta.source || 'unknown') !== 'clicker') return;
-          if (!liveDrawingSessions[sessionKey]) createSession({ data }, sessionKey);
-          const info = liveDrawingSessions[sessionKey];
-          info.strokes = info.strokes || [];
-          info.strokes.push({ stroke, timestamp: timestamp || Date.now(), rowid: rowid || 0 });
-          info.strokes.sort((a, b) => {
-            const firstStrokeTime = Number(a.timestamp || 0);
-            const secondStrokeTime = Number(b.timestamp || 0);
-            if (firstStrokeTime !== secondStrokeTime) return firstStrokeTime - secondStrokeTime;
-            return (Number(a.rowid || 0) - Number(b.rowid || 0));
-          });
-          renderStrokesIntoSession(sessionKey, info.strokes);
-          info.wrapper.querySelectorAll('.meta').forEach(el => el.style.display = hideSeatCodes ? 'none' : 'block');
-        });
-        ws.on('sessionSync', (data) => {
-          if (!data || !data.data || !data.data.meta || !data.data.meta.source || !data.data.meta.seatCode || !data.data.strokes || !Array.isArray(data.data.strokes) || !data.data.strokes.length) return;
-          const sessionKey = data.sessionKey;
-          const normalized = (data.data.strokes || []).map(s => ({ stroke: s.stroke || s, timestamp: s.created || s.timestamp || Date.now(), rowid: s.rowid || 0 }));
-          normalized.sort((a, b) => { const ta = Number(a.timestamp || 0), tb = Number(b.timestamp || 0); if (ta !== tb) return ta - tb; return Number(a.rowid || 0) - Number(b.rowid || 0); });
-          data.data.strokes = normalized.map(s => ({ stroke: s.stroke, timestamp: s.timestamp, rowid: s.rowid }));
-          if (!liveDrawingSessions[sessionKey]) {
-            createSession(data, sessionKey);
-          } else {
-            const info = liveDrawingSessions[sessionKey];
-            info.strokes = info.strokes || [];
-            const merged = info.strokes.concat(data.data.strokes.map(s => ({ stroke: s.stroke, timestamp: s.timestamp, rowid: s.rowid })));
-            merged.sort((a, b) => { const ta = Number(a.timestamp || 0), tb = Number(b.timestamp || 0); if (ta !== tb) return ta - tb; return Number(a.rowid || 0) - Number(b.rowid || 0); });
-            info.strokes = merged;
-            renderStrokesIntoSession(sessionKey, info.strokes);
-          }
-        });
-        ws.on('studentUndo', (data) => {
-          const { sessionKey, strokeId } = data;
-          const info = liveDrawingSessions[sessionKey];
-          if (!info) return;
-          info.strokes = info.strokes || [];
-          info.strokes = info.strokes.filter(s => {
-            const stroke = s.stroke || s;
-            if (!stroke) return true;
-            if (Array.isArray(stroke)) return !stroke.some(i => (i && i.id && String(i.id) === String(strokeId)));
-            if (stroke && stroke.id && String(stroke.id) === String(strokeId)) return false;
-            return true;
-          });
-          renderStrokesIntoSession(sessionKey, info.strokes);
-        });
-        ws.on('studentClear', (data) => {
-          const { sessionKey } = data;
-          const info = liveDrawingSessions[sessionKey];
-          if (!info) return;
-          info.strokes = [];
-          renderStrokesIntoSession(sessionKey, info.strokes || []);
-        });
-        ws.on('resetPeriod', (data) => {
-          const period = String(data.period);
-          Object.values(liveDrawingSessions).forEach(info => {
-            const seatCode = info?.meta?.seatCode?.toString?.() || '';
-            if (seatCode && seatCode.startsWith(period)) {
-              if (info && info.canvas) {
-                const context = info.canvas.getContext('2d');
-                context.clearRect(0, 0, info.canvas.width, info.canvas.height);
-                info.strokes = [];
-              }
-            }
-          });
-        });
-        ws.on('disconnect', () => {
-          scheduleAdminReconnect();
-        });
-        ws.on('error', (err) => {
-          console.error(err);
-          ws.disconnect();
-        });
-      } catch (e) {
-        scheduleAdminReconnect();
-      }
-    }
-
-    function scheduleAdminReconnect() {
-      reconnectAttempts = (reconnectAttempts || 0) + 1;
-      const delay = Math.min(30000, Math.pow(2, Math.min(reconnectAttempts, 6)) * 1000);
-      setTimeout(() => {
-        createWebSocket();
-      }, delay);
     }
 
     if (!(await auth.bulkLoad(getAdminFields(), storage.get("usr"), storage.get("pwd"), true, false, () => {
@@ -476,18 +360,15 @@ try {
       document.getElementById("period-input").innerHTML += `<option value="${coursePeriod.period}">Period ${coursePeriod.period} - ${coursePeriod.name}</option>`;
     });
     if (document.getElementById('live-drawing-periods')) {
-      courses.flatMap(course => JSON.parse(course.periods)).forEach(period => {
-        getOrCreateGroup(period);
-      })
-      const initializeWebSocket = () => {
-        if (typeof createWebSocket === 'function') {
-          createWebSocket();
-        } else {
-          setTimeout(initializeWebSocket, 200);
-        }
-      };
-      initializeWebSocket();
-      return;
+      var currentPeriod = getExtendedPeriod();
+      if ((currentPeriod != -1) && courses.flatMap(course => JSON.parse(course.periods).map(period => { return { period, name: course.name } })).some(coursePeriod => coursePeriod.period === (currentPeriod + 1))) document.getElementById("period-input").value = getExtendedPeriod() + 1;
+      document.querySelector('[start-live-drawings]')?.addEventListener('click', () => {
+        document.querySelector('[start-live-drawings]').setAttribute('hidden', '');
+        document.querySelector('[start-live-drawings]').setAttribute('disabled', '');
+        document.getElementById('period-input')?.setAttribute('disabled', '');
+        if (document.getElementById('hide-seat-codes')) document.getElementById('hide-seat-codes').checked = true;
+        draw.connect(HTTPSockServerDomain);
+      });
     }
     if (document.getElementById('saved-live-drawings') && params && params.id) {
       const sessionId = params.id;
@@ -496,9 +377,9 @@ try {
       document.title = `${savedSessionJSON.session.name} - Virtual Checker`;
       document.querySelector('.section h1').innerText = savedSessionJSON.session.name;
       document.getElementById("period-input").value = savedSessionJSON.session.meta.period;
-      liveDrawingSessions[sessionId] = savedSessionJSON.session;
+      draw.liveDrawingSessions[sessionId] = savedSessionJSON.session;
       savedSessionJSON.session.strokes.forEach(session => {
-        createSession({
+        draw.createSession({
           data: {
             meta: {
               seatCode: session.seatCode.split('::')[1],
@@ -6655,246 +6536,6 @@ try {
     const group = Array.from(paginationSection.parentElement.parentElement.classList).find(a => Object.keys(pagination).includes(a));
     if (!group) return;
     goToPage(paginationSection, Math.ceil(pagination[group].total / (storage.get("rowsPerPage") ? Number(storage.get("rowsPerPage")) : pagination[group].perPage)) - 1);
-  }
-
-  function getOrCreateGroup(period) {
-    let el = document.querySelector(`[data-period="${period}"]`);
-    if (el) return el;
-    el = document.createElement('div');
-    el.className = 'sessions';
-    el.setAttribute('data-period', period);
-    (document.getElementById('live-drawing-periods') || document.getElementById('saved-live-drawings')).appendChild(el);
-    return el;
-  }
-
-  function createSession(data, sessionKey) {
-    const [source, seatCode] = sessionKey.split('::');
-    if ((data.data.meta.source || 'unknown') !== 'clicker') return;
-    const sessions = getOrCreateGroup(Number(seatCode.slice(0, 1)));
-    const sessionDiv = document.createElement('div');
-    sessionDiv.className = 'session';
-    sessionDiv.innerHTML = `<span class="meta">${data.data.meta.seatCode}</span><div class="canvas-wrapper"></div><div class="overlays"></div>`;
-    sessions.appendChild(sessionDiv);
-    liveDrawingSessions[sessionKey] = { wrapper: sessionDiv, canvas: null, strokes: [] };
-    sessionDiv.querySelector('.meta').addEventListener('click', () => {
-      sessionDiv.classList.toggle('collapsed');
-      const wrap = sessionDiv.querySelector('.canvas-wrapper');
-      wrap.style.display = wrap.style.display === 'none' ? 'flex' : 'none';
-    });
-    const overlays = sessionDiv.querySelector('.overlays');
-    const toggleBtn = document.createElement('button');
-    toggleBtn.id = 'toggle-seat-code-button';
-    toggleBtn.setAttribute('square', '');
-    toggleBtn.setAttribute('tooltip', 'Show/Hide Seat Code');
-    toggleBtn.innerHTML = '<i class="bi bi-eye"></i>';
-    toggleBtn.addEventListener('click', () => {
-      const hideMeta = liveDrawingSessions[sessionKey].wrapper.querySelector('.meta').style.opacity === '100';
-      liveDrawingSessions[sessionKey].wrapper.querySelectorAll('.meta').forEach(el => el.style.opacity = hideMeta ? '0' : '100');
-      if (!hideMeta) {
-        hideSeatCodes = false;
-        document.getElementById('hide-seat-codes').checked = false;
-      }
-      if (Array.from(document.querySelectorAll('.session .meta')).every(el => el.style.opacity === '0')) document.getElementById('hide-seat-codes').checked = true;
-    });
-    overlays.appendChild(toggleBtn);
-    if (data.data.strokes) {
-      liveDrawingSessions[sessionKey].strokes = data.data.strokes.slice();
-      renderStrokesIntoSession(sessionKey, data.data.strokes);
-    }
-  }
-
-  // Live drawing websocket messages are handled on the adminWs created by createAdminWS()
-
-  function renderStrokesIntoSession(sessionKey, strokes) {
-    const info = liveDrawingSessions[sessionKey];
-    if (!info) return;
-    if (!info.canvas) {
-      const wrap = info.wrapper.querySelector('.canvas-wrapper');
-      var canvas = document.createElement('canvas');
-      canvas.width = 300;
-      canvas.height = 200;
-      canvas.style.width = '300px';
-      canvas.style.height = '200px';
-      canvas.style.padding = '0';
-      canvas.style.borderRadius = '0.5rem';
-      canvas.style.backgroundColor = themes.getCurrentTheme().surfaceColor;
-      canvas.style.touchAction = 'none';
-      wrap.appendChild(canvas);
-      info.canvas = canvas;
-    }
-    canvas = info.canvas;
-    const context = canvas.getContext('2d');
-    context.clearRect(0, 0, canvas.width, canvas.height);
-    if (Array.isArray(strokes)) {
-      let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-      const lines = [];
-      strokes.forEach(seg => {
-        if (seg.stroke && seg.stroke.from && seg.stroke.to) {
-          const f = seg.stroke.from, t = seg.stroke.to;
-          minX = Math.min(minX, f.x, t.x);
-          minY = Math.min(minY, f.y, t.y);
-          maxX = Math.max(maxX, f.x, t.x);
-          maxY = Math.max(maxY, f.y, t.y);
-          lines.push({ from: f, to: t, width: seg.stroke.width || 3, color: themes.getCurrentTheme().textColor });
-        }
-        if (seg.stroke && seg.stroke.clear) context.clearRect(0, 0, canvas.width, canvas.height);
-      });
-      if (lines.length === 0) return;
-      if (!isFinite(minX) || !isFinite(minY) || !isFinite(maxX) || !isFinite(maxY)) return;
-      const srcW = (maxX - minX) || 1;
-      const srcH = (maxY - minY) || 1;
-      const padding = 10;
-      const scale = Math.min((canvas.width - padding * 2) / srcW, (canvas.height - padding * 2) / srcH);
-      const offsetX = (canvas.width - srcW * scale) / 2 - minX * scale;
-      const offsetY = (canvas.height - srcH * scale) / 2 - minY * scale;
-      lines.forEach(line => {
-        context.beginPath();
-        context.moveTo(line.from.x * scale + offsetX, line.from.y * scale + offsetY);
-        context.lineTo(line.to.x * scale + offsetX, line.to.y * scale + offsetY);
-        context.lineWidth = Math.max(1, (line.width || 3) * scale * 0.9);
-        context.strokeStyle = themes.getCurrentTheme().textColor;
-        context.stroke();
-      });
-    } else {
-      var img = new Image();
-      img.onload = function () {
-        context.clearRect(0, 0, canvas.width, canvas.height);
-        context.drawImage(img, 0, 0, canvas.width, canvas.height);
-      };
-      img.src = strokes;
-    }
-  }
-
-  document.getElementById('hide-seat-codes')?.addEventListener('change', (e) => {
-    hideSeatCodes = !!e.target.checked;
-    document.querySelectorAll('.session .meta').forEach(el => el.style.opacity = hideSeatCodes ? '0' : '100');
-    // document.querySelectorAll('.session #toggle-seat-code-button').forEach(btn => btn.style.display = hideSeatCodes ? 'flex' : 'none');
-  });
-
-  document.querySelector('[save-live-drawings]')?.addEventListener('click', async () => {
-    const images = [];
-    Object.keys(liveDrawingSessions).forEach(sessionKey => {
-      const info = liveDrawingSessions[sessionKey];
-      if (!info || !info.canvas) return;
-      try {
-        const dataUrl = info.canvas.toDataURL('image/png');
-        images.push({ dataUrl, sessionKey });
-      } catch (e) {
-        console.warn('Failed to read canvas for', sessionKey, e);
-      }
-    });
-    if (images.length === 0) {
-      ui.toast('No drawings available to save.', 3000, 'warning', 'bi bi-exclamation-triangle-fill');
-      return;
-    }
-    const saveSession = await fetch(domain + '/draw/save', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        images,
-        meta: {
-          created: new Date().toISOString(),
-          period: document.getElementById('period-input').value || null,
-          name: `Live Drawing Session - Period ${document.getElementById('period-input').value || 0} - ${new Date().toLocaleString()}`,
-        },
-        usr: storage.get('usr'),
-        pwd: storage.get('pwd')
-      })
-    });
-    const saveSessionJSON = await saveSession.json();
-    ui.toast(saveSessionJSON.ok ? (saveSessionJSON.message || 'Saved all drawings.') : (saveSessionJSON.error || 'Save failed.'), 5000, saveSessionJSON.ok ? 'success' : 'error', saveSessionJSON.ok ? 'bi bi-check-lg' : 'bi bi-exclamation-triangle-fill');
-    refreshSavedLiveDrawingSessions();
-  });
-
-  document.getElementById('reset-live-drawings')?.addEventListener('click', async () => {
-    const period = document.getElementById('period-input').value;
-    if (!period) {
-      ui.toast('No period selected.', 3000, 'warning', 'bi bi-exclamation-triangle-fill');
-      return;
-    }
-    const resetting = Object.values(liveDrawingSessions).map(session => session.wrapper.querySelector('.meta').innerText).filter(session => session.slice(0, 1) === period);
-    ui.modal({
-      title: `Reset Period ${period} Drawings?`,
-      body: `<p>Clear all drawings for seat code${(resetting.length === 1) ? '' : 's'} ${resetting.join(', ')}? This cannot be undone.</p>`,
-      buttons: [
-        {
-          text: 'Cancel',
-          class: 'cancel-button',
-          close: true,
-        },
-        {
-          text: 'Continue',
-          class: 'submit-button',
-          onclick: async () => {
-            try {
-              const usr = storage.get('usr');
-              const pwd = storage.get('pwd');
-              const resetDrawings = await fetch(domain + '/draw/reset', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ usr, pwd, period })
-              });
-              const resetDrawingsJSON = await resetDrawings.json();
-              if (resetDrawings.ok) {
-                ui.toast(resetDrawingsJSON.message || 'Drawings cleared.', 3000, 'success', 'bi bi-check-lg');
-                Object.values(liveDrawingSessions).forEach(info => {
-                  if (!info || !info.canvas) return;
-                  const context = info.canvas.getContext('2d');
-                  context.clearRect(0, 0, info.canvas.width, info.canvas.height);
-                  info.strokes = [];
-                });
-              } else {
-                ui.toast(resetDrawingsJSON.error || 'Reset failed.', 5000, 'error', 'bi bi-exclamation-triangle-fill');
-              }
-            } catch (e) {
-              ui.toast('Reset request failed.', 5000, 'error', 'bi bi-exclamation-triangle-fill');
-              console.error(e);
-            }
-          },
-          close: true,
-        },
-      ],
-    });
-  });
-
-  async function refreshSavedLiveDrawingSessions() {
-    const refreshSessions = await fetch(domain + '/draw/sessions?usr=' + encodeURIComponent(storage.get('usr')) + '&pwd=' + encodeURIComponent(storage.get('pwd')));
-    const refreshSessionsJSON = await refreshSessions.json();
-    document.querySelector('.saved-live-drawing-sessions').innerHTML = '';
-    if (refreshSessionsJSON.sessions && refreshSessionsJSON.sessions.length) {
-      document.getElementById('no-saved-live-drawing-sessions').setAttribute('hidden', '');
-      document.querySelector('.saved-live-drawing-sessions').removeAttribute('hidden');
-      refreshSessionsJSON.sessions = refreshSessionsJSON.sessions.sort((a, b) => b.created - a.created);
-      refreshSessionsJSON.sessions.forEach(session => {
-        document.querySelector('.saved-live-drawing-sessions').innerHTML += `<div class="enhanced-item" id="${session.id}">
-              <span class="sessionName">${session.name}</span>
-              <span class="actions">
-                <button class="icon" data-open-session tooltip="Open Session">
-                  <i class="bi bi-box-arrow-up-right"></i>
-                </button>
-              </span>
-            </div>`;
-      });
-      refreshSessionsJSON.sessions.forEach(session => {
-        document.querySelector(`.saved-live-drawing-sessions [id='${session.id}'] [data-open-session]`).addEventListener('click', async () => {
-          window.open(`/admin/session?id=${session.id}`, '_blank');
-        });
-      });
-    } else {
-      document.getElementById('no-saved-live-drawing-sessions').removeAttribute('hidden');
-      document.querySelector('.saved-live-drawing-sessions').setAttribute('hidden', '');
-    }
-  }
-
-  document.querySelector('[refresh-live-drawing-saved-sessions]')?.addEventListener('click', async () => {
-    await refreshSavedLiveDrawingSessions();
-    ui.toast('Saved sessions refreshed.', 3000, 'success', 'bi bi-check-lg');
-  });
-
-  function syncLiveDrawingPeriod() {
-    const period = document.getElementById('period-input').value;
-    document.querySelectorAll('[data-period]').forEach(sessions => {
-      sessions.style.display = (sessions.getAttribute('data-period') === period) ? 'grid' : 'none';
-    });
   }
 } catch (error) {
   if (storage.get("developer")) {
