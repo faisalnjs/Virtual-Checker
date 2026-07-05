@@ -8,8 +8,8 @@ var broadcaster = null;
 var connected = false;
 var reconnectInterval = null;
 var period = null;
+var sessionKey = null;
 
-const reconnect = document.querySelector('.live-drawings-reconnect');
 const startLiveDrawingsButton = document.querySelector('[start-live-drawings]');
 const stopLiveDrawingsButton = document.querySelector('[stop-live-drawings]');
 const saveLiveDrawingsButton = document.querySelector('[save-live-drawings]');
@@ -23,10 +23,12 @@ export var previousLiveDrawingSessions = {};
 var delay = ms => new Promise(res => setTimeout(res, ms));
 
 export async function connect(drawDomain) {
+    console.log('Connecting...')
     period = document.getElementById('period-input').value;
     try {
         if (!domain) domain = drawDomain;
         if (!broadcaster) {
+            connected = false;
             await fetch(`${domain}/${period}/unlock`, {
                 method: 'POST',
                 headers: {
@@ -43,34 +45,36 @@ export async function connect(drawDomain) {
             }).then((response) => {
                 console.log(`Room ${period} unlocked successfully.`);
                 ui.modeless('<i class="bi bi-unlock"></i>', 'Started');
+                sessionKey = response.sessionKey;
                 updateSession(response.sessionKey, response.strokes);
+                connected = false;
+                broadcaster = new HTTPSockBroadcast({
+                    server: `${domain}/${period}?noBroadcast=true`,
+                    cert: './certs/chain.pem',
+                    auth: {
+                        username: storage.get('usr') || '',
+                        password: storage.get('pwd') || ''
+                    },
+                    callback: async (response) => {
+                        if (!connected) {
+                            console.log('🟢 Connected to Live Drawings server!');
+                            connected = true;
+                            clearInterval(reconnectInterval);
+                            reconnectInterval = setInterval(() => {
+                                connect(domain);
+                            }, 5000);
+                        }
+                        var responseJSON = JSON.parse(response);
+                        updateSession(responseJSON.sessionKey, responseJSON.strokes);
+                    },
+                    close: (e) => close(e, true),
+                    error: (e) => close(e, true)
+                });
+                connected = false;
             }).catch((error) => {
                 console.error('Error unlocking the room:', error);
                 throw error;
             });
-            broadcaster = new HTTPSockBroadcast({
-                server: `${domain}/${period}?noBroadcast=true`,
-                cert: './certs/chain.pem',
-                auth: {
-                    username: storage.get('usr') || '',
-                    password: storage.get('pwd') || ''
-                },
-                callback: async (response) => {
-                    if (!connected) {
-                        console.log('🟢 Connected to Live Drawings server!');
-                        connected = true;
-                        reconnect.classList.add('connected');
-                        if (!reconnectInterval) reconnectInterval = setInterval(() => {
-                            connect(domain);
-                        }, 5000);
-                    }
-                    var responseJSON = JSON.parse(response);
-                    updateSession(responseJSON.sessionKey, responseJSON.strokes);
-                },
-                close,
-                error: (e) => close(e, true)
-            });
-            connected = false;
         }
         try {
             broadcaster.sendQuiet({ type: 'session' });
@@ -378,15 +382,9 @@ saveLiveDrawingsButton?.addEventListener('click', async () => {
 });
 
 document.getElementById('reset-live-drawings')?.addEventListener('click', async () => {
-    const period = document.getElementById('period-input').value;
-    if (!period) {
-        ui.toast('No period selected.', 3000, 'warning', 'bi bi-exclamation-triangle-fill');
-        return;
-    }
-    const resetting = Object.values(liveDrawingSessions).map(session => session.wrapper.querySelector('.meta').innerText).filter(session => session.slice(0, 1) === period);
     ui.modal({
         title: `Reset Period ${period} Drawings?`,
-        body: `<p>Clear all drawings for seat code${(resetting.length === 1) ? '' : 's'} ${resetting.join(', ')}? This cannot be undone.</p>`,
+        body: `<p>Clear all drawings for ${Object.keys(liveDrawingSessions).length} seat code${(Object.keys(liveDrawingSessions).length === 1) ? '' : 's'}? This cannot be undone.</p>`,
         buttons: [
             {
                 text: 'Cancel',
@@ -397,30 +395,12 @@ document.getElementById('reset-live-drawings')?.addEventListener('click', async 
                 text: 'Continue',
                 class: 'submit-button',
                 onclick: async () => {
-                    try {
-                        const usr = storage.get('usr');
-                        const pwd = storage.get('pwd');
-                        const resetDrawings = await fetch(domain + '/draw/reset', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ usr, pwd, period })
-                        });
-                        const resetDrawingsJSON = await resetDrawings.json();
-                        if (resetDrawings.ok) {
-                            ui.toast(resetDrawingsJSON.message || 'Drawings cleared.', 3000, 'success', 'bi bi-check-lg');
-                            Object.values(liveDrawingSessions).forEach(info => {
-                                if (!info || !info.canvas) return;
-                                const context = info.canvas.getContext('2d');
-                                context.clearRect(0, 0, info.canvas.width, info.canvas.height);
-                                info.strokes = [];
-                            });
-                        } else {
-                            ui.toast(resetDrawingsJSON.error || 'Reset failed.', 5000, 'error', 'bi bi-exclamation-triangle-fill');
-                        }
-                    } catch (e) {
-                        ui.toast('Reset request failed.', 5000, 'error', 'bi bi-exclamation-triangle-fill');
-                        console.error(e);
-                    }
+                    broadcaster.sendQuiet({
+                        type: 'message',
+                        to: sessionKey,
+                        content: 'clear',
+                    });
+                    ui.toast('Drawings cleared.', 3000, 'success', 'bi bi-check-lg');
                 },
                 close: true,
             },
@@ -479,16 +459,16 @@ export async function close(err = null, retry = false) {
     startLiveDrawingsButton.removeAttribute('disabled');
     document.getElementById('period-input')?.removeAttribute('disabled');
     try {
-        reconnectInterval && clearInterval(reconnectInterval);
         if (!retry) {
+            reconnectInterval && clearInterval(reconnectInterval);
+            reconnectInterval = null;
             console.log('Live Drawings server connection closed');
         } else if (connected) {
             console.log('Server disconnected, retrying', err || '');
-            setTimeout(() => {
+            if (!reconnectInterval) reconnectInterval = setInterval(() => {
                 connect(domain);
             }, 5000);
         } else {
-            reconnect.classList.remove('connected');
             ui.view('draw-session-closed');
         }
         connected = false;
@@ -522,3 +502,11 @@ export async function close(err = null, retry = false) {
         throw error;
     });
 }
+
+window.addEventListener('beforeunload', async (event) => {
+    if (connected) {
+        event.preventDefault();
+        event.returnValue = '';
+        await close();
+    }
+});
