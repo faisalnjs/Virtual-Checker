@@ -271,6 +271,7 @@ body:has(.island.visible) #checker {
   position: fixed;
   bottom: 25px;
   transition: 0.5s;
+  z-index: 5;
 }
 
 #controls-container[checks] {
