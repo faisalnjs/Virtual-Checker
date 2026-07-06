@@ -278,6 +278,24 @@ async function updateSingleSession(group, seatCode, oldStrokes = [], newStrokes 
             if (Array.from(document.querySelectorAll('.session .meta')).every(el => el.style.opacity === '0')) hideSeatCodesButton.checked = true;
         });
         overlays.appendChild(toggleBtn);
+        const resetBtn = document.createElement('button');
+        resetBtn.id = 'clear-seat-code-button';
+        resetBtn.setAttribute('square', '');
+        resetBtn.setAttribute('tooltip', 'Clear Drawing Board');
+        resetBtn.innerHTML = '<i class="bi bi-x-lg"></i>';
+        resetBtn.addEventListener('click', () => {
+            broadcaster.sendQuiet({
+                type: 'message',
+                to: `${sessionKey}::${seatCode}`,
+                content: 'clear',
+            });
+            ui.toast('Drawing cleared.', 3000, 'success', 'bi bi-check-lg');
+            liveDrawingSessions[seatCode].wrapper.classList.add('clearing');
+            setTimeout(() => {
+                liveDrawingSessions[seatCode].wrapper.classList.remove('clearing');
+            }, 10000);
+        });
+        overlays.appendChild(resetBtn);
     }
     if ((liveDrawingSessions[seatCode].strokes || []).length) await renderStrokesIntoSession(seatCode, oldStrokes, newStrokes);
 }
@@ -401,6 +419,12 @@ document.getElementById('reset-live-drawings')?.addEventListener('click', async 
                         content: 'clear',
                     });
                     ui.toast('Drawings cleared.', 3000, 'success', 'bi bi-check-lg');
+                    for (const seatCode in liveDrawingSessions) {
+                        liveDrawingSessions[seatCode].wrapper.classList.add('clearing');
+                        setTimeout(() => {
+                            liveDrawingSessions[seatCode].wrapper.classList.remove('clearing');
+                        }, 10000);
+                    }
                 },
                 close: true,
             },

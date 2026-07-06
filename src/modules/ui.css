@@ -1189,7 +1189,7 @@ body:has(.topbar) #checker.horizontal .column:last-child {
 }
 
 [data-modal-page="store"] .themes-grid .theme-item:has(.hd) h5 {
-	max-width: calc(100% - 45px);
+  max-width: calc(100% - 45px);
 }
 
 [data-modal-page="store"] .themes-grid .theme-item button:hover {
@@ -1272,6 +1272,13 @@ canvas[disabled] {
   display: flex;
   flex-direction: column;
   gap: 7.5px;
+  transition: opacity 0.25s ease-in-out;
+}
+
+.sessions .session.clearing {
+  opacity: 0.5;
+  pointer-events: none;
+  transition: opacity 0.25s ease-in-out;
 }
 
 .sessions .session .meta {
@@ -1297,4 +1304,24 @@ canvas[disabled] {
   .sessions {
     grid-template-columns: repeat(1, 1fr);
   }
+}
+
+.sessions .session .overlays {
+  display: flex;
+  gap: 5px;
+  position: absolute;
+  background: transparent;
+  bottom: 5px;
+  left: 5px;
+  transition: opacity 0.25s ease-in-out;
+}
+
+.sessions .session .overlays button {
+  background: var(--background-color);
+}
+
+.sessions .session:not(:hover) .overlays {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease-in-out;
 }
