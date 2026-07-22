@@ -80,7 +80,7 @@
       </label>
       <div class="button-grid wrap" hidden>
         <button class="space fit" save-live-drawings><i class="bi bi-floppy"></i> Save Session</button>
-        <button class="space fit" id="reset-live-drawings"><i class="bi bi-x-lg"></i> Reset Session</button>
+        <button class="space fit" reset-live-drawings><i class="bi bi-x-lg"></i> Reset Session</button>
       </div>
       <div id="live-drawing-periods" hidden></div>
     </div>
@@ -256,6 +256,14 @@
     <div data-modal-actions>
       <button class="submit-button" id="reconnect-draw-session"><i class="bi bi-arrow-clockwise"></i> Retry</button>
     </div>
+  </dialog>
+  <dialog data-modal-page="draw-session-viewer" data-page-title="Session Viewer" class="large">
+    <div class="sessionInfo">
+      <p class="sessionDate"></p>
+      <p class="sessionPeriod"></p>
+      <br>
+    </div>
+    <div class="sessionCanvases"></div>
   </dialog>
   <div id="loader" class="active">
     <svg xmlns="http://www.w3.org/2000/svg" height="2.5em" viewBox="0 0 1041 732" fill="none"

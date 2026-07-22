@@ -367,11 +367,12 @@ try {
         document.querySelector('[start-live-drawings]').setAttribute('disabled', '');
         document.getElementById('period-input')?.setAttribute('disabled', '');
         if (document.getElementById('hide-seat-codes')) document.getElementById('hide-seat-codes').checked = true;
-        draw.connect(HTTPSockServerDomain);
+        draw.connect(HTTPSockServerDomain, domain);
       });
       document.querySelector('[stop-live-drawings]')?.addEventListener('click', () => {
         draw.close();
       });
+      draw.refreshSavedLiveDrawingSessions(domain);
     }
     if (document.getElementById('saved-live-drawings') && params && params.id) {
       const sessionId = params.id;

@@ -4,6 +4,7 @@ import * as themes from '/src/themes/themes.js';
 import HTTPSockBroadcast from 'httpsock/broadcast.mjs';
 
 var domain = null;
+var drawDomain = null;
 var broadcaster = null;
 var connected = false;
 var reconnectInterval = null;
@@ -13,8 +14,10 @@ var sessionKey = null;
 const startLiveDrawingsButton = document.querySelector('[start-live-drawings]');
 const stopLiveDrawingsButton = document.querySelector('[stop-live-drawings]');
 const saveLiveDrawingsButton = document.querySelector('[save-live-drawings]');
+const resetLiveDrawingsButton = document.querySelector('[reset-live-drawings]');
 const hideSeatCodesButton = document.getElementById('hide-seat-codes');
 const liveDrawingPeriods = document.getElementById('live-drawing-periods');
+const sessionViewer = document.querySelector('[data-modal-page="draw-session-viewer"]');
 
 var hideSeatCodes = false;
 export var liveDrawingSessions = {};
@@ -22,14 +25,15 @@ export var previousLiveDrawingSessions = {};
 
 var delay = ms => new Promise(res => setTimeout(res, ms));
 
-export async function connect(drawDomain) {
+export async function connect(newDrawDomain, newDomain = null) {
     console.log('Connecting...')
     period = document.getElementById('period-input').value;
     try {
-        if (!domain) domain = drawDomain;
+        if (!drawDomain) drawDomain = newDrawDomain;
+        if (!domain && newDomain) domain = newDomain;
         if (!broadcaster) {
             connected = false;
-            await fetch(`${domain}/${period}/unlock`, {
+            await fetch(`${drawDomain}/${period}/unlock`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -49,7 +53,7 @@ export async function connect(drawDomain) {
                 updateSession(response.sessionKey, response.strokes);
                 connected = false;
                 broadcaster = new HTTPSockBroadcast({
-                    server: `${domain}/${period}?noBroadcast=true`,
+                    server: `${drawDomain}/${period}?noBroadcast=true`,
                     cert: './certs/chain.pem',
                     auth: {
                         username: storage.get('usr') || '',
@@ -61,7 +65,7 @@ export async function connect(drawDomain) {
                             connected = true;
                             clearInterval(reconnectInterval);
                             reconnectInterval = setInterval(() => {
-                                connect(domain);
+                                connect(drawDomain, domain);
                             }, 5000);
                         }
                         var responseJSON = JSON.parse(response);
@@ -399,7 +403,7 @@ saveLiveDrawingsButton?.addEventListener('click', async () => {
     refreshSavedLiveDrawingSessions();
 });
 
-document.getElementById('reset-live-drawings')?.addEventListener('click', async () => {
+resetLiveDrawingsButton?.addEventListener('click', async () => {
     ui.modal({
         title: `Reset Period ${period} Drawings?`,
         body: `<p>Clear all drawings for ${Object.keys(liveDrawingSessions).length} seat code${(Object.keys(liveDrawingSessions).length === 1) ? '' : 's'}? This cannot be undone.</p>`,
@@ -432,7 +436,9 @@ document.getElementById('reset-live-drawings')?.addEventListener('click', async 
     });
 });
 
-async function refreshSavedLiveDrawingSessions() {
+export async function refreshSavedLiveDrawingSessions(newDomain = null) {
+    if (!domain && newDomain) domain = newDomain;
+    document.querySelector('.section:has(.saved-live-drawing-sessions)')?.removeAttribute('hidden');
     const refreshSessions = await fetch(domain + '/draw/sessions?usr=' + encodeURIComponent(storage.get('usr')) + '&pwd=' + encodeURIComponent(storage.get('pwd')));
     const refreshSessionsJSON = await refreshSessions.json();
     document.querySelector('.saved-live-drawing-sessions').innerHTML = '';
@@ -444,15 +450,15 @@ async function refreshSavedLiveDrawingSessions() {
             document.querySelector('.saved-live-drawing-sessions').innerHTML += `<div class="enhanced-item" id="${session.id}">
               <span class="sessionName">${session.name}</span>
               <span class="actions">
-                <button class="icon" data-open-session tooltip="Open Session">
-                  <i class="bi bi-box-arrow-up-right"></i>
+                <button class="icon" data-open-session tooltip="View Session">
+                  <i class="bi bi-eye"></i>
                 </button>
               </span>
             </div>`;
         });
         refreshSessionsJSON.sessions.forEach(session => {
             document.querySelector(`.saved-live-drawing-sessions [id='${session.id}'] [data-open-session]`).addEventListener('click', async () => {
-                window.open(`/admin/session?id=${session.id}`, '_blank');
+                viewSavedSession(session.id);
             });
         });
     } else {
@@ -490,7 +496,7 @@ export async function close(err = null, retry = false) {
         } else if (connected) {
             console.log('Server disconnected, retrying', err || '');
             if (!reconnectInterval) reconnectInterval = setInterval(() => {
-                connect(domain);
+                connect(drawDomain, domain);
             }, 5000);
         } else {
             ui.view('draw-session-closed');
@@ -505,7 +511,7 @@ export async function close(err = null, retry = false) {
         }
         throw error;
     }
-    await fetch(`${domain}/${period}/lock`, {
+    await fetch(`${drawDomain}/${period}/lock`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
@@ -534,3 +540,35 @@ window.addEventListener('beforeunload', async (event) => {
         await close();
     }
 });
+
+async function viewSavedSession(sessionId = null) {
+    if (sessionId === null) return;
+    var sessionData = await fetch(domain + '/draw/sessions/' + sessionId + '?usr=' + encodeURIComponent(storage.get('usr')) + '&pwd=' + encodeURIComponent(storage.get('pwd'))).then(response => response.json());
+    var session = sessionData.session;
+    if (!session) return;
+    sessionViewer.querySelector('.sessionDate').textContent = new Date(session.created).toLocaleString() || '';
+    sessionViewer.querySelector('.sessionPeriod').textContent = session.meta.period ? `Period ${session.meta.period}` : '';
+    sessionViewer.querySelector('.sessionCanvases').innerHTML = '';
+    session.strokes.forEach(image => {
+        const canvasWrapper = document.createElement('div');
+        canvasWrapper.className = 'canvas-wrapper';
+        const canvas = document.createElement('canvas');
+        canvas.width = 300;
+        canvas.height = 200;
+        canvas.style.width = '300px';
+        canvas.style.height = '200px';
+        canvas.style.padding = '0';
+        canvas.style.borderRadius = '0.5rem';
+        canvas.style.backgroundColor = themes.getCurrentTheme().surfaceColor;
+        const context = canvas.getContext('2d');
+        var img = new Image();
+        img.onload = function () {
+            context.clearRect(0, 0, canvas.width, canvas.height);
+            context.drawImage(img, 0, 0, canvas.width, canvas.height);
+        };
+        img.src = image.strokes;
+        canvasWrapper.appendChild(canvas);
+        sessionViewer.querySelector('.sessionCanvases').appendChild(canvasWrapper);
+    });
+    ui.view('draw-session-viewer');
+}

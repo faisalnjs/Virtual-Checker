@@ -41,7 +41,6 @@ export default {
         courses: new URL('admin/courses.html', import.meta.url).pathname,
         taQuestions: new URL('ta/questions.html', import.meta.url).pathname,
         drawings: new URL('admin/drawings.html', import.meta.url).pathname,
-        session: new URL('admin/session.html', import.meta.url).pathname,
       },
     },
   },
