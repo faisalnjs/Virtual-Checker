@@ -368,6 +368,7 @@ try {
         document.getElementById('period-input')?.setAttribute('disabled', '');
         if (document.getElementById('hide-seat-codes')) document.getElementById('hide-seat-codes').checked = true;
         draw.connect(HTTPSockServerDomain, domain);
+        ui.setUnsavedChanges(false);
       });
       document.querySelector('[stop-live-drawings]')?.addEventListener('click', () => {
         draw.close();

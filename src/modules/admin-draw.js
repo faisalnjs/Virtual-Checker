@@ -450,6 +450,11 @@ export async function refreshSavedLiveDrawingSessions(newDomain = null) {
             document.querySelector('.saved-live-drawing-sessions').innerHTML += `<div class="enhanced-item" id="${session.id}">
               <span class="sessionName">${session.name}</span>
               <span class="actions">
+                <button class="icon" data-delete-session tooltip="Delete Session">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </span>
+              <span class="actions">
                 <button class="icon" data-open-session tooltip="View Session">
                   <i class="bi bi-eye"></i>
                 </button>
@@ -459,6 +464,9 @@ export async function refreshSavedLiveDrawingSessions(newDomain = null) {
         refreshSessionsJSON.sessions.forEach(session => {
             document.querySelector(`.saved-live-drawing-sessions [id='${session.id}'] [data-open-session]`).addEventListener('click', async () => {
                 viewSavedSession(session.id);
+            });
+            document.querySelector(`.saved-live-drawing-sessions [id='${session.id}'] [data-delete-session]`).addEventListener('click', async () => {
+                deleteSavedSession(session.id);
             });
         });
     } else {
@@ -571,4 +579,37 @@ async function viewSavedSession(sessionId = null) {
         sessionViewer.querySelector('.sessionCanvases').appendChild(canvasWrapper);
     });
     ui.view('draw-session-viewer');
+}
+
+async function deleteSavedSession(sessionId = null) {
+    if (sessionId === null) return;
+    ui.modal({
+        title: 'Delete Saved Session?',
+        body: `<p>Are you sure you want to delete this saved session? This action cannot be undone.</p>`,
+        buttons: [
+            {
+                text: 'Cancel',
+                class: 'cancel-button',
+                close: true,
+            },
+            {
+                text: 'Delete',
+                class: 'submit-button',
+                onclick: async () => {
+                    const deleteSession = await fetch(domain + '/draw/sessions/' + sessionId, {
+                        method: 'DELETE',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            usr: storage.get('usr'),
+                            pwd: storage.get('pwd')
+                        })
+                    });
+                    const deleteSessionJSON = await deleteSession.json();
+                    ui.toast(deleteSessionJSON.ok ? (deleteSessionJSON.message || 'Deleted session.') : (deleteSessionJSON.error || 'Delete failed.'), 5000, deleteSessionJSON.ok ? 'success' : 'error', deleteSessionJSON.ok ? 'bi bi-check-lg' : 'bi bi-exclamation-triangle-fill');
+                    refreshSavedLiveDrawingSessions();
+                },
+                close: true,
+            },
+        ],
+    });
 }

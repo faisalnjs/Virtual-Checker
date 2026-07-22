@@ -517,7 +517,7 @@ label:has(i) {
   border-radius: 10px;
   line-height: 25px;
   width: 99%;
-  gap: 10px;
+  gap: 5px;
 }
 
 .enhanced-list .header > *:not(.fit):not(.actions),
