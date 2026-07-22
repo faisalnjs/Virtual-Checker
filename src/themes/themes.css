@@ -715,3 +715,14 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
   --error-color: #d42404;
   background: url(/store/backdrop/super-mario.jpg) !important;
 }
+
+[data-theme="black-ice"] {
+	color-scheme: dark;
+	--text-color: #fff;
+	--background-color: #080808;
+	--surface-color: #00988a;
+	--accent-color: #b2d3cf;
+	--accent-text-color: #00110f;
+	--error-color: #eb324b;
+	background: url(/store/backdrop/black-ice.jpg) !important;
+}

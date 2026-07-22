@@ -62,5 +62,6 @@
   ["messi", "Messi", "star", 60, [], false],
   ["messi-neymar", "Messi & Neymar", "star", 70, ["messi"], false],
   ["one-piece", "One Piece", "film", 60, [], false],
-  ["super-mario", "Super Mario", "controller", 60, [], false]
+  ["super-mario", "Super Mario", "controller", 60, [], false],
+  ["black-ice", "Black Ice", "image-alt", 60, [], false]
 ]
