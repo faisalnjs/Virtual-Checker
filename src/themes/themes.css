@@ -704,3 +704,14 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
   --error-color: #9d5053;
   background: url(/store/backdrop/one-piece.jpg) !important;
 }
+
+[data-theme="super-mario"] {
+  color-scheme: dark;
+  --text-color: #fff;
+  --background-color: #5e7ef9;
+  --surface-color: #1c2546;
+  --accent-color: #d42404;
+  --accent-text-color: #fff;
+  --error-color: #d42404;
+  background: url(/store/backdrop/super-mario.jpg) !important;
+}
