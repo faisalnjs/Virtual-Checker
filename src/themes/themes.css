@@ -693,3 +693,14 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
   --error-color: #a21b2a;
   background: url(/store/backdrop/messi-neymar.jpg) !important;
 }
+
+[data-theme="one-piece"] {
+  color-scheme: light;
+  --text-color: #191a1c;
+  --background-color: #a1b8ae;
+  --surface-color: #c4b58c;
+  --accent-color: #9d5053;
+  --accent-text-color: #fff;
+  --error-color: #9d5053;
+  background: url(/store/backdrop/one-piece.jpg) !important;
+}

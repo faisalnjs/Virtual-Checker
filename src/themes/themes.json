@@ -60,5 +60,6 @@
   ["lebron", "LeBron", "star", 60, [], false],
   ["lebron-pro", "LeBron Pro", "star", 70, ["lebron"], false],
   ["messi", "Messi", "star", 60, [], false],
-  ["messi-neymar", "Messi & Neymar", "star", 70, ["messi"], false]
+  ["messi-neymar", "Messi & Neymar", "star", 70, ["messi"], false],
+  ["one-piece", "One Piece", "film", 60, [], false]
 ]
