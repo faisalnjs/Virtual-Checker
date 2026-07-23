@@ -596,8 +596,8 @@ async function deleteSavedSession(sessionId = null) {
                 text: 'Delete',
                 class: 'submit-button',
                 onclick: async () => {
-                    const deleteSession = await fetch(domain + '/draw/sessions/' + sessionId, {
-                        method: 'DELETE',
+                    const deleteSession = await fetch(`${domain}/draw/sessions/${sessionId}/delete`, {
+                        method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
                             usr: storage.get('usr'),
