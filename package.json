@@ -17,10 +17,10 @@
   },
   "homepage": "https://github.com/faisalnjs/virtual-checker#readme",
   "devDependencies": {
-    "eslint": "^8.51.0",
+    "eslint": "^10.7.0",
     "prettier": "^3.2.5",
-    "vite": "^6.4.1",
-    "vite-plugin-webfont-dl": "^3.10.4"
+    "vite": "^8.1.5",
+    "vite-plugin-webfont-dl": "^3.12.0"
   },
   "dependencies": {
     "bootstrap-icons": "^1.13.1",
@@ -34,6 +34,6 @@
     "socket.io-client": "^4.7.2",
     "swapy": "^1.0.5",
     "vite-plugin-package-version": "^1.1.0",
-    "vite-plugin-static-copy": "^3.1.2"
+    "vite-plugin-static-copy": "^3.4.0"
   }
 }
