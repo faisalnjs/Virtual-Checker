@@ -1,5 +1,8 @@
 * {
   color: inherit;
+}
+
+body:has(> video) {
   background-color: inherit;
 }
 
