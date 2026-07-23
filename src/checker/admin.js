@@ -6,12 +6,16 @@ import storage from "/src/modules/storage.js";
 import * as time from "/src/modules/time.js";
 import * as auth from "/src/modules/auth.js";
 import island from "/src/modules/island.js";
+import * as themes from "/src/themes/themes.js";
+import { getExtendedPeriod } from "/src/periods/periods";
 import { convertLatexToMarkup, renderMathInElement } from "mathlive";
 import { createSwapy } from "swapy";
 import Quill from "quill";
 import "faz-quill-emoji/autoregister";
+import * as draw from '/src/modules/admin-draw.js';
 
-const domain = ((window.location.hostname.search('check') != -1) || (window.location.hostname.search('127') != -1)) ? 'https://api.check.vssfalcons.com' : `http://${document.domain}:5000`;
+const domain = ((window.location.hostname.search('check') != -1) || (window.location.hostname.search('127') != -1)) ? `https://${(window.location.hostname.search('beta') != -1) ? 'beta.' : ''}api.check.vssfalcons.com` : `http://${document.domain}:5000`;
+const HTTPSockServerDomain = ((window.location.hostname.search('check') != -1) || (window.location.hostname.search('127') != -1)) ? `https://${(window.location.hostname.search('beta') != -1) ? 'beta.' : ''}ws.api.check.vssfalcons.com` : `http://${document.domain}:1234`;
 if (window.location.pathname.split('?')[0].endsWith('/admin')) window.location.pathname = '/admin/';
 const params = Object.fromEntries((new URL(location)).searchParams);
 
@@ -119,7 +123,6 @@ try {
     settings = bulkLoad.settings || {};
     if (document.querySelector('.users')) {
       if (document.getElementById('add-user-button')) document.getElementById('add-user-button').addEventListener('click', addUserModal);
-
       document.querySelector('.users').innerHTML = '<div class="row header"><span>User</span><span>Role</span><span>Partial Access</span><span>Full Access</span><span>Anonymous</span><span>Actions</span></div>';
       if (users.length > 0) {
         document.getElementById('no-users').setAttribute('hidden', '');
@@ -173,7 +176,6 @@ try {
     }
     if (document.querySelector('.passwords')) {
       if (document.getElementById('remove-passwords')) document.getElementById('remove-passwords').addEventListener('click', removePasswordsModal);
-
       document.querySelector('.passwords').innerHTML = '<div class="row header"><span>Seat Code</span><span>Saved Settings</span><span>Actions</span></div>';
       if (passwords.length > 0) {
         document.getElementById('no-passwords').setAttribute('hidden', '');
@@ -354,6 +356,45 @@ try {
     if ((document.getElementById("course-period-input") && !loadedSegmentEditor && !loadedSegmentCreator && !noReloadCourse) || noReloadCourse) await updateResponses();
     if (document.querySelector('.segment-reports')) updateSegments();
     if (document.querySelector('.question-reports')) updateQuestionReports();
+    if (document.getElementById("period-input")) courses.flatMap(course => JSON.parse(course.periods).map(period => { return { period, name: course.name } })).sort((a, b) => a.period - b.period).forEach(coursePeriod => {
+      document.getElementById("period-input").innerHTML += `<option value="${coursePeriod.period}">Period ${coursePeriod.period} - ${coursePeriod.name}</option>`;
+    });
+    if (document.getElementById('live-drawing-periods')) {
+      var currentPeriod = getExtendedPeriod();
+      if ((currentPeriod != -1) && courses.flatMap(course => JSON.parse(course.periods).map(period => { return { period, name: course.name } })).some(coursePeriod => coursePeriod.period === (currentPeriod + 1))) document.getElementById("period-input").value = getExtendedPeriod() + 1;
+      document.querySelector('[start-live-drawings]')?.addEventListener('click', () => {
+        document.querySelector('[start-live-drawings]').setAttribute('hidden', '');
+        document.querySelector('[start-live-drawings]').setAttribute('disabled', '');
+        document.getElementById('period-input')?.setAttribute('disabled', '');
+        if (document.getElementById('hide-seat-codes')) document.getElementById('hide-seat-codes').checked = true;
+        draw.connect(HTTPSockServerDomain, domain);
+        ui.setUnsavedChanges(false);
+      });
+      document.querySelector('[stop-live-drawings]')?.addEventListener('click', () => {
+        draw.close();
+      });
+      draw.refreshSavedLiveDrawingSessions(domain);
+    }
+    if (document.getElementById('saved-live-drawings') && params && params.id) {
+      const sessionId = params.id;
+      const savedSession = await fetch(domain + '/draw/sessions/' + sessionId + '?usr=' + encodeURIComponent(storage.get('usr')) + '&pwd=' + encodeURIComponent(storage.get('pwd')));
+      const savedSessionJSON = await savedSession.json();
+      document.title = `${savedSessionJSON.session.name} - Virtual Checker`;
+      document.querySelector('.section h1').innerText = savedSessionJSON.session.name;
+      document.getElementById("period-input").value = savedSessionJSON.session.meta.period;
+      draw.liveDrawingSessions[sessionId] = savedSessionJSON.session;
+      savedSessionJSON.session.strokes.forEach(session => {
+        draw.createSession({
+          data: {
+            meta: {
+              seatCode: session.seatCode.split('::')[1],
+              source: session.seatCode.split('::')[0],
+            },
+            strokes: session.strokes
+          }
+        }, session.seatCode);
+      });
+    }
     active = true;
     ui.stopLoader();
     if (!polling) ui.toast("Data restored.", 1000, "info", "bi bi-cloud-arrow-down");
@@ -638,6 +679,8 @@ try {
             body: JSON.stringify({
               course_id: course.id,
               platform: 'clicker',
+              usr: storage.get('usr'),
+              pwd: storage.get('pwd')
             }),
           })
             .then(async (r) => {
@@ -696,6 +739,8 @@ try {
             body: JSON.stringify({
               course_id: course.id,
               platform: 'checker',
+              usr: storage.get('usr'),
+              pwd: storage.get('pwd')
             }),
           })
             .then(async (r) => {
@@ -1137,6 +1182,7 @@ try {
   document.querySelectorAll("#create-and-exit-button").forEach(w => w.addEventListener("click", () => {
     createSegment(null, true);
   }));
+  document.querySelectorAll("#maintenance-mode").forEach(w => w.addEventListener("change", save));
 
   async function save(event, hideResult) {
     if (!active) return;
@@ -2202,14 +2248,14 @@ try {
             responseString = JSON.stringify(JSON.parse(r.response).map(innerArray => innerArray.map(numString => String(numString)))).replaceAll('["', '[').replaceAll('","', ', ').replaceAll('"]', ']');
           } catch {
             isMatrix = null;
-            console.log(`Invalid matrix: ${r.response}`);
+            if (storage.get("developer")) console.log(`Invalid matrix: ${r.response}`);
           }
         } else if (responseString.includes('[')) {
           try {
             var parsedResponse = JSON.parse(r.response);
             responseString = parsedResponse.join(', ');
           } catch {
-            console.log(`Invalid JSON: ${r.response}`);
+            if (storage.get("developer")) console.log(`Invalid JSON: ${r.response}`);
           }
         }
         var correctResponsesString = `Accepted: ${answers.find(a => a.id === questions.find(q => String(q.id) === String(r.question_id)).id).correct_answers.join(', ')}`;
@@ -2467,7 +2513,7 @@ try {
           responseString = JSON.stringify(JSON.parse(r.response).map(innerArray => innerArray.map(numString => String(numString)))).replaceAll('["', '[').replaceAll('","', ', ').replaceAll('"]', ']');
         } catch {
           isMatrix = null;
-          console.log(`Invalid matrix: ${r.response}`);
+          if (storage.get("developer")) console.log(`Invalid matrix: ${r.response}`);
         }
       } else if (responseString.includes('[')) {
         try {
@@ -2938,6 +2984,7 @@ try {
 
   async function renderSpeedPond(segment = 0, startingQuestionId, startingQuestion) {
     if (!active) return;
+    if (storage.get("developer")) console.log('Rendering speed pond:', segment, startingQuestionId, startingQuestion);
     const url = `/admin/upload?segment=${segment}${(startingQuestionId && startingQuestion) ? `&startingQuestionId=${startingQuestionId}&startingQuestion=${startingQuestion}` : ''}&w=${window.outerWidth}&h=${window.outerHeight}&t=${window.screenY}&l=${window.screenX}`;
     const width = 600;
     const height = 645;
@@ -2965,9 +3012,12 @@ try {
         clearInterval(checkWindowClosed);
         if (uploadSuccessful) {
           ui.modeless(`<i class="bi bi-cloud-upload"></i>`, "Uploaded");
+          if (storage.get("developer")) console.log('Uploaded speed mode question:', endingQuestionId, endingQuestion);
           if (endingQuestionId && endingQuestion) {
-            renderSpeedPond(segment, Number(endingQuestionId) + 1, endingQuestion.replace(/(\d+)([a-z]*)$/, (match, num, suffix) => {
-              return !suffix ? (parseInt(num, 10) + 1).toString() : ((suffix === 'z') ? ((parseInt(num, 10) + 1) + 'a') : (num + String.fromCharCode(suffix.charCodeAt(0) + 1)));
+            renderSpeedPond(segment, Number(endingQuestionId) + 1, endingQuestion.replace(/(\d+)(-?)([A-Za-z]*)$/, (_, num, dash, suffix) => {
+              if (!suffix) return (parseInt(num, 10) + 1).toString() + dash;
+              if (suffix.toLowerCase() === 'z') return (parseInt(num, 10) + 1).toString() + dash + ((suffix === 'Z') ? 'A' : 'a');
+              return num + dash + String.fromCharCode(suffix.charCodeAt(0) + 1);
             }));
           } else {
             renderSpeedPond(segment);
@@ -3317,7 +3367,7 @@ try {
     const detailedReportElement = document.getElementById(reportSlug);
     if (!active || !reportSlug || !detailedReportElement || (detailedReportElement.innerText !== 'Rendering...')) return;
     var detailedReport = '';
-    console.log('Rendering detailed report for', reportSlug);
+    if (storage.get("developer")) console.log('Rendering detailed report for', reportSlug);
     if (reportSlug.startsWith('seat-code-')) {
       var responses1 = responses
         .filter(r => courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value) ? JSON.parse(courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value)?.periods).includes(Number(String(r.seatCode)[0])) : false)

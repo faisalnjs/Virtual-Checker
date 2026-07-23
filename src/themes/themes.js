@@ -474,6 +474,17 @@ export async function renderStore() {
   store.appendChild(costInfo);
 }
 
+export function getCurrentTheme() {
+  return {
+    textColor: getComputedStyle(document.body).getPropertyValue("--text-color").trim(),
+    backgroundColor: getComputedStyle(document.body).getPropertyValue("--background-color").trim(),
+    surfaceColor: getComputedStyle(document.body).getPropertyValue("--surface-color").trim(),
+    accentColor: getComputedStyle(document.body).getPropertyValue("--accent-color").trim(),
+    accentTextColor: getComputedStyle(document.body).getPropertyValue("--accent-text-color").trim(),
+    errorColor: getComputedStyle(document.body).getPropertyValue("--error-color").trim(),
+  }
+}
+
 try {
   themes.forEach((theme) => {
     const value = theme[0];

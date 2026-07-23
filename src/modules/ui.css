@@ -13,6 +13,11 @@ dialog {
   background: var(--background-color);
 }
 
+dialog.large {
+  width: calc(100vw - 2rem);
+  height: calc(100vh - 2rem);
+}
+
 dialog::backdrop {
   display: none;
 }
@@ -204,7 +209,7 @@ div[data-color-input] > div[data-color-preview]:hover {
   }
 }
 
-@keyframes loadCounter {
+/* @keyframes loadCounter {
   0% {
     background: linear-gradient(45deg, var(--text-color) 0%, transparent 10%);
   }
@@ -238,6 +243,20 @@ div[data-color-input] > div[data-color-preview]:hover {
   100% {
     background: linear-gradient(45deg, var(--text-color) 100%, transparent 100%);
   }
+} */
+
+@keyframes loader-bar-back-forth {
+  0% {
+    transform: translate(-100%);
+  }
+
+  50% {
+    transform: translate(250%);
+  }
+
+  to {
+    transform: translate(-100%);
+  }
 }
 
 #loader {
@@ -266,14 +285,23 @@ div[data-color-input] > div[data-color-preview]:hover {
   transition: 0.5s opacity;
 }
 
-#loader .counter {
-  width: 150px;
-  height: 5px;
+#loader .loader-bar-wrapper {
   position: absolute;
   margin-bottom: -100px;
-  border-radius: 5px;
-  animation: loadCounter 1s ease-in-out infinite forwards;
-  animation-delay: 1.5s;
+  width: 120px;
+  height: 4px;
+  background: var(--surface-color);
+  border-radius: 2px;
+  overflow: hidden;
+  animation: fadeIn 0.5s ease-out 0.25s both;
+}
+
+#loader .loader-bar {
+  height: 100%;
+  width: 40%;
+  background: var(--accent-color);
+  border-radius: 2px;
+  animation: loader-bar-back-forth 2s ease-in-out infinite;
 }
 
 [tooltip],
@@ -951,6 +979,7 @@ body:has(.topbar) #checker.horizontal .column:last-child {
   height: 30px !important;
   width: 30px !important;
   min-width: unset !important;
+  min-height: unset !important;
 }
 
 .pagination #current-page {
@@ -961,7 +990,7 @@ body:has(.topbar) #checker.horizontal .column:last-child {
   display: flex;
   flex-direction: row;
   align-items: center;
-  gap: 3px;
+  gap: 5px;
 }
 
 .pagination #current-page input {
@@ -977,13 +1006,18 @@ body:has(.topbar) #checker.horizontal .column:last-child {
 }
 
 .pagination #current-page input:not(:hover):not(:focus) {
-  margin-right: -12.5px;
   padding: 0;
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+
+.pagination #current-page input:not(:hover):not(:focus)::-webkit-inner-spin-button,
+.pagination #current-page input:not(:hover):not(:focus)::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }
 
 [data-modal-page="store"] {
-  width: min(100%, 1500px);
-  height: min(90%, 800px);
   gap: 10px;
   opacity: 1;
   transition: 0.25s background-color;
@@ -1039,6 +1073,10 @@ body:has(.topbar) #checker.horizontal .column:last-child {
 [data-modal-page="store"] .promo:has(button:hover) {
   background-image: none !important;
   border-color: transparent;
+}
+
+[data-modal-page="store"] .promo:has(button:hover)::before {
+  opacity: 0;
 }
 
 [data-modal-page="store"] .promo .promo-inner {
@@ -1144,6 +1182,7 @@ body:has(.topbar) #checker.horizontal .column:last-child {
 [data-modal-page="store"] .themes-grid .theme-item p,
 [data-modal-page="store"] .themes-grid .theme-item small {
   background: none;
+  text-shadow: 0 0 10px var(--background-color);
 }
 
 [data-modal-page="store"] .themes-grid .theme-item button {
@@ -1158,6 +1197,10 @@ body:has(.topbar) #checker.horizontal .column:last-child {
 
 [data-modal-page="store"] .themes-grid .theme-item:not(:has(small)) p {
   margin-bottom: 5px;
+}
+
+[data-modal-page="store"] .themes-grid .theme-item:has(.hd) h5 {
+  max-width: calc(100% - 45px);
 }
 
 [data-modal-page="store"] .themes-grid .theme-item button:hover {
@@ -1221,4 +1264,86 @@ summary::after {
   display: flex;
   gap: 5px;
   margin-left: auto;
+}
+
+canvas[disabled] {
+  cursor: not-allowed;
+  opacity: 0.75;
+  pointer-events: none;
+}
+
+#live-drawing-periods {
+  width: 100%;
+}
+
+.sessions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, calc(300px - 5px));
+  gap: 7.5px;
+  width: 100%;
+}
+
+.sessions .session {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 7.5px;
+  transition: opacity 0.25s ease-in-out;
+}
+
+.sessions .session.clearing {
+  opacity: 0.5;
+  pointer-events: none;
+  transition: opacity 0.25s ease-in-out;
+}
+
+.sessions .session .meta {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  padding: 2px 5px;
+  background: var(--accent-color);
+  color: var(--accent-text-color);
+  font-size: 10px;
+  border-radius: 3px;
+  opacity: 0;
+  transition: opacity 0.25s ease-in-out;
+}
+
+@media (max-width: 1024px) and (min-width: 900px) {
+  .sessions {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 900px) {
+  .sessions {
+    grid-template-columns: repeat(1, 1fr);
+  }
+}
+
+.sessions .session .overlays {
+  display: flex;
+  gap: 5px;
+  position: absolute;
+  background: transparent;
+  bottom: 5px;
+  left: 5px;
+  transition: opacity 0.25s ease-in-out;
+}
+
+.sessions .session .overlays button {
+  background: var(--background-color);
+}
+
+.sessions .session:not(:hover) .overlays {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease-in-out;
+}
+
+[data-modal-page="draw-session-viewer"] .sessionCanvases {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.1rem;
 }

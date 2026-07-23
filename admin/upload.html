@@ -238,7 +238,7 @@
         const originalWindowX = urlParams.get('l');
         const allowMultiple = startingQuestion && startingQuestionId && originalWindowHeight && originalWindowY && originalWindowX;
         if (!question && !syllabus && !segment && !period && !course) window.location.href = '/admin';
-        const domain = ((window.location.hostname.search('check') != -1) || (window.location.hostname.search('127') != -1)) ? 'https://api.check.vssfalcons.com' : `http://${document.domain}:5000`;
+        const domain = ((window.location.hostname.search('check') != -1) || (window.location.hostname.search('127') != -1)) ? `https://${(window.location.hostname.search('beta') != -1) ? 'beta.' : ''}api.check.vssfalcons.com` : `http://${document.domain}:5000`;
         const server = domain + (course ? '/announcement' : question ? '/upload' : segment ? '/speedModeUpload' : syllabus ? '/syllabus' : '/roster');
         var submitSuccess = false;
         var uploaders = [];
@@ -269,8 +269,10 @@
                 window.resizeTo(originalWindowWidth, originalWindowHeight);
                 window.moveTo(originalWindowX, originalWindowY);
                 startingQuestionId++;
-                startingQuestion = (number || startingQuestion).replace(/(\d+)([a-z]*)$/, (match, num, suffix) => {
-                    return !suffix ? (parseInt(num, 10) + 1).toString() : ((suffix === 'z') ? ((parseInt(num, 10) + 1) + 'a') : (num + String.fromCharCode(suffix.charCodeAt(0) + 1)));
+                startingQuestion = (number || startingQuestion).replace(/(\d+)(-?)([A-Za-z]*)$/, (_, num, dash, suffix) => {
+                    if (!suffix) return (parseInt(num, 10) + 1).toString() + dash;
+                    if (suffix.toLowerCase() === 'z') return (parseInt(num, 10) + 1).toString() + dash + ((suffix === 'Z') ? 'A' : 'a');
+                    return num + dash + String.fromCharCode(suffix.charCodeAt(0) + 1);
                 });
             }
             window.opener.postMessage(`${startingQuestionId};+;${startingQuestion}`, window.location.protocol + '//' + window.location.hostname + (window.location.port ? ':' + window.location.port : ''));
@@ -349,6 +351,8 @@
                 if (platform) item.setMetadata('platform', platform);
                 if (uploaderQuestionId && (uploader.querySelector('[data-question-number]').value || uploaderQuestion)) item.setMetadata('startingQuestionId', uploaderQuestionId);
                 if (uploaderQuestionId && (uploader.querySelector('[data-question-number]').value || uploaderQuestion)) item.setMetadata('startingQuestion', uploader.querySelector('[data-question-number]').value || uploaderQuestion);
+                item.setMetadata('usr', storage.get('usr') || '');
+                item.setMetadata('pwd', storage.get('pwd') || '');
             });
             pond.on('processfilestart', (file) => {
                 if (uploaderQuestionId && uploaderQuestion && !file.getMetadata('title')) {

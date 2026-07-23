@@ -10,7 +10,7 @@ import { convertLatexToMarkup, renderMathInElement } from "mathlive";
 import Quill from "quill";
 import "faz-quill-emoji/autoregister";
 
-const domain = ((window.location.hostname.search('check') != -1) || (window.location.hostname.search('127') != -1)) ? 'https://api.check.vssfalcons.com' : `http://${document.domain}:5000`;
+const domain = ((window.location.hostname.search('check') != -1) || (window.location.hostname.search('127') != -1)) ? `https://${(window.location.hostname.search('beta') != -1) ? 'beta.' : ''}api.check.vssfalcons.com` : `http://${document.domain}:5000`;
 if (window.location.pathname.split('?')[0].endsWith('/ta')) window.location.pathname = '/ta/';
 const params = Object.fromEntries((new URL(location)).searchParams);
 

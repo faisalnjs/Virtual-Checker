@@ -163,6 +163,13 @@ select {
   border-radius: 0.5rem;
   background-color: var(--surface-color);
   width: 100%;
+}
+
+input {
+  cursor: text;
+}
+
+select {
   cursor: pointer;
 }
 
@@ -435,7 +442,7 @@ div.ML__keyboard {
 
 [data-button-select] > button {
   height: unset;
-  min-height: 1.75em;
+  min-height: 1.75em !important;
   border-radius: 0.25rem;
   cursor: pointer;
 }
@@ -507,6 +514,7 @@ div.ML__keyboard {
 [square] {
   width: 2.25em !important;
   min-width: 36px;
+  min-height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -547,6 +555,7 @@ div.ML__keyboard {
 #checker button {
   width: inherit;
   min-width: 36px;
+  min-height: 36px;
 }
 
 [data-multiple-choice="a"]:hover::before {

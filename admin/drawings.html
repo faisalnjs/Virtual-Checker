@@ -8,7 +8,7 @@
   <link rel="shortcut icon" href="../favicon.ico" type="image/x-icon" media="(prefers-color-scheme: dark)" />
   <link rel="shortcut icon" href="../favicon-dark.ico" type="image/x-icon" media="(prefers-color-scheme: light)" />
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-  <title>Responses - Virtual Checker</title>
+  <title>Drawings - Virtual Checker</title>
   <meta name="title" content="Virtual Checker" />
   <meta name="description"
     content="Simplify homework distribution and grading with the next generation cloud hosted AI-powered homework checker, streamlining the educational experience for both students and educators with instant response matching and feedback." />
@@ -31,7 +31,6 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
   <link rel="stylesheet"
     href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
-  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
 </head>
 
 <body class="col">
@@ -65,183 +64,44 @@
     </div>
   </div>
   <div id="checker">
-    <div class="section sort">
-      <h1>Sort & Filter</h1>
-      <div class="button-grid inputs">
-        <div class="input-group">
-          <label for="course-period-input">Course</label>
-          <div class="space" id="question-container">
-            <select id="course-period-input"></select>
-          </div>
-        </div>
-        <div class="input-group vlarge">
-          <label for="filter-segment-input">Segment</label>
-          <div class="space" id="question-container">
-            <select id="filter-segment-input" value=""></select>
-          </div>
-        </div>
-        <div class="input-group small">
-          <label for="sort-question-input">Question</label>
-          <div class="space" id="question-container">
-            <input type="text" autocomplete="off" id="sort-question-input" value="" placeholder="1a" />
-          </div>
-        </div>
-        <div class="input-group small">
-          <label for="sort-seat-input">Seat</label>
-          <div class="space" id="question-container">
-            <input type="number" autocomplete="off" id="sort-seat-input" value="" placeholder="311" max="999"
-              maxlength="3" />
-          </div>
+    <div class="section">
+      <h1>Live Drawings</h1>
+      <div class="input-group">
+        <label for="period-input">Period</label>
+        <div class="space button-grid">
+          <select id="period-input"></select>
+          <button class="space fit" start-live-drawings><i class="bi bi-arrow-right"></i> Start Session</button>
+          <button class="space fit" stop-live-drawings hidden disabled><i class="bi bi-x-octagon"></i> Stop
+            Session</button>
         </div>
       </div>
+      <label class="checkboxGroup" hidden><input type="checkbox" id="hide-seat-codes" hidden>
+        <div class="checkbox"></div> Hide Seat Codes
+      </label>
+      <div class="button-grid" hidden>
+        <input type="text" id="saved-session-name" placeholder="Session Name" class="space" />
+        <button class="space fit" save-live-drawings><i class="bi bi-floppy"></i> Save Session</button>
+        <button class="space fit" reset-live-drawings><i class="bi bi-x-lg"></i> Reset Session</button>
+      </div>
+      <div id="live-drawing-periods" hidden></div>
     </div>
-    <div class="section awaitingResponses">
-      <h1>Awaiting Scoring</h1>
-      <div class="button-grid inputs">
-        <!-- <label style="width: -webkit-fill-available" class="small">ID</label> -->
-        <label style="width: -webkit-fill-available" square></label>
-        <label style="width: -webkit-fill-available" class="small" data-segment>Segment</label>
-        <label style="width: -webkit-fill-available" class="small" data-question>Question</label>
-        <label style="width: -webkit-fill-available" class="small" data-seat-code>Seat</label>
-        <label style="width: -webkit-fill-available" class="small" data-time-taken>Spent</label>
-        <label style="width: -webkit-fill-available" class="small" data-time-taken>Revised</label>
-        <!-- <label style="width: -webkit-fill-available" class="small" data-time-taken>Total</label> -->
-        <label style="width: -webkit-fill-available">Response</label>
-        <label style="width: -webkit-fill-available" class="smedium">Time</label>
-        <label style="width: -webkit-fill-available" class="small">Status</label>
+    <div class="section" hidden>
+      <h1>Saved Sessions</h1>
+      <div class="button-grid wrap">
+        <button class="space fit" refresh-live-drawing-saved-sessions><i class="bi bi-arrow-clockwise"></i>
+          Refresh</button>
       </div>
-      <div class="section">
-        <div class="button-grid inputs">
-          <!-- <input type="text" autocomplete="off" class="small" id="response-id-input" value="" disabled /> -->
-          <button square id="flag-response-button" tooltip="Flag Response"><i class="bi bi-flag"></i></button>
-          <input type="text" autocomplete="off" class="small" id="response-segment-input" value="" disabled
-            data-segment />
-          <input type="text" autocomplete="off" class="small" id="response-question-input" value="" disabled
-            data-question />
-          <input type="text" autocomplete="off" class="small" id="response-seat-code-input" value="" disabled
-            data-seat-code />
-          <input type="text" autocomplete="off" class="small" id="response-time-taken-input" value="" disabled
-            data-time-taken />
-          <input type="text" autocomplete="off" class="small" id="response-time-taken-input" value="" disabled
-            data-time-taken />
-          <input type="text" autocomplete="off" class="small" id="response-time-taken-input" value="" disabled
-            data-time-taken />
-          <input type="text" autocomplete="off" id="response-response-input" value="" disabled />
-          <input type="text" autocomplete="off" class="smedium" id="response-timestamp-input" value="" disabled />
-          <button square id="mark-correct-button" tooltip="Mark Correct"><i class="bi bi-check-circle"></i></button>
-          <button square id="mark-incorrect-button" tooltip="Mark Incorrect"><i class="bi bi-x-circle"></i></button>
-        </div>
+      <div id="no-saved-live-drawing-sessions" class="row">
+        <p>No saved sessions found.</p>
+        <div></div>
       </div>
-      <div class="pagination">
-        <button id="first-page-button" square disabled tooltip="First Page"><i
-            class="bi bi-chevron-double-left"></i></button>
-        <button id="previous-page-button" square disabled tooltip="Previous Page"><i
-            class="bi bi-chevron-left"></i></button>
-        <span id="current-page"><label>Page <input type="number" class="current-page-input" min="1" value="1" /> of
-            <span class="current-page-total">1</span></label></span>
-        <button id="next-page-button" square tooltip="Next Page"><i class="bi bi-chevron-right"></i></button>
-        <button id="last-page-button" square tooltip="Last Page"><i class="bi bi-chevron-double-right"></i></button>
-      </div>
-    </div>
-    <div class="section trendingResponses" data-trends>
-      <h1>Trends</h1>
-      <div class="button-grid inputs">
-        <label style="width: -webkit-fill-available" class="small" data-segment>Segment</label>
-        <label style="width: -webkit-fill-available" class="small" data-question>Question</label>
-        <label style="width: -webkit-fill-available">Response</label>
-        <label style="width: -webkit-fill-available" class="small">#</label>
-        <label style="width: -webkit-fill-available" class="small">Status</label>
-      </div>
-      <div class="section">
-        <div class="button-grid inputs">
-          <input type="text" autocomplete="off" class="small" id="response-segment-input" value="" disabled
-            data-segment />
-          <input type="text" autocomplete="off" class="small" id="response-question-input" value="" disabled
-            data-question />
-          <input type="text" autocomplete="off" id="response-response-input" value="" disabled />
-          <input type="text" autocomplete="off" class="small" id="response-count-input" value="" disabled />
-          <button square id="mark-correct-button" tooltip="Mark Correct"><i class="bi bi-check-circle"></i></button>
-          <button square id="mark-incorrect-button" tooltip="Mark Incorrect"><i class="bi bi-x-circle"></i></button>
-        </div>
-      </div>
-    </div>
-    <div class="section responses">
-      <h1>Marked Responses</h1>
-      <div class="button-grid inputs">
-        <!-- <label style="width: -webkit-fill-available" class="small">ID</label> -->
-        <label style="width: -webkit-fill-available" square></label>
-        <label style="width: -webkit-fill-available" class="small" data-segment>Segment</label>
-        <label style="width: -webkit-fill-available" class="small" data-question>Question</label>
-        <label style="width: -webkit-fill-available" class="small" data-seat-code>Seat</label>
-        <label style="width: -webkit-fill-available" class="small" data-time-taken>Spent</label>
-        <label style="width: -webkit-fill-available" class="small" data-time-taken>Revised</label>
-        <!-- <label style="width: -webkit-fill-available" class="small" data-time-taken>Total</label> -->
-        <label style="width: -webkit-fill-available">Response</label>
-        <label style="width: -webkit-fill-available" class="smedium">Time</label>
-        <label style="width: -webkit-fill-available" class="small">Status</label>
-      </div>
-      <div class="section">
-        <div class="button-grid inputs">
-          <!-- <input type="text" autocomplete="off" class="small" id="response-id-input" value="" disabled /> -->
-          <button square id="flag-response-button" tooltip="Flag Response"><i class="bi bi-flag"></i></button>
-          <input type="text" autocomplete="off" class="small" id="response-segment-input" value="" disabled
-            data-segment />
-          <input type="text" autocomplete="off" class="small" id="response-question-input" value="" disabled
-            data-question />
-          <input type="text" autocomplete="off" class="small" id="response-seat-code-input" value="" disabled
-            data-seat-code />
-          <input type="text" autocomplete="off" class="small" id="response-time-taken-input" value="" disabled
-            data-time-taken />
-          <input type="text" autocomplete="off" class="small" id="response-time-taken-input" value="" disabled
-            data-time-taken />
-          <input type="text" autocomplete="off" class="small" id="response-time-taken-input" value="" disabled
-            data-time-taken />
-          <input type="text" autocomplete="off" id="response-response-input" value="" disabled />
-          <input type="text" autocomplete="off" class="smedium" id="response-timestamp-input" value="" disabled />
-          <button square id="mark-correct-button" tooltip="Mark Correct"><i class="bi bi-check-circle"></i></button>
-          <button square id="mark-incorrect-button" tooltip="Mark Incorrect"><i class="bi bi-x-circle"></i></button>
-        </div>
-      </div>
-      <div class="pagination">
-        <button id="first-page-button" square disabled tooltip="First Page"><i
-            class="bi bi-chevron-double-left"></i></button>
-        <button id="previous-page-button" square disabled tooltip="Previous Page"><i
-            class="bi bi-chevron-left"></i></button>
-        <span id="current-page"><label>Page <input type="number" class="current-page-input" min="1" value="1" /> of
-            <span class="current-page-total">1</span></label></span>
-        <button id="next-page-button" square tooltip="Next Page"><i class="bi bi-chevron-right"></i></button>
-        <button id="last-page-button" square tooltip="Last Page"><i class="bi bi-chevron-double-right"></i></button>
-      </div>
+      <div class="section saved-live-drawing-sessions enhanced-list" hidden></div>
     </div>
   </div>
   <!-- Controls -->
   <div id="controls-container" class="pill">
     <button class="icon" data-modal-view="settings" tooltip="Settings">
       <i class="bi bi-gear"></i>
-    </button>
-    <button class="icon" data-archive-multiple tooltip="Archive Selected">
-      <i class="bi bi-archive"></i>
-    </button>
-    <button class="icon" data-select-between tooltip="Select Between">
-      <i class="bi bi-arrow-down-circle"></i>
-    </button>
-    <button class="icon" data-select-multiple tooltip="Select Multiple">
-      <i class="bi bi-circle"></i>
-      <i class="bi bi-x"></i>
-    </button>
-    <button class="icon" data-polling tooltip="Toggle Polling">
-      <i class="bi bi-skip-forward-circle"></i>
-      <i class="bi bi-stop-circle-fill" style="display: none;"></i>
-    </button>
-    <button class="icon" data-timestamps tooltip="Toggle Timestamps">
-      <i class="bi bi-clock"></i>
-      <i class="bi bi-clock-fill" style="display: none;"></i>
-    </button>
-    <button class="icon" data-clear-responses tooltip="Clear Responses">
-      <i class="bi bi-trash"></i>
-    </button>
-    <button class="icon" data-modal-view="export-responses" tooltip="Export Responses">
-      <i class="bi bi-download"></i>
     </button>
   </div>
   <!-- Symbols -->
@@ -380,47 +240,31 @@
       <a href="/admin/" tooltip="Segments"><i class="bi bi-list-check"></i></a>
       <a href="/admin/questions" tooltip="Questions"><i class="bi bi-patch-question"></i></a>
       <a href="/admin/courses" tooltip="Courses"><i class="bi bi-diagram-3"></i></a>
-      <a href="/admin/responses" class="active" tooltip="Responses"><i class="bi bi-chat-left-text"></i></a>
+      <a href="/admin/responses" tooltip="Responses"><i class="bi bi-chat-left-text"></i></a>
       <a href="/admin/editor" tooltip="Segment Editor"><i class="bi bi-pencil"></i></a>
       <a href="/admin/reports" tooltip="Reports"><i class="bi bi-bar-chart"></i></a>
       <a href="/admin/passwords" tooltip="Passwords"><i class="bi bi-key"></i></a>
       <a href="/admin/users" tooltip="Users"><i class="bi bi-person-fill-lock"></i></a>
       <a href="/admin/logs" tooltip="Management"><i class="bi bi-card-list"></i></a>
-      <a href="/admin/drawings" tooltip="Live Drawings"><i class="bi bi-easel"></i></a>
+      <a href="/admin/drawings" class="active" tooltip="Live Drawings"><i class="bi bi-easel"></i></a>
       <a href="/admin/backups" tooltip="Backups"><i class="bi bi-file-zip"></i></a>
       <a href="/admin/archive" tooltip="Archive"><i class="bi bi-archive"></i></a>
       <a href="/" tooltip="Exit"><i class="bi bi-door-open"></i></a>
     </div>
   </dialog>
-  <dialog data-modal-page="export-responses" data-page-title="Export Responses">
-    <p>
-      Generate a CSV spreadsheet file export containing database responses from the selected optional options.
-    </p>
-    <label for="export-responses-course">Course</label>
-    <select id="export-responses-course"></select>
-    <label for="export-responses-period">Period</label>
-    <select id="export-responses-period">
-      <option value="">All Periods</option>
-      <option value="1">1</option>
-      <option value="2">2</option>
-      <option value="3">3</option>
-      <option value="4">4</option>
-      <option value="5">5</option>
-      <option value="6">6</option>
-      <option value="7">7</option>
-      <option value="8">8</option>
-      <option value="9">9</option>
-    </select>
-    <label for="export-responses-start-date">Start Date (Inclusive)</label>
-    <input type="date" id="export-responses-start-date" value="" />
-    <label for="export-responses-end-date">End Date (Inclusive)</label>
-    <input type="date" id="export-responses-end-date" value="" />
-    <label class="checkboxGroup"><input type="checkbox" id="export-responses-include-archived" hidden>
-      <div class="checkbox"></div> Include Archived
-    </label>
+  <dialog data-modal-page="draw-session-closed" data-page-title="Session Closed">
+    <p>The host is not accepting drawings from your period.</p>
     <div data-modal-actions>
-      <button class="submit-button" id="export-responses">Generate</button>
+      <button class="submit-button" id="reconnect-draw-session"><i class="bi bi-arrow-clockwise"></i> Retry</button>
     </div>
+  </dialog>
+  <dialog data-modal-page="draw-session-viewer" data-page-title="Session Viewer" class="large">
+    <div class="sessionInfo">
+      <p class="sessionDate"></p>
+      <p class="sessionPeriod"></p>
+      <br>
+    </div>
+    <div class="sessions"></div>
   </dialog>
   <div id="loader" class="active">
     <svg xmlns="http://www.w3.org/2000/svg" height="2.5em" viewBox="0 0 1041 732" fill="none"

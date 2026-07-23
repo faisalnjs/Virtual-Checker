@@ -587,10 +587,142 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
 [data-theme="chocolate-hearts-2"] {
   color-scheme: light;
   --text-color: #ff3462;
-  --background-color: #820024;
+  --background-color: #e9eae5;
   --surface-color: #f4e6ec;
   --accent-color: #cc0039;
   --accent-text-color: #ffffff;
   --error-color: #b90024;
   background: url(/store/backdrop/chocolate-hearts-2.png) !important;
+}
+
+[data-theme="rocket-league"] {
+  color-scheme: light;
+  --text-color: #ffffff;
+  --background-color: #006e37;
+  --surface-color: #0043b6;
+  --accent-color: #eb9100;
+  --accent-text-color: #ffffff;
+  --error-color: #b90024;
+  background: url(/store/backdrop/rocket-league.png) !important;
+}
+
+[data-theme="rocket-league-2"] {
+  color-scheme: light;
+  --text-color: #ffffff;
+  --background-color: #a66400;
+  --surface-color: #003248;
+  --accent-color: #2567ff;
+  --accent-text-color: #ffffff;
+  --error-color: #b90024;
+  background: url(/store/backdrop/rocket-league-2.png) !important;
+}
+
+[data-theme="rocket-league-ice"] {
+  color-scheme: light;
+  --text-color: #fffffb;
+  --background-color: #8c88a2;
+  --surface-color: #295486;
+  --accent-color: #db131f;
+  --accent-text-color: #2c2c2c;
+  --error-color: #db131f;
+  background: url(/store/backdrop/rocket-league-ice.png) !important;
+}
+
+[data-theme="rocket-league-synthwave"] {
+  color-scheme: dark;
+  --text-color: #f3e24a;
+  --background-color: #0d0221;
+  --surface-color: #0061cc;
+  --accent-color: #811b80;
+  --accent-text-color: #2de2e6;
+  --error-color: #ea1b2d;
+  background: url(/store/backdrop/rocket-league-synthwave.png) !important;
+}
+
+[data-theme="friends"] {
+  color-scheme: dark;
+  --text-color: #f6f8df;
+  --background-color: #3d386e;
+  --surface-color: #2f8170;
+  --accent-color: #660940;
+  --accent-text-color: #f8f3d9;
+  --error-color: #ea1b2d;
+  background: url(/store/backdrop/friends.png) !important;
+}
+
+[data-theme="lebron"] {
+  color-scheme: dark;
+  --text-color: #fff;
+  --background-color: #000;
+  --surface-color: #6a6665;
+  --accent-color: #fff;
+  --accent-text-color: #000;
+  --error-color: #e21b00;
+  background: url(/store/backdrop/lebron.jpg) !important;
+}
+
+[data-theme="lebron-pro"] {
+  color-scheme: dark;
+  --text-color: #fff;
+  --background-color: #000;
+  --surface-color: #2d0000;
+  --accent-color: #e21b00;
+  --accent-text-color: #000;
+  --error-color: #e21b00;
+  background: url(/store/backdrop/lebron-pro.jpg) !important;
+}
+
+[data-theme="messi"] {
+  color-scheme: dark;
+  --text-color: #fff;
+  --background-color: #25b5ff;
+  --surface-color: #276cf9;
+  --accent-color: #efee87;
+  --accent-text-color: #000;
+  --error-color: #ee1c36;
+  background: url(/store/backdrop/messi.png) !important;
+}
+
+[data-theme="messi-neymar"] {
+  color-scheme: dark;
+  --text-color: #fff;
+  --background-color: #21221d;
+  --surface-color: #335280;
+  --accent-color: #f3dc15;
+  --accent-text-color: #70161d;
+  --error-color: #a21b2a;
+  background: url(/store/backdrop/messi-neymar.jpg) !important;
+}
+
+[data-theme="one-piece"] {
+  color-scheme: light;
+  --text-color: #191a1c;
+  --background-color: #a1b8ae;
+  --surface-color: #c4b58c;
+  --accent-color: #9d5053;
+  --accent-text-color: #fff;
+  --error-color: #9d5053;
+  background: url(/store/backdrop/one-piece.jpg) !important;
+}
+
+[data-theme="super-mario"] {
+  color-scheme: dark;
+  --text-color: #fff;
+  --background-color: #5e7ef9;
+  --surface-color: #1c2546;
+  --accent-color: #d42404;
+  --accent-text-color: #fff;
+  --error-color: #d42404;
+  background: url(/store/backdrop/super-mario.jpg) !important;
+}
+
+[data-theme="black-ice"] {
+	color-scheme: dark;
+	--text-color: #fff;
+	--background-color: #080808;
+	--surface-color: #00988a;
+	--accent-color: #b2d3cf;
+	--accent-text-color: #00110f;
+	--error-color: #eb324b;
+	background: url(/store/backdrop/black-ice.jpg) !important;
 }
