@@ -556,8 +556,11 @@ async function viewSavedSession(sessionId = null) {
     if (!session) return;
     sessionViewer.querySelector('.sessionDate').textContent = new Date(session.created).toLocaleString() || '';
     sessionViewer.querySelector('.sessionPeriod').textContent = session.meta.period ? `Period ${session.meta.period}` : '';
-    sessionViewer.querySelector('.sessionCanvases').innerHTML = '';
-    session.strokes.forEach(image => {
+    sessionViewer.querySelector('.sessions').innerHTML = '';
+    session.strokes.forEach(drawing => {
+        const canvasWrapperWrapper = document.createElement('div');
+        canvasWrapperWrapper.className = 'session';
+        canvasWrapperWrapper.innerHTML = `<span class="meta" style="opacity: 1;">${drawing.seatCode}</span>`;
         const canvasWrapper = document.createElement('div');
         canvasWrapper.className = 'canvas-wrapper';
         const canvas = document.createElement('canvas');
@@ -574,9 +577,10 @@ async function viewSavedSession(sessionId = null) {
             context.clearRect(0, 0, canvas.width, canvas.height);
             context.drawImage(img, 0, 0, canvas.width, canvas.height);
         };
-        img.src = image.strokes;
+        img.src = drawing.strokes;
         canvasWrapper.appendChild(canvas);
-        sessionViewer.querySelector('.sessionCanvases').appendChild(canvasWrapper);
+        canvasWrapperWrapper.appendChild(canvasWrapper);
+        sessionViewer.querySelector('.sessions').appendChild(canvasWrapperWrapper);
     });
     ui.view('draw-session-viewer');
 }

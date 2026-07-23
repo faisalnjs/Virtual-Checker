@@ -1272,10 +1272,15 @@ canvas[disabled] {
   pointer-events: none;
 }
 
+#live-drawing-periods {
+  width: 100%;
+}
+
 .sessions {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(auto-fit, calc(300px - 5px));
   gap: 7.5px;
+  width: 100%;
 }
 
 .sessions .session {

@@ -2248,14 +2248,14 @@ try {
             responseString = JSON.stringify(JSON.parse(r.response).map(innerArray => innerArray.map(numString => String(numString)))).replaceAll('["', '[').replaceAll('","', ', ').replaceAll('"]', ']');
           } catch {
             isMatrix = null;
-            console.log(`Invalid matrix: ${r.response}`);
+            if (storage.get("developer")) console.log(`Invalid matrix: ${r.response}`);
           }
         } else if (responseString.includes('[')) {
           try {
             var parsedResponse = JSON.parse(r.response);
             responseString = parsedResponse.join(', ');
           } catch {
-            console.log(`Invalid JSON: ${r.response}`);
+            if (storage.get("developer")) console.log(`Invalid JSON: ${r.response}`);
           }
         }
         var correctResponsesString = `Accepted: ${answers.find(a => a.id === questions.find(q => String(q.id) === String(r.question_id)).id).correct_answers.join(', ')}`;
@@ -2513,7 +2513,7 @@ try {
           responseString = JSON.stringify(JSON.parse(r.response).map(innerArray => innerArray.map(numString => String(numString)))).replaceAll('["', '[').replaceAll('","', ', ').replaceAll('"]', ']');
         } catch {
           isMatrix = null;
-          console.log(`Invalid matrix: ${r.response}`);
+          if (storage.get("developer")) console.log(`Invalid matrix: ${r.response}`);
         }
       } else if (responseString.includes('[')) {
         try {
@@ -2984,7 +2984,7 @@ try {
 
   async function renderSpeedPond(segment = 0, startingQuestionId, startingQuestion) {
     if (!active) return;
-    console.log('Rendering speed pond:', segment, startingQuestionId, startingQuestion);
+    if (storage.get("developer")) console.log('Rendering speed pond:', segment, startingQuestionId, startingQuestion);
     const url = `/admin/upload?segment=${segment}${(startingQuestionId && startingQuestion) ? `&startingQuestionId=${startingQuestionId}&startingQuestion=${startingQuestion}` : ''}&w=${window.outerWidth}&h=${window.outerHeight}&t=${window.screenY}&l=${window.screenX}`;
     const width = 600;
     const height = 645;
@@ -3012,7 +3012,7 @@ try {
         clearInterval(checkWindowClosed);
         if (uploadSuccessful) {
           ui.modeless(`<i class="bi bi-cloud-upload"></i>`, "Uploaded");
-          console.log('Uploaded speed mode question:', endingQuestionId, endingQuestion);
+          if (storage.get("developer")) console.log('Uploaded speed mode question:', endingQuestionId, endingQuestion);
           if (endingQuestionId && endingQuestion) {
             renderSpeedPond(segment, Number(endingQuestionId) + 1, endingQuestion.replace(/(\d+)(-?)([A-Za-z]*)$/, (_, num, dash, suffix) => {
               if (!suffix) return (parseInt(num, 10) + 1).toString() + dash;
@@ -3367,7 +3367,7 @@ try {
     const detailedReportElement = document.getElementById(reportSlug);
     if (!active || !reportSlug || !detailedReportElement || (detailedReportElement.innerText !== 'Rendering...')) return;
     var detailedReport = '';
-    console.log('Rendering detailed report for', reportSlug);
+    if (storage.get("developer")) console.log('Rendering detailed report for', reportSlug);
     if (reportSlug.startsWith('seat-code-')) {
       var responses1 = responses
         .filter(r => courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value) ? JSON.parse(courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value)?.periods).includes(Number(String(r.seatCode)[0])) : false)
