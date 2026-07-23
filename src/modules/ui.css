@@ -990,7 +990,7 @@ body:has(.topbar) #checker.horizontal .column:last-child {
   display: flex;
   flex-direction: row;
   align-items: center;
-  gap: 3px;
+  gap: 5px;
 }
 
 .pagination #current-page input {
@@ -1006,8 +1006,15 @@ body:has(.topbar) #checker.horizontal .column:last-child {
 }
 
 .pagination #current-page input:not(:hover):not(:focus) {
-  margin-right: -12.5px;
   padding: 0;
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+
+.pagination #current-page input:not(:hover):not(:focus)::-webkit-inner-spin-button,
+.pagination #current-page input:not(:hover):not(:focus)::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }
 
 [data-modal-page="store"] {

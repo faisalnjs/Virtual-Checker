@@ -2984,6 +2984,7 @@ try {
 
   async function renderSpeedPond(segment = 0, startingQuestionId, startingQuestion) {
     if (!active) return;
+    console.log('Rendering speed pond:', segment, startingQuestionId, startingQuestion);
     const url = `/admin/upload?segment=${segment}${(startingQuestionId && startingQuestion) ? `&startingQuestionId=${startingQuestionId}&startingQuestion=${startingQuestion}` : ''}&w=${window.outerWidth}&h=${window.outerHeight}&t=${window.screenY}&l=${window.screenX}`;
     const width = 600;
     const height = 645;
@@ -3011,9 +3012,12 @@ try {
         clearInterval(checkWindowClosed);
         if (uploadSuccessful) {
           ui.modeless(`<i class="bi bi-cloud-upload"></i>`, "Uploaded");
+          console.log('Uploaded speed mode question:', endingQuestionId, endingQuestion);
           if (endingQuestionId && endingQuestion) {
-            renderSpeedPond(segment, Number(endingQuestionId) + 1, endingQuestion.replace(/(\d+)([a-z]*)$/, (match, num, suffix) => {
-              return !suffix ? (parseInt(num, 10) + 1).toString() : ((suffix === 'z') ? ((parseInt(num, 10) + 1) + 'a') : (num + String.fromCharCode(suffix.charCodeAt(0) + 1)));
+            renderSpeedPond(segment, Number(endingQuestionId) + 1, endingQuestion.replace(/(\d+)(-?)([A-Za-z]*)$/, (_, num, dash, suffix) => {
+              if (!suffix) return (parseInt(num, 10) + 1).toString() + dash;
+              if (suffix.toLowerCase() === 'z') return (parseInt(num, 10) + 1).toString() + dash + ((suffix === 'Z') ? 'A' : 'a');
+              return num + dash + String.fromCharCode(suffix.charCodeAt(0) + 1);
             }));
           } else {
             renderSpeedPond(segment);

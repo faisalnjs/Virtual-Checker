@@ -269,8 +269,10 @@
                 window.resizeTo(originalWindowWidth, originalWindowHeight);
                 window.moveTo(originalWindowX, originalWindowY);
                 startingQuestionId++;
-                startingQuestion = (number || startingQuestion).replace(/(\d+)([a-z]*)$/, (match, num, suffix) => {
-                    return !suffix ? (parseInt(num, 10) + 1).toString() : ((suffix === 'z') ? ((parseInt(num, 10) + 1) + 'a') : (num + String.fromCharCode(suffix.charCodeAt(0) + 1)));
+                startingQuestion = (number || startingQuestion).replace(/(\d+)(-?)([A-Za-z]*)$/, (_, num, dash, suffix) => {
+                    if (!suffix) return (parseInt(num, 10) + 1).toString() + dash;
+                    if (suffix.toLowerCase() === 'z') return (parseInt(num, 10) + 1).toString() + dash + ((suffix === 'Z') ? 'A' : 'a');
+                    return num + dash + String.fromCharCode(suffix.charCodeAt(0) + 1);
                 });
             }
             window.opener.postMessage(`${startingQuestionId};+;${startingQuestion}`, window.location.protocol + '//' + window.location.hostname + (window.location.port ? ':' + window.location.port : ''));
