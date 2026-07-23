@@ -330,6 +330,8 @@ export async function renderStore() {
   freeThemesGrid.classList = 'themes-grid';
   const premiumThemesGrid = document.createElement("div");
   premiumThemesGrid.classList = 'themes-grid';
+  const animatedThemesGrid = document.createElement("div");
+  animatedThemesGrid.classList = 'themes-grid';
   themes.forEach(theme => {
     const value = theme[0];
     const name = theme[1] || theme[0];
@@ -340,7 +342,7 @@ export async function renderStore() {
       themeItem.setAttribute('tooltip', `${checks}/${theme[3]} Check${theme[3] == 1 ? '' : 's'}${theme[4].filter(t => !ownedThemes.includes(t[0])) && theme[4].filter(t => !ownedThemes.includes(t[0])).length ? `. You need: ${theme[4].filter(t => !ownedThemes.includes(t[0])).map(t => themes.find(th => th[0] == t)[1] || t).join(', ')}` : ''}`);
       themeItem.setAttribute('style', `background: url('/store/thumb/${theme[0]}.png') center / cover no-repeat !important;`);
     }
-    themeItem.innerHTML = `${theme[2] ? `<i class="bi bi-${theme[2]}"></i>` : ''}${theme[5] ? `<i class="bi bi-badge-hd-fill hd"></i>` : ''}<h5>${name}</h5><p>${theme[3] ? `${theme[3]} Check${theme[3] == 1 ? '' : 's'}` : 'Free'}</p>${theme[4] && theme[4].length ? `<small>Requires: ${theme[4].map(t => themes.find(th => th[0] == t)[1] || t).join(', ')}</small>` : ''}`;
+    themeItem.innerHTML = `${theme[2] ? `<i class="bi bi-${theme[2]}"></i>` : ''}${theme[5] ? `<i class="bi bi-badge-hd-fill hd"></i>` : ''}${theme[6] ? `<i class="bi bi-stars hd"></i>` : ''}<h5>${name}</h5><p>${theme[3] ? `${theme[3]} Check${theme[3] == 1 ? '' : 's'}` : 'Free'}</p>${theme[4] && theme[4].length ? `<small>Requires: ${theme[4].map(t => themes.find(th => th[0] == t)[1] || t).join(', ')}</small>` : ''}`;
     if (value === initialTheme) themeItem.classList.add('selected');
     const themeButton = document.createElement("button");
     themeButton.textContent = (value === initialTheme) ? "Applied" : (ownedThemes.includes(theme[0]) ? "Owned" : "Preview");
@@ -447,8 +449,13 @@ export async function renderStore() {
       }
     });
     themeItem.appendChild(themeButton);
-    if (theme[3]) premiumThemesGrid.append(themeItem);
-    if (!theme[3]) freeThemesGrid.append(themeItem);
+    if (theme[6]) {
+      animatedThemesGrid.append(themeItem);
+    } else if (theme[3]) {
+      premiumThemesGrid.append(themeItem);
+    } else {
+      freeThemesGrid.append(themeItem);
+    }
   });
   const freeThemesGridText = document.createElement("b");
   freeThemesGridText.innerText = 'Free Themes';
@@ -468,6 +475,15 @@ export async function renderStore() {
   premiumThemesGridSuggestTheme.onclick = ui.suggestionsModal;
   premiumThemesGrid.appendChild(premiumThemesGridSuggestTheme);
   store.appendChild(premiumThemesGrid);
+  const animatedThemesGridText = document.createElement("b");
+  animatedThemesGridText.innerText = 'Animated Themes';
+  store.appendChild(animatedThemesGridText);
+  const animatedThemesGridSuggestTheme = document.createElement("div");
+  animatedThemesGridSuggestTheme.classList = 'theme-item suggest-theme';
+  animatedThemesGridSuggestTheme.innerHTML = `<i class="bi bi-plus-lg"></i>`;
+  animatedThemesGridSuggestTheme.onclick = ui.suggestionsModal;
+  animatedThemesGrid.appendChild(animatedThemesGridSuggestTheme);
+  store.appendChild(animatedThemesGrid);
   const costInfo = document.createElement("ul");
   costInfo.classList = 'cost-info';
   costInfo.innerHTML = `<i class="bi bi-info-circle"></i> Information<li>Checks can be obtained by responding to a question correctly, at any time.</li><li>Checks conversion rate is 1 Check to 1 correct answer.</li><li>Checks may only be obtained on the Virtual Checker platform.</li><li>If your response is marked correct late, you will get your Checks at that time.</li><li>If your response is falsely marked as correct and later marked incorrect, your Checks balance will be deducted from.</li><li>The minimum Checks balance is 0.</li><li>Themes marked as "Free" can be applied without spending any Checks.</li><li>Premium themes require you to spend your available Checks to unlock and use them.</li><li>Themes that have requirements need you to own the specified themes before you can purchase them.</li><li>HD themes may require more resources to run smoothly, and cost more Checks.</li><li>All theme images are licensed Free To Use.</li><li>The cost for themes are based on average student correct answer data.</li>`;
@@ -670,4 +686,4 @@ try {
     ui.reportBugModal(null, String(error.stack));
   }
   throw error;
-};
+}
