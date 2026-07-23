@@ -392,7 +392,7 @@ saveLiveDrawingsButton?.addEventListener('click', async () => {
             meta: {
                 created: new Date().toISOString(),
                 period: document.getElementById('period-input').value || null,
-                name: `Live Drawing Session - Period ${document.getElementById('period-input').value || 0} - ${new Date().toLocaleString()}`,
+                name: document.getElementById('saved-session-name').value || `Live Drawing Session - Period ${document.getElementById('period-input').value || 0} - ${new Date().toLocaleString()}`,
             },
             usr: storage.get('usr'),
             pwd: storage.get('pwd')

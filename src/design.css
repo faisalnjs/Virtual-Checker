@@ -163,6 +163,13 @@ select {
   border-radius: 0.5rem;
   background-color: var(--surface-color);
   width: 100%;
+}
+
+input {
+  cursor: text;
+}
+
+select {
   cursor: pointer;
 }
 
