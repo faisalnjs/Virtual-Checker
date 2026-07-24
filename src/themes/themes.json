@@ -64,8 +64,8 @@
   ["one-piece", "One Piece", "film", 60, [], false, false],
   ["super-mario", "Super Mario", "controller", 60, [], false, false],
   ["black-ice", "Black Ice", "image-alt", 60, [], false, false],
-  ["waterfall", "Waterfall", "tsunami", 100, ["tides", "sandy-beach"], true, true],
-  ["water", "Water", "tsunami", 100, ["tides", "sandy-beach"], true, true],
-  ["snowstorm", "Snowstorm", "snow", 100, ["snow", "blizzard-pro"], true, true],
-  ["usa", "USA", "flag", 100, [], true, true]
+  ["waterfall", "Waterfall", "tsunami", 200, ["tides", "sandy-beach"], true, true],
+  ["water", "Water", "tsunami", 200, ["tides", "sandy-beach"], true, true],
+  ["snowstorm", "Snowstorm", "snow", 200, ["snow", "blizzard-pro"], true, true],
+  ["usa", "USA", "flag", 200, [], true, true]
 ]
