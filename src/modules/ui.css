@@ -1368,4 +1368,5 @@ body > video {
   object-fit: cover;
   user-select: none;
   pointer-events: none;
+  z-index: -1;
 }
