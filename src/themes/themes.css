@@ -731,6 +731,17 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
   background: url(/store/backdrop/black-ice.jpg) !important;
 }
 
+[data-theme="mountains"] {
+	color-scheme: light;
+	--text-color: #121f29;
+	--background-color: #06518c;
+	--surface-color: #eee;
+	--accent-color: #1881c2;
+	--accent-text-color: #fff;
+	--error-color: #eb324b;
+	background: url(/store/backdrop/mountains.jpg) !important;
+}
+
 /* Animated Themes */
 
 [data-theme="waterfall"] {
