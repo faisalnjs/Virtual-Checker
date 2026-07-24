@@ -756,3 +756,13 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
 	--accent-text-color: #fff;
 	--error-color: #eb324b;
 }
+
+[data-theme="usa"] {
+	color-scheme: light;
+	--text-color: #fff;
+	--background-color: #fff;
+	--surface-color: #9f244a;
+	--accent-color: #193d62;
+	--accent-text-color: #fff;
+	--error-color: #9f244a;
+}
