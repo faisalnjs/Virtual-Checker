@@ -66,4 +66,5 @@
   ["black-ice", "Black Ice", "image-alt", 60, [], false, false],
   ["waterfall", "Waterfall", "tsunami", 100, ["tides", "sandy-beach"], true, true],
   ["water", "Water", "tsunami", 100, ["tides", "sandy-beach"], true, true],
+  ["snowstorm", "Snowstorm", "snow", 100, ["snow", "blizzard-pro"], true, true]
 ]

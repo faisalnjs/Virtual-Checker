@@ -747,3 +747,12 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
 	--error-color: #eb324b;
 }
 
+[data-theme="snowstorm"] {
+	color-scheme: light;
+	--text-color: #fff;
+	--background-color: #bacae0;
+	--surface-color: #3c83cc;
+	--accent-color: #fff;
+	--accent-text-color: #3c83cc;
+	--error-color: #eb324b;
+}
