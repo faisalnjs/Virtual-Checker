@@ -296,13 +296,13 @@ body:has(.island.visible) #checker {
   content: attr(checks);
   position: absolute;
   bottom: 0;
-  right: 75%;
+  right: 0;
   height: 100%;
   width: fit-content;
   background-color: var(--surface-color);
   color: var(--accent-text-color);
   padding: 7.5px 12.5px 7.5px 17.5px;
-  border-radius: 50vh 0 0 50vh;
+  border-radius: 50vh;
   z-index: -1;
   transition: 0.5s;
 }
@@ -311,6 +311,7 @@ body:has(.island.visible) #checker {
   right: 100%;
   background-color: var(--accent-color);
   transition: 0.5s;
+  border-radius: 50vh 0 0 50vh;
 }
 
 #symbols-grid {

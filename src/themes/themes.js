@@ -302,6 +302,7 @@ export async function renderStore() {
                     btn.textContent = btn.parentElement.classList.contains('selected') ? "Applied" : (ownedThemes.includes(btn.parentElement.getAttribute('data-theme')) ? "Owned" : "Preview");
                   });
                   checksText.innerHTML = `<i class="bi bi-check2-circle"></i> You've got ${cache.checksCount} Check${(cache.checksCount == 1) ? '' : 's'} available to spend!`;
+                  document.getElementById("controls-container")?.setAttribute('checks', cache.checksCount);
                   storage.set("theme", featuredTheme[0]);
                   document.body.setAttribute('data-theme', featuredTheme[0]);
                   await auth.syncPush("theme")
