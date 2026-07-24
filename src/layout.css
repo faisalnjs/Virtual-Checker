@@ -305,6 +305,7 @@ body:has(.island.visible) #checker {
   border-radius: 50vh;
   z-index: -1;
   transition: 0.5s;
+  opacity: 0;
 }
 
 #controls-container[checks]:hover::before {
@@ -312,6 +313,7 @@ body:has(.island.visible) #checker {
   background-color: var(--accent-color);
   transition: 0.5s;
   border-radius: 50vh 0 0 50vh;
+  opacity: 1;
 }
 
 #symbols-grid {

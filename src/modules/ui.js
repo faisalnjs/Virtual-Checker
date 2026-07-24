@@ -136,8 +136,8 @@ export function modal(options) {
               });
               if (hasEmptyRequiredInput) return;
               const inputValue = (dialog.querySelectorAll(".dialog-input").length > 1) ? [...dialog.querySelectorAll(".dialog-input")].map(dialogInput => {
-                return dialogInput.multiple ? [...dialogInput.selectedOptions].map(e => Number(e.value)) : dialogInput.value;
-              }) : (dialog.querySelector(".dialog-input") ? dialog.querySelector(".dialog-input").value : null);
+                return dialogInput.multiple ? [...dialogInput.selectedOptions].map(option => Number.isNaN(Number(option.value)) ? option.value : Number(option.value)) : (Number.isNaN(Number(dialogInput.value)) ? dialogInput.value : Number(dialogInput.value));
+              }) : (dialog.querySelector(".dialog-input") ? dialog.querySelector(".dialog-input").multiple ? [...dialog.querySelector(".dialog-input").selectedOptions].map(option => Number.isNaN(Number(option.value)) ? option.value : Number(option.value)) : (Number.isNaN(Number(dialog.querySelector(".dialog-input").value)) ? dialog.querySelector(".dialog-input").value : Number(dialog.querySelector(".dialog-input").value)) : null);
               button.onclick(inputValue);
             }
             if (button.close) {
@@ -172,8 +172,8 @@ export function modal(options) {
             });
             if (hasEmptyRequiredInput) return;
             const inputValue = (dialog.querySelectorAll(".dialog-input").length > 1) ? [...dialog.querySelectorAll(".dialog-input")].map(dialogInput => {
-              return dialogInput.multiple ? [...dialogInput.selectedOptions].map(e => Number(e.value)) : dialogInput.value;
-            }) : (dialog.querySelector(".dialog-input") ? dialog.querySelector(".dialog-input").value : null);
+              return dialogInput.multiple ? [...dialogInput.selectedOptions].map(option => Number.isNaN(Number(option.value)) ? option.value : Number(option.value)) : (Number.isNaN(Number(dialogInput.value)) ? dialogInput.value : Number(dialogInput.value));
+            }) : (dialog.querySelector(".dialog-input") ? (dialog.querySelector(".dialog-input").multiple ? [...dialog.querySelector(".dialog-input").selectedOptions].map(option => Number.isNaN(Number(option.value)) ? option.value : Number(option.value)) : (Number.isNaN(Number(dialog.querySelector(".dialog-input").value)) ? dialog.querySelector(".dialog-input").value : Number(dialog.querySelector(".dialog-input").value))) : null);
             button.onclick(inputValue);
           }
           if (button.close) {
