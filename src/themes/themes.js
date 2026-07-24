@@ -342,7 +342,7 @@ export async function renderStore() {
       themeItem.setAttribute('tooltip', `${checks}/${theme[3]} Check${theme[3] == 1 ? '' : 's'}${theme[4].filter(t => !ownedThemes.includes(t[0])) && theme[4].filter(t => !ownedThemes.includes(t[0])).length ? `. You need: ${theme[4].filter(t => !ownedThemes.includes(t[0])).map(t => themes.find(th => th[0] == t)[1] || t).join(', ')}` : ''}`);
       themeItem.setAttribute('style', `background: url('/store/thumb/${theme[0]}.png') center / cover no-repeat !important;`);
     }
-    themeItem.innerHTML = `${theme[2] ? `<i class="bi bi-${theme[2]}"></i>` : ''}${theme[5] ? `<i class="bi bi-badge-hd-fill hd"></i>` : ''}${theme[6] ? `<i class="bi bi-stars hd"></i>` : ''}<h5>${name}</h5><p>${theme[3] ? `${theme[3]} Check${theme[3] == 1 ? '' : 's'}` : 'Free'}</p>${theme[4] && theme[4].length ? `<small>Requires: ${theme[4].map(t => themes.find(th => th[0] == t)[1] || t).join(', ')}</small>` : ''}`;
+    themeItem.innerHTML = `${theme[2] ? `<i class="bi bi-${theme[2]}"></i>` : ''}${theme[5] ? `<i class="bi bi-badge-hd-fill hd"></i>` : ''}${theme[6] ? `<i class="bi bi-stars animated"></i>` : ''}<h5>${name}</h5><p>${theme[3] ? `${theme[3]} Check${theme[3] == 1 ? '' : 's'}` : 'Free'}</p>${theme[4] && theme[4].length ? `<small>Requires: ${theme[4].map(t => themes.find(th => th[0] == t)[1] || t).join(', ')}</small>` : ''}`;
     if (value === initialTheme) themeItem.classList.add('selected');
     const themeButton = document.createElement("button");
     themeButton.textContent = (value === initialTheme) ? "Applied" : (ownedThemes.includes(theme[0]) ? "Owned" : "Preview");
@@ -679,6 +679,34 @@ try {
   document.querySelector('[data-modal-view="store"]')?.addEventListener("click", () => {
     ui.view();
   });
+
+  var animatedThemeVideo = null;
+
+  const observer = new MutationObserver((mutationsList) => {
+    for (const mutation of mutationsList) {
+      if ((mutation.type === 'attributes') && (mutation.attributeName === 'data-theme')) {
+        const foundTheme = themes.find(theme => theme[0] === document.body.getAttribute('data-theme'));
+        if (foundTheme && foundTheme[6]) {
+          if (!animatedThemeVideo) {
+            animatedThemeVideo = document.createElement('video');
+            animatedThemeVideo.muted = true;
+            animatedThemeVideo.autoplay = true;
+            animatedThemeVideo.loop = true;
+            animatedThemeVideo.disablePictureInPicture = true;
+            animatedThemeVideo.controlsList = "nodownload";
+            document.body.appendChild(animatedThemeVideo);
+          }
+          animatedThemeVideo.src = `/store/animated/${foundTheme[0]}.mp4`;
+        } else {
+          if (animatedThemeVideo) {
+            animatedThemeVideo.remove();
+            animatedThemeVideo = null;
+          }
+        }
+      }
+    }
+  });
+  observer.observe(document.body, { attributes: true });
 } catch (error) {
   if (storage.get("developer")) {
     alert(`Error @ themes.js: ${error.message}`);
