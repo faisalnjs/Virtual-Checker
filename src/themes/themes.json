@@ -67,5 +67,6 @@
   ["waterfall", "Waterfall", "tsunami", 200, ["tides", "sandy-beach"], true, true],
   ["water", "Water", "tsunami", 200, ["tides", "sandy-beach"], true, true],
   ["snowstorm", "Snowstorm", "snow", 200, ["snow", "blizzard-pro"], true, true],
-  ["usa", "USA", "flag", 200, [], true, true]
+  ["usa", "USA", "flag", 200, [], true, true],
+  ["synthwave-terrain", "Synthwave Terrain", "robot", 200, ["synthwave-pro"], true, true]
 ]

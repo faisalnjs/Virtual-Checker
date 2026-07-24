@@ -581,6 +581,7 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
   --accent-color: #fd1e54;
   --accent-text-color: #ffffff;
   --error-color: #b90024;
+  --backlight-color: #d50035;
   background: url(/store/backdrop/chocolate-hearts.png) !important;
 }
 
@@ -658,6 +659,7 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
   --accent-color: #fff;
   --accent-text-color: #000;
   --error-color: #e21b00;
+  --backlight-color: #6a6665;
   background: url(/store/backdrop/lebron.jpg) !important;
 }
 
@@ -680,6 +682,7 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
   --accent-color: #efee87;
   --accent-text-color: #000;
   --error-color: #ee1c36;
+  --backlight-color: #276cf9;
   background: url(/store/backdrop/messi.png) !important;
 }
 
@@ -717,52 +720,71 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
 }
 
 [data-theme="black-ice"] {
-	color-scheme: dark;
-	--text-color: #fff;
-	--background-color: #080808;
-	--surface-color: #00988a;
-	--accent-color: #b2d3cf;
-	--accent-text-color: #00110f;
-	--error-color: #eb324b;
-	background: url(/store/backdrop/black-ice.jpg) !important;
+  color-scheme: dark;
+  --text-color: #fff;
+  --background-color: #080808;
+  --surface-color: #00988a;
+  --accent-color: #b2d3cf;
+  --accent-text-color: #00110f;
+  --error-color: #eb324b;
+  --backlight-color: #00988a;
+  background: url(/store/backdrop/black-ice.jpg) !important;
 }
 
+/* Animated Themes */
+
 [data-theme="waterfall"] {
-	color-scheme: dark;
-	--text-color: #fff;
-	--background-color: #0f5d4e;
-	--surface-color: #49ab95;
-	--accent-color: #78cab8;
-	--accent-text-color: #14302a;
-	--error-color: #eb324b;
+  color-scheme: dark;
+  --text-color: #fff;
+  --background-color: #0f5d4e;
+  --surface-color: #49ab95;
+  --accent-color: #78cab8;
+  --accent-text-color: #14302a;
+  --error-color: #eb324b;
+  background: url(/store/backdrop/waterfall.jpg) !important;
 }
 
 [data-theme="water"] {
-	color-scheme: dark;
-	--text-color: #fff;
-	--background-color: #3c4552;
-	--surface-color: #a79485;
-	--accent-color: #2b333e;
-	--accent-text-color: #fff;
-	--error-color: #eb324b;
+  color-scheme: dark;
+  --text-color: #fff;
+  --background-color: #3c4552;
+  --surface-color: #a79485;
+  --accent-color: #2b333e;
+  --accent-text-color: #fff;
+  --error-color: #eb324b;
+  background: url(/store/backdrop/water.jpg) !important;
 }
 
 [data-theme="snowstorm"] {
-	color-scheme: light;
-	--text-color: #4190e2;
-	--background-color: #afd7ff;
-	--surface-color: #c0dfff;
-	--accent-color: #367ec2;
-	--accent-text-color: #fff;
-	--error-color: #eb324b;
+  color-scheme: light;
+  --text-color: #4190e2;
+  --background-color: #afd7ff;
+  --surface-color: #c0dfff;
+  --accent-color: #367ec2;
+  --accent-text-color: #fff;
+  --error-color: #eb324b;
+  background: url(/store/backdrop/snowstorm.jpg) !important;
 }
 
 [data-theme="usa"] {
-	color-scheme: light;
-	--text-color: #fff;
-	--background-color: #fff;
-	--surface-color: #9f244a;
-	--accent-color: #193d62;
-	--accent-text-color: #fff;
-	--error-color: #9f244a;
+  color-scheme: dark;
+  --text-color: #fff;
+  --background-color: #193d62;
+  --surface-color: #9f244a;
+  --accent-color: #193d62;
+  --accent-text-color: #fff;
+  --error-color: #9f244a;
+  --backlight-color: #9f244a;
+  background: url(/store/backdrop/usa.jpg) !important;
+}
+
+[data-theme="synthwave-terrain"] {
+  color-scheme: dark;
+  --text-color: #14f5f5;
+  --background-color: #020105;
+  --surface-color: #690095;
+  --accent-color: #e68450;
+  --accent-text-color: #fff;
+  --error-color: #c66180;
+  background: url(/store/backdrop/synthwave-terrain.jpg) !important;
 }

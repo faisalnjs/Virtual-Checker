@@ -297,6 +297,7 @@ export async function renderStore() {
                   cache.ownedThemes = ownedThemes;
                   cache.checksCount = (cache.checksCount || 0) - featuredTheme[3];
                   await storage.idbSet("cache", cache);
+                  Array.from(store.querySelectorAll('.theme-item.selected')).forEach(el => el.classList.remove('selected'));
                   Array.from(store.querySelectorAll(`.theme-item[data-theme="${featuredTheme[0]}"]`)).forEach(el => el.classList.add('selected'));
                   Array.from(store.querySelectorAll('.theme-item button')).forEach(btn => {
                     btn.textContent = btn.parentElement.classList.contains('selected') ? "Applied" : (ownedThemes.includes(btn.parentElement.getAttribute('data-theme')) ? "Owned" : "Preview");
@@ -423,6 +424,7 @@ export async function renderStore() {
                   cache.ownedThemes = ownedThemes;
                   cache.checksCount = (cache.checksCount || 0) - theme[3];
                   await storage.idbSet("cache", cache);
+                  Array.from(store.querySelectorAll('.theme-item.selected')).forEach(el => el.classList.remove('selected'));
                   themeItem.classList.add('selected');
                   Array.from(store.querySelectorAll('.theme-item button')).forEach(btn => {
                     btn.textContent = btn.parentElement.classList.contains('selected') ? "Applied" : (ownedThemes.includes(btn.parentElement.getAttribute('data-theme')) ? "Owned" : "Preview");
@@ -487,7 +489,7 @@ export async function renderStore() {
   store.appendChild(animatedThemesGrid);
   const costInfo = document.createElement("ul");
   costInfo.classList = 'cost-info';
-  costInfo.innerHTML = `<i class="bi bi-info-circle"></i> Information<li>Checks can be obtained by responding to a question correctly, at any time.</li><li>Checks conversion rate is 1 Check to 1 correct answer.</li><li>Checks may only be obtained on the Virtual Checker platform.</li><li>If your response is marked correct late, you will get your Checks at that time.</li><li>If your response is falsely marked as correct and later marked incorrect, your Checks balance will be deducted from.</li><li>The minimum Checks balance is 0.</li><li>Themes marked as "Free" can be applied without spending any Checks.</li><li>Premium themes require you to spend your available Checks to unlock and use them.</li><li>Themes that have requirements need you to own the specified themes before you can purchase them.</li><li>HD themes may require more resources to run smoothly, and cost more Checks.</li><li>All theme images are licensed Free To Use.</li><li>The cost for themes are based on average student correct answer data.</li>`;
+  costInfo.innerHTML = `<i class="bi bi-info-circle"></i> Information<li>Checks can be obtained by responding to a question correctly, at any time.</li><li>Checks conversion rate is 1 Check to 1 correct answer.</li><li>Checks may only be obtained on the Virtual Checker platform.</li><li>If your response is marked correct late, you will get your Checks at that time.</li><li>If your response is falsely marked as correct and later marked incorrect, your Checks balance will be deducted from.</li><li>The minimum Checks balance is 0.</li><li>Themes marked as "Free" can be applied without spending any Checks.</li><li>Premium and animated themes require you to spend your available Checks to unlock and use them.</li><li>Themes that have requirements need you to own the specified themes before you can purchase them.</li><li>HD and animated themes may require more resources to run smoothly, and cost more Checks.</li><li>All theme images are licensed Free To Use.</li><li>The cost for themes are based on average student correct answer data.</li><li>Purchased themes are saved to your seat code and are available on multiple devices.</li>`;
   store.appendChild(costInfo);
 }
 
@@ -682,10 +684,9 @@ try {
     ui.view();
   });
 
-  var animatedThemeVideo = null;
-
   function updateAnimatedThemeVideo() {
     const foundTheme = themes.find(theme => theme[0] === document.body.getAttribute('data-theme'));
+    var animatedThemeVideo = document.querySelector('body > video');
     if (foundTheme && foundTheme[6]) {
       if (!animatedThemeVideo) {
         animatedThemeVideo = document.createElement('video');
