@@ -737,3 +737,13 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
 	--error-color: #eb324b;
 }
 
+[data-theme="water"] {
+	color-scheme: dark;
+	--text-color: #fff;
+	--background-color: #3c4552;
+	--surface-color: #a79485;
+	--accent-color: #2b333e;
+	--accent-text-color: #fff;
+	--error-color: #eb324b;
+}
+
