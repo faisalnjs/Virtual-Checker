@@ -63,5 +63,6 @@
   ["messi-neymar", "Messi & Neymar", "star", 70, ["messi"], false, false],
   ["one-piece", "One Piece", "film", 60, [], false, false],
   ["super-mario", "Super Mario", "controller", 60, [], false, false],
-  ["black-ice", "Black Ice", "image-alt", 60, [], false, false]
+  ["black-ice", "Black Ice", "image-alt", 60, [], false, false],
+  ["waterfall", "Waterfall", "tsunami", 100, ["tides", "sandy-beach"], true, true],
 ]

@@ -726,3 +726,14 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
 	--error-color: #eb324b;
 	background: url(/store/backdrop/black-ice.jpg) !important;
 }
+
+[data-theme="waterfall"] {
+	color-scheme: dark;
+	--text-color: #fff;
+	--background-color: #0f5d4e;
+	--surface-color: #49ab95;
+	--accent-color: #78cab8;
+	--accent-text-color: #14302a;
+	--error-color: #eb324b;
+}
+
