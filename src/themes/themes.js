@@ -526,6 +526,7 @@ try {
     document.body.setAttribute("data-theme", theme);
     document.getElementById("theme-preview")?.setAttribute("data-theme", theme);
     selectedTheme = theme;
+    updateAnimatedThemeVideo();
   }
   enableTransitions();
 
@@ -683,28 +684,30 @@ try {
 
   var animatedThemeVideo = null;
 
+  function updateAnimatedThemeVideo() {
+    const foundTheme = themes.find(theme => theme[0] === document.body.getAttribute('data-theme'));
+    if (foundTheme && foundTheme[6]) {
+      if (!animatedThemeVideo) {
+        animatedThemeVideo = document.createElement('video');
+        animatedThemeVideo.muted = true;
+        animatedThemeVideo.autoplay = true;
+        animatedThemeVideo.loop = true;
+        animatedThemeVideo.disablePictureInPicture = true;
+        animatedThemeVideo.controlsList = "nodownload";
+        document.body.appendChild(animatedThemeVideo);
+      }
+      animatedThemeVideo.src = `/store/animated/${foundTheme[0]}.mp4`;
+    } else {
+      if (animatedThemeVideo) {
+        animatedThemeVideo.remove();
+        animatedThemeVideo = null;
+      }
+    }
+  }
+
   const observer = new MutationObserver((mutationsList) => {
     for (const mutation of mutationsList) {
-      if ((mutation.type === 'attributes') && (mutation.attributeName === 'data-theme')) {
-        const foundTheme = themes.find(theme => theme[0] === document.body.getAttribute('data-theme'));
-        if (foundTheme && foundTheme[6]) {
-          if (!animatedThemeVideo) {
-            animatedThemeVideo = document.createElement('video');
-            animatedThemeVideo.muted = true;
-            animatedThemeVideo.autoplay = true;
-            animatedThemeVideo.loop = true;
-            animatedThemeVideo.disablePictureInPicture = true;
-            animatedThemeVideo.controlsList = "nodownload";
-            document.body.appendChild(animatedThemeVideo);
-          }
-          animatedThemeVideo.src = `/store/animated/${foundTheme[0]}.mp4`;
-        } else {
-          if (animatedThemeVideo) {
-            animatedThemeVideo.remove();
-            animatedThemeVideo = null;
-          }
-        }
-      }
+      if ((mutation.type === 'attributes') && (mutation.attributeName === 'data-theme')) updateAnimatedThemeVideo();
     }
   });
   observer.observe(document.body, { attributes: true });
