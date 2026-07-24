@@ -749,10 +749,10 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
 
 [data-theme="snowstorm"] {
 	color-scheme: light;
-	--text-color: #fff;
+	--text-color: #4190e2;
 	--background-color: #bacae0;
-	--surface-color: #3c83cc;
-	--accent-color: #fff;
-	--accent-text-color: #3c83cc;
+	--surface-color: #c0dfff;
+	--accent-color: #367ec2;
+	--accent-text-color: #fff;
 	--error-color: #eb324b;
 }
