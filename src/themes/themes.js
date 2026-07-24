@@ -491,6 +491,88 @@ export async function renderStore() {
   costInfo.classList = 'cost-info';
   costInfo.innerHTML = `<i class="bi bi-info-circle"></i> Information<li>Checks can be obtained by responding to a question correctly, at any time.</li><li>Checks conversion rate is 1 Check to 1 correct answer.</li><li>Checks may only be obtained on the Virtual Checker platform.</li><li>If your response is marked correct late, you will get your Checks at that time.</li><li>If your response is falsely marked as correct and later marked incorrect, your Checks balance will be deducted from.</li><li>The minimum Checks balance is 0.</li><li>Themes marked as "Free" can be applied without spending any Checks.</li><li>Premium and animated themes require you to spend your available Checks to unlock and use them.</li><li>Themes that have requirements need you to own the specified themes before you can purchase them.</li><li>HD and animated themes may require more resources to run smoothly, and cost more Checks.</li><li>All theme images are licensed Free To Use.</li><li>The cost for themes are based on average student correct answer data.</li><li>Purchased themes are saved to your seat code and are available on multiple devices.</li>`;
   store.appendChild(costInfo);
+  const refundButton = document.createElement('button');
+  refundButton.innerText = 'Theme Refunds';
+  store.appendChild(refundButton);
+  refundButton.addEventListener('click', async () => {
+    ui.view();
+    ui.modal({
+      title: 'Theme Refunds',
+      body: `<p>Theme refunds are available for 50% Checks back.</p>`,
+      input: {
+        label: 'Owned Themes',
+        type: 'select',
+        options: ((await storage.idbGet("cache"))?.ownedThemes || []).map(ownedTheme => {
+          let theme = themes.find(t => t[0] === ownedTheme);
+          return {
+            value: theme[0],
+            text: `${theme[1]} - ${theme[3] / 2} Checks back`,
+          };
+        }),
+        multiple: true,
+      },
+      buttons: [
+        {
+          text: 'Cancel',
+          class: 'cancel-button',
+          close: true,
+        },
+        {
+          text: 'Continue',
+          class: 'submit-button',
+          onclick: (inputValues) => {
+            if (!inputValues || !inputValues.length) {
+              ui.toast("No themes selected for refund.", 2000, "error", "bi bi-exclamation-triangle-fill");
+              return;
+            }
+            ui.modal({
+              title: 'Confirm Refund',
+              body: `<p>Are you sure you want to refund the selected theme(s) for 50% Checks back? This action cannot be undone.</p>`,
+              buttons: [
+                {
+                  text: 'Cancel',
+                  class: 'cancel-button',
+                  close: true,
+                },
+                {
+                  text: 'Confirm',
+                  class: 'submit-button',
+                  onclick: async () => {
+                    await auth.refundThemes(inputValues)
+                      .catch(error => {
+                        if (storage.get("developer")) {
+                          alert(`Error @ themes.js: ${error.message}`);
+                        } else {
+                          ui.reportBugModal(null, String(error.stack));
+                        }
+                      });
+                    const cache = await storage.idbGet("cache") || {};
+                    inputValues.forEach(ownedTheme => {
+                      let theme = themes.find(t => t[0] === ownedTheme);
+                      cache.ownedThemes = cache.ownedThemes.filter(t => t !== ownedTheme);
+                      cache.checksCount = (cache.checksCount || 0) + (theme[3] / 2);
+                    });
+                    await storage.idbSet("cache", cache);
+                    ui.toast(`Refunded ${inputValues.length} theme${(inputValues.length === 1) ? '' : 's'}.`, 2000, "success", "bi bi-check2-circle");
+                    renderStore()
+                      .catch(error => {
+                        if (storage.get("developer")) {
+                          alert(`Error @ themes.js: ${error.message}`);
+                        } else {
+                          ui.reportBugModal(null, String(error.stack));
+                        }
+                      });
+                  },
+                  close: true,
+                },
+              ],
+            });
+          },
+          close: true,
+        },
+      ],
+    })
+  });
 }
 
 export function getCurrentTheme() {

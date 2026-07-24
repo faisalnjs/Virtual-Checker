@@ -733,9 +733,9 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
 
 [data-theme="mountains"] {
 	color-scheme: light;
-	--text-color: #121f29;
+	--text-color: #fff;
 	--background-color: #06518c;
-	--surface-color: #eee;
+	--surface-color: #12232e;
 	--accent-color: #1881c2;
 	--accent-text-color: #fff;
 	--error-color: #eb324b;

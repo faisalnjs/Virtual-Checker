@@ -1038,7 +1038,8 @@ body:has(.topbar) #checker.horizontal .column:last-child {
 [data-modal-page="store"]:has(.themes-grid .theme-item button:hover) .promo,
 [data-modal-page="store"]:has(.themes-grid .theme-item button:hover)
   .theme-item:not(:has(button:hover)),
-[data-modal-page="store"]:has(.themes-grid .theme-item button:hover) [data-modal-buttons] {
+[data-modal-page="store"]:has(.themes-grid .theme-item button:hover) [data-modal-buttons],
+[data-modal-page="store"]:has(.themes-grid .theme-item button:hover) > button {
   opacity: 0;
   transition: 0.25s opacity;
 }
