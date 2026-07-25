@@ -257,6 +257,7 @@ try {
 
   document.querySelector('[data-timestamps]')?.addEventListener("click", toggleTimestamps);
   document.querySelector('[data-action-refreshes]')?.addEventListener("click", toggleActionRefreshes);
+  document.querySelector('[data-refresh-responses]')?.addEventListener("click", init);
 
   function toggleSelected() {
     if (!active) return;
@@ -1381,12 +1382,14 @@ try {
     if (!active) return;
     if (actionRefreshes) {
       actionRefreshes = false;
-      document.querySelector('[data-action-refreshes] .bi-arrow-repeat').style.display = "block";
+      document.querySelector('[data-action-refreshes] .bi-play-circle').style.display = "block";
       document.querySelector('[data-action-refreshes] .bi-pause-circle').style.display = "none";
+      document.querySelector('[data-refresh-responses]')?.removeAttribute('hidden');
     } else {
       actionRefreshes = true;
-      document.querySelector('[data-action-refreshes] .bi-arrow-repeat').style.display = "none";
+      document.querySelector('[data-action-refreshes] .bi-play-circle').style.display = "none";
       document.querySelector('[data-action-refreshes] .bi-pause-circle').style.display = "block";
+      document.querySelector('[data-refresh-responses]')?.setAttribute('hidden', '');
     }
   }
 } catch (error) {
