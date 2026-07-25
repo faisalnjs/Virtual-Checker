@@ -49,6 +49,7 @@ var pagination = {
 var questionsToDelete = [];
 var keepSegment = null;
 var fromAwaitingScoring = false;
+var actionRefreshes = false;
 
 var draggableQuestionList = null;
 var draggableSegmentReorder = null;
@@ -447,50 +448,51 @@ try {
     return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
   }
 
-  if (document.querySelector('[data-select-multiple]')) document.querySelector('[data-select-multiple]').addEventListener("click", toggleSelecting);
-  if (document.querySelector('[data-delete-multiple]')) document.querySelector('[data-delete-multiple]').addEventListener("click", deleteMultiple);
-  if (document.querySelector('[data-polling]')) document.querySelector('[data-polling]').addEventListener("click", togglePolling);
-  if (document.querySelector('[data-timestamps]')) document.querySelector('[data-timestamps]').addEventListener("click", toggleTimestamps);
-  if (document.querySelector('[data-speed]')) document.querySelector('[data-speed]').addEventListener("click", toggleSpeedMode);
-  if (document.getElementById('enable-speed-mode-button')) document.getElementById('enable-speed-mode-button').addEventListener("click", enableSpeedMode);
-  if (document.getElementById('sort-segments-due')) document.getElementById('sort-segments-due').addEventListener("click", sortSegmentsDue);
-  if (document.getElementById('sort-segments-increasing')) document.getElementById('sort-segments-increasing').addEventListener("click", sortSegmentsIncreasing);
-  if (document.getElementById('sort-segments-decreasing')) document.getElementById('sort-segments-decreasing').addEventListener("click", sortSegmentsDecreasing);
-  if (document.getElementById('sort-segments-button')) document.getElementById('sort-segments-button').addEventListener("click", sortSegments);
-  if (document.getElementById('hideIncorrectAttempts')) document.getElementById('hideIncorrectAttempts').addEventListener("change", updateSegments);
-  if (document.getElementById('hideIncorrectAttempts')) document.getElementById('hideIncorrectAttempts').addEventListener("change", updateResponses);
-  if (document.getElementById('hideIncorrectAttempts')) document.getElementById('hideIncorrectAttempts').addEventListener("change", updateQuestionReports);
-  if (document.querySelector('[data-expand-reports]')) document.querySelector('[data-expand-reports]').addEventListener("click", toggleAllReports);
-  if (document.getElementById('launch-speed-mode')) document.getElementById('launch-speed-mode').addEventListener("click", toggleSpeedMode);
-  if (document.getElementById('add-existing-question-button')) document.getElementById('add-existing-question-button').addEventListener("click", addExistingQuestion);
-  if (document.querySelector('[data-syllabus-upload]')) document.querySelector('[data-syllabus-upload]').addEventListener("click", renderSyllabusPond);
-  if (document.getElementById('new-course-button')) document.getElementById('new-course-button').addEventListener("click", newCourseModal);
-  if (document.getElementById('remove-segments-due-dates-button')) document.getElementById('remove-segments-due-dates-button').addEventListener("click", removeAllSegmentsDueDates);
-  if (document.querySelector('[data-clear-responses]')) document.querySelector('[data-clear-responses]').addEventListener("click", clearResponsesConfirm1);
-  if (document.getElementById('export-report')) document.getElementById('export-report').addEventListener("click", exportReport);
-  if (document.querySelector('[data-archive-course]')) document.querySelector('[data-archive-course]').addEventListener("click", () => archiveModal('course'));
-  if (document.querySelector('[data-archive-segment]')) document.querySelector('[data-archive-segment]').addEventListener("click", () => archiveModal('segment'));
-  if (document.querySelector('[data-archive-multiple]')) document.querySelector('[data-archive-multiple]').addEventListener("click", archiveMultipleModal);
-  if (document.querySelector('[data-unarchive-multiple]')) document.querySelector('[data-unarchive-multiple]').addEventListener("click", unarchiveMultipleModal);
-  if (document.getElementById('filter-report-responses')) document.getElementById('filter-report-responses').addEventListener("input", updateSegments);
-  if (document.getElementById('filter-report-responses')) document.getElementById('filter-report-responses').addEventListener("input", updateResponses);
-  if (document.getElementById('filter-report-responses')) document.getElementById('filter-report-responses').addEventListener("input", updateQuestionReports);
-  if (document.getElementById('useRoster')) document.getElementById('useRoster').addEventListener("change", updateSegments);
-  if (document.getElementById('useRoster')) document.getElementById('useRoster').addEventListener("change", updateResponses);
-  if (document.getElementById('useRoster')) document.getElementById('useRoster').addEventListener("change", updateQuestionReports);
-  if (document.getElementById('sort-report-responses')) document.getElementById('sort-report-responses').addEventListener("input", updateSegments);
-  if (document.getElementById('sort-report-responses')) document.getElementById('sort-report-responses').addEventListener("input", updateResponses);
-  if (document.getElementById('sort-report-responses')) document.getElementById('sort-report-responses').addEventListener("input", updateQuestionReports);
-  if (document.getElementById('hideUnanswered')) document.getElementById('hideUnanswered').addEventListener("input", updateSegments);
-  if (document.getElementById('hideUnanswered')) document.getElementById('hideUnanswered').addEventListener("input", updateResponses);
-  if (document.getElementById('hideUnanswered')) document.getElementById('hideUnanswered').addEventListener("input", updateQuestionReports);
-  if (document.querySelector('[data-select-between]')) document.querySelector('[data-select-between]').addEventListener("click", selectBetween);
-  if (document.getElementById('rotate-period')) document.getElementById('rotate-period').addEventListener("click", rotatePeriodConfirm);
-  if (document.getElementById('export-responses')) document.getElementById('export-responses').addEventListener("click", exportResponses);
-  if (document.querySelector('[data-clicker-announcement-image-upload]')) document.querySelector('[data-clicker-announcement-image-upload]').addEventListener("click", () => renderAnnouncementPond('clicker'));
-  if (document.querySelector('[data-checker-announcement-image-upload]')) document.querySelector('[data-checker-announcement-image-upload]').addEventListener("click", () => renderAnnouncementPond('checker'));
-  if (document.querySelector('[data-clicker-announcement-clear]')) document.querySelector('[data-clicker-announcement-clear]').addEventListener("click", () => clearAnnouncement('clicker'));
-  if (document.querySelector('[data-checker-announcement-clear]')) document.querySelector('[data-checker-announcement-clear]').addEventListener("click", () => clearAnnouncement('checker'));
+  document.querySelector('[data-select-multiple]')?.addEventListener("click", toggleSelecting);
+  document.querySelector('[data-delete-multiple]')?.addEventListener("click", deleteMultiple);
+  document.querySelector('[data-polling]')?.addEventListener("click", togglePolling);
+  document.querySelector('[data-timestamps]')?.addEventListener("click", toggleTimestamps);
+  document.querySelector('[data-speed]')?.addEventListener("click", toggleSpeedMode);
+  document.getElementById('enable-speed-mode-button')?.addEventListener("click", enableSpeedMode);
+  document.getElementById('sort-segments-due')?.addEventListener("click", sortSegmentsDue);
+  document.getElementById('sort-segments-increasing')?.addEventListener("click", sortSegmentsIncreasing);
+  document.getElementById('sort-segments-decreasing')?.addEventListener("click", sortSegmentsDecreasing);
+  document.getElementById('sort-segments-button')?.addEventListener("click", sortSegments);
+  document.getElementById('hideIncorrectAttempts')?.addEventListener("change", updateSegments);
+  document.getElementById('hideIncorrectAttempts')?.addEventListener("change", updateResponses);
+  document.getElementById('hideIncorrectAttempts')?.addEventListener("change", updateQuestionReports);
+  document.querySelector('[data-expand-reports]')?.addEventListener("click", toggleAllReports);
+  document.getElementById('launch-speed-mode')?.addEventListener("click", toggleSpeedMode);
+  document.getElementById('add-existing-question-button')?.addEventListener("click", addExistingQuestion);
+  document.querySelector('[data-syllabus-upload]')?.addEventListener("click", renderSyllabusPond);
+  document.getElementById('new-course-button')?.addEventListener("click", newCourseModal);
+  document.getElementById('remove-segments-due-dates-button')?.addEventListener("click", removeAllSegmentsDueDates);
+  document.querySelector('[data-clear-responses]')?.addEventListener("click", clearResponsesConfirm1);
+  document.getElementById('export-report')?.addEventListener("click", exportReport);
+  document.querySelector('[data-archive-course]')?.addEventListener("click", () => archiveModal('course'));
+  document.querySelector('[data-archive-segment]')?.addEventListener("click", () => archiveModal('segment'));
+  document.querySelector('[data-archive-multiple]')?.addEventListener("click", archiveMultipleModal);
+  document.querySelector('[data-unarchive-multiple]')?.addEventListener("click", unarchiveMultipleModal);
+  document.getElementById('filter-report-responses')?.addEventListener("input", updateSegments);
+  document.getElementById('filter-report-responses')?.addEventListener("input", updateResponses);
+  document.getElementById('filter-report-responses')?.addEventListener("input", updateQuestionReports);
+  document.getElementById('useRoster')?.addEventListener("change", updateSegments);
+  document.getElementById('useRoster')?.addEventListener("change", updateResponses);
+  document.getElementById('useRoster')?.addEventListener("change", updateQuestionReports);
+  document.getElementById('sort-report-responses')?.addEventListener("input", updateSegments);
+  document.getElementById('sort-report-responses')?.addEventListener("input", updateResponses);
+  document.getElementById('sort-report-responses')?.addEventListener("input", updateQuestionReports);
+  document.getElementById('hideUnanswered')?.addEventListener("input", updateSegments);
+  document.getElementById('hideUnanswered')?.addEventListener("input", updateResponses);
+  document.getElementById('hideUnanswered')?.addEventListener("input", updateQuestionReports);
+  document.querySelector('[data-select-between]')?.addEventListener("click", selectBetween);
+  document.getElementById('rotate-period')?.addEventListener("click", rotatePeriodConfirm);
+  document.getElementById('export-responses')?.addEventListener("click", exportResponses);
+  document.querySelector('[data-clicker-announcement-image-upload]')?.addEventListener("click", () => renderAnnouncementPond('clicker'));
+  document.querySelector('[data-checker-announcement-image-upload]')?.addEventListener("click", () => renderAnnouncementPond('checker'));
+  document.querySelector('[data-clicker-announcement-clear]')?.addEventListener("click", () => clearAnnouncement('clicker'));
+  document.querySelector('[data-checker-announcement-clear]')?.addEventListener("click", () => clearAnnouncement('checker'));
+  document.querySelector('[data-action-refreshes]')?.addEventListener("click", toggleActionRefreshes);
   document.querySelectorAll('#previous-page-button').forEach(a => a.addEventListener("click", () => previousPage(a)));
   document.querySelectorAll('#next-page-button').forEach(a => a.addEventListener("click", () => nextPage(a)));
   document.querySelectorAll('#first-page-button').forEach(a => a.addEventListener("click", () => firstPage(a)));
@@ -2714,7 +2716,13 @@ try {
       .then(() => {
         ui.setUnsavedChanges(false);
         ui.toast("Flagged response for review.", 3000, "success", "bi bi-flag-fill");
-        init();
+        if (actionRefreshes) {
+          init();
+        } else {
+          const parent = this.parentElement;
+          this.outerHTML = '<button square data-unflag-response tooltip="Unflag Response"><i class="bi bi-flag-fill"></i></button>';
+          parent.querySelector('[data-unflag-response]')?.addEventListener('click', unflagResponse);
+        }
       })
       .catch((e) => {
         console.error(e);
@@ -2756,7 +2764,13 @@ try {
       .then(() => {
         ui.setUnsavedChanges(false);
         ui.toast("Unflagged response.", 3000, "success", "bi bi-flag-fill");
-        init();
+        if (actionRefreshes) {
+          init();
+        } else {
+          const parent = this.parentElement;
+          this.outerHTML = '<button square data-flag-response tooltip="Flag Response"><i class="bi bi-flag"></i></button>';
+          parent.querySelector('[data-flag-response]')?.addEventListener('click', flagResponse);
+        }
       })
       .catch((e) => {
         console.error(e);
@@ -2802,7 +2816,15 @@ try {
         noReloadCourse = true;
         keepSegment = document.getElementById("filter-segment-input").value;
         fromAwaitingScoring = (document.querySelector('.awaitingResponses .section') && Array.from(document.querySelector('.awaitingResponses .section').children).includes(this.parentElement)) ? true : false;
-        init();
+        if (actionRefreshes) {
+          init();
+        } else {
+          const parent = this.parentElement;
+          parent.querySelector('#mark-correct-button')?.setAttribute('disabled', '');
+          if (parent.querySelector('#mark-correct-button i')) parent.querySelector('#mark-correct-button i').classList = 'bi bi-check-circle-fill';
+          parent.querySelector('#mark-incorrect-button')?.removeAttribute('disabled');
+          if (parent.querySelector('#mark-incorrect-button i')) parent.querySelector('#mark-incorrect-button i').classList = 'bi bi-x-circle';
+        }
       })
       .catch((e) => {
         console.error(e);
@@ -2884,7 +2906,15 @@ try {
         noReloadCourse = true;
         keepSegment = document.getElementById("filter-segment-input").value;
         fromAwaitingScoring = (document.querySelector('.awaitingResponses .section') && Array.from(document.querySelector('.awaitingResponses .section').children).includes(e.parentElement)) ? true : false;
-        init();
+        if (actionRefreshes) {
+          init();
+        } else {
+          const parent = e.parentElement;
+          parent.querySelector('#mark-incorrect-button')?.setAttribute('disabled', '');
+          if (parent.querySelector('#mark-incorrect-button i')) parent.querySelector('#mark-incorrect-button i').classList = 'bi bi-x-circle-fill';
+          parent.querySelector('#mark-correct-button')?.removeAttribute('disabled');
+          if (parent.querySelector('#mark-correct-button i')) parent.querySelector('#mark-correct-button i').classList = 'bi bi-check-circle';
+        }
       })
       .catch((e) => {
         console.error(e);
@@ -6545,6 +6575,19 @@ try {
     const group = Array.from(paginationSection.parentElement.parentElement.classList).find(a => Object.keys(pagination).includes(a));
     if (!group) return;
     goToPage(paginationSection, Math.ceil(pagination[group].total / (storage.get("rowsPerPage") ? Number(storage.get("rowsPerPage")) : pagination[group].perPage)) - 1);
+  }
+
+  function toggleActionRefreshes() {
+    if (!active) return;
+    if (actionRefreshes) {
+      actionRefreshes = false;
+      document.querySelector('[data-action-refreshes] .bi-arrow-repeat').style.display = "block";
+      document.querySelector('[data-action-refreshes] .bi-pause-circle').style.display = "none";
+    } else {
+      actionRefreshes = true;
+      document.querySelector('[data-action-refreshes] .bi-arrow-repeat').style.display = "none";
+      document.querySelector('[data-action-refreshes] .bi-pause-circle').style.display = "block";
+    }
   }
 } catch (error) {
   if (storage.get("developer")) {

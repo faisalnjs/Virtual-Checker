@@ -34,6 +34,7 @@ var pagination = {
 };
 var keepSegment = null;
 var fromAwaitingScoring = false;
+var actionRefreshes = false;
 
 try {
   async function init() {
@@ -255,6 +256,7 @@ try {
   }
 
   document.querySelector('[data-timestamps]')?.addEventListener("click", toggleTimestamps);
+  document.querySelector('[data-action-refreshes]')?.addEventListener("click", toggleActionRefreshes);
 
   function toggleSelected() {
     if (!active) return;
@@ -1047,7 +1049,13 @@ try {
       .then(() => {
         ui.setUnsavedChanges(false);
         ui.toast("Flagged response for review.", 3000, "success", "bi bi-flag-fill");
-        init();
+        if (actionRefreshes) {
+          init();
+        } else {
+          const parent = this.parentElement;
+          this.outerHTML = '<button square data-unflag-response tooltip="Unflag Response"><i class="bi bi-flag-fill"></i></button>';
+          parent.querySelector('[data-unflag-response]')?.addEventListener('click', unflagResponse);
+        }
       })
       .catch((e) => {
         console.error(e);
@@ -1089,7 +1097,13 @@ try {
       .then(() => {
         ui.setUnsavedChanges(false);
         ui.toast("Unflagged response.", 3000, "success", "bi bi-flag-fill");
-        init();
+        if (actionRefreshes) {
+          init();
+        } else {
+          const parent = this.parentElement;
+          this.outerHTML = '<button square data-flag-response tooltip="Flag Response"><i class="bi bi-flag"></i></button>';
+          parent.querySelector('[data-flag-response]')?.addEventListener('click', flagResponse);
+        }
       })
       .catch((e) => {
         console.error(e);
@@ -1135,7 +1149,15 @@ try {
         noReloadCourse = true;
         keepSegment = document.getElementById("filter-segment-input").value;
         fromAwaitingScoring = (document.querySelector('.awaitingResponses .section') && Array.from(document.querySelector('.awaitingResponses .section').children).includes(this.parentElement)) ? true : false;
-        init();
+        if (actionRefreshes) {
+          init();
+        } else {
+          const parent = this.parentElement;
+          parent.querySelector('#mark-correct-button')?.setAttribute('disabled', '');
+          if (parent.querySelector('#mark-correct-button i')) parent.querySelector('#mark-correct-button i').classList = 'bi bi-check-circle-fill';
+          parent.querySelector('#mark-incorrect-button')?.removeAttribute('disabled');
+          if (parent.querySelector('#mark-incorrect-button i')) parent.querySelector('#mark-incorrect-button i').classList = 'bi bi-x-circle';
+        }
       })
       .catch((e) => {
         console.error(e);
@@ -1216,7 +1238,15 @@ try {
         noReloadCourse = true;
         keepSegment = document.getElementById("filter-segment-input").value;
         fromAwaitingScoring = (document.querySelector('.awaitingResponses .section') && Array.from(document.querySelector('.awaitingResponses .section').children).includes(e.parentElement)) ? true : false;
-        init();
+        if (actionRefreshes) {
+          init();
+        } else {
+          const parent = e.parentElement;
+          parent.querySelector('#mark-incorrect-button')?.setAttribute('disabled', '');
+          if (parent.querySelector('#mark-incorrect-button i')) parent.querySelector('#mark-incorrect-button i').classList = 'bi bi-x-circle-fill';
+          parent.querySelector('#mark-correct-button')?.removeAttribute('disabled');
+          if (parent.querySelector('#mark-correct-button i')) parent.querySelector('#mark-correct-button i').classList = 'bi bi-check-circle';
+        }
       })
       .catch((e) => {
         console.error(e);
@@ -1345,6 +1375,19 @@ try {
     const group = Array.from(paginationSection.parentElement.parentElement.classList).find(a => Object.keys(pagination).includes(a));
     if (!group) return;
     goToPage(paginationSection, Math.ceil(pagination[group].total / (storage.get("rowsPerPage") ? Number(storage.get("rowsPerPage")) : pagination[group].perPage)) - 1);
+  }
+
+  function toggleActionRefreshes() {
+    if (!active) return;
+    if (actionRefreshes) {
+      actionRefreshes = false;
+      document.querySelector('[data-action-refreshes] .bi-arrow-repeat').style.display = "block";
+      document.querySelector('[data-action-refreshes] .bi-pause-circle').style.display = "none";
+    } else {
+      actionRefreshes = true;
+      document.querySelector('[data-action-refreshes] .bi-arrow-repeat').style.display = "none";
+      document.querySelector('[data-action-refreshes] .bi-pause-circle').style.display = "block";
+    }
   }
 } catch (error) {
   if (storage.get("developer")) {
