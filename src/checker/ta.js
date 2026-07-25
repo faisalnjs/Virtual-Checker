@@ -707,12 +707,48 @@ try {
     document.querySelector('.responses .section').innerHTML = '';
     var trendingResponses = [];
     var timedResponses = [];
+    const coursePeriodInput = document.getElementById("course-period-input");
+    const filterSegmentInput = document.getElementById("filter-segment-input");
+    const sortQuestionInput = document.getElementById("sort-question-input");
+    const sortSeatInput = document.getElementById("sort-seat-input");
+    const awaitingSection = document.querySelector('.awaitingResponses .section');
+    const responsesSection = document.querySelector('.responses .section');
+    const hasAwaitingSection = !!awaitingSection;
+    const hasResponsesSection = !!responsesSection;
+    const selectedCourse = courses.find(course => String(course.id) === coursePeriodInput?.value);
+    const selectedCourseId = selectedCourse ? String(selectedCourse.id) : null;
+    const selectedCoursePeriods = selectedCourse?.periods ? JSON.parse(selectedCourse.periods) : null;
+    const filterSegmentValue = filterSegmentInput?.value;
+    const sortQuestionValue = sortQuestionInput?.value || '';
+    const sortSeatValue = sortSeatInput?.value || '';
+    const questionById = new Map(questions.map(question => [String(question.id), question]));
+    const answerById = new Map(answers.map(answer => [String(answer.id), answer]));
+    const segmentById = new Map(segments.map(segment => [String(segment.id), segment]));
+    const segmentQuestionIdsCache = new Map();
+    const getSegmentQuestionIds = segment => {
+      const cacheKey = String(segment.id);
+      if (segmentQuestionIdsCache.has(cacheKey)) return segmentQuestionIdsCache.get(cacheKey);
+      let questionIds = [];
+      try {
+        questionIds = JSON.parse(segment.question_ids || '[]');
+      } catch {
+        questionIds = [];
+      }
+      segmentQuestionIdsCache.set(cacheKey, questionIds);
+      return questionIds;
+    };
+    const getResponseSegment = r => {
+      const exactSegment = segmentById.get(String(r.segment));
+      if (exactSegment && (!selectedCourseId || String(exactSegment.course) === selectedCourseId)) return exactSegment;
+      if (!selectedCourseId) return null;
+      return segments.find(segment => String(segment.course) === selectedCourseId && getSegmentQuestionIds(segment)?.some(question => String(question.id) === String(r.question_id))) || null;
+    };
     var responses1 = responses
-      .filter(r => courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value) ? JSON.parse(courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value)?.periods).includes(Number(String(r.seatCode)[0])) : false)
-      .filter(r => document.getElementById("filter-segment-input")?.value ? (String(segments.find(s => (String(s.id) === String(r.segment)) && (courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value) ? (String(s.course) === String(courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value).id)) : true)) ? (segments.find(s => (String(s.id) === String(r.segment)) && (courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value) ? (String(s.course) === String(courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value).id)) : true)).id || r.segment) : (segments.find(s => (courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value) ? (String(s.course) === String(courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value).id)) : false) && JSON.parse(s.question_ids || [])?.find(q => String(q.id) === String(r.question_id)))?.id || '-')) === document.getElementById("filter-segment-input").value) : true)
-      .filter(r => document.getElementById("sort-question-input")?.value.startsWith('"') ? (questions.find(q => String(q.id) === String(r.question_id))?.number === document.getElementById("sort-question-input")?.value.replaceAll('"', '')) : questions.find(q => String(q.id) === String(r.question_id))?.number.startsWith(document.getElementById("sort-question-input")?.value))
-      .filter(r => String(r.seatCode).startsWith(document.getElementById("sort-seat-input")?.value))
-      .filter(r => !questions.find(q => String(q.id) === String(r.question_id))?.nonscored)
+      .filter(r => selectedCoursePeriods ? selectedCoursePeriods.includes(Number(String(r.seatCode)[0])) : false)
+      .filter(r => filterSegmentValue ? String(getResponseSegment(r)?.id || '-') === filterSegmentValue : true)
+      .filter(r => sortQuestionValue.startsWith('"') ? (questionById.get(String(r.question_id))?.number === sortQuestionValue.replaceAll('"', '')) : (questionById.get(String(r.question_id))?.number || '').startsWith(sortQuestionValue))
+      .filter(r => String(r.seatCode).startsWith(sortSeatValue))
+      .filter(r => !questionById.get(String(r.question_id))?.nonscored)
       .sort((a, b) => {
         if (a.flagged && !b.flagged) return -1;
         if (!a.flagged && b.flagged) return 1;
@@ -761,40 +797,62 @@ try {
       }
     }
     syncPagination();
-    const awaitingSection = document.querySelector('.awaitingResponses .section');
-    const responsesSection = document.querySelector('.responses .section');
-    const awaitingResponses = responses1.filter(r => (r.status === 'Invalid Format' || r.status === 'Unknown, Recorded'));
-    const normalResponses = responses1.filter(r => !(r.status === 'Invalid Format' || r.status === 'Unknown, Recorded'));
-    const awaitingPageResponses = awaitingSection ? awaitingResponses.slice(pagination.awaitingResponses.page * (storage.get("rowsPerPage") ? Number(storage.get("rowsPerPage")) : pagination.awaitingResponses.perPage), (pagination.awaitingResponses.page + 1) * (storage.get("rowsPerPage") ? Number(storage.get("rowsPerPage")) : pagination.awaitingResponses.perPage)) : [];
-    const responsesPageResponses = responsesSection ? normalResponses.slice(pagination.responses.page * (storage.get("rowsPerPage") ? Number(storage.get("rowsPerPage")) : pagination.responses.perPage), (pagination.responses.page + 1) * (storage.get("rowsPerPage") ? Number(storage.get("rowsPerPage")) : pagination.responses.perPage)) : [];
+    const awaitingResponses = [];
+    const normalResponses = [];
+    const responsesBySeat = new Map();
+    for (const r of responses1) {
+      if (r.status === 'Invalid Format' || r.status === 'Unknown, Recorded') {
+        awaitingResponses.push(r);
+      } else {
+        normalResponses.push(r);
+      }
+      let arr = responsesBySeat.get(r.seatCode);
+      if (!arr) {
+        arr = [];
+        responsesBySeat.set(r.seatCode, arr);
+      }
+      arr.push(r);
+      r._timestamp = new Date(r.timestamp);
+    }
+    for (const arr of responsesBySeat.values()) arr.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+    const storedRowsPerPage = storage.get("rowsPerPage");
+    const rowsPerPage = storedRowsPerPage ? Number(storedRowsPerPage) : null;
+    const developer = storage.get("developer");
+    const awaitingRowsPerPage = rowsPerPage || pagination.awaitingResponses.perPage;
+    const responsesRowsPerPage = rowsPerPage || pagination.responses.perPage;
+    const awaitingPageResponses = hasAwaitingSection ? awaitingResponses.slice(pagination.awaitingResponses.page * awaitingRowsPerPage, (pagination.awaitingResponses.page + 1) * awaitingRowsPerPage) : [];
+    const responsesPageResponses = hasResponsesSection ? normalResponses.slice(pagination.responses.page * responsesRowsPerPage, (pagination.responses.page + 1) * responsesRowsPerPage) : [];
     var pageResponses = [...awaitingPageResponses, ...responsesPageResponses];
     pageResponses.forEach(r => {
       var responseString = r.response;
       var isMatrix = null;
-      if (responseString.includes('[[')) {
+      const question = questionById.get(String(r.question_id));
+      const answer = answerById.get(String(r.question_id));
+      let parsedResponse = null;
+      if (responseString.includes('[')) {
         try {
-          isMatrix = responseString;
-          responseString = JSON.stringify(JSON.parse(r.response).map(innerArray => innerArray.map(numString => String(numString)))).replaceAll('["', '[').replaceAll('","', ', ').replaceAll('"]', ']');
+          parsedResponse = JSON.parse(r.response);
+          if (responseString.includes('[[')) {
+            isMatrix = responseString;
+            responseString = JSON.stringify(parsedResponse.map(inner => inner.map(String)))
+              .replaceAll('["', '[')
+              .replaceAll('","', ', ')
+              .replaceAll('"]', ']');
+          } else {
+            responseString = parsedResponse.join(', ');
+          }
         } catch {
-          isMatrix = null;
-          console.log(`Invalid matrix: ${r.response}`);
-        }
-      } else if (responseString.includes('[')) {
-        try {
-          var parsedResponse = JSON.parse(r.response);
-          responseString = parsedResponse.join(', ');
-        } catch {
-          console.log(`Invalid JSON: ${r.response}`);
+          if (developer) console.log(`Invalid JSON: ${r.response}`);
         }
       }
-      var correctResponsesString = `Accepted: ${answers.find(a => a.id === questions.find(q => String(q.id) === String(r.question_id)).id).correct_answers.join(', ')}`;
-      const date = new Date(r.timestamp);
+      var correctResponsesString = `Accepted: ${(answer?.correct_answers || []).join(', ')}`;
+      const date = r._timestamp;
       let hours = date.getHours();
       const minutes = date.getMinutes();
-      const currentDate = new Date(r.timestamp);
+      const currentDate = r._timestamp;
       var timeTaken = "N/A";
       var timeTakenToRevise = "N/A";
-      const sameSeatCodeResponses = responses1.filter(a => a.seatCode === r.seatCode).sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+      const sameSeatCodeResponses = responsesBySeat.get(r.seatCode);
       const sameQuestionResponses = sameSeatCodeResponses.filter(a => a.question_id === r.question_id);
       const lastResponseIndex = sameSeatCodeResponses.findIndex(a => new Date(a.timestamp) >= currentDate) - 1;
       const lastResponse = lastResponseIndex >= 0 ? sameSeatCodeResponses[lastResponseIndex] : null;
@@ -823,10 +881,17 @@ try {
       } else {
         result = `${minutes1}m`;
       }
+      const coursePeriodValue = document.getElementById("course-period-input")?.value;
+      const currentCourse = courses.find(course => String(course.id) === coursePeriodValue);
+      const questionLookup = new Map(questions.map(q => [String(q.id), q]));
+      const answerLookup = new Map(answers.map(a => [String(a.id), a]));
+      const hasCorrectResponses = (answerLookup.get(String(questionLookup.get(String(r.question_id)).id)).correct_answers.length > 0);
+      const foundSegment = segments.find(s => (String(s.id) === String(r.segment)) && (currentCourse ? (String(s.course) === String(currentCourse.id)) : true));
+      const foundSegment2 = segments.find(s => (currentCourse ? (String(s.course) === String(currentCourse.id)) : false) && JSON.parse(s.question_ids || [])?.find(q => String(q.id) === String(r.question_id)));
       var buttonGrid = document.createElement('div');
       buttonGrid.className = "button-grid inputs";
       buttonGrid.id = `response-${r.id}`;
-      buttonGrid.innerHTML = `<input type="text" autocomplete="off" class="small" id="response-id-input" value="${r.id}" disabled hidden />${(String(r.flagged) === '1') ? `<button square data-unflag-response tooltip="Unflag Response"><i class="bi bi-flag-fill"></i></button>` : `<button square data-flag-response tooltip="Flag Response"><i class="bi bi-flag"></i></button>`}<input type="text" autocomplete="off" class="small" id="response-segment-input" value="${segments.find(s => (String(s.id) === String(r.segment)) && (courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value) ? (String(s.course) === String(courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value).id)) : true)) ? (segments.find(s => (String(s.id) === String(r.segment)) && (courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value) ? (String(s.course) === String(courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value).id)) : true)).number || r.segment) : (segments.find(s => (courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value) ? (String(s.course) === String(courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value).id)) : false) && JSON.parse(s.question_ids || [])?.find(q => String(q.id) === String(r.question_id)))?.number || '-')}" mockDisabled data-segment="${segments.find(s => (String(s.id) === String(r.segment)) && (courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value) ? (String(s.course) === String(courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value).id)) : true)) ? (segments.find(s => (String(s.id) === String(r.segment)) && (courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value) ? (String(s.course) === String(courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value).id)) : true)).id || r.segment) : (segments.find(s => (courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value) ? (String(s.course) === String(courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value).id)) : false) && JSON.parse(s.question_ids || [])?.find(q => String(q.id) === String(r.question_id)))?.id || '-')}" /><input type="text" autocomplete="off" class="small" id="response-question-input" value="${questions.find(q => String(q.id) === String(r.question_id))?.number}" mockDisabled data-segment="${segments.find(s => (String(s.id) === String(r.segment)) && (courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value) ? (String(s.course) === String(courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value).id)) : true)) ? (segments.find(s => (String(s.id) === String(r.segment)) && (courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value) ? (String(s.course) === String(courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value).id)) : true)).id || r.segment) : (segments.find(s => (courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value) ? (String(s.course) === String(courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value).id)) : false) && JSON.parse(s.question_ids || [])?.find(q => String(q.id) === String(r.question_id)))?.id || '-')}" data-question="${questions.find(q => String(q.id) === String(r.question_id))?.number}" data-question-id="${questions.find(q => String(q.id) === String(r.question_id))?.id}" /><input type="text" autocomplete="off" class="small" id="response-question-id-input" value="${questions.find(q => String(q.id) === String(r.question_id)).id}" disabled hidden /><input type="text" autocomplete="off" class="small${(((r.status === 'Invalid Format') || (r.status === 'Unknown, Recorded')) && document.querySelector('.awaitingResponses .section') && (answers.find(a => a.id === questions.find(q => String(q.id) === String(r.question_id)).id).correct_answers.length > 0)) ? ' hideonhover' : ''}" id="response-seat-code-input" value="${r.seatCode}" disabled data-seat-code /><input type="text" autocomplete="off" class="small" id="response-time-taken-input" value="${timeTaken}" disabled data-time-taken${(typeof timeDifference != 'undefined') ? ` time="${timeDifference}"` : ''} /><input type="text" autocomplete="off" class="small" id="response-time-taken-input" value="${timeTakenToRevise}" disabled data-time-taken${(typeof timeDifference != 'undefined') ? ` time="${timeDifference}"` : ''} /><!--<input type="text" autocomplete="off" class="small" id="response-time-taken-input" value="${result}" disabled data-time-taken />--><textarea autocomplete="off" rows="1" id="response-response-input" value="${escapeHTML(responseString)}" ${isMatrix ? 'mockDisabled' : 'disabled'}>${escapeHTML(responseString)}</textarea>${(r.status === 'Incorrect') ? `<button square data-edit-reason tooltip="Edit Reason"><i class="bi bi-reply${(r.reason) ? '-fill' : ''}"></i></button>` : ''}<input type="text" autocomplete="off" class="smedium${(((r.status === 'Invalid Format') || (r.status === 'Unknown, Recorded')) && document.querySelector('.awaitingResponses .section') && (answers.find(a => a.id === questions.find(q => String(q.id) === String(r.question_id)).id).correct_answers.length > 0)) ? ' hideonhover' : ''}" id="response-timestamp-input" value="${date.getMonth() + 1}/${date.getDate()} ${hours % 12 || 12}:${minutes < 10 ? '0' + minutes : minutes} ${hours >= 12 ? 'PM' : 'AM'}" disabled />${(((r.status === 'Invalid Format') || (r.status === 'Unknown, Recorded')) && document.querySelector('.awaitingResponses .section') && (answers.find(a => a.id === questions.find(q => String(q.id) === String(r.question_id)).id).correct_answers.length > 0)) ? `<textarea autocomplete="off" rows="1" class="showonhover" id="response-correct-responses-input" value="${correctResponsesString}" disabled>${correctResponsesString}</textarea>` : ''}<button square id="mark-correct-button"${(r.status === 'Correct') ? ' disabled' : ''} tooltip="Mark Correct"><i class="bi bi-check-circle${(r.status === 'Correct') ? '-fill' : ''}"></i></button><button square id="mark-incorrect-button"${(r.status === 'Incorrect') ? ' disabled' : ''} tooltip="Mark Incorrect"><i class="bi bi-x-circle${(r.status === 'Incorrect') ? '-fill' : ''}"></i></button>`;
+      buttonGrid.innerHTML = `<input type="text" autocomplete="off" class="small" id="response-id-input" value="${r.id}" disabled hidden />${(String(r.flagged) === '1') ? `<button square data-unflag-response tooltip="Unflag Response"><i class="bi bi-flag-fill"></i></button>` : `<button square data-flag-response tooltip="Flag Response"><i class="bi bi-flag"></i></button>`}<input type="text" autocomplete="off" class="small" id="response-segment-input" value="${foundSegment ? (foundSegment.number || r.segment) : (foundSegment2?.number || '-')}" mockDisabled data-segment="${foundSegment ? (foundSegment.id || r.segment) : (foundSegment2?.id || '-')}" /><input type="text" autocomplete="off" class="small" id="response-question-input" value="${questionLookup.get(String(r.question_id))?.number}" mockDisabled data-segment="${foundSegment ? (foundSegment.id || r.segment) : (foundSegment2?.id || '-')}" data-question="${questionLookup.get(String(r.question_id))?.number}" data-question-id="${questionLookup.get(String(r.question_id))?.id}" /><input type="text" autocomplete="off" class="small" id="response-question-id-input" value="${questionLookup.get(String(r.question_id)).id}" disabled hidden /><input type="text" autocomplete="off" class="small${(((r.status === 'Invalid Format') || (r.status === 'Unknown, Recorded')) && document.querySelector('.awaitingResponses .section') && hasCorrectResponses) ? ' hideonhover' : ''}" id="response-seat-code-input" value="${r.seatCode}" disabled data-seat-code /><input type="text" autocomplete="off" class="small" id="response-time-taken-input" value="${timeTaken}" disabled data-time-taken${(typeof timeDifference != 'undefined') ? ` time="${timeDifference}"` : ''} /><input type="text" autocomplete="off" class="small" id="response-time-taken-input" value="${timeTakenToRevise}" disabled data-time-taken${(typeof timeDifference != 'undefined') ? ` time="${timeDifference}"` : ''} /><!--<input type="text" autocomplete="off" class="small" id="response-time-taken-input" value="${result}" disabled data-time-taken />--><textarea autocomplete="off" rows="1" id="response-response-input" value="${escapeHTML(responseString)}" ${isMatrix ? 'mockDisabled' : 'disabled'}>${escapeHTML(responseString)}</textarea>${(r.status === 'Incorrect') ? `<button square data-edit-reason tooltip="Edit Reason"><i class="bi bi-reply${(r.reason) ? '-fill' : ''}"></i></button>` : ''}<input type="text" autocomplete="off" class="smedium${(((r.status === 'Invalid Format') || (r.status === 'Unknown, Recorded')) && document.querySelector('.awaitingResponses .section') && hasCorrectResponses) ? ' hideonhover' : ''}" id="response-timestamp-input" value="${date.getMonth() + 1}/${date.getDate()} ${hours % 12 || 12}:${minutes < 10 ? '0' + minutes : minutes} ${hours >= 12 ? 'PM' : 'AM'}" disabled />${(((r.status === 'Invalid Format') || (r.status === 'Unknown, Recorded')) && document.querySelector('.awaitingResponses .section') && hasCorrectResponses) ? `<textarea autocomplete="off" rows="1" class="showonhover" id="response-correct-responses-input" value="${correctResponsesString}" disabled>${correctResponsesString}</textarea>` : ''}<button square id="mark-correct-button"${(r.status === 'Correct') ? ' disabled' : ''} tooltip="Mark Correct"><i class="bi bi-check-circle${(r.status === 'Correct') ? '-fill' : ''}"></i></button><button square id="mark-incorrect-button"${(r.status === 'Incorrect') ? ' disabled' : ''} tooltip="Mark Incorrect"><i class="bi bi-x-circle${(r.status === 'Incorrect') ? '-fill' : ''}"></i></button>`;
       if (window.innerWidth >= 1000) {
         buttonGrid.addEventListener('mouseenter', () => {
           var question = questions.find(q => String(q.id) === String(r.question_id));
@@ -855,39 +920,29 @@ try {
           island();
         });
       }
-      if (document.querySelector('.responses .section')) {
-        document.querySelector('.responses .section').appendChild(buttonGrid);
-        document.querySelector('.responses .section .button-grid:last-child #response-segment-input').addEventListener('click', (e) => {
+      if (hasResponsesSection || (((r.status === 'Invalid Format') || (r.status === 'Unknown, Recorded')) && hasAwaitingSection)) {
+        if (((r.status === 'Invalid Format') || (r.status === 'Unknown, Recorded')) && hasAwaitingSection) {
+          awaitingSection.appendChild(buttonGrid);
+        } else if (hasResponsesSection) {
+          responsesSection.appendChild(buttonGrid);
+        }
+        const responseSegmentInput = buttonGrid.querySelector('#response-segment-input');
+        const responseQuestionInput = buttonGrid.querySelector('#response-question-input');
+        const responseResponseInput = buttonGrid.querySelector('#response-response-input');
+        responseSegmentInput.addEventListener('click', (e) => {
           if (e.target.getAttribute('data-segment')) {
             document.getElementById("filter-segment-input").value = e.target.getAttribute('data-segment');
             updateResponses();
           }
         });
-        document.querySelector('.responses .section .button-grid:last-child #response-question-input').addEventListener('click', (e) => {
+        responseQuestionInput.addEventListener('click', (e) => {
           if (e.target.getAttribute('data-question')) {
             if (e.target.getAttribute('data-segment')) document.getElementById("filter-segment-input").value = e.target.getAttribute('data-segment');
-            if (document.getElementById("sort-question-input")) document.getElementById("sort-question-input").value = `"${e.target.getAttribute('data-question')}"`;
+            document.getElementById("sort-question-input").value = `"${e.target.getAttribute('data-question')}"`;
             updateResponses();
           }
         });
-        if (isMatrix) document.querySelector('.responses .section .button-grid:last-child #response-response-input').addEventListener('click', () => ui.expandMatrix(isMatrix));
-      }
-      if (((r.status === 'Invalid Format') || (r.status === 'Unknown, Recorded')) && document.querySelector('.awaitingResponses .section')) {
-        document.querySelector('.awaitingResponses .section').appendChild(buttonGrid);
-        document.querySelector('.awaitingResponses .section .button-grid:last-child #response-segment-input').addEventListener('click', (e) => {
-          if (e.target.getAttribute('data-segment')) {
-            document.getElementById("filter-segment-input").value = e.target.getAttribute('data-segment');
-            updateResponses();
-          }
-        });
-        document.querySelector('.awaitingResponses .section .button-grid:last-child #response-question-input').addEventListener('click', (e) => {
-          if (e.target.getAttribute('data-question')) {
-            if (e.target.getAttribute('data-segment')) document.getElementById("filter-segment-input").value = e.target.getAttribute('data-segment');
-            if (document.getElementById("sort-question-input")) document.getElementById("sort-question-input").value = `"${e.target.getAttribute('data-question')}"`;
-            updateResponses();
-          }
-        });
-        if (isMatrix) document.querySelector('.awaitingResponses .section .button-grid:last-child #response-response-input').addEventListener('click', () => ui.expandMatrix(isMatrix));
+        if (isMatrix) responseResponseInput.addEventListener('click', () => ui.expandMatrix(isMatrix));
       }
       var trend = trendingResponses.find(t => (t.segment === r.segment) && (t.question_id === r.question_id) && (t.response === responseString) && (t.status === r.status));
       if (trend) {
