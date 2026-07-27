@@ -8,6 +8,9 @@ const PRECACHE_URLS = [
   '/index.html',
   '/404.html',
   '/resetcookies.html',
+  '/manifest.webmanifest',
+  '/banner-meta.png',
+  '/favicon.ico',
   '/admin/',
   '/admin/index.html',
   '/admin/archive.html',
@@ -61,6 +64,26 @@ self.addEventListener('fetch', (event) => {
   if (!STATIC_DESTINATIONS.has(request.destination)) return;
 
   event.respondWith(cacheFirst(request));
+});
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  const targetUrl = event.notification?.data?.url || '/';
+
+  event.waitUntil((async () => {
+    const allClients = await clients.matchAll({ type: 'window', includeUncontrolled: true });
+    const matchingClient = allClients.find((client) => client.url.startsWith(self.location.origin));
+
+    if (matchingClient) {
+      await matchingClient.focus();
+      if ('navigate' in matchingClient) {
+        await matchingClient.navigate(targetUrl);
+      }
+      return;
+    }
+
+    await clients.openWindow(targetUrl);
+  })());
 });
 
 async function networkFirst(request) {

@@ -3,6 +3,7 @@ import storage from "./storage.js";
 import * as themes from "../themes/themes.js"
 import * as auth from "./auth.js"
 import Element from "./element.js";
+import { notifyUnreadNotifications } from "./service-worker.js";
 
 export function alert(title, text, callback, blur) {
   return modal({
@@ -1036,7 +1037,8 @@ export function getNotifications() {
 }
 
 export async function setNotifications(array) {
-  notifications = array;
+  const previousCount = notifications.length;
+  notifications = Array.isArray(array) ? array : [];
   if (notifications.length > 0) {
     document.querySelector('[data-modal-view="history"]')?.classList.add('unread');
     document.querySelector('[data-modal-view="history"]')?.setAttribute('tooltip', `History (${notifications.length} unread)`);
@@ -1044,6 +1046,8 @@ export async function setNotifications(array) {
     document.querySelector('[data-modal-view="history"]')?.classList.remove('unread');
     document.querySelector('[data-modal-view="history"]')?.setAttribute('tooltip', 'History');
   }
+
+  await notifyUnreadNotifications(previousCount, notifications.length).catch(() => null);
 }
 
 document.querySelectorAll('[data-report-bug]').forEach(a => a.addEventListener('click', reportBugModal));
