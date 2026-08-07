@@ -752,7 +752,7 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
   --accent-color: #78cab8;
   --accent-text-color: #14302a;
   --error-color: #eb324b;
-  background: url(/store/backdrop/waterfall.jpg) !important;
+  background: url(/store/backdrop/waterfall.png) !important;
 }
 
 [data-theme="water"] {
@@ -763,7 +763,7 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
   --accent-color: #2b333e;
   --accent-text-color: #fff;
   --error-color: #eb324b;
-  background: url(/store/backdrop/water.jpg) !important;
+  background: url(/store/backdrop/water.png) !important;
 }
 
 [data-theme="snowstorm"] {
@@ -774,7 +774,7 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
   --accent-color: #367ec2;
   --accent-text-color: #fff;
   --error-color: #eb324b;
-  background: url(/store/backdrop/snowstorm.jpg) !important;
+  background: url(/store/backdrop/snowstorm.png) !important;
 }
 
 [data-theme="usa"] {
@@ -786,7 +786,7 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
   --accent-text-color: #fff;
   --error-color: #9f244a;
   --backlight-color: #9f244a;
-  background: url(/store/backdrop/usa.jpg) !important;
+  background: url(/store/backdrop/usa.png) !important;
 }
 
 [data-theme="synthwave-terrain"] {
@@ -797,5 +797,5 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
   --accent-color: #e68450;
   --accent-text-color: #fff;
   --error-color: #c66180;
-  background: url(/store/backdrop/synthwave-terrain.jpg) !important;
+  background: url(/store/backdrop/synthwave-terrain.png) !important;
 }
