@@ -6,6 +6,7 @@ const domain = ((window.location.hostname.search('check') != -1) || (window.loca
 
 var authModalOpen = false;
 var hasPassword = false;
+var registrationRestricted = false;
 
 function sortKeys(obj) {
     return Object.keys(obj).sort().reduce((acc, key) => {
@@ -137,7 +138,8 @@ export async function sync(hideWelcome = true, returnFunction = null) {
                 "seatCode": storage.get("code"),
             })
         });
-        hasPassword = userPassword.ok ? true : false;
+        hasPassword = (userPassword.status === 200) ? true : false;
+        registrationRestricted = (userPassword.status === 403) ? true : false;
     } catch (e) {
         console.error(e);
         if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
@@ -285,6 +287,8 @@ export async function sync(hideWelcome = true, returnFunction = null) {
                 console.error(e);
                 if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
             });
+    } else if (registrationRestricted) {
+        ui.view("registration-restricted");
     } else if (!hasPassword) {
         if (storage.get("password")) storage.delete("password");
         ui.modal({

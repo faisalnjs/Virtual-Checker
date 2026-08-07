@@ -457,6 +457,7 @@ try {
         ui.setUnsavedChanges(false);
       };
     } else {
+      ui.view("");
       ui.alert("Error", "Seat code isn't possible");
     }
   }

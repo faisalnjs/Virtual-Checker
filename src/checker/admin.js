@@ -312,16 +312,21 @@ try {
         const elem = document.createElement("div");
         elem.classList = "button-grid inputs";
         elem.style = "flex-wrap: nowrap !important;";
-        var periodCourse = courses.find(course => JSON.parse(course.periods).includes(i))?.id;
+        var periodCourse = courses.find(course => JSON.parse(course.periods).includes(i));
+        var periodCourseId = periodCourse?.id || null;
         var coursesSelectorString = "";
         courses.sort((a, b) => a.id - b.id).forEach(course => {
-          coursesSelectorString += `<option value="${course.id}" ${(periodCourse === course.id) ? 'selected' : ''}>${course.name}</option>`;
+          coursesSelectorString += `<option value="${course.id}" ${(periodCourseId === course.id) ? 'selected' : ''}>${course.name}</option>`;
         });
-        elem.innerHTML = `<input type="text" autocomplete="off" id="period-${i}" class="small" value="Period ${i}" disabled /><select id="periodCourseSelector" value="${(periodCourse === undefined) ? '' : periodCourse}"><option value="" ${(periodCourse === undefined) ? 'selected' : ''}></option>${coursesSelectorString}</select>${rosters.find(roster => String(roster.period) === String(i)) ? '<button class="fit" style="min-width: 126px !important;" data-view-roster>View Roster</button>' : '<button class="fit" style="min-width: 126px !important;" data-upload-roster>Upload Roster</button>'}`;
+        var periodLocked = periodCourse ? JSON.parse(periodCourse.registration_locked || '[]').includes(i) : false;
+        elem.innerHTML = `<input type="text" autocomplete="off" id="period-${i}" class="small" value="Period ${i}" disabled /><select id="periodCourseSelector" value="${periodCourse ? '' : periodCourseId}"><option value="" ${periodCourse ? 'selected' : ''}></option>${coursesSelectorString}</select>${rosters.find(roster => String(roster.period) === String(i)) ? '<button class="fit" style="min-width: 126px !important;" data-view-roster>View Roster</button>' : '<button class="fit" style="min-width: 126px !important;" data-upload-roster>Upload Roster</button>'}<button square tooltip="Toggle Registration" data-restrict-registration><i class="bi bi-lock" ${periodLocked ? '' : 'hidden'}></i><i class="bi bi-unlock" ${periodLocked ? 'hidden' : ''}></i></button>`;
         document.querySelector(".course-reorder .reorder").appendChild(elem);
       }
       document.querySelectorAll("[data-view-roster]").forEach(a => a.addEventListener("click", viewRoster));
       document.querySelectorAll("[data-upload-roster]").forEach(a => a.addEventListener("click", uploadRoster));
+      document.querySelectorAll("[data-restrict-registration]").forEach(a => a.addEventListener("click", () => {
+        for (let child of a.children) child.toggleAttribute('hidden');
+      }));
     }
     if (document.getElementById("course-period-input") && !loadedSegmentEditor && !loadedSegmentCreator && !noReloadCourse) updateSegments();
     if (document.getElementById("filter-segment-input")) updateCourses();
@@ -1129,7 +1134,8 @@ try {
       updatedCourses.push({
         id: course.id,
         name: course.name,
-        periods: JSON.stringify(coursePeriods)
+        periods: JSON.stringify(coursePeriods),
+        registration_locked: JSON.stringify(coursePeriods.filter(period => [...document.querySelector(".reorder").children][period - 1].querySelector('[data-restrict-registration] .bi-unlock').hasAttribute('hidden')))
       })
     });
     ui.setUnsavedChanges(true);
@@ -1169,16 +1175,21 @@ try {
             const elem = document.createElement("div");
             elem.classList = "button-grid inputs";
             elem.style = "flex-wrap: nowrap !important;";
-            var periodCourse = c.find(course => JSON.parse(course.periods).includes(i))?.id;
+            var periodCourse = c.find(course => JSON.parse(course.periods).includes(i));
+            var periodCourseId = periodCourse ? periodCourse?.id : null;
             var coursesSelectorString = "";
             c.sort((a, b) => a.id - b.id).forEach(course => {
-              coursesSelectorString += `<option value="${course.id}" ${(periodCourse === course.id) ? 'selected' : ''}>${course.name}</option>`;
+              coursesSelectorString += `<option value="${course.id}" ${(periodCourseId === course.id) ? 'selected' : ''}>${course.name}</option>`;
             });
-            elem.innerHTML = `<input type="text" autocomplete="off" id="period-${i}" class="small" value="Period ${i}" disabled /><select id="periodCourseSelector" value="${(periodCourse === undefined) ? '' : periodCourse}"><option value="" ${(periodCourse === undefined) ? 'selected' : ''}></option>${coursesSelectorString}</select>${rosters.find(r => String(r.period) === String(i)) ? '<button class="fit" style="min-width: 126px !important;" data-view-roster>View Roster</button>' : '<button class="fit" style="min-width: 126px !important;" data-upload-roster>Upload Roster</button>'}`;
+            var periodLocked = periodCourse ? JSON.parse(periodCourse.registration_locked || '[]').includes(i) : false;
+            elem.innerHTML = `<input type="text" autocomplete="off" id="period-${i}" class="small" value="Period ${i}" disabled /><select id="periodCourseSelector" value="${periodCourse ? '' : periodCourseId}"><option value="" ${periodCourse ? 'selected' : ''}></option>${coursesSelectorString}</select>${rosters.find(r => String(r.period) === String(i)) ? '<button class="fit" style="min-width: 126px !important;" data-view-roster>View Roster</button>' : '<button class="fit" style="min-width: 126px !important;" data-upload-roster>Upload Roster</button>'}<button square tooltip="Toggle Registration" data-restrict-registration><i class="bi bi-lock" ${periodLocked ? '' : 'hidden'}></i><i class="bi bi-unlock" ${periodLocked ? 'hidden' : ''}></i></button>`;
             document.querySelector(".course-reorder .reorder").appendChild(elem);
           }
           document.querySelectorAll("[data-view-roster]").forEach(a => a.addEventListener("click", viewRoster));
           document.querySelectorAll("[data-upload-roster]").forEach(a => a.addEventListener("click", uploadRoster));
+          document.querySelectorAll("[data-restrict-registration]").forEach(a => a.addEventListener("click", () => {
+            for (let child of a.children) child.toggleAttribute('hidden');
+          }));
         }
       })
       .catch((e) => {
