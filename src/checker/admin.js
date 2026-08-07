@@ -1194,7 +1194,7 @@ try {
       })
       .catch((e) => {
         console.error(e);
-        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if (!e.message || (e.message && (e.message.includes('NetworkError') || !e.message.includes(".")))) ui.view("api-fail");
         if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
         pollingOff();
       });
@@ -1425,7 +1425,7 @@ try {
       })
       .catch((e) => {
         console.error(e);
-        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if (!e.message || (e.message && (e.message.includes('NetworkError') || !e.message.includes(".")))) ui.view("api-fail");
         if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
         pollingOff();
       });
@@ -2054,7 +2054,7 @@ try {
       })
       .catch((e) => {
         console.error(e);
-        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if (!e.message || (e.message && (e.message.includes('NetworkError') || !e.message.includes(".")))) ui.view("api-fail");
         if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
         pollingOff();
       });
@@ -2907,7 +2907,7 @@ try {
       })
       .catch((e) => {
         console.error(e);
-        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if (!e.message || (e.message && (e.message.includes('NetworkError') || !e.message.includes(".")))) ui.view("api-fail");
         if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
       });
   }
@@ -2955,7 +2955,7 @@ try {
       })
       .catch((e) => {
         console.error(e);
-        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if (!e.message || (e.message && (e.message.includes('NetworkError') || !e.message.includes(".")))) ui.view("api-fail");
         if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
       });
   }
@@ -3009,7 +3009,7 @@ try {
       })
       .catch((e) => {
         console.error(e);
-        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if (!e.message || (e.message && (e.message.includes('NetworkError') || !e.message.includes(".")))) ui.view("api-fail");
         if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
         pollingOff();
       });
@@ -3099,7 +3099,7 @@ try {
       })
       .catch((e) => {
         console.error(e);
-        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if (!e.message || (e.message && (e.message.includes('NetworkError') || !e.message.includes(".")))) ui.view("api-fail");
         if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
         pollingOff();
       });
@@ -3442,7 +3442,7 @@ try {
       })
       .catch((e) => {
         console.error(e);
-        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if (!e.message || (e.message && (e.message.includes('NetworkError') || !e.message.includes(".")))) ui.view("api-fail");
         if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
         pollingOff();
       });
@@ -4443,7 +4443,7 @@ try {
       })
       .catch((e) => {
         console.error(e);
-        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if (!e.message || (e.message && (e.message.includes('NetworkError') || !e.message.includes(".")))) ui.view("api-fail");
         if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
       });
   }
@@ -4563,7 +4563,7 @@ try {
       })
       .catch((e) => {
         console.error(e);
-        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if (!e.message || (e.message && (e.message.includes('NetworkError') || !e.message.includes(".")))) ui.view("api-fail");
         if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
       });
   }
@@ -4657,7 +4657,7 @@ try {
       })
       .catch((e) => {
         console.error(e);
-        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if (!e.message || (e.message && (e.message.includes('NetworkError') || !e.message.includes(".")))) ui.view("api-fail");
         if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
       });
   }
@@ -4701,7 +4701,7 @@ try {
       })
       .catch((e) => {
         console.error(e);
-        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if (!e.message || (e.message && (e.message.includes('NetworkError') || !e.message.includes(".")))) ui.view("api-fail");
         if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
       });
   }
@@ -4814,7 +4814,7 @@ try {
       })
       .catch((e) => {
         console.error(e);
-        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if (!e.message || (e.message && (e.message.includes('NetworkError') || !e.message.includes(".")))) ui.view("api-fail");
         if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
       });
   }
@@ -4859,7 +4859,7 @@ try {
       })
       .catch((e) => {
         console.error(e);
-        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if (!e.message || (e.message && (e.message.includes('NetworkError') || !e.message.includes(".")))) ui.view("api-fail");
         if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
       });
   }
@@ -4942,7 +4942,7 @@ try {
       })
       .catch((e) => {
         console.error(e);
-        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if (!e.message || (e.message && (e.message.includes('NetworkError') || !e.message.includes(".")))) ui.view("api-fail");
         if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
       });
   }
@@ -5081,7 +5081,7 @@ try {
       })
       .catch((e) => {
         console.error(e);
-        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if (!e.message || (e.message && (e.message.includes('NetworkError') || !e.message.includes(".")))) ui.view("api-fail");
         if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
         pollingOff();
       });
@@ -5218,7 +5218,7 @@ try {
       })
       .catch((e) => {
         console.error(e);
-        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if (!e.message || (e.message && (e.message.includes('NetworkError') || !e.message.includes(".")))) ui.view("api-fail");
         if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
         pollingOff();
       });
@@ -5294,7 +5294,7 @@ try {
       })
       .catch((e) => {
         console.error(e);
-        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if (!e.message || (e.message && (e.message.includes('NetworkError') || !e.message.includes(".")))) ui.view("api-fail");
         if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
         pollingOff();
       });
@@ -5388,7 +5388,7 @@ try {
       })
       .catch((e) => {
         console.error(e);
-        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if (!e.message || (e.message && (e.message.includes('NetworkError') || !e.message.includes(".")))) ui.view("api-fail");
         if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
         pollingOff();
       });
@@ -5457,7 +5457,7 @@ try {
       })
       .catch((e) => {
         console.error(e);
-        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if (!e.message || (e.message && (e.message.includes('NetworkError') || !e.message.includes(".")))) ui.view("api-fail");
         if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
         pollingOff();
       });
@@ -5527,7 +5527,7 @@ try {
       })
       .catch((e) => {
         console.error(e);
-        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if (!e.message || (e.message && (e.message.includes('NetworkError') || !e.message.includes(".")))) ui.view("api-fail");
         if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
         pollingOff();
       });
@@ -5592,7 +5592,7 @@ try {
       })
       .catch((e) => {
         console.error(e);
-        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if (!e.message || (e.message && (e.message.includes('NetworkError') || !e.message.includes(".")))) ui.view("api-fail");
         if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
         pollingOff();
       });
@@ -5659,7 +5659,7 @@ try {
       })
       .catch((e) => {
         console.error(e);
-        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if (!e.message || (e.message && (e.message.includes('NetworkError') || !e.message.includes(".")))) ui.view("api-fail");
         if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
         pollingOff();
       });
@@ -5726,7 +5726,7 @@ try {
       })
       .catch((e) => {
         console.error(e);
-        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if (!e.message || (e.message && (e.message.includes('NetworkError') || !e.message.includes(".")))) ui.view("api-fail");
         if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
         pollingOff();
       });
@@ -5816,7 +5816,7 @@ try {
       })
       .catch((e) => {
         console.error(e);
-        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if (!e.message || (e.message && (e.message.includes('NetworkError') || !e.message.includes(".")))) ui.view("api-fail");
         if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
       });
   }
@@ -5917,7 +5917,7 @@ try {
       })
       .catch((e) => {
         console.error(e);
-        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if (!e.message || (e.message && (e.message.includes('NetworkError') || !e.message.includes(".")))) ui.view("api-fail");
         if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
         pollingOff();
       });
@@ -5987,7 +5987,7 @@ try {
       })
       .catch((e) => {
         console.error(e);
-        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if (!e.message || (e.message && (e.message.includes('NetworkError') || !e.message.includes(".")))) ui.view("api-fail");
         if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
         pollingOff();
       });
@@ -6164,7 +6164,7 @@ try {
       })
       .catch((e) => {
         console.error(e);
-        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if (!e.message || (e.message && (e.message.includes('NetworkError') || !e.message.includes(".")))) ui.view("api-fail");
         if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
       });
   }
@@ -6317,7 +6317,7 @@ try {
       })
       .catch((e) => {
         console.error(e);
-        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if (!e.message || (e.message && (e.message.includes('NetworkError') || !e.message.includes(".")))) ui.view("api-fail");
         if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
       });
   }
@@ -6440,7 +6440,7 @@ try {
       })
       .catch((e) => {
         console.error(e);
-        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if (!e.message || (e.message && (e.message.includes('NetworkError') || !e.message.includes(".")))) ui.view("api-fail");
         if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
         pollingOff();
       });
@@ -6586,7 +6586,7 @@ try {
       })
       .catch((e) => {
         console.error(e);
-        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if (!e.message || (e.message && (e.message.includes('NetworkError') || !e.message.includes(".")))) ui.view("api-fail");
         if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
       });
   }
@@ -6676,7 +6676,7 @@ try {
       })
       .catch((e) => {
         console.error(e);
-        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if (!e.message || (e.message && (e.message.includes('NetworkError') || !e.message.includes(".")))) ui.view("api-fail");
         if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
       });
   }

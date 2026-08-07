@@ -392,7 +392,7 @@ try {
       })
       .catch((e) => {
         console.error(e);
-        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if (!e.message || (e.message && (e.message.includes('NetworkError') || !e.message.includes(".")))) ui.view("api-fail");
         if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
       });
     document.querySelectorAll("#save-button").forEach(w => w.disabled = true);
@@ -1116,7 +1116,7 @@ try {
       })
       .catch((e) => {
         console.error(e);
-        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if (!e.message || (e.message && (e.message.includes('NetworkError') || !e.message.includes(".")))) ui.view("api-fail");
         if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.ta(init);
       });
   }
@@ -1164,7 +1164,7 @@ try {
       })
       .catch((e) => {
         console.error(e);
-        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if (!e.message || (e.message && (e.message.includes('NetworkError') || !e.message.includes(".")))) ui.view("api-fail");
         if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.ta(init);
       });
   }
@@ -1218,7 +1218,7 @@ try {
       })
       .catch((e) => {
         console.error(e);
-        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if (!e.message || (e.message && (e.message.includes('NetworkError') || !e.message.includes(".")))) ui.view("api-fail");
         if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.ta(init);
       });
   }
@@ -1307,7 +1307,7 @@ try {
       })
       .catch((e) => {
         console.error(e);
-        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if (!e.message || (e.message && (e.message.includes('NetworkError') || !e.message.includes(".")))) ui.view("api-fail");
         if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.ta(init);
       });
   }
