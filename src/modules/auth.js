@@ -534,7 +534,7 @@ export async function syncManual(hideWelcome = false) {
             if (!hideWelcome) ui.toast("Welcome back!", 3000, "success", "bi bi-key");
             ui.modal({
                 title: 'Manual Sync',
-                body: `<p>Backup and restore your current settings to seat code <code>${storage.get("code")}</code>. This action is not reversible. Contact an administrator to restore a backup of your settings.</p>`,
+                body: `<p>Backup and restore your current settings to seat code <code>${storage.get("code")}</code>. This action is not reversible.</p>`,
                 buttonGroups: [
                     {
                         label: 'Backup',
