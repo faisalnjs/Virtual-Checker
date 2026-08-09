@@ -51,7 +51,7 @@ export function modal(options) {
       dialog.appendChild(label);
     }
     const input = document.createElement((options.input.type === "select") ? "select" : ((options.input.type === "textarea") ? "textarea" : "input"));
-    if (options.input.type !== "select") input.type = options.input.type || "text";
+    if (options.input.type === "input") input.type = options.input.type || "text";
     if ((options.input.type === "select") && options.input.multiple) input.multiple = options.input.multiple;
     if ((options.input.type === "select") && options.input.options) {
       options.input.options.forEach(option => {
@@ -71,6 +71,7 @@ export function modal(options) {
     input.max = options.input.max || "";
     if (options.input.required) input.required = options.input.required;
     if (options.input.innerHTML) input.innerHTML = options.input.innerHTML;
+    if (options.input.pattern) input.pattern = options.input.pattern;
     dialog.appendChild(input);
   }
 
@@ -102,6 +103,7 @@ export function modal(options) {
       inputElement.max = input.max || "";
       if (input.required) inputElement.required = input.required;
       if (input.innerHTML) inputElement.innerHTML = input.innerHTML;
+      if (input.pattern) inputElement.pattern = input.pattern;
       dialog.appendChild(inputElement);
     });
   }
