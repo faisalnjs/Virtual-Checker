@@ -313,13 +313,13 @@ try {
         elem.classList = "button-grid inputs";
         elem.style = "flex-wrap: nowrap !important;";
         var periodCourse = courses.find(course => JSON.parse(course.periods).includes(i));
-        var periodCourseId = periodCourse?.id || null;
+        var periodCourseId = periodCourse ? periodCourse?.id : null;
         var coursesSelectorString = "";
         courses.sort((a, b) => a.id - b.id).forEach(course => {
           coursesSelectorString += `<option value="${course.id}" ${(periodCourseId === course.id) ? 'selected' : ''}>${course.name}</option>`;
         });
         var periodLocked = periodCourse ? JSON.parse(periodCourse.registration_locked || '[]').includes(i) : false;
-        elem.innerHTML = `<input type="text" autocomplete="off" id="period-${i}" class="small" value="Period ${i}" disabled /><select id="periodCourseSelector" value="${periodCourse ? '' : periodCourseId}"><option value="" ${periodCourse ? 'selected' : ''}></option>${coursesSelectorString}</select>${rosters.find(roster => String(roster.period) === String(i)) ? '<button class="fit" style="min-width: 126px !important;" data-view-roster>View Roster</button>' : '<button class="fit" style="min-width: 126px !important;" data-upload-roster>Upload Roster</button>'}<button square tooltip="Toggle Registration" data-restrict-registration><i class="bi bi-lock" ${periodLocked ? '' : 'hidden'}></i><i class="bi bi-unlock" ${periodLocked ? 'hidden' : ''}></i></button>`;
+        elem.innerHTML = `<input type="text" autocomplete="off" id="period-${i}" class="small" value="Period ${i}" disabled /><select id="periodCourseSelector" value="${periodCourse ? periodCourseId : ''}"><option value="" ${periodCourse ? '' : 'selected'}></option>${coursesSelectorString}</select>${rosters.find(roster => String(roster.period) === String(i)) ? '<button class="fit" style="min-width: 126px !important;" data-view-roster>View Roster</button>' : '<button class="fit" style="min-width: 126px !important;" data-upload-roster>Upload Roster</button>'}<button square tooltip="Toggle Registration" data-restrict-registration><i class="bi bi-lock" ${periodLocked ? '' : 'hidden'}></i><i class="bi bi-unlock" ${periodLocked ? 'hidden' : ''}></i></button>`;
         document.querySelector(".course-reorder .reorder").appendChild(elem);
       }
       document.querySelectorAll("[data-view-roster]").forEach(a => a.addEventListener("click", viewRoster));
@@ -503,6 +503,8 @@ try {
   document.querySelectorAll('#next-page-button').forEach(a => a.addEventListener("click", () => nextPage(a)));
   document.querySelectorAll('#first-page-button').forEach(a => a.addEventListener("click", () => firstPage(a)));
   document.querySelectorAll('#last-page-button').forEach(a => a.addEventListener("click", () => lastPage(a)));
+  document.querySelector('[data-recordings]')?.addEventListener("click", manageClassRecordings);
+  document.querySelector('[data-recordings-flow]')?.addEventListener("click", downloadPowerAutomateFlow);
 
   function toggleSelecting() {
     if (!active) return;
@@ -1182,7 +1184,7 @@ try {
               coursesSelectorString += `<option value="${course.id}" ${(periodCourseId === course.id) ? 'selected' : ''}>${course.name}</option>`;
             });
             var periodLocked = periodCourse ? JSON.parse(periodCourse.registration_locked || '[]').includes(i) : false;
-            elem.innerHTML = `<input type="text" autocomplete="off" id="period-${i}" class="small" value="Period ${i}" disabled /><select id="periodCourseSelector" value="${periodCourse ? '' : periodCourseId}"><option value="" ${periodCourse ? 'selected' : ''}></option>${coursesSelectorString}</select>${rosters.find(r => String(r.period) === String(i)) ? '<button class="fit" style="min-width: 126px !important;" data-view-roster>View Roster</button>' : '<button class="fit" style="min-width: 126px !important;" data-upload-roster>Upload Roster</button>'}<button square tooltip="Toggle Registration" data-restrict-registration><i class="bi bi-lock" ${periodLocked ? '' : 'hidden'}></i><i class="bi bi-unlock" ${periodLocked ? 'hidden' : ''}></i></button>`;
+            elem.innerHTML = `<input type="text" autocomplete="off" id="period-${i}" class="small" value="Period ${i}" disabled /><select id="periodCourseSelector" value="${periodCourse ? periodCourseId : ''}"><option value="" ${periodCourse ? '' : 'selected'}></option>${coursesSelectorString}</select>${rosters.find(r => String(r.period) === String(i)) ? '<button class="fit" style="min-width: 126px !important;" data-view-roster>View Roster</button>' : '<button class="fit" style="min-width: 126px !important;" data-upload-roster>Upload Roster</button>'}<button square tooltip="Toggle Registration" data-restrict-registration><i class="bi bi-lock" ${periodLocked ? '' : 'hidden'}></i><i class="bi bi-unlock" ${periodLocked ? 'hidden' : ''}></i></button>`;
             document.querySelector(".course-reorder .reorder").appendChild(elem);
           }
           document.querySelectorAll("[data-view-roster]").forEach(a => a.addEventListener("click", viewRoster));
@@ -3819,8 +3821,8 @@ try {
                 <span class="color-box ${statusClass}"></span>
                 <span class="color-name">
                   ${useRosterChecked()
-                      ? `${name} (${r.seatCode})`
-                      : r.seatCode}
+              ? `${name} (${r.seatCode})`
+              : r.seatCode}
                   <p class="showonhover"> (${time.unixToString(r.timestamp)})</p>: ${escapeHTML(r.response)}
                 </span>
               </div>
@@ -6327,7 +6329,7 @@ try {
     const roster = rosters.find(roster => String(roster.period) === this.parentElement.querySelector('input').id.split('period-')[1]);
     var rosterDataString = '';
     JSON.parse(roster.data).forEach(row => {
-      rosterDataString += `<br>${row.seatCode}: ${row.last}, ${row.first}`;
+      rosterDataString += `<br>${row.seatCode}: ${row.last}, ${row.first} (${row.email})`;
     });
     ui.modal({
       title: `Period ${roster.period} Roster`,
@@ -7000,6 +7002,221 @@ try {
       document.querySelector('[data-action-refreshes] .bi-pause-circle').style.display = "block";
       document.querySelector('[data-refresh-responses]')?.setAttribute('hidden', '');
     }
+  }
+
+  function manageClassRecordings() {
+    if (!active) return;
+    // "site": "https://valleystream.sharepoint.com/sites/tvc6",
+    // "library": "Documents", // Shared Documents -> Documents
+    // "file": "TVC6 Test-20260808", // TVC6 Test-20260808_164630UTC-Meeting Recording -> TVC6 Test
+    ui.modal({
+      title: 'Manage Class Recordings',
+      body: '<p>Link this course to Microsoft Teams and SharePoint automatic meeting recordings.</p>',
+      inputs: [{
+        type: 'select',
+        label: 'Course',
+        options: courses.map(course => ({
+          value: String(course.id),
+          text: (course.makeups_payload && (course.makeups_payload !== '{}')) ? `${course.name} (exists)` : course.name,
+        })),
+        multiple: false,
+      }, {
+        type: 'select',
+        label: 'Action',
+        options: [{
+          value: 'new',
+          text: 'New / Replace',
+        }, {
+          value: 'clear',
+          text: 'Clear',
+        }],
+        multiple: false,
+      }],
+      buttons: [
+        {
+          text: 'Cancel',
+          class: 'cancel-button',
+          close: true,
+        },
+        {
+          text: 'Next',
+          class: 'submit-button',
+          onclick: async (inputValues) => {
+            const course = courses.find(course => String(course.id) === String(inputValues[0]));
+            const action = inputValues[1];
+            if (!String(course) || !action) {
+              ui.toast("Invalid course or action.", 5000, "error", "bi bi-exclamation-triangle-fill");
+              manageClassRecordings();
+              return;
+            }
+            if (action === 'new') {
+              ui.modal({
+                title: 'Manage Class Recordings',
+                body: '<p>Link this course to Microsoft Teams and SharePoint automatic meeting recordings.</p>',
+                input: {
+                  type: 'textarea',
+                  label: 'Any Previous Recording URL (From Browser Search Bar)',
+                  placeholder: 'https://organization.sharepoint.com/type/Team/_layouts/15/stream.aspx...',
+                  pattern: /https:\/\/(.*)\.sharepoint\.com\/(.*)\/(.*)\/_layouts\/15\/stream\.aspx\?id=%2F(.*)%2F(.*)%2F(.*)%2D(.*)%2D(.*)%2Emp4(.*)/,
+                },
+                buttons: [
+                  {
+                    text: 'Cancel',
+                    class: 'cancel-button',
+                    close: true,
+                  },
+                  {
+                    text: 'Validate',
+                    class: 'submit-button',
+                    onclick: async (inputValue) => {
+                      if (!inputValue) {
+                        ui.toast("Invalid recording URL.", 5000, "error", "bi bi-exclamation-triangle-fill");
+                        manageClassRecordings();
+                        return;
+                      }
+                      const pattern = /https:\/\/(.*)\.sharepoint\.com\/(.*)\/(.*)\/_layouts\/15\/stream\.aspx\?id=%2F(.*)%2F(.*)%2F(.*)%2D(.*)%2D(.*)%2Emp4(.*)/;
+                      const validation = pattern.test(inputValue);
+                      if (!validation) {
+                        ui.toast("Invalid recording URL.", 5000, "error", "bi bi-exclamation-triangle-fill");
+                        manageClassRecordings();
+                        return;
+                      }
+                      const match = [...pattern.exec(inputValue)].map(chunk => decodeURIComponent(chunk));
+                      if (!(match && (match[4].split('/')[0] === match[2]) && (match[4].split('/')[1] === match[3]) && match[4].split('/')[2] && match[4].split('/')[2].split('/')[0] && match[5] && match[6] && (match[5] === 'Recordings') && (match[8] === 'Meeting Recording'))) {
+                        ui.toast("Invalid recording URL.", 5000, "error", "bi bi-exclamation-triangle-fill");
+                        manageClassRecordings();
+                        return;
+                      }
+                      ui.modal({
+                        title: 'Manage Class Recordings',
+                        body: `<p>Does this look correct?</p><br>
+                        <p>Course: ${course.name}<br>
+                        Organization: ${match[1]}<br>
+                        Type: ${match[2]}<br>
+                        Team: ${match[3]}<br>
+                        Library: ${match[4].split('/')[2].split('/')[0].replace('Shared ', '')}<br>
+                        Meeting: ${match[6]}</p><br>`,
+                        buttons: [
+                          {
+                            text: 'No',
+                            class: 'cancel-button',
+                            onclick: manageClassRecordings,
+                            close: true,
+                          },
+                          {
+                            text: 'Yes',
+                            class: 'submit-button',
+                            onclick: async () => {
+                              await fetch(domain + '/course/recordings', {
+                                method: "POST",
+                                headers: {
+                                  "Content-Type": "application/json",
+                                },
+                                body: JSON.stringify({
+                                  usr: storage.get("usr"),
+                                  pwd: storage.get("pwd"),
+                                  course: course.id,
+                                  makeups_payload: JSON.stringify({
+                                    site: `https://${match[1]}.sharepoint.com/${match[2]}/${match[3]}`,
+                                    library: match[4].split('/')[2].split('/')[0].replace('Shared ', ''),
+                                    file: match[6],
+                                  }),
+                                }),
+                              })
+                                .then(async (r) => {
+                                  if (!r.ok) {
+                                    try {
+                                      var re = await r.json();
+                                      if (re.error || re.message) {
+                                        ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+                                        throw new Error(re.error || re.message);
+                                      } else {
+                                        throw new Error("API error");
+                                      }
+                                    } catch (e) {
+                                      throw new Error(e.message || "API error");
+                                    }
+                                  }
+                                  return await r.json();
+                                })
+                                .then(() => {
+                                  ui.setUnsavedChanges(false);
+                                  ui.toast('Successfully saved connection.', 3000, "success", "bi bi-check-lg");
+                                  init();
+                                })
+                                .catch((e) => {
+                                  console.error(e);
+                                  if (!e.message || (e.message && (e.message.includes('NetworkError') || !e.message.includes(".")))) ui.view("api-fail");
+                                  if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
+                                });
+                            },
+                            close: true,
+                          },
+                        ],
+                      });
+                    },
+                    close: true,
+                  },
+                ],
+              });
+            } else if (action === 'clear') {
+              await fetch(domain + '/course/recordings/remove', {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                  usr: storage.get("usr"),
+                  pwd: storage.get("pwd"),
+                  course: course.id,
+                }),
+              })
+                .then(async (r) => {
+                  if (!r.ok) {
+                    try {
+                      var re = await r.json();
+                      if (re.error || re.message) {
+                        ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+                        throw new Error(re.error || re.message);
+                      } else {
+                        throw new Error("API error");
+                      }
+                    } catch (e) {
+                      throw new Error(e.message || "API error");
+                    }
+                  }
+                  return await r.json();
+                })
+                .then(() => {
+                  ui.setUnsavedChanges(false);
+                  ui.toast('Successfully removed connection.', 3000, "success", "bi bi-check-lg");
+                  init();
+                })
+                .catch((e) => {
+                  console.error(e);
+                  if (!e.message || (e.message && (e.message.includes('NetworkError') || !e.message.includes(".")))) ui.view("api-fail");
+                  if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
+                });
+            }
+          },
+          close: true,
+        },
+      ],
+    });
+  }
+
+  function downloadPowerAutomateFlow() {
+    if (!active) return;
+    const templateUrl = `${domain}/flow.zip`;
+    ui.toast(`Downloading flow.zip...`, 3000, "info", "bi bi-download");
+    const link = document.createElement('a');
+    link.href = templateUrl;
+    link.download = templateUrl.split('/')[templateUrl.split('/').length - 1];
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    ui.toast("Power Automate Flow downloaded successfully.", 3000, "success", "bi bi-check-circle-fill");
+    window.open('https://make.powerautomate.com/');
   }
 } catch (error) {
   if (storage.get("developer")) {
