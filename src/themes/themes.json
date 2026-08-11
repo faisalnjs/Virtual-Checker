@@ -69,5 +69,7 @@
   ["snowstorm", "Snowstorm", "snow", 200, ["snow", "blizzard-pro"], true, true],
   ["usa", "USA", "flag", 200, [], true, true],
   ["synthwave-terrain", "Synthwave Terrain", "robot", 200, ["synthwave-pro"], true, true],
-  ["mountains", "Mountains", " mountain", 60, [], true, false]
+  ["mountains", "Mountains", " mountain", 60, [], true, false],
+  ["cherry-blossoms", "Cherry Blossoms", "flower", 60, [], false, false],
+  ["cherry-blossoms-2", "Cherry Blossoms 2", "flower", 70, ["cherry-blossoms"], false, false]
 ]
