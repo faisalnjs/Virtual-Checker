@@ -742,6 +742,28 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
 	background: url(/store/backdrop/mountains.jpg) !important;
 }
 
+[data-theme="cherry-blossoms"] {
+  color-scheme: light;
+  --text-color: #240d0c;
+  --background-color: #005aa9;
+  --surface-color: #e5cbe8;
+  --accent-color: #c673a9;
+  --accent-text-color: #ffffff;
+  --error-color: #9e3b39;
+  background: url(/store/backdrop/cherry-blossoms.png) !important;
+}
+
+[data-theme="cherry-blossoms-2"] {
+  color-scheme: light;
+  --text-color: #401f0d;
+  --background-color: #60a4e7;
+  --surface-color: #ffbbcf;
+  --accent-color: #c85b73;
+  --accent-text-color: #ffffff;
+  --error-color: #c32b28;
+  background: url(/store/backdrop/cherry-blossoms-2.png) !important;
+}
+
 /* Animated Themes */
 
 [data-theme="waterfall"] {
