@@ -764,6 +764,270 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
   background: url(/store/backdrop/cherry-blossoms-2.png) !important;
 }
 
+[data-theme="fruit"] {
+  color-scheme: light;
+  --text-color: #3c2d00;
+  --background-color: #f0f0f0;
+  --surface-color: #ffd179;
+  --accent-color: #7fb92c;
+  --accent-text-color: #ffffff;
+  --error-color: #f27606;
+  background: url(/store/backdrop/fruit.png) !important;
+}
+
+[data-theme="apple"] {
+  color-scheme: light;
+  --text-color: #fff;
+  --background-color: #97cdfb;
+  --surface-color: #fd3135;
+  --accent-color: #c4060d;
+  --accent-text-color: #ffffff;
+  --error-color: #fd3135;
+  background: url(/store/backdrop/apple.png) !important;
+}
+
+[data-theme="avocado"] {
+  color-scheme: light;
+  --text-color: #fff;
+  --background-color: #0d0c06;
+  --surface-color: #486f10;
+  --accent-color: #202e09;
+  --accent-text-color: #ffffff;
+  --error-color: #eb324b;
+  background: url(/store/backdrop/avocado.png) !important;
+}
+
+[data-theme="blueberry"] {
+  color-scheme: light;
+  --text-color: #fff;
+  --background-color: #fff;
+  --surface-color: #111a39;
+  --accent-color: #719ed7;
+  --accent-text-color: #16213d;
+  --error-color: #eb324b;
+  background: url(/store/backdrop/blueberry.png) !important;
+}
+
+[data-theme="banana"] {
+  color-scheme: light;
+  --text-color: #fff;
+  --background-color: #080202;
+  --surface-color: #eac02b;
+  --accent-color: #c88e00;
+  --accent-text-color: #ffffff;
+  --error-color: #eb324b;
+  background: url(/store/backdrop/banana.png) !important;
+}
+
+[data-theme="coconut"] {
+  color-scheme: light;
+  --text-color: #fff;
+  --background-color: #000;
+  --surface-color: #744532;
+  --accent-color: #965a38;
+  --accent-text-color: #ffffff;
+  --error-color: #eb324b;
+  background: url(/store/backdrop/coconut.png) !important;
+}
+
+[data-theme="dragon-fruit"] {
+  color-scheme: light;
+  --text-color: #fff;
+  --background-color: #080703;
+  --surface-color: #cc3559;
+  --accent-color: #fa4899;
+  --accent-text-color: #ffffff;
+  --error-color: #cc3559;
+  background: url(/store/backdrop/dragon-fruit.png) !important;
+}
+
+[data-theme="grape"] {
+  color-scheme: light;
+  --text-color: #0d0603;
+  --background-color: #58a7ec;
+  --surface-color: #d2d064;
+  --accent-color: #b9bc01;
+  --accent-text-color: #ffffff;
+  --error-color: #eb324b;
+  background: url(/store/backdrop/grape.png) !important;
+}
+
+[data-theme="kiwi"] {
+  color-scheme: light;
+  --text-color: #fff;
+  --background-color: #080928;
+  --surface-color: #070826;
+  --accent-color: #7a1;
+  --accent-text-color: #ffffff;
+  --error-color: #eb324b;
+  background: url(/store/backdrop/kiwi.png) !important;
+}
+
+[data-theme="kumquat"] {
+  color-scheme: light;
+  --text-color: #fff;
+  --background-color: #010001;
+  --surface-color: #db8820;
+  --accent-color: #dfd5ab;
+  --accent-text-color: #db8820;
+  --error-color: #eb324b;
+  background: url(/store/backdrop/kumquat.png) !important;
+}
+
+[data-theme="lemon"] {
+  color-scheme: light;
+  --text-color: #3c2d00;
+  --background-color: #edc01f;
+  --surface-color: #ffe643;
+  --accent-color: #b08a0c;
+  --accent-text-color: #ffffff;
+  --error-color: #eb324b;
+  background: url(/store/backdrop/lemon.png) !important;
+}
+
+[data-theme="lime"] {
+  color-scheme: light;
+  --text-color: #fff;
+  --background-color: #8abb08;
+  --surface-color: #71d63a;
+  --accent-color: #429119;
+  --accent-text-color: #ffffff;
+  --error-color: #eb324b;
+  background: url(/store/backdrop/lime.png) !important;
+}
+
+[data-theme="mango"] {
+  color-scheme: light;
+  --text-color: #fff;
+  --background-color: #663910;
+  --surface-color: #d38e03;
+  --accent-color: #eca200;
+  --accent-text-color: #ffffff;
+  --error-color: #eb324b;
+  background: url(/store/backdrop/mango.png) !important;
+}
+
+[data-theme="orange"] {
+  color-scheme: light;
+  --text-color: #fff;
+  --background-color: #f7a830;
+  --surface-color: #fdbc00;
+  --accent-color: #fe5504;
+  --accent-text-color: #ffffff;
+  --error-color: #eb324b;
+  background: url(/store/backdrop/orange.png) !important;
+}
+
+[data-theme="peach"] {
+  color-scheme: light;
+  --text-color: #fff;
+  --background-color: #0e0108;
+  --surface-color: #d25151;
+  --accent-color: #e8c54c;
+  --accent-text-color: #0d0007;
+  --error-color: #eb324b;
+  background: url(/store/backdrop/peach.png) !important;
+}
+
+[data-theme="pear"] {
+  color-scheme: light;
+  --text-color: #fff;
+  --background-color: #4e4333;
+  --surface-color: #5b7400;
+  --accent-color: #da9e7a;
+  --accent-text-color: #1d2d13;
+  --error-color: #eb324b;
+  background: url(/store/backdrop/pear.png) !important;
+}
+
+[data-theme="pineapple"] {
+  color-scheme: light;
+  --text-color: #fff;
+  --background-color: #030502;
+  --surface-color: #3c523b;
+  --accent-color: #e58532;
+  --accent-text-color: #ffffff;
+  --error-color: #97390e;
+  background: url(/store/backdrop/pineapple.png) !important;
+}
+
+[data-theme="pomegranate"] {
+  color-scheme: dark;
+  --text-color: #fff;
+  --background-color: #121117;
+  --surface-color: #97162c;
+  --accent-color: #2a1115;
+  --accent-text-color: #ffffff;
+  --error-color: #901115;
+  background: url(/store/backdrop/pomegranate.png) !important;
+}
+
+[data-theme="raspberry"] {
+  color-scheme: light;
+  --text-color: #fff;
+  --background-color: #4c0003;
+  --surface-color: #ff444a;
+  --accent-color: #650c0f;
+  --accent-text-color: #ffffff;
+  --error-color: #eb324b;
+  background: url(/store/backdrop/raspberry.png) !important;
+}
+
+[data-theme="raspberry-blueberry"] {
+  color-scheme: light;
+  --text-color: #fff;
+  --background-color: #cfae99;
+  --surface-color: #9f0115;
+  --accent-color: #1b3550;
+  --accent-text-color: #ffffff;
+  --error-color: #d7011b;
+  background: url(/store/backdrop/raspberry-blueberry.png) !important;
+}
+
+[data-theme="strawberry-pro"] {
+  color-scheme: light;
+  --text-color: #fff;
+  --background-color: #000;
+  --surface-color: #d80106;
+  --accent-color: #5a8527;
+  --accent-text-color: #ffffff;
+  --error-color: #c80000;
+  background: url(/store/backdrop/strawberry-pro.png) !important;
+}
+
+[data-theme="watermelon"] {
+  color-scheme: light;
+  --text-color: #fff;
+  --background-color: #020200;
+  --surface-color: #688335;
+  --accent-color: #efd25b;
+  --accent-text-color: #070500;
+  --error-color: #eb324b;
+  background: url(/store/backdrop/watermelon.png) !important;
+}
+
+[data-theme="watermelon-2"] {
+  color-scheme: light;
+  --text-color: #fff;
+  --background-color: #030502;
+  --surface-color: #4d9553;
+  --accent-color: #063857;
+  --accent-text-color: #fff;
+  --error-color: #eb324b;
+  background: url(/store/backdrop/watermelon-2.png) !important;
+}
+
+[data-theme="watermelon-pro"] {
+  color-scheme: light;
+  --text-color: #fff;
+  --background-color: #500;
+  --surface-color: #ee4839;
+  --accent-color: #d3190d;
+  --accent-text-color: #fff;
+  --error-color: #eb324b;
+  background: url(/store/backdrop/watermelon-pro.png) !important;
+}
+
 /* Animated Themes */
 
 [data-theme="waterfall"] {
