@@ -1023,13 +1023,17 @@ body:has(.topbar) #checker.horizontal .column:last-child {
   transition: 0.25s background-color;
 }
 
+[data-modal-page="store"]::-webkit-scrollbar {
+  width: 28px !important;
+}
+
 [data-modal-page="store"]:has(.promo button:hover),
 [data-modal-page="store"]:has(.themes-grid .theme-item button:hover) {
   color: transparent;
   background-color: transparent;
   box-shadow: none;
   overflow-y: hidden;
-  padding-right: 1rem;
+  padding-right: 28px;
   transition: 0.25s background-color;
 }
 
