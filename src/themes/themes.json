@@ -101,5 +101,6 @@
   ["japan", "Japan", "airplane-engines", 60, [], false, false, false],
   ["wood", "Wood", "tree", 60, [], false, false, false],
   ["sugar-bites", "Sugar Bites", "fork-knife", 60, [], false, false, false],
-  ["cookies", "Cookies", "fork-knife", 60, [], false, false, true]
+  ["cookies", "Cookies", "fork-knife", 60, [], false, false, true],
+  ["pandas", "Pandas", "", 60, [], false, false, true]
 ]

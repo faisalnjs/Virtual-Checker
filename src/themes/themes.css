@@ -1091,6 +1091,18 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
   background-repeat: repeat !important;
 }
 
+[data-theme="pandas"]:not(.force) {
+  color-scheme: light;
+  --text-color: #fff;
+  --background-color: #61aa8d;
+  --surface-color: #318060;
+  --accent-color: #fff;
+  --accent-text-color: #000;
+  background: url(/store/backdrop/pandas.png) !important;
+  background-size: 300px !important;
+  background-repeat: repeat !important;
+}
+
 /* Animated Themes */
 
 [data-theme="waterfall"] {
