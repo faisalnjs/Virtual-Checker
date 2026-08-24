@@ -1039,6 +1039,16 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
   background: url(/store/backdrop/coconut-tree.png) !important;
 }
 
+[data-theme="calm-palm"] {
+  color-scheme: light;
+  --text-color: #fff;
+  --background-color: #719faf;
+  --surface-color: #338aa3;
+  --accent-color: #3c5104;
+  --accent-text-color: #fff;
+  background: url(/store/backdrop/calm-palm.png) !important;
+}
+
 /* Animated Themes */
 
 [data-theme="waterfall"] {
