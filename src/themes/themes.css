@@ -1052,11 +1052,21 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
 [data-theme="japan"] {
   color-scheme: light;
   --text-color: #b18445;
-  --background-color: #c3c2c8;
+  --background-color: #1c2011;
   --surface-color: #3b1500;
   --accent-color: #865e23;
   --accent-text-color: #fff;
   background: url(/store/backdrop/japan.png) !important;
+}
+
+[data-theme="wood"] {
+  color-scheme: light;
+  --text-color: #5b260e;
+  --background-color: #b8753e;
+  --surface-color: #d27a41;
+  --accent-color: #9b5236;
+  --accent-text-color: #f7c080;
+  background: url(/store/backdrop/wood.png) !important;
 }
 
 /* Animated Themes */
