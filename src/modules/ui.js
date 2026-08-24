@@ -3,6 +3,7 @@ import storage from "./storage.js";
 import * as themes from "../themes/themes.js"
 import * as auth from "./auth.js"
 import Element from "./element.js";
+import { notifyUnreadNotifications } from "./service-worker.js";
 
 export function alert(title, text, callback, blur) {
   return modal({
@@ -50,7 +51,7 @@ export function modal(options) {
       dialog.appendChild(label);
     }
     const input = document.createElement((options.input.type === "select") ? "select" : ((options.input.type === "textarea") ? "textarea" : "input"));
-    if (options.input.type !== "select") input.type = options.input.type || "text";
+    if (options.input.type === "input") input.type = options.input.type || "text";
     if ((options.input.type === "select") && options.input.multiple) input.multiple = options.input.multiple;
     if ((options.input.type === "select") && options.input.options) {
       options.input.options.forEach(option => {
@@ -70,6 +71,7 @@ export function modal(options) {
     input.max = options.input.max || "";
     if (options.input.required) input.required = options.input.required;
     if (options.input.innerHTML) input.innerHTML = options.input.innerHTML;
+    if (options.input.pattern) input.pattern = options.input.pattern;
     dialog.appendChild(input);
   }
 
@@ -101,6 +103,7 @@ export function modal(options) {
       inputElement.max = input.max || "";
       if (input.required) inputElement.required = input.required;
       if (input.innerHTML) inputElement.innerHTML = input.innerHTML;
+      if (input.pattern) inputElement.pattern = input.pattern;
       dialog.appendChild(inputElement);
     });
   }
@@ -136,8 +139,8 @@ export function modal(options) {
               });
               if (hasEmptyRequiredInput) return;
               const inputValue = (dialog.querySelectorAll(".dialog-input").length > 1) ? [...dialog.querySelectorAll(".dialog-input")].map(dialogInput => {
-                return dialogInput.multiple ? [...dialogInput.selectedOptions].map(e => Number(e.value)) : dialogInput.value;
-              }) : (dialog.querySelector(".dialog-input") ? dialog.querySelector(".dialog-input").value : null);
+                return dialogInput.multiple ? [...dialogInput.selectedOptions].map(option => Number.isNaN(Number(option.value)) ? option.value : Number(option.value)) : (Number.isNaN(Number(dialogInput.value)) ? dialogInput.value : Number(dialogInput.value));
+              }) : (dialog.querySelector(".dialog-input") ? dialog.querySelector(".dialog-input").multiple ? [...dialog.querySelector(".dialog-input").selectedOptions].map(option => Number.isNaN(Number(option.value)) ? option.value : Number(option.value)) : (Number.isNaN(Number(dialog.querySelector(".dialog-input").value)) ? dialog.querySelector(".dialog-input").value : Number(dialog.querySelector(".dialog-input").value)) : null);
               button.onclick(inputValue);
             }
             if (button.close) {
@@ -172,8 +175,8 @@ export function modal(options) {
             });
             if (hasEmptyRequiredInput) return;
             const inputValue = (dialog.querySelectorAll(".dialog-input").length > 1) ? [...dialog.querySelectorAll(".dialog-input")].map(dialogInput => {
-              return dialogInput.multiple ? [...dialogInput.selectedOptions].map(e => Number(e.value)) : dialogInput.value;
-            }) : (dialog.querySelector(".dialog-input") ? dialog.querySelector(".dialog-input").value : null);
+              return dialogInput.multiple ? [...dialogInput.selectedOptions].map(option => Number.isNaN(Number(option.value)) ? option.value : Number(option.value)) : (Number.isNaN(Number(dialogInput.value)) ? dialogInput.value : Number(dialogInput.value));
+            }) : (dialog.querySelector(".dialog-input") ? (dialog.querySelector(".dialog-input").multiple ? [...dialog.querySelector(".dialog-input").selectedOptions].map(option => Number.isNaN(Number(option.value)) ? option.value : Number(option.value)) : (Number.isNaN(Number(dialog.querySelector(".dialog-input").value)) ? dialog.querySelector(".dialog-input").value : Number(dialog.querySelector(".dialog-input").value))) : null);
             button.onclick(inputValue);
           }
           if (button.close) {
@@ -1036,7 +1039,8 @@ export function getNotifications() {
 }
 
 export async function setNotifications(array) {
-  notifications = array;
+  const previousCount = notifications.length;
+  notifications = Array.isArray(array) ? array : [];
   if (notifications.length > 0) {
     document.querySelector('[data-modal-view="history"]')?.classList.add('unread');
     document.querySelector('[data-modal-view="history"]')?.setAttribute('tooltip', `History (${notifications.length} unread)`);
@@ -1044,6 +1048,8 @@ export async function setNotifications(array) {
     document.querySelector('[data-modal-view="history"]')?.classList.remove('unread');
     document.querySelector('[data-modal-view="history"]')?.setAttribute('tooltip', 'History');
   }
+
+  await notifyUnreadNotifications(previousCount, notifications.length).catch(() => null);
 }
 
 document.querySelectorAll('[data-report-bug]').forEach(a => a.addEventListener('click', reportBugModal));

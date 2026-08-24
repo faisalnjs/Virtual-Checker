@@ -49,6 +49,7 @@ var pagination = {
 var questionsToDelete = [];
 var keepSegment = null;
 var fromAwaitingScoring = false;
+var actionRefreshes = false;
 
 var draggableQuestionList = null;
 var draggableSegmentReorder = null;
@@ -311,16 +312,21 @@ try {
         const elem = document.createElement("div");
         elem.classList = "button-grid inputs";
         elem.style = "flex-wrap: nowrap !important;";
-        var periodCourse = courses.find(course => JSON.parse(course.periods).includes(i))?.id;
+        var periodCourse = courses.find(course => JSON.parse(course.periods).includes(i));
+        var periodCourseId = periodCourse ? periodCourse?.id : null;
         var coursesSelectorString = "";
         courses.sort((a, b) => a.id - b.id).forEach(course => {
-          coursesSelectorString += `<option value="${course.id}" ${(periodCourse === course.id) ? 'selected' : ''}>${course.name}</option>`;
+          coursesSelectorString += `<option value="${course.id}" ${(periodCourseId === course.id) ? 'selected' : ''}>${course.name}</option>`;
         });
-        elem.innerHTML = `<input type="text" autocomplete="off" id="period-${i}" class="small" value="Period ${i}" disabled /><select id="periodCourseSelector" value="${(periodCourse === undefined) ? '' : periodCourse}"><option value="" ${(periodCourse === undefined) ? 'selected' : ''}></option>${coursesSelectorString}</select>${rosters.find(roster => String(roster.period) === String(i)) ? '<button class="fit" style="min-width: 126px !important;" data-view-roster>View Roster</button>' : '<button class="fit" style="min-width: 126px !important;" data-upload-roster>Upload Roster</button>'}`;
+        var periodLocked = periodCourse ? JSON.parse(periodCourse.registration_locked || '[]').includes(i) : false;
+        elem.innerHTML = `<input type="text" autocomplete="off" id="period-${i}" class="small" value="Period ${i}" disabled /><select id="periodCourseSelector" value="${periodCourse ? periodCourseId : ''}"><option value="" ${periodCourse ? '' : 'selected'}></option>${coursesSelectorString}</select>${rosters.find(roster => String(roster.period) === String(i)) ? '<button class="fit" style="min-width: 126px !important;" data-view-roster>View Roster</button>' : '<button class="fit" style="min-width: 126px !important;" data-upload-roster>Upload Roster</button>'}<button square tooltip="Toggle Registration" data-restrict-registration><i class="bi bi-lock" ${periodLocked ? '' : 'hidden'}></i><i class="bi bi-unlock" ${periodLocked ? 'hidden' : ''}></i></button>`;
         document.querySelector(".course-reorder .reorder").appendChild(elem);
       }
       document.querySelectorAll("[data-view-roster]").forEach(a => a.addEventListener("click", viewRoster));
       document.querySelectorAll("[data-upload-roster]").forEach(a => a.addEventListener("click", uploadRoster));
+      document.querySelectorAll("[data-restrict-registration]").forEach(a => a.addEventListener("click", () => {
+        for (let child of a.children) child.toggleAttribute('hidden');
+      }));
     }
     if (document.getElementById("course-period-input") && !loadedSegmentEditor && !loadedSegmentCreator && !noReloadCourse) updateSegments();
     if (document.getElementById("filter-segment-input")) updateCourses();
@@ -447,54 +453,58 @@ try {
     return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
   }
 
-  if (document.querySelector('[data-select-multiple]')) document.querySelector('[data-select-multiple]').addEventListener("click", toggleSelecting);
-  if (document.querySelector('[data-delete-multiple]')) document.querySelector('[data-delete-multiple]').addEventListener("click", deleteMultiple);
-  if (document.querySelector('[data-polling]')) document.querySelector('[data-polling]').addEventListener("click", togglePolling);
-  if (document.querySelector('[data-timestamps]')) document.querySelector('[data-timestamps]').addEventListener("click", toggleTimestamps);
-  if (document.querySelector('[data-speed]')) document.querySelector('[data-speed]').addEventListener("click", toggleSpeedMode);
-  if (document.getElementById('enable-speed-mode-button')) document.getElementById('enable-speed-mode-button').addEventListener("click", enableSpeedMode);
-  if (document.getElementById('sort-segments-due')) document.getElementById('sort-segments-due').addEventListener("click", sortSegmentsDue);
-  if (document.getElementById('sort-segments-increasing')) document.getElementById('sort-segments-increasing').addEventListener("click", sortSegmentsIncreasing);
-  if (document.getElementById('sort-segments-decreasing')) document.getElementById('sort-segments-decreasing').addEventListener("click", sortSegmentsDecreasing);
-  if (document.getElementById('sort-segments-button')) document.getElementById('sort-segments-button').addEventListener("click", sortSegments);
-  if (document.getElementById('hideIncorrectAttempts')) document.getElementById('hideIncorrectAttempts').addEventListener("change", updateSegments);
-  if (document.getElementById('hideIncorrectAttempts')) document.getElementById('hideIncorrectAttempts').addEventListener("change", updateResponses);
-  if (document.getElementById('hideIncorrectAttempts')) document.getElementById('hideIncorrectAttempts').addEventListener("change", updateQuestionReports);
-  if (document.querySelector('[data-expand-reports]')) document.querySelector('[data-expand-reports]').addEventListener("click", toggleAllReports);
-  if (document.getElementById('launch-speed-mode')) document.getElementById('launch-speed-mode').addEventListener("click", toggleSpeedMode);
-  if (document.getElementById('add-existing-question-button')) document.getElementById('add-existing-question-button').addEventListener("click", addExistingQuestion);
-  if (document.querySelector('[data-syllabus-upload]')) document.querySelector('[data-syllabus-upload]').addEventListener("click", renderSyllabusPond);
-  if (document.getElementById('new-course-button')) document.getElementById('new-course-button').addEventListener("click", newCourseModal);
-  if (document.getElementById('remove-segments-due-dates-button')) document.getElementById('remove-segments-due-dates-button').addEventListener("click", removeAllSegmentsDueDates);
-  if (document.querySelector('[data-clear-responses]')) document.querySelector('[data-clear-responses]').addEventListener("click", clearResponsesConfirm1);
-  if (document.getElementById('export-report')) document.getElementById('export-report').addEventListener("click", exportReport);
-  if (document.querySelector('[data-archive-course]')) document.querySelector('[data-archive-course]').addEventListener("click", () => archiveModal('course'));
-  if (document.querySelector('[data-archive-segment]')) document.querySelector('[data-archive-segment]').addEventListener("click", () => archiveModal('segment'));
-  if (document.querySelector('[data-archive-multiple]')) document.querySelector('[data-archive-multiple]').addEventListener("click", archiveMultipleModal);
-  if (document.querySelector('[data-unarchive-multiple]')) document.querySelector('[data-unarchive-multiple]').addEventListener("click", unarchiveMultipleModal);
-  if (document.getElementById('filter-report-responses')) document.getElementById('filter-report-responses').addEventListener("input", updateSegments);
-  if (document.getElementById('filter-report-responses')) document.getElementById('filter-report-responses').addEventListener("input", updateResponses);
-  if (document.getElementById('filter-report-responses')) document.getElementById('filter-report-responses').addEventListener("input", updateQuestionReports);
-  if (document.getElementById('useRoster')) document.getElementById('useRoster').addEventListener("change", updateSegments);
-  if (document.getElementById('useRoster')) document.getElementById('useRoster').addEventListener("change", updateResponses);
-  if (document.getElementById('useRoster')) document.getElementById('useRoster').addEventListener("change", updateQuestionReports);
-  if (document.getElementById('sort-report-responses')) document.getElementById('sort-report-responses').addEventListener("input", updateSegments);
-  if (document.getElementById('sort-report-responses')) document.getElementById('sort-report-responses').addEventListener("input", updateResponses);
-  if (document.getElementById('sort-report-responses')) document.getElementById('sort-report-responses').addEventListener("input", updateQuestionReports);
-  if (document.getElementById('hideUnanswered')) document.getElementById('hideUnanswered').addEventListener("input", updateSegments);
-  if (document.getElementById('hideUnanswered')) document.getElementById('hideUnanswered').addEventListener("input", updateResponses);
-  if (document.getElementById('hideUnanswered')) document.getElementById('hideUnanswered').addEventListener("input", updateQuestionReports);
-  if (document.querySelector('[data-select-between]')) document.querySelector('[data-select-between]').addEventListener("click", selectBetween);
-  if (document.getElementById('rotate-period')) document.getElementById('rotate-period').addEventListener("click", rotatePeriodConfirm);
-  if (document.getElementById('export-responses')) document.getElementById('export-responses').addEventListener("click", exportResponses);
-  if (document.querySelector('[data-clicker-announcement-image-upload]')) document.querySelector('[data-clicker-announcement-image-upload]').addEventListener("click", () => renderAnnouncementPond('clicker'));
-  if (document.querySelector('[data-checker-announcement-image-upload]')) document.querySelector('[data-checker-announcement-image-upload]').addEventListener("click", () => renderAnnouncementPond('checker'));
-  if (document.querySelector('[data-clicker-announcement-clear]')) document.querySelector('[data-clicker-announcement-clear]').addEventListener("click", () => clearAnnouncement('clicker'));
-  if (document.querySelector('[data-checker-announcement-clear]')) document.querySelector('[data-checker-announcement-clear]').addEventListener("click", () => clearAnnouncement('checker'));
+  document.querySelector('[data-select-multiple]')?.addEventListener("click", toggleSelecting);
+  document.querySelector('[data-delete-multiple]')?.addEventListener("click", deleteMultiple);
+  document.querySelector('[data-polling]')?.addEventListener("click", togglePolling);
+  document.querySelector('[data-timestamps]')?.addEventListener("click", toggleTimestamps);
+  document.querySelector('[data-speed]')?.addEventListener("click", toggleSpeedMode);
+  document.getElementById('enable-speed-mode-button')?.addEventListener("click", enableSpeedMode);
+  document.getElementById('sort-segments-due')?.addEventListener("click", sortSegmentsDue);
+  document.getElementById('sort-segments-increasing')?.addEventListener("click", sortSegmentsIncreasing);
+  document.getElementById('sort-segments-decreasing')?.addEventListener("click", sortSegmentsDecreasing);
+  document.getElementById('sort-segments-button')?.addEventListener("click", sortSegments);
+  document.getElementById('hideIncorrectAttempts')?.addEventListener("change", updateSegments);
+  document.getElementById('hideIncorrectAttempts')?.addEventListener("change", updateResponses);
+  document.getElementById('hideIncorrectAttempts')?.addEventListener("change", updateQuestionReports);
+  document.querySelector('[data-expand-reports]')?.addEventListener("click", toggleAllReports);
+  document.getElementById('launch-speed-mode')?.addEventListener("click", toggleSpeedMode);
+  document.getElementById('add-existing-question-button')?.addEventListener("click", addExistingQuestion);
+  document.querySelector('[data-syllabus-upload]')?.addEventListener("click", renderSyllabusPond);
+  document.getElementById('new-course-button')?.addEventListener("click", newCourseModal);
+  document.getElementById('remove-segments-due-dates-button')?.addEventListener("click", removeAllSegmentsDueDates);
+  document.querySelector('[data-clear-responses]')?.addEventListener("click", clearResponsesConfirm1);
+  document.getElementById('export-report')?.addEventListener("click", exportReport);
+  document.querySelector('[data-archive-course]')?.addEventListener("click", () => archiveModal('course'));
+  document.querySelector('[data-archive-segment]')?.addEventListener("click", () => archiveModal('segment'));
+  document.querySelector('[data-archive-multiple]')?.addEventListener("click", archiveMultipleModal);
+  document.querySelector('[data-unarchive-multiple]')?.addEventListener("click", unarchiveMultipleModal);
+  document.getElementById('filter-report-responses')?.addEventListener("input", updateSegments);
+  document.getElementById('filter-report-responses')?.addEventListener("input", updateResponses);
+  document.getElementById('filter-report-responses')?.addEventListener("input", updateQuestionReports);
+  document.getElementById('useRoster')?.addEventListener("change", updateSegments);
+  document.getElementById('useRoster')?.addEventListener("change", updateResponses);
+  document.getElementById('useRoster')?.addEventListener("change", updateQuestionReports);
+  document.getElementById('sort-report-responses')?.addEventListener("input", updateSegments);
+  document.getElementById('sort-report-responses')?.addEventListener("input", updateResponses);
+  document.getElementById('sort-report-responses')?.addEventListener("input", updateQuestionReports);
+  document.getElementById('hideUnanswered')?.addEventListener("input", updateSegments);
+  document.getElementById('hideUnanswered')?.addEventListener("input", updateResponses);
+  document.getElementById('hideUnanswered')?.addEventListener("input", updateQuestionReports);
+  document.querySelector('[data-select-between]')?.addEventListener("click", selectBetween);
+  document.getElementById('rotate-period')?.addEventListener("click", rotatePeriodConfirm);
+  document.getElementById('export-responses')?.addEventListener("click", exportResponses);
+  document.querySelector('[data-clicker-announcement-image-upload]')?.addEventListener("click", () => renderAnnouncementPond('clicker'));
+  document.querySelector('[data-checker-announcement-image-upload]')?.addEventListener("click", () => renderAnnouncementPond('checker'));
+  document.querySelector('[data-clicker-announcement-clear]')?.addEventListener("click", () => clearAnnouncement('clicker'));
+  document.querySelector('[data-checker-announcement-clear]')?.addEventListener("click", () => clearAnnouncement('checker'));
+  document.querySelector('[data-action-refreshes]')?.addEventListener("click", toggleActionRefreshes);
+  document.querySelector('[data-refresh-responses]')?.addEventListener("click", init);
   document.querySelectorAll('#previous-page-button').forEach(a => a.addEventListener("click", () => previousPage(a)));
   document.querySelectorAll('#next-page-button').forEach(a => a.addEventListener("click", () => nextPage(a)));
   document.querySelectorAll('#first-page-button').forEach(a => a.addEventListener("click", () => firstPage(a)));
   document.querySelectorAll('#last-page-button').forEach(a => a.addEventListener("click", () => lastPage(a)));
+  document.querySelector('[data-recordings]')?.addEventListener("click", manageClassRecordings);
+  document.querySelector('[data-recordings-flow]')?.addEventListener("click", downloadPowerAutomateFlow);
 
   function toggleSelecting() {
     if (!active) return;
@@ -877,71 +887,138 @@ try {
         });
       }
       if (document.querySelector('.segment-reports')) {
-        c.filter(s => document.getElementById("filter-segment-input")?.value ? (String(s.id) === document.getElementById("filter-segment-input").value) : true).sort((a, b) => a.order - b.order).forEach(segment => {
+        const $filterSegment = document.getElementById('filter-segment-input');
+        const $sortQuestion = document.getElementById('sort-question-input');
+        const $sortSeat = document.getElementById('sort-seat-input');
+        const $filterReport = document.querySelector('#filter-report-responses [aria-selected="true"]');
+        const $sortReport = document.querySelector('#sort-report-responses [aria-selected="true"]');
+        const $hideIncorrect = document.getElementById('hideIncorrectAttempts');
+        const $hideUnanswered = document.getElementById('hideUnanswered');
+        const $useRoster = document.getElementById('useRoster');
+        const $coursePeriod = document.getElementById('course-period-input');
+        const course = courses.find(c => String(c.id) === $coursePeriod?.value) || {};
+        const coursePeriods = new Set(JSON.parse(course.periods || '[]'));
+        const rosterByPeriod = {};
+        if ($useRoster?.checked) rosters.forEach(r => {
+          if (coursePeriods.has(r.period)) rosterByPeriod[r.period] = r;
+        });
+        const filteredSegments = c.filter(seg => {
+          if (!$filterSegment?.value) return true;
+          return String(seg.id) === $filterSegment.value;
+        }).sort((a, b) => a.order - b.order);
+        filteredSegments.forEach(segment => {
           document.querySelector('.section:has(> .segment-reports)').setAttribute('hidden', '');
-          if (document.getElementById("filter-segment-input").value) {
+          if ($filterSegment?.value) {
             document.querySelector('.segment-reports').innerHTML = '';
           } else {
             document.querySelector('.section:has(> .segment-reports)').removeAttribute('hidden');
-            var segmentResponses = [];
-            JSON.parse(segment.question_ids).filter(q => document.getElementById("sort-question-input")?.value.startsWith('"') ? (questions.find(q1 => String(q1.id) === String(q.id))?.number === document.getElementById("sort-question-input")?.value.replaceAll('"', '')) : questions.find(q1 => String(q1.id) === String(q.id))?.number.startsWith(document.getElementById("sort-question-input")?.value)).forEach(q => {
-              var question = questions.find(q1 => String(q1.id) === String(q.id));
-              if (!question) return;
-              var questionResponses = responses.filter(seatCode => JSON.parse(courses.find(course => String(course.id) === document.getElementById("course-period-input").value).periods).includes(Number(String(seatCode.seatCode)[0]))).filter(r => String(r.segment) === String(segment.id)).filter(r => r.question_id === question.id).filter(r => String(r.seatCode).startsWith(document.getElementById("sort-seat-input")?.value));
-              if (document.getElementById('hideIncorrectAttempts').checked) questionResponses = questionResponses.filter((r, index, self) => r.status === 'Correct' || !self.some(other => other.question_id === r.question_id && other.status === 'Correct'));
-              if (document.querySelector('#filter-report-responses [aria-selected="true"]').getAttribute('data-value') === 'first') {
-                questionResponses = questionResponses.filter(r => r.id === Math.min(...questionResponses.filter(r1 => r1.seatCode === r.seatCode && r1.question_id === r.question_id).map(r1 => r1.id)));
-              } else if (document.querySelector('#filter-report-responses [aria-selected="true"]').getAttribute('data-value') === 'last') {
-                questionResponses = questionResponses.filter(r => r.id === Math.max(...questionResponses.filter(r1 => r1.seatCode === r.seatCode && r1.question_id === r.question_id).map(r1 => r1.id)));
-              }
-              switch (document.querySelector('#sort-report-responses [aria-selected="true"]').getAttribute('data-value')) {
-                case 'seatCode':
-                  questionResponses = questionResponses.sort((a, b) => a.seatCode - b.seatCode);
-                  break;
-                case 'studentName':
-                  questionResponses = questionResponses.sort((a, b) => {
-                    var nameA = "Unknown";
-                    var nameB = "Unknown";
-                    if (document.getElementById('useRoster').checked) {
-                      var roster = rosters.find(roster => roster.period === Number(String(a.seatCode)[0]));
-                      if (roster) {
-                        var studentA = JSON.parse(roster.data).find(student => String(student.seatCode) === String(a.seatCode));
-                        if (studentA) nameA = `${studentA.last}, ${studentA.first}`;
-                        var studentB = JSON.parse(roster.data).find(student => String(student.seatCode) === String(b.seatCode));
-                        if (studentB) nameB = `${studentB.last}, ${studentB.first}`;
-                      }
-                    }
-                    return nameA.localeCompare(nameB);
-                  });
-                  break;
-              }
-              questionResponses.forEach(r => {
-                segmentResponses.push(r);
-              });
-            });
-            var total = segmentResponses.length || 1;
-            var unansweredStudentsCount = 0;
-            if (document.getElementById('useRoster').checked && (document.querySelector('#filter-report-responses [aria-selected="true"]').getAttribute('data-value') !== 'all') && !document.getElementById('hideUnanswered').checked) {
-              var courseRosters = rosters.filter(roster => JSON.parse(courses.find(course => String(course.id) === document.getElementById("course-period-input").value)?.periods).includes(Number(String(roster.period))));
-              var totalRosterStudents = [...new Set(courseRosters.flatMap(a => JSON.parse(a.data).map(b => Number(b.seatCode))))];
-              if (totalRosterStudents.length) {
-                var answeredStudentsCount = [...new Set(segmentResponses.flatMap(a => a.seatCode).filter(x => totalRosterStudents.includes(x)))].length;
-                unansweredStudentsCount = totalRosterStudents.length - answeredStudentsCount;
-                total = segmentResponses.length + unansweredStudentsCount;
-              }
+          }
+          const segmentResponses = [];
+          const questionIds = JSON.parse(segment.question_ids);
+          const matchingQuestions = questionIds.filter(qId => {
+            const q = questions.find(q1 => String(q1.id) === String(qId));
+            if (!q) return false;
+            const sortVal = $sortQuestion?.value ?? '';
+            if (sortVal.startsWith('"')) return q.number === sortVal.replaceAll('"', '');
+            return q.number.startsWith(sortVal);
+          });
+          matchingQuestions.forEach(qId => {
+            const question = questions.find(q1 => String(q1.id) === String(qId));
+            if (!question) return;
+            let resp = responses
+              .filter(r => {
+                const seat = String(r.seatCode);
+                const period = Number(seat[0]);
+                return coursePeriods.has(period);
+              })
+              .filter(r => String(r.segment) === String(segment.id))
+              .filter(r => r.question_id === question.id)
+              .filter(r => String(r.seatCode).startsWith($sortSeat?.value ?? ''));
+
+            if ($hideIncorrect?.checked) {
+              const correctIds = new Set(resp.filter(r => r.status === 'Correct').map(r => `${r.question_id}|${r.seatCode}`));
+              resp = resp.filter(r => r.status === 'Correct' || !correctIds.has(`${r.question_id}|${r.seatCode}`));
             }
-            document.querySelector('.segment-reports').innerHTML += `<div class="segment-report"${(JSON.parse(segment.question_ids) != 0) ? ` report="segment-${segment.id}"` : ''}>
-              <b>Segment ${segment.number} (${JSON.parse(segment.question_ids).length} Question${JSON.parse(segment.question_ids).length != 1 ? 's' : ''})</b>
+            const filterMode = $filterReport?.getAttribute('data-value');
+            if (filterMode === 'first' || filterMode === 'last') {
+              const map = new Map();
+              resp.forEach(r => {
+                const key = `${r.seatCode}|${r.question_id}`;
+                const cur = map.get(key);
+                if (!cur) {
+                  map.set(key, r);
+                } else {
+                  if ((filterMode === 'first' && r.id < cur.id) || (filterMode === 'last' && r.id > cur.id)) map.set(key, r);
+                }
+              });
+              resp = Array.from(map.values());
+            }
+            const sortMode = $sortReport?.getAttribute('data-value');
+            if (sortMode === 'seatCode') {
+              resp.sort((a, b) => a.seatCode - b.seatCode);
+            } else if (sortMode === 'studentName' && $useRoster?.checked) {
+              resp.sort((a, b) => {
+                const getName = seat => {
+                  const period = Number(String(seat)[0]);
+                  const roster = rosterByPeriod[period];
+                  if (!roster) return 'Unknown';
+                  const student = JSON.parse(roster.data).find(s => String(s.seatCode) === String(seat));
+                  return student ? `${student.last}, ${student.first}` : 'Unknown';
+                };
+                return getName(a.seatCode).localeCompare(getName(b.seatCode));
+              });
+            }
+            segmentResponses.push(...resp);
+          });
+          let total = segmentResponses.length || 1;
+          let unansweredStudentsCount = 0;
+          if ($useRoster?.checked && $filterReport?.getAttribute('data-value') !== 'all' && !$hideUnanswered?.checked) {
+            const totalRosterStudents = new Set();
+            Object.values(rosterByPeriod).forEach(roster => {
+              JSON.parse(roster.data).forEach(st => totalRosterStudents.add(Number(st.seatCode)));
+            });
+            if (totalRosterStudents.size) {
+              const answered = new Set(segmentResponses.map(r => r.seatCode).filter(sc => totalRosterStudents.has(sc)));
+              unansweredStudentsCount = totalRosterStudents.size - answered.size;
+              total = segmentResponses.length + unansweredStudentsCount;
+            }
+          }
+          const segEl = document.querySelector('.segment-reports');
+          segEl.innerHTML += `
+            <div class="segment-report"${questionIds.length ? ` report="segment-${segment.id}"` : ''}>
+              <b>Segment ${segment.number} (${questionIds.length} Question${questionIds.length !== 1 ? 's' : ''})</b>
               <p class="segment-marked-for-review-count"><i class="bi bi-bookmark"></i>${segmentResponses.filter(r => r.review_later).length}</p>
               <div class="barcount-wrapper">
-                ${(segmentResponses.filter(r => r.status === 'Correct').length != 0) ? `<div class="barcount correct" style="width: calc(${segmentResponses.filter(r => r.status === 'Correct').length / total} * 100%)">${segmentResponses.filter(r => r.status === 'Correct').length}</div>` : ''}
-                ${((segmentResponses.filter(r => ((r.status !== 'Correct') && (r.status !== 'Incorrect') && !r.status.includes('Recorded'))).length + unansweredStudentsCount) != 0) ? `<div class="barcount other" style="width: calc(${(segmentResponses.filter(r => ((r.status !== 'Correct') && (r.status !== 'Incorrect') && !r.status.includes('Recorded'))).length + unansweredStudentsCount) / total} * 100%)">${segmentResponses.filter(r => ((r.status !== 'Correct') && (r.status !== 'Incorrect') && !r.status.includes('Recorded'))).length + unansweredStudentsCount}</div>` : ''}
-                ${(segmentResponses.filter(r => r.status.includes('Recorded')).length != 0) ? `<div class="barcount waiting" style="width: calc(${segmentResponses.filter(r => r.status.includes('Recorded')).length / total} * 100%)">${segmentResponses.filter(r => r.status.includes('Recorded')).length}</div>` : ''}
-                ${(segmentResponses.filter(r => r.status === 'Incorrect').length != 0) ? `<div class="barcount incorrect" style="width: calc(${segmentResponses.filter(r => r.status === 'Incorrect').length / total} * 100%)">${segmentResponses.filter(r => r.status === 'Incorrect').length}</div>` : ''}
+                ${segmentResponses.filter(r => r.status === 'Correct').length
+              ? `<div class="barcount correct" style="width: calc(${segmentResponses.filter(r => r.status === 'Correct').length / total} * 100%)">
+                      ${segmentResponses.filter(r => r.status === 'Correct').length}
+                    </div>`
+              : ''}
+                ${(
+              segmentResponses.filter(r => !['Correct', 'Incorrect'].includes(r.status) && !r.status.includes('Recorded')).length +
+              unansweredStudentsCount
+            )
+              ? `<div class="barcount other" style="width: calc(${(
+                segmentResponses.filter(r => !['Correct', 'Incorrect'].includes(r.status) && !r.status.includes('Recorded')).length +
+                unansweredStudentsCount
+              ) / total} * 100%)">
+                      ${segmentResponses.filter(r => !['Correct', 'Incorrect'].includes(r.status) && !r.status.includes('Recorded')).length + unansweredStudentsCount}
+                    </div>`
+              : ''}
+                ${segmentResponses.filter(r => r.status.includes('Recorded')).length
+              ? `<div class="barcount waiting" style="width: calc(${segmentResponses.filter(r => r.status.includes('Recorded')).length / total} * 100%)">
+                      ${segmentResponses.filter(r => r.status.includes('Recorded')).length}
+                    </div>`
+              : ''}
+                ${segmentResponses.filter(r => r.status === 'Incorrect').length
+              ? `<div class="barcount incorrect" style="width: calc(${segmentResponses.filter(r => r.status === 'Incorrect').length / total} * 100%)">
+                      ${segmentResponses.filter(r => r.status === 'Incorrect').length}
+                    </div>`
+              : ''}
               </div>
             </div>
-            ${(JSON.parse(segment.question_ids).length != 0) ? `<div class="section detailed-report" id="segment-${segment.id}">Rendering...</div>` : ''}`;
-          }
+            ${questionIds.length ? `<div class="section detailed-report" id="segment-${segment.id}">Rendering...</div>` : ''}
+          `;
         });
       }
     } else {
@@ -1059,7 +1136,8 @@ try {
       updatedCourses.push({
         id: course.id,
         name: course.name,
-        periods: JSON.stringify(coursePeriods)
+        periods: JSON.stringify(coursePeriods),
+        registration_locked: JSON.stringify(coursePeriods.filter(period => [...document.querySelector(".reorder").children][period - 1].querySelector('[data-restrict-registration] .bi-unlock').hasAttribute('hidden')))
       })
     });
     ui.setUnsavedChanges(true);
@@ -1099,21 +1177,26 @@ try {
             const elem = document.createElement("div");
             elem.classList = "button-grid inputs";
             elem.style = "flex-wrap: nowrap !important;";
-            var periodCourse = c.find(course => JSON.parse(course.periods).includes(i))?.id;
+            var periodCourse = c.find(course => JSON.parse(course.periods).includes(i));
+            var periodCourseId = periodCourse ? periodCourse?.id : null;
             var coursesSelectorString = "";
             c.sort((a, b) => a.id - b.id).forEach(course => {
-              coursesSelectorString += `<option value="${course.id}" ${(periodCourse === course.id) ? 'selected' : ''}>${course.name}</option>`;
+              coursesSelectorString += `<option value="${course.id}" ${(periodCourseId === course.id) ? 'selected' : ''}>${course.name}</option>`;
             });
-            elem.innerHTML = `<input type="text" autocomplete="off" id="period-${i}" class="small" value="Period ${i}" disabled /><select id="periodCourseSelector" value="${(periodCourse === undefined) ? '' : periodCourse}"><option value="" ${(periodCourse === undefined) ? 'selected' : ''}></option>${coursesSelectorString}</select>${rosters.find(r => String(r.period) === String(i)) ? '<button class="fit" style="min-width: 126px !important;" data-view-roster>View Roster</button>' : '<button class="fit" style="min-width: 126px !important;" data-upload-roster>Upload Roster</button>'}`;
+            var periodLocked = periodCourse ? JSON.parse(periodCourse.registration_locked || '[]').includes(i) : false;
+            elem.innerHTML = `<input type="text" autocomplete="off" id="period-${i}" class="small" value="Period ${i}" disabled /><select id="periodCourseSelector" value="${periodCourse ? periodCourseId : ''}"><option value="" ${periodCourse ? '' : 'selected'}></option>${coursesSelectorString}</select>${rosters.find(r => String(r.period) === String(i)) ? '<button class="fit" style="min-width: 126px !important;" data-view-roster>View Roster</button>' : '<button class="fit" style="min-width: 126px !important;" data-upload-roster>Upload Roster</button>'}<button square tooltip="Toggle Registration" data-restrict-registration><i class="bi bi-lock" ${periodLocked ? '' : 'hidden'}></i><i class="bi bi-unlock" ${periodLocked ? 'hidden' : ''}></i></button>`;
             document.querySelector(".course-reorder .reorder").appendChild(elem);
           }
           document.querySelectorAll("[data-view-roster]").forEach(a => a.addEventListener("click", viewRoster));
           document.querySelectorAll("[data-upload-roster]").forEach(a => a.addEventListener("click", uploadRoster));
+          document.querySelectorAll("[data-restrict-registration]").forEach(a => a.addEventListener("click", () => {
+            for (let child of a.children) child.toggleAttribute('hidden');
+          }));
         }
       })
       .catch((e) => {
         console.error(e);
-        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if (!e.message || (e.message && (e.message.includes('NetworkError') || !e.message.includes(".")))) ui.view("api-fail");
         if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
         pollingOff();
       });
@@ -1344,7 +1427,7 @@ try {
       })
       .catch((e) => {
         console.error(e);
-        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if (!e.message || (e.message && (e.message.includes('NetworkError') || !e.message.includes(".")))) ui.view("api-fail");
         if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
         pollingOff();
       });
@@ -1973,7 +2056,7 @@ try {
       })
       .catch((e) => {
         console.error(e);
-        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if (!e.message || (e.message && (e.message.includes('NetworkError') || !e.message.includes(".")))) ui.view("api-fail");
         if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
         pollingOff();
       });
@@ -2177,12 +2260,48 @@ try {
     if (document.querySelector('.seat-code-reports')) document.querySelector('.seat-code-reports').innerHTML = '';
     var trendingResponses = [];
     var timedResponses = [];
+    const coursePeriodInput = document.getElementById("course-period-input");
+    const filterSegmentInput = document.getElementById("filter-segment-input");
+    const sortQuestionInput = document.getElementById("sort-question-input");
+    const sortSeatInput = document.getElementById("sort-seat-input");
+    const awaitingSection = document.querySelector('.awaitingResponses .section');
+    const responsesSection = document.querySelector('.responses .section');
+    const hasAwaitingSection = !!awaitingSection;
+    const hasResponsesSection = !!responsesSection;
+    const selectedCourse = courses.find(course => String(course.id) === coursePeriodInput?.value);
+    const selectedCourseId = selectedCourse ? String(selectedCourse.id) : null;
+    const selectedCoursePeriods = selectedCourse?.periods ? JSON.parse(selectedCourse.periods) : null;
+    const filterSegmentValue = filterSegmentInput?.value;
+    const sortQuestionValue = sortQuestionInput?.value || '';
+    const sortSeatValue = sortSeatInput?.value || '';
+    const questionById = new Map(questions.map(question => [String(question.id), question]));
+    const answerById = new Map(answers.map(answer => [String(answer.id), answer]));
+    const segmentById = new Map(segments.map(segment => [String(segment.id), segment]));
+    const segmentQuestionIdsCache = new Map();
+    const getSegmentQuestionIds = segment => {
+      const cacheKey = String(segment.id);
+      if (segmentQuestionIdsCache.has(cacheKey)) return segmentQuestionIdsCache.get(cacheKey);
+      let questionIds = [];
+      try {
+        questionIds = JSON.parse(segment.question_ids || '[]');
+      } catch {
+        questionIds = [];
+      }
+      segmentQuestionIdsCache.set(cacheKey, questionIds);
+      return questionIds;
+    };
+    const getResponseSegment = r => {
+      const exactSegment = segmentById.get(String(r.segment));
+      if (exactSegment && (!selectedCourseId || String(exactSegment.course) === selectedCourseId)) return exactSegment;
+      if (!selectedCourseId) return null;
+      return segments.find(segment => String(segment.course) === selectedCourseId && getSegmentQuestionIds(segment)?.some(question => String(question.id) === String(r.question_id))) || null;
+    };
     var responses1 = responses
-      .filter(r => courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value) ? JSON.parse(courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value)?.periods).includes(Number(String(r.seatCode)[0])) : false)
-      .filter(r => document.getElementById("filter-segment-input")?.value ? (String(segments.find(s => (String(s.id) === String(r.segment)) && (courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value) ? (String(s.course) === String(courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value).id)) : true)) ? (segments.find(s => (String(s.id) === String(r.segment)) && (courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value) ? (String(s.course) === String(courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value).id)) : true)).id || r.segment) : (segments.find(s => (courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value) ? (String(s.course) === String(courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value).id)) : false) && JSON.parse(s.question_ids || [])?.find(q => String(q.id) === String(r.question_id)))?.id || '-')) === document.getElementById("filter-segment-input").value) : true)
-      .filter(r => document.getElementById("sort-question-input")?.value.startsWith('"') ? (questions.find(q => String(q.id) === String(r.question_id))?.number === document.getElementById("sort-question-input")?.value.replaceAll('"', '')) : questions.find(q => String(q.id) === String(r.question_id))?.number.startsWith(document.getElementById("sort-question-input")?.value))
-      .filter(r => String(r.seatCode).startsWith(document.getElementById("sort-seat-input")?.value))
-      .filter(r => !questions.find(q => String(q.id) === String(r.question_id))?.nonscored)
+      .filter(r => selectedCoursePeriods ? selectedCoursePeriods.includes(Number(String(r.seatCode)[0])) : false)
+      .filter(r => filterSegmentValue ? String(getResponseSegment(r)?.id || '-') === filterSegmentValue : true)
+      .filter(r => sortQuestionValue.startsWith('"') ? (questionById.get(String(r.question_id))?.number === sortQuestionValue.replaceAll('"', '')) : (questionById.get(String(r.question_id))?.number || '').startsWith(sortQuestionValue))
+      .filter(r => String(r.seatCode).startsWith(sortSeatValue))
+      .filter(r => !questionById.get(String(r.question_id))?.nonscored)
       .sort((a, b) => {
         if (a.flagged && !b.flagged) return -1;
         if (!a.flagged && b.flagged) return 1;
@@ -2231,41 +2350,63 @@ try {
       }
     }
     syncPagination();
-    const awaitingSection = document.querySelector('.awaitingResponses .section');
-    const responsesSection = document.querySelector('.responses .section');
-    const awaitingResponses = responses1.filter(r => (r.status === 'Invalid Format' || r.status === 'Unknown, Recorded'));
-    const normalResponses = responses1.filter(r => !(r.status === 'Invalid Format' || r.status === 'Unknown, Recorded'));
-    const awaitingPageResponses = awaitingSection ? awaitingResponses.slice(pagination.awaitingResponses.page * (storage.get("rowsPerPage") ? Number(storage.get("rowsPerPage")) : pagination.awaitingResponses.perPage), (pagination.awaitingResponses.page + 1) * (storage.get("rowsPerPage") ? Number(storage.get("rowsPerPage")) : pagination.awaitingResponses.perPage)) : [];
-    const responsesPageResponses = responsesSection ? normalResponses.slice(pagination.responses.page * (storage.get("rowsPerPage") ? Number(storage.get("rowsPerPage")) : pagination.responses.perPage), (pagination.responses.page + 1) * (storage.get("rowsPerPage") ? Number(storage.get("rowsPerPage")) : pagination.responses.perPage)) : [];
+    const awaitingResponses = [];
+    const normalResponses = [];
+    const responsesBySeat = new Map();
+    for (const r of responses1) {
+      if (r.status === 'Invalid Format' || r.status === 'Unknown, Recorded') {
+        awaitingResponses.push(r);
+      } else {
+        normalResponses.push(r);
+      }
+      let arr = responsesBySeat.get(r.seatCode);
+      if (!arr) {
+        arr = [];
+        responsesBySeat.set(r.seatCode, arr);
+      }
+      arr.push(r);
+      r._timestamp = new Date(r.timestamp);
+    }
+    for (const arr of responsesBySeat.values()) arr.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+    const storedRowsPerPage = storage.get("rowsPerPage");
+    const rowsPerPage = storedRowsPerPage ? Number(storedRowsPerPage) : null;
+    const developer = storage.get("developer");
+    const awaitingRowsPerPage = rowsPerPage || pagination.awaitingResponses.perPage;
+    const responsesRowsPerPage = rowsPerPage || pagination.responses.perPage;
+    const awaitingPageResponses = hasAwaitingSection ? awaitingResponses.slice(pagination.awaitingResponses.page * awaitingRowsPerPage, (pagination.awaitingResponses.page + 1) * awaitingRowsPerPage) : [];
+    const responsesPageResponses = hasResponsesSection ? normalResponses.slice(pagination.responses.page * responsesRowsPerPage, (pagination.responses.page + 1) * responsesRowsPerPage) : [];
     var pageResponses = [...awaitingPageResponses, ...responsesPageResponses];
     pageResponses.forEach(r => {
-      if (document.querySelector('.responses .section') || document.querySelector('.awaitingResponses .section')) {
+      if (hasResponsesSection || hasAwaitingSection) {
         var responseString = r.response;
         var isMatrix = null;
-        if (responseString.includes('[[')) {
+        const question = questionById.get(String(r.question_id));
+        const answer = answerById.get(String(r.question_id));
+        let parsedResponse = null;
+        if (responseString.includes('[')) {
           try {
-            isMatrix = responseString;
-            responseString = JSON.stringify(JSON.parse(r.response).map(innerArray => innerArray.map(numString => String(numString)))).replaceAll('["', '[').replaceAll('","', ', ').replaceAll('"]', ']');
+            parsedResponse = JSON.parse(r.response);
+            if (responseString.includes('[[')) {
+              isMatrix = responseString;
+              responseString = JSON.stringify(parsedResponse.map(inner => inner.map(String)))
+                .replaceAll('["', '[')
+                .replaceAll('","', ', ')
+                .replaceAll('"]', ']');
+            } else {
+              responseString = parsedResponse.join(', ');
+            }
           } catch {
-            isMatrix = null;
-            if (storage.get("developer")) console.log(`Invalid matrix: ${r.response}`);
-          }
-        } else if (responseString.includes('[')) {
-          try {
-            var parsedResponse = JSON.parse(r.response);
-            responseString = parsedResponse.join(', ');
-          } catch {
-            if (storage.get("developer")) console.log(`Invalid JSON: ${r.response}`);
+            if (developer) console.log(`Invalid JSON: ${r.response}`);
           }
         }
-        var correctResponsesString = `Accepted: ${answers.find(a => a.id === questions.find(q => String(q.id) === String(r.question_id)).id).correct_answers.join(', ')}`;
-        const date = new Date(r.timestamp);
+        var correctResponsesString = `Accepted: ${(answer?.correct_answers || []).join(', ')}`;
+        const date = r._timestamp;
         let hours = date.getHours();
         const minutes = date.getMinutes();
-        const currentDate = new Date(r.timestamp);
+        const currentDate = r._timestamp;
         var timeTaken = "N/A";
         var timeTakenToRevise = "N/A";
-        const sameSeatCodeResponses = responses1.filter(a => a.seatCode === r.seatCode).sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+        const sameSeatCodeResponses = responsesBySeat.get(r.seatCode);
         const sameQuestionResponses = sameSeatCodeResponses.filter(a => a.question_id === r.question_id);
         const lastResponseIndex = sameSeatCodeResponses.findIndex(a => new Date(a.timestamp) >= currentDate) - 1;
         const lastResponse = lastResponseIndex >= 0 ? sameSeatCodeResponses[lastResponseIndex] : null;
@@ -2294,13 +2435,19 @@ try {
         } else {
           result = `${minutes1}m`;
         }
+        const coursePeriodValue = document.getElementById("course-period-input")?.value;
+        const currentCourse = courses.find(course => String(course.id) === coursePeriodValue);
+        const questionLookup = new Map(questions.map(q => [String(q.id), q]));
+        const answerLookup = new Map(answers.map(a => [String(a.id), a]));
+        const hasCorrectResponses = (answerLookup.get(String(questionLookup.get(String(r.question_id)).id)).correct_answers.length > 0);
+        const foundSegment = segments.find(s => (String(s.id) === String(r.segment)) && (currentCourse ? (String(s.course) === String(currentCourse.id)) : true));
+        const foundSegment2 = segments.find(s => (currentCourse ? (String(s.course) === String(currentCourse.id)) : false) && JSON.parse(s.question_ids || [])?.find(q => String(q.id) === String(r.question_id)));
         var buttonGrid = document.createElement('div');
         buttonGrid.className = "button-grid inputs";
         buttonGrid.id = `response-${r.id}`;
-        buttonGrid.innerHTML = `<button square data-select tooltip="Select Item"><i class="bi bi-circle"></i><i class="bi bi-circle-fill"></i></button><input type="text" autocomplete="off" class="small" id="response-id-input" value="${r.id}" disabled hidden />${(String(r.flagged) === '1') ? `<button square data-unflag-response tooltip="Unflag Response"><i class="bi bi-flag-fill"></i></button>` : `<button square data-flag-response tooltip="Flag Response"><i class="bi bi-flag"></i></button>`}<input type="text" autocomplete="off" class="small" id="response-segment-input" value="${segments.find(s => (String(s.id) === String(r.segment)) && (courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value) ? (String(s.course) === String(courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value).id)) : true)) ? (segments.find(s => (String(s.id) === String(r.segment)) && (courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value) ? (String(s.course) === String(courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value).id)) : true)).number || r.segment) : (segments.find(s => (courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value) ? (String(s.course) === String(courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value).id)) : false) && JSON.parse(s.question_ids || [])?.find(q => String(q.id) === String(r.question_id)))?.number || '-')}" mockDisabled data-segment="${segments.find(s => (String(s.id) === String(r.segment)) && (courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value) ? (String(s.course) === String(courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value).id)) : true)) ? (segments.find(s => (String(s.id) === String(r.segment)) && (courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value) ? (String(s.course) === String(courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value).id)) : true)).id || r.segment) : (segments.find(s => (courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value) ? (String(s.course) === String(courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value).id)) : false) && JSON.parse(s.question_ids || [])?.find(q => String(q.id) === String(r.question_id)))?.id || '-')}" /><input type="text" autocomplete="off" class="small" id="response-question-input" value="${questions.find(q => String(q.id) === String(r.question_id))?.number}" mockDisabled data-segment="${segments.find(s => (String(s.id) === String(r.segment)) && (courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value) ? (String(s.course) === String(courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value).id)) : true)) ? (segments.find(s => (String(s.id) === String(r.segment)) && (courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value) ? (String(s.course) === String(courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value).id)) : true)).id || r.segment) : (segments.find(s => (courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value) ? (String(s.course) === String(courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value).id)) : false) && JSON.parse(s.question_ids || [])?.find(q => String(q.id) === String(r.question_id)))?.id || '-')}" data-question="${questions.find(q => String(q.id) === String(r.question_id))?.number}" data-question-id="${questions.find(q => String(q.id) === String(r.question_id))?.id}" /><input type="text" autocomplete="off" class="small" id="response-question-id-input" value="${questions.find(q => String(q.id) === String(r.question_id)).id}" disabled hidden /><input type="text" autocomplete="off" class="small${(((r.status === 'Invalid Format') || (r.status === 'Unknown, Recorded')) && document.querySelector('.awaitingResponses .section') && (answers.find(a => a.id === questions.find(q => String(q.id) === String(r.question_id)).id).correct_answers.length > 0)) ? ' hideonhover' : ''}" id="response-seat-code-input" value="${r.seatCode}" disabled data-seat-code /><input type="text" autocomplete="off" class="small" id="response-time-taken-input" value="${timeTaken}" disabled data-time-taken${(typeof timeDifference != 'undefined') ? ` time="${timeDifference}"` : ''} /><input type="text" autocomplete="off" class="small" id="response-time-taken-input" value="${timeTakenToRevise}" disabled data-time-taken${(typeof timeDifference != 'undefined') ? ` time="${timeDifference}"` : ''} /><!--<input type="text" autocomplete="off" class="small" id="response-time-taken-input" value="${result}" disabled data-time-taken />--><textarea autocomplete="off" rows="1" id="response-response-input" value="${escapeHTML(responseString)}" ${isMatrix ? 'mockDisabled' : 'disabled'}>${escapeHTML(responseString)}</textarea>${(r.status === 'Incorrect') ? `<button square data-edit-reason tooltip="Edit Reason"><i class="bi bi-reply${(r.reason) ? '-fill' : ''}"></i></button>` : ''}<input type="text" autocomplete="off" class="smedium${(((r.status === 'Invalid Format') || (r.status === 'Unknown, Recorded')) && document.querySelector('.awaitingResponses .section') && (answers.find(a => a.id === questions.find(q => String(q.id) === String(r.question_id)).id).correct_answers.length > 0)) ? ' hideonhover' : ''}" id="response-timestamp-input" value="${date.getMonth() + 1}/${date.getDate()} ${hours % 12 || 12}:${minutes < 10 ? '0' + minutes : minutes} ${hours >= 12 ? 'PM' : 'AM'}" disabled />${(((r.status === 'Invalid Format') || (r.status === 'Unknown, Recorded')) && document.querySelector('.awaitingResponses .section') && (answers.find(a => a.id === questions.find(q => String(q.id) === String(r.question_id)).id).correct_answers.length > 0)) ? `<textarea autocomplete="off" rows="1" class="showonhover" id="response-correct-responses-input" value="${correctResponsesString}" disabled>${correctResponsesString}</textarea>` : ''}<button square id="mark-correct-button"${(r.status === 'Correct') ? ' disabled' : ''} tooltip="Mark Correct"><i class="bi bi-check-circle${(r.status === 'Correct') ? '-fill' : ''}"></i></button><button square id="mark-incorrect-button"${(r.status === 'Incorrect') ? ' disabled' : ''} tooltip="Mark Incorrect"><i class="bi bi-x-circle${(r.status === 'Incorrect') ? '-fill' : ''}"></i></button>`;
+        buttonGrid.innerHTML = `<button square data-select tooltip="Select Item"><i class="bi bi-circle"></i><i class="bi bi-circle-fill"></i></button><input type="text" autocomplete="off" class="small" id="response-id-input" value="${r.id}" disabled hidden />${(String(r.flagged) === '1') ? `<button square data-unflag-response tooltip="Unflag Response"><i class="bi bi-flag-fill"></i></button>` : `<button square data-flag-response tooltip="Flag Response"><i class="bi bi-flag"></i></button>`}<input type="text" autocomplete="off" class="small" id="response-segment-input" value="${foundSegment ? (foundSegment.number || r.segment) : (foundSegment2?.number || '-')}" mockDisabled data-segment="${foundSegment ? (foundSegment.id || r.segment) : (foundSegment2?.id || '-')}" /><input type="text" autocomplete="off" class="small" id="response-question-input" value="${questionLookup.get(String(r.question_id))?.number}" mockDisabled data-segment="${foundSegment ? (foundSegment.id || r.segment) : (foundSegment2?.id || '-')}" data-question="${questionLookup.get(String(r.question_id))?.number}" data-question-id="${questionLookup.get(String(r.question_id))?.id}" /><input type="text" autocomplete="off" class="small" id="response-question-id-input" value="${questionLookup.get(String(r.question_id)).id}" disabled hidden /><input type="text" autocomplete="off" class="small${(((r.status === 'Invalid Format') || (r.status === 'Unknown, Recorded')) && document.querySelector('.awaitingResponses .section') && hasCorrectResponses) ? ' hideonhover' : ''}" id="response-seat-code-input" value="${r.seatCode}" disabled data-seat-code /><input type="text" autocomplete="off" class="small" id="response-time-taken-input" value="${timeTaken}" disabled data-time-taken${(typeof timeDifference != 'undefined') ? ` time="${timeDifference}"` : ''} /><input type="text" autocomplete="off" class="small" id="response-time-taken-input" value="${timeTakenToRevise}" disabled data-time-taken${(typeof timeDifference != 'undefined') ? ` time="${timeDifference}"` : ''} /><!--<input type="text" autocomplete="off" class="small" id="response-time-taken-input" value="${result}" disabled data-time-taken />--><textarea autocomplete="off" rows="1" id="response-response-input" value="${escapeHTML(responseString)}" ${isMatrix ? 'mockDisabled' : 'disabled'}>${escapeHTML(responseString)}</textarea>${(r.status === 'Incorrect') ? `<button square data-edit-reason tooltip="Edit Reason"><i class="bi bi-reply${(r.reason) ? '-fill' : ''}"></i></button>` : ''}<input type="text" autocomplete="off" class="smedium${(((r.status === 'Invalid Format') || (r.status === 'Unknown, Recorded')) && document.querySelector('.awaitingResponses .section') && hasCorrectResponses) ? ' hideonhover' : ''}" id="response-timestamp-input" value="${date.getMonth() + 1}/${date.getDate()} ${hours % 12 || 12}:${minutes < 10 ? '0' + minutes : minutes} ${hours >= 12 ? 'PM' : 'AM'}" disabled />${(((r.status === 'Invalid Format') || (r.status === 'Unknown, Recorded')) && document.querySelector('.awaitingResponses .section') && hasCorrectResponses) ? `<textarea autocomplete="off" rows="1" class="showonhover" id="response-correct-responses-input" value="${correctResponsesString}" disabled>${correctResponsesString}</textarea>` : ''}<button square id="mark-correct-button"${(r.status === 'Correct') ? ' disabled' : ''} tooltip="Mark Correct"><i class="bi bi-check-circle${(r.status === 'Correct') ? '-fill' : ''}"></i></button><button square id="mark-incorrect-button"${(r.status === 'Incorrect') ? ' disabled' : ''} tooltip="Mark Incorrect"><i class="bi bi-x-circle${(r.status === 'Incorrect') ? '-fill' : ''}"></i></button>`;
         if (window.innerWidth >= 1000) {
           buttonGrid.addEventListener('mouseenter', () => {
-            var question = questions.find(q => String(q.id) === String(r.question_id));
             island(buttonGrid, buttonGrid.parentElement.children, 'response', {
               sourceId: String([...buttonGrid.parentElement.children].indexOf(buttonGrid)),
               id: `ID ${question.id}`,
@@ -2326,39 +2473,29 @@ try {
             island();
           });
         }
-        if (document.querySelector('.responses .section')) {
-          document.querySelector('.responses .section').appendChild(buttonGrid);
-          document.querySelector('.responses .section .button-grid:last-child #response-segment-input').addEventListener('click', (e) => {
+        if (hasResponsesSection || (((r.status === 'Invalid Format') || (r.status === 'Unknown, Recorded')) && hasAwaitingSection)) {
+          if (((r.status === 'Invalid Format') || (r.status === 'Unknown, Recorded')) && hasAwaitingSection) {
+            awaitingSection.appendChild(buttonGrid);
+          } else if (hasResponsesSection) {
+            responsesSection.appendChild(buttonGrid);
+          }
+          const responseSegmentInput = buttonGrid.querySelector('#response-segment-input');
+          const responseQuestionInput = buttonGrid.querySelector('#response-question-input');
+          const responseResponseInput = buttonGrid.querySelector('#response-response-input');
+          responseSegmentInput.addEventListener('click', (e) => {
             if (e.target.getAttribute('data-segment')) {
               document.getElementById("filter-segment-input").value = e.target.getAttribute('data-segment');
               updateResponses();
             }
           });
-          document.querySelector('.responses .section .button-grid:last-child #response-question-input').addEventListener('click', (e) => {
+          responseQuestionInput.addEventListener('click', (e) => {
             if (e.target.getAttribute('data-question')) {
               if (e.target.getAttribute('data-segment')) document.getElementById("filter-segment-input").value = e.target.getAttribute('data-segment');
               document.getElementById("sort-question-input").value = `"${e.target.getAttribute('data-question')}"`;
               updateResponses();
             }
           });
-          if (isMatrix) document.querySelector('.responses .section .button-grid:last-child #response-response-input').addEventListener('click', () => ui.expandMatrix(isMatrix));
-        }
-        if (((r.status === 'Invalid Format') || (r.status === 'Unknown, Recorded')) && document.querySelector('.awaitingResponses .section')) {
-          document.querySelector('.awaitingResponses .section').appendChild(buttonGrid);
-          document.querySelector('.awaitingResponses .section .button-grid:last-child #response-segment-input').addEventListener('click', (e) => {
-            if (e.target.getAttribute('data-segment')) {
-              document.getElementById("filter-segment-input").value = e.target.getAttribute('data-segment');
-              updateResponses();
-            }
-          });
-          document.querySelector('.awaitingResponses .section .button-grid:last-child #response-question-input').addEventListener('click', (e) => {
-            if (e.target.getAttribute('data-question')) {
-              if (e.target.getAttribute('data-segment')) document.getElementById("filter-segment-input").value = e.target.getAttribute('data-segment');
-              document.getElementById("sort-question-input").value = `"${e.target.getAttribute('data-question')}"`;
-              updateResponses();
-            }
-          });
-          if (isMatrix) document.querySelector('.awaitingResponses .section .button-grid:last-child #response-response-input').addEventListener('click', () => ui.expandMatrix(isMatrix));
+          if (isMatrix) responseResponseInput.addEventListener('click', () => ui.expandMatrix(isMatrix));
         }
       }
       var trend = trendingResponses.find(t => (t.segment === r.segment) && (t.question_id === r.question_id) && (t.response === responseString) && (t.status === r.status));
@@ -2376,128 +2513,171 @@ try {
       }
     });
     if (document.querySelector('.seat-code-reports')) {
-      var seatCodes = [];
-      responses1.forEach(r => {
-        if (document.querySelector('.seat-code-reports')) {
-          if (seatCodes.find(seatCode => seatCode.code === r.seatCode)) {
-            const seatCode = seatCodes.find(seatCode => seatCode.code === r.seatCode);
-            if (r.status === 'Correct') {
-              seatCode.correct++;
-            } else if (r.status === 'Incorrect') {
-              seatCode.incorrect++;
-            } else if (r.status.includes('Recorded')) {
-              seatCode.waiting++;
-            } else {
-              seatCode.other++;
-            }
-            seatCode.total++;
-            seatCode.responses.push(r);
-          } else {
-            seatCodes.push({
-              code: r.seatCode,
-              correct: (r.status === 'Correct') ? 1 : 0,
-              incorrect: (r.status === 'Incorrect') ? 1 : 0,
-              other: ((r.status !== 'Correct') && (r.status !== 'Incorrect') && !r.status.includes('Recorded')) ? 1 : 0,
-              waiting: r.status.includes('Recorded') ? 1 : 0,
-              total: 1,
-              responses: [r],
-            });
-          }
+      const reportsEl = document.querySelector('.seat-code-reports');
+      const seatMap = new Map();
+      for (const r of responses1) {
+        if (!reportsEl) break;
+        const code = r.seatCode;
+        let agg = seatMap.get(code);
+        if (!agg) {
+          agg = {
+            code,
+            correct: 0,
+            incorrect: 0,
+            waiting: 0,
+            other: 0,
+            total: 0,
+            responses: []
+          };
+          seatMap.set(code, agg);
         }
-      });
-      var sortedSeatCodes = seatCodes.filter(seatCode => JSON.parse(courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value).periods).includes(Number(String(seatCode.code)[0])));
-      if (document.getElementById('useRoster').checked) {
-        var currentCourseRosters = rosters.filter(roster => JSON.parse(courses.find(course => String(course.id) === document.getElementById("course-period-input").value)?.periods).includes(Number(String(roster.period))));
-        if (currentCourseRosters.length) document.querySelector('.seat-code-reports').appendChild(document.createElement('div'));
-        currentCourseRosters.forEach(currentCourseRoster => {
-          var total = [...new Set(JSON.parse(currentCourseRoster.data).flatMap(a => Number(a.seatCode)))];
-          var registered = [...new Set(sortedSeatCodes.flatMap(a => a.code).filter(x => total.includes(x)))];
-          var courseRosterProgress = document.createElement('div');
-          courseRosterProgress.classList = (currentCourseRosters.length > 1) ? 'seat-code-report' : 'barcount-wrapper fill';
-          courseRosterProgress.innerHTML = `${(currentCourseRosters.length > 1) ? `<b>Period ${currentCourseRoster.period}</b><div class="barcount-wrapper fill">` : ''}
-              ${registered.length ? `<div class="barcount correct" style="width: calc(${registered.length / total.length} * 100%)">${registered.length} Registered Student${(registered.length > 1) ? 's' : ''}</div>` : ''}
-              ${(total.length - registered.length) ? `<div class="barcount other" style="width: calc(${(total.length - registered.length) / total.length} * 100%)">${total.length - registered.length} Unregistered Student${((total.length - registered.length) > 1) ? 's' : ''}</div>` : ''}
-          ${(currentCourseRosters.length > 1) ? `</div>` : ''}`;
-          document.querySelector('.seat-code-reports').appendChild(courseRosterProgress);
+        if (r.status === 'Correct') agg.correct++;
+        else if (r.status === 'Incorrect') agg.incorrect++;
+        else if (r.status.includes('Recorded')) agg.waiting++;
+        else agg.other++;
+        agg.total++;
+        agg.responses.push(r);
+      }
+      const periodInput = document.getElementById('course-period-input')?.value;
+      const periodInfo = courses.find(c => String(c.id) === periodInput);
+      const periods = periodInfo ? JSON.parse(periodInfo.periods) : [];
+      const filteredSeatCodes = [...seatMap.values()].filter(sc => periods.includes(Number(String(sc.code)[0])));
+      if (document.getElementById('useRoster')?.checked) {
+        const rosterPeriods = rosters.filter(r => periods.includes(Number(r.period)));
+        const rosterSeats = (roster) => {
+          const data = JSON.parse(roster.data);
+          return new Set(data.map(s => Number(s.seatCode)));
+        };
+        if (rosterPeriods.length) reportsEl.appendChild(document.createElement('div'));
+        rosterPeriods.forEach(roster => {
+          const totalSet = rosterSeats(roster);
+          const totalArr = [...totalSet];
+          const registered = totalArr.filter(sc => {
+            const seat = filteredSeatCodes.find(s => s.code === sc);
+            return seat !== undefined;
+          });
+          const wrapper = document.createElement('div');
+          wrapper.className = (rosterPeriods.length > 1)
+            ? 'seat-code-report'
+            : 'barcount-wrapper fill';
+          const progHTML = `
+                ${rosterPeriods.length > 1 ? `<b>Period ${roster.period}</b><div class="barcount-wrapper fill">` : ''}
+                ${registered.length ? `<div class="barcount correct" style="width:${(registered.length / totalArr.length) * 100}%">
+                    ${registered.length} Registered Student${registered.length > 1 ? 's' : ''}
+                </div>` : ''}
+                ${totalArr.length - registered.length ? `<div class="barcount other" style="width:${((totalArr.length - registered.length) / totalArr.length) * 100}%">
+                    ${totalArr.length - registered.length} Unregistered Student${(totalArr.length - registered.length) > 1 ? 's' : ''}
+                </div>` : ''}
+                ${rosterPeriods.length > 1 ? `</div>` : ''}`;
+          wrapper.innerHTML = progHTML;
+          reportsEl.appendChild(wrapper);
           if (window.innerWidth >= 1000) {
-            courseRosterProgress.addEventListener('mouseenter', () => {
-              island(courseRosterProgress, currentCourseRosters, 'roster', {
-                sourceId: String(currentCourseRoster.period),
-                title: `Period ${currentCourseRoster.period}`,
-                subtitle: `${registered.length}/${total.length} Registered Students`,
+            wrapper.addEventListener('mouseenter', () => {
+              const data = JSON.parse(roster.data);
+              island(wrapper, rosterPeriods, 'roster', {
+                sourceId: String(roster.period),
+                title: `Period ${roster.period}`,
+                subtitle: `${registered.length}/${totalArr.length} Registered Students`,
                 lists: [
                   {
                     title: 'Unregistered Students',
-                    items: total.filter(a => !registered.includes(a)).map(a => { var student = JSON.parse(currentCourseRoster.data).find(b => String(b.seatCode) === String(a)); return `${student.last}, ${student.first} (${a})`; })
+                    items: totalArr.filter(id => !registered.includes(id))
+                      .map(id => {
+                        const s = data.find(st => String(st.seatCode) === String(id));
+                        return `${s.last}, ${s.first} (${id})`;
+                      })
                   },
                   {
                     title: 'Registered Students',
-                    items: total.filter(a => registered.includes(a)).map(a => { var student = JSON.parse(currentCourseRoster.data).find(b => String(b.seatCode) === String(a)); return `${student.last}, ${student.first} (${a})`; })
-                  },
-                ],
-              }, sortedSeatCodes);
+                    items: totalArr.filter(id => registered.includes(id))
+                      .map(id => {
+                        const s = data.find(st => String(st.seatCode) === String(id));
+                        return `${s.last}, ${s.first} (${id})`;
+                      })
+                  }
+                ]
+              }, filteredSeatCodes);
             });
-            courseRosterProgress.addEventListener('mouseleave', () => {
-              island();
-            });
+            wrapper.addEventListener('mouseleave', () => island());
           }
         });
-        if (currentCourseRosters.length) document.querySelector('.seat-code-reports').appendChild(document.createElement('div'));
+        if (rosterPeriods.length) reportsEl.appendChild(document.createElement('div'));
       }
-      switch (document.querySelector('#sort-report-responses [aria-selected="true"]').getAttribute('data-value')) {
-        case 'seatCode':
-          sortedSeatCodes = sortedSeatCodes.sort((a, b) => Number(a.code) - Number(b.code));
-          break;
-        case 'studentName':
-          sortedSeatCodes = sortedSeatCodes.sort((a, b) => {
-            var nameA = "Unknown";
-            var nameB = "Unknown";
-            if (document.getElementById('useRoster').checked) {
-              var roster = rosters.find(roster => roster.period === Number(String(a.code)[0]));
-              if (roster) {
-                var studentA = JSON.parse(roster.data).find(student => String(student.seatCode) === String(a.code));
-                if (studentA) nameA = `${studentA.last}, ${studentA.first}`;
-                var studentB = JSON.parse(roster.data).find(student => String(student.seatCode) === String(b.code));
-                if (studentB) nameB = `${studentB.last}, ${studentB.first}`;
-              }
-            }
-            return nameA.localeCompare(nameB);
+      const sortVal = document.querySelector('#sort-report-responses [aria-selected="true"]')?.getAttribute('data-value');
+      let sorted = filteredSeatCodes.slice();
+      if (sortVal === 'seatCode') {
+        sorted.sort((a, b) => Number(a.code) - Number(b.code));
+      } else if (sortVal === 'studentName') {
+        sorted.sort((a, b) => {
+          const getName = (code) => {
+            if (!document.getElementById('useRoster')?.checked) return 'Unknown';
+            const roster = rosters.find(r => r.period === Number(String(code)[0]));
+            if (!roster) return 'Unknown';
+            const stu = JSON.parse(roster.data).find(s => String(s.seatCode) === String(code));
+            return stu ? `${stu.last}, ${stu.first}` : 'Unknown';
+          };
+          return getName(a.code).localeCompare(getName(b.code));
+        });
+      }
+      const hideIncorrect = document.getElementById('hideIncorrectAttempts')?.checked;
+      const filterVal = document.querySelector('#filter-report-responses [aria-selected="true"]')?.getAttribute('data-value');
+      for (const seat of sorted) {
+        let seatResponses = seat.responses.slice().sort((a, b) => a.timestamp - b.timestamp);
+        if (hideIncorrect) {
+          const seenCorrect = new Set();
+          seatResponses = seatResponses.filter(r => {
+            const key = `${r.question_id}`;
+            if (r.status === 'Correct') seenCorrect.add(key);
+            return r.status === 'Correct' || !seenCorrect.has(key);
           });
-          break;
-      }
-      sortedSeatCodes.forEach(seatCode => {
-        var seatCodeResponses = seatCode.responses.sort((a, b) => a.timestamp - b.timestamp);
-        if (document.getElementById('hideIncorrectAttempts').checked) seatCodeResponses = seatCodeResponses.filter((r, index, self) => r.status === 'Correct' || !self.some(other => other.question_id === r.question_id && other.status === 'Correct'));
-        if (document.querySelector('#filter-report-responses [aria-selected="true"]').getAttribute('data-value') === 'first') {
-          seatCodeResponses = seatCodeResponses.filter(r => r.id === Math.min(...seatCodeResponses.filter(r1 => r1.seatCode === r.seatCode && r1.question_id === r.question_id).map(r1 => r1.id)));
-        } else if (document.querySelector('#filter-report-responses [aria-selected="true"]').getAttribute('data-value') === 'last') {
-          seatCodeResponses = seatCodeResponses.filter(r => r.id === Math.max(...seatCodeResponses.filter(r1 => r1.seatCode === r.seatCode && r1.question_id === r.question_id).map(r1 => r1.id)));
         }
-        var name = "Unknown";
-        if (document.getElementById('useRoster').checked) {
-          var roster = rosters.find(roster => roster.period === Number(String(seatCode.code)[0]));
-          if (roster) {
-            var student = JSON.parse(roster.data).find(student => String(student.seatCode) === String(seatCode.code));
-            if (student) name = `${student.last}, ${student.first}`;
+        if (filterVal === 'first') {
+          const minId = Math.min(...seatResponses.map(r => r.id));
+          seatResponses = seatResponses.filter(r => r.id === minId);
+        } else if (filterVal === 'last') {
+          const maxId = Math.max(...seatResponses.map(r => r.id));
+          seatResponses = seatResponses.filter(r => r.id === maxId);
+        }
+        let name = 'Unknown';
+        if (document.getElementById('useRoster')?.checked) {
+          const r = rosters.find(ro => ro.period === Number(String(seat.code)[0]));
+          if (r) {
+            const st = JSON.parse(r.data).find(s => String(s.seatCode) === String(seat.code));
+            if (st) name = `${st.last}, ${st.first}`;
           }
         }
-        var seatCodeReport = document.createElement('div');
-        seatCodeReport.classList = 'seat-code-report';
-        seatCodeReport.setAttribute('report', `seat-code-${seatCode.code}`);
-        seatCodeReport.innerHTML = `<b>${document.getElementById('useRoster').checked ? `${name} (${seatCode.code})` : seatCode.code} (${seatCodeResponses.length} Response${(seatCodeResponses.length != 1) ? 's' : ''})</b>
-        <div class="barcount-wrapper">
-          ${(seatCodeResponses.filter(r => r.status === 'Correct').length != 0) ? `<div class="barcount correct" style="width: calc(${seatCodeResponses.filter(r => r.status === 'Correct').length / (seatCodeResponses.length || 1)} * 100%)">${seatCodeResponses.filter(r => r.status === 'Correct').length}</div>` : ''}
-          ${(seatCodeResponses.filter(r => (r.status != 'Correct') && (r.status != 'Incorrect') && !r.status.includes('Recorded')).length != 0) ? `<div class="barcount other" style="width: calc(${seatCodeResponses.filter(r => (r.status != 'Correct') && (r.status != 'Incorrect') && !r.status.includes('Recorded')).length / (seatCodeResponses.length || 1)} * 100%)">${seatCodeResponses.filter(r => (r.status != 'Correct') && (r.status != 'Incorrect') && !r.status.includes('Recorded')).length}</div>` : ''}
-          ${(seatCodeResponses.filter(r => r.status.includes('Recorded')).length != 0) ? `<div class="barcount waiting" style="width: calc(${seatCodeResponses.filter(r => r.status.includes('Recorded')).length / (seatCodeResponses.length || 1)} * 100%)">${seatCodeResponses.filter(r => r.status.includes('Recorded')).length}</div>` : ''}
-          ${(seatCodeResponses.filter(r => r.status === 'Incorrect').length != 0) ? `<div class="barcount incorrect" style="width: calc(${seatCodeResponses.filter(r => r.status === 'Incorrect').length / (seatCodeResponses.length || 1)} * 100%)">${seatCodeResponses.filter(r => r.status === 'Incorrect').length}</div>` : ''}
-        </div>`;
-        document.querySelector('.seat-code-reports').appendChild(seatCodeReport);
-        var seatCodeDetailedReport = document.createElement('div');
-        seatCodeDetailedReport.classList = 'seat-code-report';
-        seatCodeDetailedReport.setAttribute('report', `seat-code-${seatCode.code}`);
-        seatCodeDetailedReport.innerHTML = `<div class="section detailed-report" id="seat-code-${seatCode.code}">Rendering...</div>`;
-        document.querySelector('.seat-code-reports').appendChild(seatCodeDetailedReport);
-      });
+        const reportDiv = document.createElement('div');
+        reportDiv.className = 'seat-code-report';
+        reportDiv.setAttribute('report', `seat-code-${seat.code}`);
+        const total = seatResponses.length || 1;
+        const counts = {
+          correct: seatResponses.filter(r => r.status === 'Correct').length,
+          incorrect: seatResponses.filter(r => r.status === 'Incorrect').length,
+          waiting: seatResponses.filter(r => r.status.includes('Recorded')).length,
+          other: seatResponses.filter(r => r.status !== 'Correct' && r.status !== 'Incorrect' && !r.status.includes('Recorded')).length
+        };
+        const barHTML = `
+            <b>${document.getElementById('useRoster')?.checked ?
+            `${name} (${seat.code})` : seat.code}
+                (${seatResponses.length} Response${seatResponses.length !== 1 ? 's' : ''})</b>
+            <div class="barcount-wrapper">
+                ${counts.correct ? `<div class="barcount correct" style="width:${(counts.correct / total) * 100}%">
+                    ${counts.correct}</div>` : ''}
+                ${counts.other ? `<div class="barcount other" style="width:${(counts.other / total) * 100}%">
+                    ${counts.other}</div>` : ''}
+                ${counts.waiting ? `<div class="barcount waiting" style="width:${(counts.waiting / total) * 100}%">
+                    ${counts.waiting}</div>` : ''}
+                ${counts.incorrect ? `<div class="barcount incorrect" style="width:${(counts.incorrect / total) * 100}%">
+                    ${counts.incorrect}</div>` : ''}
+            </div>`;
+        reportDiv.innerHTML = barHTML;
+        reportsEl.appendChild(reportDiv);
+        const detailDiv = document.createElement('div');
+        detailDiv.className = 'seat-code-report';
+        detailDiv.setAttribute('report', `seat-code-${seat.code}`);
+        detailDiv.innerHTML = `<div class="section detailed-report" id="seat-code-${seat.code}">Rendering...</div>`;
+        reportsEl.appendChild(detailDiv);
+      }
     }
     const stdDev = calculateStandardDeviation(timedResponses);
     // console.log("Standard Deviation:", stdDev);
@@ -2523,12 +2703,17 @@ try {
           console.log(`Invalid JSON: ${r.response}`);
         }
       }
+      const foundCourse = courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value);
+      const foundSegment = segments.find(s => (String(s.id) === String(r.segment)) && (foundCourse ? (String(s.course) === String(foundCourse.id)) : true));
+      const foundSegment2 = segments.find(s => (foundCourse ? (String(s.course) === String(foundCourse.id)) : false) && JSON.parse(s.question_ids || [])?.find(q => String(q.id) === String(r.question_id)));
+      const dataSegment = foundSegment ? (foundSegment.id || r.segment) : (foundSegment2?.id || '-');
+      const dataQuestion = questions.find(q => String(q.id) === String(r.question_id));
       var buttonGrid = document.createElement('div');
       buttonGrid.className = "button-grid inputs";
-      buttonGrid.innerHTML = `<input type="text" autocomplete="off" class="small" id="response-id-input" value="${r.single_response}" disabled hidden /><input type="text" autocomplete="off" class="small" id="response-segment-input" value="${segments.find(s => (String(s.id) === String(r.segment)) && (courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value) ? (String(s.course) === String(courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value).id)) : true)) ? (segments.find(s => (String(s.id) === String(r.segment)) && (courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value) ? (String(s.course) === String(courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value).id)) : true)).number || r.segment) : (segments.find(s => (courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value) ? (String(s.course) === String(courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value).id)) : false) && JSON.parse(s.question_ids || [])?.find(q => String(q.id) === String(r.question_id)))?.number || '-')}" mockDisabled data-segment="${segments.find(s => (String(s.id) === String(r.segment)) && (courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value) ? (String(s.course) === String(courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value).id)) : true)) ? (segments.find(s => (String(s.id) === String(r.segment)) && (courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value) ? (String(s.course) === String(courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value).id)) : true)).id || r.segment) : (segments.find(s => (courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value) ? (String(s.course) === String(courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value).id)) : false) && JSON.parse(s.question_ids || [])?.find(q => String(q.id) === String(r.question_id)))?.id || '-')}" /><input type="text" autocomplete="off" class="small" id="response-question-input" value="${questions.find(q => String(q.id) === String(r.question_id))?.number}" mockDisabled data-segment="${segments.find(s => (String(s.id) === String(r.segment)) && (courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value) ? (String(s.course) === String(courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value).id)) : true)) ? (segments.find(s => (String(s.id) === String(r.segment)) && (courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value) ? (String(s.course) === String(courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value).id)) : true)).id || r.segment) : (segments.find(s => (courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value) ? (String(s.course) === String(courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value).id)) : false) && JSON.parse(s.question_ids || [])?.find(q => String(q.id) === String(r.question_id)))?.id || '-')}" data-question="${questions.find(q => String(q.id) === String(r.question_id))?.number}" data-question-id="${questions.find(q => String(q.id) === String(r.question_id))?.id}" /><input type="text" autocomplete="off" class="small" id="response-question-id-input" value="${questions.find(q => String(q.id) === String(r.question_id)).id}" disabled hidden /><textarea autocomplete="off" rows="1" id="response-response-input" value="${escapeHTML(responseString)}" ${isMatrix ? 'mockDisabled' : 'disabled'}>${escapeHTML(responseString)}</textarea><input type="text" autocomplete="off" class="small" id="response-count-input" value="${r.count}" disabled /><button square id="mark-correct-button"${(r.status === 'Correct') ? ' disabled' : ''} tooltip="Mark Correct"><i class="bi bi-check-circle${(r.status === 'Correct') ? '-fill' : ''}"></i></button><button square id="mark-incorrect-button"${(r.status === 'Incorrect') ? ' disabled' : ''} tooltip="Mark Incorrect"><i class="bi bi-x-circle${(r.status === 'Incorrect') ? '-fill' : ''}"></i></button>`;
+      buttonGrid.innerHTML = `<input type="text" autocomplete="off" class="small" id="response-id-input" value="${r.single_response}" disabled hidden /><input type="text" autocomplete="off" class="small" id="response-segment-input" value="${foundSegment ? (foundSegment.number || r.segment) : (foundSegment2?.number || '-')}" mockDisabled data-segment="${dataSegment}" /><input type="text" autocomplete="off" class="small" id="response-question-input" value="${dataQuestion?.number}" mockDisabled data-segment="${dataSegment}" data-question="${dataQuestion?.number}" data-question-id="${dataQuestion?.id}" /><input type="text" autocomplete="off" class="small" id="response-question-id-input" value="${dataQuestion.id}" disabled hidden /><textarea autocomplete="off" rows="1" id="response-response-input" value="${escapeHTML(responseString)}" ${isMatrix ? 'mockDisabled' : 'disabled'}>${escapeHTML(responseString)}</textarea><input type="text" autocomplete="off" class="small" id="response-count-input" value="${r.count}" disabled /><button square id="mark-correct-button"${(r.status === 'Correct') ? ' disabled' : ''} tooltip="Mark Correct"><i class="bi bi-check-circle${(r.status === 'Correct') ? '-fill' : ''}"></i></button><button square id="mark-incorrect-button"${(r.status === 'Incorrect') ? ' disabled' : ''} tooltip="Mark Incorrect"><i class="bi bi-x-circle${(r.status === 'Incorrect') ? '-fill' : ''}"></i></button>`;
       if (window.innerWidth >= 1000) {
         buttonGrid.addEventListener('mouseenter', () => {
-          var question = questions.find(q => String(q.id) === String(r.question_id));
+          var question = dataQuestion;
           island(buttonGrid, buttonGrid.parentElement.children, 'response', {
             sourceId: String([...buttonGrid.parentElement.children].indexOf(buttonGrid)),
             id: `ID ${question.id}`,
@@ -2714,11 +2899,17 @@ try {
       .then(() => {
         ui.setUnsavedChanges(false);
         ui.toast("Flagged response for review.", 3000, "success", "bi bi-flag-fill");
-        init();
+        if (actionRefreshes) {
+          init();
+        } else {
+          const parent = this.parentElement;
+          this.outerHTML = '<button square data-unflag-response tooltip="Unflag Response"><i class="bi bi-flag-fill"></i></button>';
+          parent.querySelector('[data-unflag-response]')?.addEventListener('click', unflagResponse);
+        }
       })
       .catch((e) => {
         console.error(e);
-        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if (!e.message || (e.message && (e.message.includes('NetworkError') || !e.message.includes(".")))) ui.view("api-fail");
         if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
       });
   }
@@ -2756,11 +2947,17 @@ try {
       .then(() => {
         ui.setUnsavedChanges(false);
         ui.toast("Unflagged response.", 3000, "success", "bi bi-flag-fill");
-        init();
+        if (actionRefreshes) {
+          init();
+        } else {
+          const parent = this.parentElement;
+          this.outerHTML = '<button square data-flag-response tooltip="Flag Response"><i class="bi bi-flag"></i></button>';
+          parent.querySelector('[data-flag-response]')?.addEventListener('click', flagResponse);
+        }
       })
       .catch((e) => {
         console.error(e);
-        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if (!e.message || (e.message && (e.message.includes('NetworkError') || !e.message.includes(".")))) ui.view("api-fail");
         if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
       });
   }
@@ -2802,11 +2999,19 @@ try {
         noReloadCourse = true;
         keepSegment = document.getElementById("filter-segment-input").value;
         fromAwaitingScoring = (document.querySelector('.awaitingResponses .section') && Array.from(document.querySelector('.awaitingResponses .section').children).includes(this.parentElement)) ? true : false;
-        init();
+        if (actionRefreshes) {
+          init();
+        } else {
+          const parent = this.parentElement;
+          parent.querySelector('#mark-correct-button')?.setAttribute('disabled', '');
+          if (parent.querySelector('#mark-correct-button i')) parent.querySelector('#mark-correct-button i').classList = 'bi bi-check-circle-fill';
+          parent.querySelector('#mark-incorrect-button')?.removeAttribute('disabled');
+          if (parent.querySelector('#mark-incorrect-button i')) parent.querySelector('#mark-incorrect-button i').classList = 'bi bi-x-circle';
+        }
       })
       .catch((e) => {
         console.error(e);
-        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if (!e.message || (e.message && (e.message.includes('NetworkError') || !e.message.includes(".")))) ui.view("api-fail");
         if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
         pollingOff();
       });
@@ -2884,11 +3089,19 @@ try {
         noReloadCourse = true;
         keepSegment = document.getElementById("filter-segment-input").value;
         fromAwaitingScoring = (document.querySelector('.awaitingResponses .section') && Array.from(document.querySelector('.awaitingResponses .section').children).includes(e.parentElement)) ? true : false;
-        init();
+        if (actionRefreshes) {
+          init();
+        } else {
+          const parent = e.parentElement;
+          parent.querySelector('#mark-incorrect-button')?.setAttribute('disabled', '');
+          if (parent.querySelector('#mark-incorrect-button i')) parent.querySelector('#mark-incorrect-button i').classList = 'bi bi-x-circle-fill';
+          parent.querySelector('#mark-correct-button')?.removeAttribute('disabled');
+          if (parent.querySelector('#mark-correct-button i')) parent.querySelector('#mark-correct-button i').classList = 'bi bi-check-circle';
+        }
       })
       .catch((e) => {
         console.error(e);
-        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if (!e.message || (e.message && (e.message.includes('NetworkError') || !e.message.includes(".")))) ui.view("api-fail");
         if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
         pollingOff();
       });
@@ -3231,7 +3444,7 @@ try {
       })
       .catch((e) => {
         console.error(e);
-        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if (!e.message || (e.message && (e.message.includes('NetworkError') || !e.message.includes(".")))) ui.view("api-fail");
         if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
         pollingOff();
       });
@@ -3369,263 +3582,431 @@ try {
     var detailedReport = '';
     if (storage.get("developer")) console.log('Rendering detailed report for', reportSlug);
     if (reportSlug.startsWith('seat-code-')) {
-      var responses1 = responses
-        .filter(r => courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value) ? JSON.parse(courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value)?.periods).includes(Number(String(r.seatCode)[0])) : false)
-        .filter(r => document.getElementById("filter-segment-input")?.value ? (String(segments.find(s => (String(s.id) === String(r.segment)) && (courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value) ? (String(s.course) === String(courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value).id)) : true)) ? (segments.find(s => (String(s.id) === String(r.segment)) && (courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value) ? (String(s.course) === String(courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value).id)) : true)).id || r.segment) : (segments.find(s => (courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value) ? (String(s.course) === String(courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value).id)) : false) && JSON.parse(s.question_ids || [])?.find(q => String(q.id) === String(r.question_id)))?.id || '-')) === document.getElementById("filter-segment-input").value) : true)
-        .filter(r => document.getElementById("sort-question-input")?.value.startsWith('"') ? (questions.find(q => String(q.id) === String(r.question_id))?.number === document.getElementById("sort-question-input")?.value.replaceAll('"', '')) : questions.find(q => String(q.id) === String(r.question_id))?.number.startsWith(document.getElementById("sort-question-input")?.value))
-        .filter(r => String(r.seatCode).startsWith(document.getElementById("sort-seat-input")?.value))
+      const getElementById = id => document.getElementById(id);
+      const getValue = id => getElementById(id)?.value ?? '';
+      const querySelector = sel => document.querySelector(sel);
+      const querySelectorAll = sel => document.querySelectorAll(sel);
+      const courseId = getValue('course-period-input');
+      const course = courses.find(c => String(c.id) === courseId);
+      const coursePeriods = course ? JSON.parse(course.periods) : [];
+      const segmentFilter = getValue('filter-segment-input');
+      const sortQuestion = getValue('sort-question-input');
+      const sortSeat = getValue('sort-seat-input');
+      const hideIncorrect = getElementById('hideIncorrectAttempts')?.checked;
+      const courseMap = new Map(courses.map(c => [String(c.id), c]));
+      const segmentMap = new Map(segments.map(s => [String(s.id), s]));
+      const questionMap = new Map(questions.map(q => [String(q.id), q]));
+      let responses1 = responses
+        .filter(r => coursePeriods.includes(Number(String(r.seatCode)[0])))
+        .filter(r => {
+          if (!segmentFilter) return true;
+          const seg = segmentMap.get(String(r.segment));
+          if (!seg) return false;
+          const belongsToCourse = !courseId || (String(seg.course) === courseId);
+          if (!belongsToCourse) return false;
+          return (seg.id || r.segment) === segmentFilter;
+        })
+        .filter(r => {
+          const q = questionMap.get(String(r.question_id));
+          if (!q) return false;
+          const num = q.number ?? '';
+          if (sortQuestion.startsWith('"')) return num === sortQuestion.replaceAll('"', '');
+          return num.startsWith(sortQuestion);
+        })
+        .filter(r => String(r.seatCode).startsWith(sortSeat))
         .sort((a, b) => {
           if (a.flagged && !b.flagged) return -1;
           if (!a.flagged && b.flagged) return 1;
           return b.id - a.id;
         });
-      var seatCodes = [];
+      const seatCodes = [];
       responses1.forEach(r => {
-        if (document.querySelector('.seat-code-reports')) {
-          if (seatCodes.find(seatCode => seatCode.code === r.seatCode)) {
-            const seatCode = seatCodes.find(seatCode => seatCode.code === r.seatCode);
-            if (r.status === 'Correct') {
-              seatCode.correct++;
-            } else if (r.status === 'Incorrect') {
-              seatCode.incorrect++;
-            } else if (r.status.includes('Recorded')) {
-              seatCode.waiting++;
-            } else {
-              seatCode.other++;
-            }
-            seatCode.total++;
-            seatCode.responses.push(r);
+        if (!querySelector('.seat-code-reports')) return;
+        const existing = seatCodes.find(s => s.code === r.seatCode);
+        if (existing) {
+          if (r.status === 'Correct') {
+            existing.correct++;
+          } else if (r.status === 'Incorrect') {
+            existing.incorrect++;
+          } else if (r.status.includes('Recorded')) {
+            existing.waiting++;
           } else {
-            seatCodes.push({
-              code: r.seatCode,
-              correct: (r.status === 'Correct') ? 1 : 0,
-              incorrect: (r.status === 'Incorrect') ? 1 : 0,
-              other: ((r.status !== 'Correct') && (r.status !== 'Incorrect') && !r.status.includes('Recorded')) ? 1 : 0,
-              waiting: r.status.includes('Recorded') ? 1 : 0,
-              total: 1,
-              responses: [r],
-            });
+            existing.other++;
           }
+          existing.total++;
+          existing.responses.push(r);
+        } else {
+          seatCodes.push({
+            code: r.seatCode,
+            correct: (r.status === 'Correct') ? 1 : 0,
+            incorrect: (r.status === 'Incorrect') ? 1 : 0,
+            waiting: r.status.includes('Recorded') ? 1 : 0,
+            other: ((r.status !== 'Correct') && (r.status !== 'Incorrect') && !r.status.includes('Recorded')) ? 1 : 0,
+            total: 1,
+            responses: [r]
+          });
         }
       });
-      var seatCode = seatCodes.find(s => ('seat-code-' + s.code) === reportSlug);
-      var seatCodeResponses = seatCode.responses.sort((a, b) => a.timestamp - b.timestamp);
-      if (document.getElementById('hideIncorrectAttempts').checked) seatCodeResponses = seatCodeResponses.filter((r, index, self) => r.status === 'Correct' || !self.some(other => other.question_id === r.question_id && other.status === 'Correct'));
-      if (document.querySelector('#filter-report-responses [aria-selected="true"]').getAttribute('data-value') === 'first') {
-        seatCodeResponses = seatCodeResponses.filter(r => r.id === Math.min(...seatCodeResponses.filter(r1 => r1.seatCode === r.seatCode && r1.question_id === r.question_id).map(r1 => r1.id)));
-      } else if (document.querySelector('#filter-report-responses [aria-selected="true"]').getAttribute('data-value') === 'last') {
-        seatCodeResponses = seatCodeResponses.filter(r => r.id === Math.max(...seatCodeResponses.filter(r1 => r1.seatCode === r.seatCode && r1.question_id === r.question_id).map(r1 => r1.id)));
+      const seatCode = seatCodes.find(s => (`seat-code-${s.code}`) === reportSlug);
+      if (!seatCode) return;
+      let seatCodeResponses = seatCode.responses.sort((a, b) => a.timestamp - b.timestamp);
+      if (hideIncorrect) seatCodeResponses = seatCodeResponses.filter((r, _, arr) => {
+        return (r.status === 'Correct') || !arr.some(o => (o.question_id === r.question_id) && (o.status === 'Correct'));
+      });
+      const filterMode = querySelector('#filter-report-responses [aria-selected="true"]')?.getAttribute('data-value');
+      if (filterMode === 'first') {
+        seatCodeResponses = seatCodeResponses.filter(r => r.id === Math.min(...seatCodeResponses.filter(x => (x.seatCode === r.seatCode) && (x.question_id === r.question_id)).map(x => x.id)));
+      } else if (filterMode === 'last') {
+        seatCodeResponses = seatCodeResponses.filter(r => r.id === Math.max(...seatCodeResponses.filter(x => (x.seatCode === r.seatCode) && (x.question_id === r.question_id)).map(x => x.id)));
       }
       seatCodeResponses.forEach(r => {
         const currentDate = new Date(r.timestamp);
-        var timeTaken = "N/A";
-        const sameSeatCodeResponses = responses
-          .filter(r => courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value) ? JSON.parse(courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value)?.periods).includes(Number(String(r.seatCode)[0])) : false)
-          .filter(r => document.getElementById("filter-segment-input")?.value ? (String(segments.find(s => (String(s.id) === String(r.segment)) && (courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value) ? (String(s.course) === String(courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value).id)) : true)) ? (segments.find(s => (String(s.id) === String(r.segment)) && (courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value) ? (String(s.course) === String(courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value).id)) : true)).id || r.segment) : (segments.find(s => (courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value) ? (String(s.course) === String(courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value).id)) : false) && JSON.parse(s.question_ids || [])?.find(q => String(q.id) === String(r.question_id)))?.id || '-')) === document.getElementById("filter-segment-input").value) : true)
-          .filter(r => document.getElementById("sort-question-input")?.value.startsWith('"') ? (questions.find(q => String(q.id) === String(r.question_id))?.number === document.getElementById("sort-question-input")?.value.replaceAll('"', '')) : questions.find(q => String(q.id) === String(r.question_id))?.number.startsWith(document.getElementById("sort-question-input")?.value))
-          .filter(r => String(r.seatCode).startsWith(document.getElementById("sort-seat-input")?.value))
-          .sort((a, b) => {
-            if (a.flagged && !b.flagged) return -1;
-            if (!a.flagged && b.flagged) return 1;
-            return b.id - a.id;
-          })
+        let timeTaken = 'N/A';
+        const sameSeat = responses1
           .filter(a => a.seatCode === r.seatCode)
           .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-        const lastResponseIndex = sameSeatCodeResponses.findIndex(a => new Date(a.timestamp) >= currentDate) - 1;
-        const lastResponse = lastResponseIndex >= 0 ? sameSeatCodeResponses[lastResponseIndex] : null;
-        let timeDifference;
-        if (lastResponse) {
-          timeDifference = calculateTimeDifference(currentDate, lastResponse.timestamp);
-          timeTaken = formatTimeDifference(timeDifference);
+        const lastIdx = sameSeat.findIndex(a => new Date(a.timestamp) >= currentDate) - 1;
+        const lastResp = lastIdx >= 0 ? sameSeat[lastIdx] : null;
+        if (lastResp) {
+          const diff = calculateTimeDifference(currentDate, lastResp.timestamp);
+          timeTaken = formatTimeDifference(diff);
         }
-        detailedReport += questions.find(q => String(q.id) === String(r.question_id))?.number ? `<div class="detailed-report-question">
-          <div class="color">
-            <span class="color-box ${(r.status === 'Correct') ? 'correct' : (r.status === 'Incorrect') ? 'incorrect' : r.status.includes('Recorded') ? 'waiting' : 'other'}"></span>
-            <span class="color-name">Segment ${segments.find(s => String(s.id) === String(r.segment))?.number || segments.find(s => s.question_ids.includes(String(r.question_id)))?.number || r.segment} #${questions.find(q => String(q.id) === String(r.question_id))?.number}<p class="showonhover"> (${time.unixToString(r.timestamp)})</p>: ${escapeHTML(r.response)}</span>
-          </div>
-          <div class="color">
-            <span class="color-name">${timeTaken}</span>
-            <span class="color-box ${(r.status === 'Correct') ? 'correct' : (r.status === 'Incorrect') ? 'incorrect' : r.status.includes('Recorded') ? 'waiting' : 'other'}"></span>
-          </div>
-        </div>` : '';
+        const q = questionMap.get(String(r.question_id));
+        const seg = segmentMap.get(String(r.segment));
+        const segNum = seg?.number ?? (segments.find(s => s.question_ids?.includes(String(r.question_id)))?.number) ?? r.segment;
+        const statusClass = r.status === 'Correct' ? 'correct' : r.status === 'Incorrect' ? 'incorrect' : r.status.includes('Recorded') ? 'waiting' : 'other';
+        if (q?.number) detailedReport += `
+          <div class="detailed-report-question">
+            <div class="color">
+              <span class="color-box ${statusClass}"></span>
+              <span class="color-name">
+                Segment ${segNum} #${q.number}
+                <p class="showonhover"> (${time.unixToString(r.timestamp)})</p>:
+                ${escapeHTML(r.response)}
+              </span>
+            </div>
+            <div class="color">
+              <span class="color-name">${timeTaken}</span>
+              <span class="color-box ${statusClass}"></span>
+            </div>
+          </div>`;
       });
+      const reportContainer = querySelector('#detailed-report');
+      if (reportContainer) reportContainer.innerHTML = detailedReport;
     } else if (reportSlug.startsWith('segment-')) {
-      var segment = segments.find(s => String(s.id) === reportSlug.split('segment-')[1]);
-      JSON.parse(segment.question_ids).filter(q => document.getElementById("sort-question-input")?.value.startsWith('"') ? (questions.find(q1 => String(q1.id) === String(q.id))?.number === document.getElementById("sort-question-input")?.value.replaceAll('"', '')) : questions.find(q1 => String(q1.id) === String(q.id))?.number.startsWith(document.getElementById("sort-question-input")?.value)).forEach(q => {
-        var question = questions.find(q1 => String(q1.id) === String(q.id));
-        if (!question) return;
-        var questionResponses = responses.filter(seatCode => JSON.parse(courses.find(course => String(course.id) === document.getElementById("course-period-input").value).periods).includes(Number(String(seatCode.seatCode)[0]))).filter(r => String(r.segment) === String(segment.id)).filter(r => r.question_id === question.id).filter(r => String(r.seatCode).startsWith(document.getElementById("sort-seat-input")?.value));
-        if (document.getElementById('hideIncorrectAttempts').checked) questionResponses = questionResponses.filter((r, index, self) => r.status === 'Correct' || !self.some(other => other.question_id === r.question_id && other.status === 'Correct'));
-        if (document.querySelector('#filter-report-responses [aria-selected="true"]').getAttribute('data-value') === 'first') {
-          questionResponses = questionResponses.filter(r => r.id === Math.min(...questionResponses.filter(r1 => r1.seatCode === r.seatCode && r1.question_id === r.question_id).map(r1 => r1.id)));
-        } else if (document.querySelector('#filter-report-responses [aria-selected="true"]').getAttribute('data-value') === 'last') {
-          questionResponses = questionResponses.filter(r => r.id === Math.max(...questionResponses.filter(r1 => r1.seatCode === r.seatCode && r1.question_id === r.question_id).map(r1 => r1.id)));
+      const sortQuestionInput = document.getElementById("sort-question-input");
+      const sortSeatInput = document.getElementById("sort-seat-input");
+      const coursePeriodInput = document.getElementById("course-period-input");
+      const hideIncorrectChk = document.getElementById('hideIncorrectAttempts');
+      const hideUnansweredChk = document.getElementById('hideUnanswered');
+      const useRosterChk = document.getElementById('useRoster');
+      const hideIncorrectChecked = () => hideIncorrectChk?.checked;
+      const useRosterChecked = () => useRosterChk?.checked;
+      const filterReportBtn = document.querySelector('#filter-report-responses [aria-selected="true"]');
+      const responseFilterMode = () => filterReportBtn?.getAttribute('data-value');
+      const sortReportBtn = document.querySelector('#sort-report-responses [aria-selected="true"]');
+      const sortReportMode = () => sortReportBtn?.getAttribute('data-value');
+      const segmentIdFromSlug = reportSlug.split('segment-')[1];
+      const segment = segments.find(s => String(s.id) === segmentIdFromSlug);
+      if (!segment) return;
+      const segmentQuestionIds = JSON.parse(segment.question_ids);
+      const segmentQuestionObjs = segmentQuestionIds
+        .map(qId => questions.find(q => String(q.id) === String(qId.id)))
+        .filter(Boolean);
+      function getCurrentCourse() {
+        const course = courses.find(c => String(c.id) === coursePeriodInput?.value);
+        return course ? {
+          obj: course,
+          periods: JSON.parse(course.periods)
+        } : null;
+      }
+      const currentCourse = getCurrentCourse();
+      function getRosterForSeat(seatCode) {
+        if (!useRosterChecked()) return null;
+        const period = Number(String(seatCode)[0]);
+        return rosters.find(r => r.period === period) || null;
+      }
+      function getStudentName(seatCode) {
+        const roster = getRosterForSeat(seatCode);
+        if (!roster) return "Unknown";
+        const student = JSON.parse(roster.data).find(s => String(s.seatCode) === String(seatCode));
+        return student ? `${student.last}, ${student.first}` : "Unknown";
+      }
+      segmentQuestionObjs.forEach(question => {
+        let qResponses = responses
+          .filter(r => {
+            if (!currentCourse) return false;
+            const period = Number(String(r.seatCode)[0]);
+            return currentCourse.periods.includes(period);
+          })
+          .filter(r => String(r.segment) === String(segment.id))
+          .filter(r => r.question_id === question.id)
+          .filter(r => String(r.seatCode).startsWith(sortSeatInput?.value ?? ''));
+        if (hideIncorrectChecked()) {
+          const hasCorrect = new Set(
+            qResponses
+              .filter(r => r.status === 'Correct')
+              .map(r => r.question_id)
+          );
+          qResponses = qResponses.filter(r => r.status === 'Correct' || !hasCorrect.has(r.question_id));
         }
-        var detailedReport1 = '';
-        switch (document.querySelector('#sort-report-responses [aria-selected="true"]').getAttribute('data-value')) {
-          case 'seatCode':
-            questionResponses = questionResponses.sort((a, b) => a.seatCode - b.seatCode);
-            break;
-          case 'studentName':
-            questionResponses = questionResponses.sort((a, b) => {
-              var nameA = "Unknown";
-              var nameB = "Unknown";
-              if (document.getElementById('useRoster').checked) {
-                var roster = rosters.find(roster => roster.period === Number(String(a.seatCode)[0]));
-                if (roster) {
-                  var studentA = JSON.parse(roster.data).find(student => String(student.seatCode) === String(a.seatCode));
-                  if (studentA) nameA = `${studentA.last}, ${studentA.first}`;
-                  var studentB = JSON.parse(roster.data).find(student => String(student.seatCode) === String(b.seatCode));
-                  if (studentB) nameB = `${studentB.last}, ${studentB.first}`;
-                }
-              }
-              return nameA.localeCompare(nameB);
-            });
-            break;
-        }
-        questionResponses.forEach(r => {
-          var name = "Unknown";
-          if (document.getElementById('useRoster').checked) {
-            var roster = rosters.find(roster => roster.period === Number(String(r.seatCode)[0]));
-            if (roster) {
-              var student = JSON.parse(roster.data).find(student => String(student.seatCode) === String(r.seatCode));
-              if (student) name = `${student.last}, ${student.first}`;
+        const mode = responseFilterMode();
+        if (mode === 'first' || mode === 'last') {
+          const map = new Map();
+          for (const r of qResponses) {
+            const key = `${r.seatCode}|${r.question_id}`;
+            const cur = map.get(key);
+            if (!cur) {
+              map.set(key, r);
+            } else {
+              const replace = (mode === 'first' && r.id < cur.id) || (mode === 'last' && r.id > cur.id);
+              if (replace) map.set(key, r);
             }
           }
+          qResponses = Array.from(map.values());
+        }
+        const sortMode = sortReportMode();
+        if (sortMode === 'seatCode') {
+          qResponses.sort((a, b) => a.seatCode - b.seatCode);
+        } else if (sortMode === 'studentName') {
+          const getName = sc => useRosterChecked() ? getStudentName(sc) : 'Unknown';
+          qResponses.sort((a, b) => getName(a.seatCode).localeCompare(getName(b.seatCode)));
+        }
+        let detailedReportHTML = '';
+        for (const r of qResponses) {
+          const name = useRosterChecked() ? getStudentName(r.seatCode) : 'Unknown';
           const currentDate = new Date(r.timestamp);
-          var timeTaken = "N/A";
-          const sameSeatCodeResponses = responses
-            .filter(r => courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value) ? JSON.parse(courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value)?.periods).includes(Number(String(r.seatCode)[0])) : false)
-            .filter(r => document.getElementById("filter-segment-input")?.value ? (String(segments.find(s => (String(s.id) === String(r.segment)) && (courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value) ? (String(s.course) === String(courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value).id)) : true)) ? (segments.find(s => (String(s.id) === String(r.segment)) && (courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value) ? (String(s.course) === String(courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value).id)) : true)).id || r.segment) : (segments.find(s => (courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value) ? (String(s.course) === String(courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value).id)) : false) && JSON.parse(s.question_ids || [])?.find(q => String(q.id) === String(r.question_id)))?.id || '-')) === document.getElementById("filter-segment-input").value) : true)
-            .filter(r => document.getElementById("sort-question-input")?.value.startsWith('"') ? (questions.find(q => String(q.id) === String(r.question_id))?.number === document.getElementById("sort-question-input")?.value.replaceAll('"', '')) : questions.find(q => String(q.id) === String(r.question_id))?.number.startsWith(document.getElementById("sort-question-input")?.value))
-            .filter(r => String(r.seatCode).startsWith(document.getElementById("sort-seat-input")?.value))
+          const sameSeatResponses = responses
+            .filter(x => {
+              const c = getCurrentCourse();
+              return c && c.periods.includes(Number(String(x.seatCode)[0]));
+            })
+            .filter(x => {
+              const input = document.getElementById('filter-segment-input')?.value;
+              if (!input) return true;
+              const seg = segments.find(s => String(s.id) === String(x.segment));
+              if (!seg) return false;
+              const segCourseMatch = !currentCourse || String(seg.course) === String(currentCourse.obj.id);
+              const segQuestionMatch = JSON.parse(seg.question_ids || []).some(q => String(q.id) === String(x.question_id));
+              return segCourseMatch && segQuestionMatch;
+            })
+            .filter(x => {
+              const q = questions.find(q => String(q.id) === String(x.question_id));
+              if (!q) return false;
+              const val = sortQuestionInput?.value ?? '';
+              return val.startsWith('"') ? q.number === val.replaceAll('"', '') : q.number.startsWith(val);
+            })
+            .filter(x => String(x.seatCode).startsWith(sortSeatInput?.value ?? ''))
             .sort((a, b) => {
               if (a.flagged && !b.flagged) return -1;
               if (!a.flagged && b.flagged) return 1;
               return b.id - a.id;
             })
-            .filter(a => a.seatCode === r.seatCode)
+            .filter(x => x.seatCode === r.seatCode)
             .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-          const lastResponseIndex = sameSeatCodeResponses.findIndex(a => new Date(a.timestamp) >= currentDate) - 1;
-          const lastResponse = lastResponseIndex >= 0 ? sameSeatCodeResponses[lastResponseIndex] : null;
-          let timeDifference;
-          if (lastResponse) {
-            timeDifference = calculateTimeDifference(currentDate, lastResponse.timestamp);
-            timeTaken = formatTimeDifference(timeDifference);
+          const lastIdx = sameSeatResponses.findIndex(a => new Date(a.timestamp) >= currentDate) - 1;
+          const lastResp = lastIdx >= 0 ? sameSeatResponses[lastIdx] : null;
+          let timeTaken = 'N/A';
+          if (lastResp) {
+            const diffMs = currentDate - new Date(lastResp.timestamp);
+            const secs = Math.floor(diffMs / 1000) % 60;
+            const mins = Math.floor(diffMs / 60000) % 60;
+            const hrs = Math.floor(diffMs / 3600000);
+            timeTaken = `${hrs ? hrs + 'h ' : ''}${mins}m ${secs}s`;
           }
-          detailedReport1 += `<div class="detailed-report-question">
-                  <div class="color">
-                    <span class="color-box ${(r.status === 'Correct') ? 'correct' : (r.status === 'Incorrect') ? 'incorrect' : r.status.includes('Recorded') ? 'waiting' : 'other'}"></span>
-                    <span class="color-name">${document.getElementById('useRoster').checked ? `${name} (${r.seatCode})` : r.seatCode}<p class="showonhover"> (${time.unixToString(r.timestamp)})</p>: ${escapeHTML(r.response)}</span>
-                  </div>
-                  <div class="color">
-                    <span class="color-name">${timeTaken}</span>
-                    <span class="color-box ${(r.status === 'Correct') ? 'correct' : (r.status === 'Incorrect') ? 'incorrect' : r.status.includes('Recorded') ? 'waiting' : 'other'}"></span>
-                  </div>
-                </div>`;
-        });
-        var total = questionResponses.length || 1;
-        var unansweredStudentsCount = 0;
-        if (document.getElementById('useRoster').checked && (document.querySelector('#filter-report-responses [aria-selected="true"]').getAttribute('data-value') !== 'all') && !document.getElementById('hideUnanswered').checked) {
-          var courseRosters = rosters.filter(roster => JSON.parse(courses.find(course => String(course.id) === document.getElementById("course-period-input").value)?.periods).includes(Number(String(roster.period))));
-          var totalRosterStudents = [...new Set(courseRosters.flatMap(a => JSON.parse(a.data).map(b => Number(b.seatCode))))];
-          if (totalRosterStudents.length) {
-            var answeredStudentsCount = [...new Set(questionResponses.flatMap(a => a.seatCode).filter(x => totalRosterStudents.includes(x)))].length;
-            unansweredStudentsCount = totalRosterStudents.length - answeredStudentsCount;
-            total = questionResponses.length + unansweredStudentsCount;
+          const statusClass = r.status === 'Correct' ? 'correct' : r.status === 'Incorrect' ? 'incorrect' : r.status.includes('Recorded') ? 'waiting' : 'other';
+          detailedReportHTML += `
+            <div class="detailed-report-question">
+              <div class="color">
+                <span class="color-box ${statusClass}"></span>
+                <span class="color-name">
+                  ${useRosterChecked()
+              ? `${name} (${r.seatCode})`
+              : r.seatCode}
+                  <p class="showonhover"> (${time.unixToString(r.timestamp)})</p>: ${escapeHTML(r.response)}
+                </span>
+              </div>
+              <div class="color">
+                <span class="color-name">${timeTaken}</span>
+                <span class="color-box ${statusClass}"></span>
+              </div>
+            </div>`;
+        }
+        const totalResponses = qResponses.length || 1;
+        let unansweredStudents = 0;
+        if (useRosterChecked() && filterReportBtn?.getAttribute('data-value') !== 'all' && !hideUnansweredChk?.checked) {
+          const rostersInCourse = rosters.filter(r => currentCourse?.periods.includes(r.period));
+          const allSeatCodes = [...new Set(rostersInCourse.flatMap(r => JSON.parse(r.data).map(s => Number(s.seatCode))))];
+          if (allSeatCodes.length) {
+            const answered = [...new Set(qResponses.map(r => r.seatCode).filter(sc => allSeatCodes.includes(sc)))].length;
+            unansweredStudents = allSeatCodes.length - answered;
           }
         }
-        detailedReport += `<div class="detailed-report-question"${(questionResponses.length != 0) ? ` report="segment-question-${q.id}"` : ''}>
-          <b>Question ${question.number} (${questionResponses.length} Response${(questionResponses.length != 1) ? 's' : ''})</b>
+        const total = qResponses.length + unansweredStudents;
+        const correctCnt = qResponses.filter(r => r.status === 'Correct').length;
+        const incorrectCnt = qResponses.filter(r => r.status === 'Incorrect').length;
+        const waitingCnt = qResponses.filter(r => r.status.includes('Recorded')).length;
+        const otherCnt = qResponses.filter(r => r.status !== 'Correct' && r.status !== 'Incorrect' && !r.status.includes('Recorded')).length + unansweredStudents;
+        const barHTML = `
           <div class="barcount-wrapper">
-            ${(questionResponses.filter(r => r.status === 'Correct').length != 0) ? `<div class="barcount correct" style="width: calc(${questionResponses.filter(r => r.status === 'Correct').length / total} * 100%)">${questionResponses.filter(r => r.status === 'Correct').length}</div>` : ''}
-            ${((questionResponses.filter(r => ((r.status !== 'Correct') && (r.status !== 'Incorrect') && !r.status.includes('Recorded'))).length + unansweredStudentsCount) != 0) ? `<div class="barcount other" style="width: calc(${(questionResponses.filter(r => ((r.status !== 'Correct') && (r.status !== 'Incorrect') && !r.status.includes('Recorded'))).length + unansweredStudentsCount) / total} * 100%)">${questionResponses.filter(r => ((r.status !== 'Correct') && (r.status !== 'Incorrect') && !r.status.includes('Recorded'))).length + unansweredStudentsCount}</div>` : ''}
-            ${(questionResponses.filter(r => r.status.includes('Recorded')).length != 0) ? `<div class="barcount waiting" style="width: calc(${questionResponses.filter(r => r.status.includes('Recorded')).length / total} * 100%)">${questionResponses.filter(r => r.status.includes('Recorded')).length}</div>` : ''}
-            ${(questionResponses.filter(r => r.status === 'Incorrect').length != 0) ? `<div class="barcount incorrect" style="width: calc(${questionResponses.filter(r => r.status === 'Incorrect').length / total} * 100%)">${questionResponses.filter(r => r.status === 'Incorrect').length}</div>` : ''}
+            ${correctCnt ? `<div class="barcount correct" style="width:calc(${correctCnt / total}*100%)">${correctCnt}</div>` : ''}
+            ${otherCnt ? `<div class="barcount other"   style="width:calc(${otherCnt / total}*100%)">${otherCnt}</div>` : ''}
+            ${waitingCnt ? `<div class="barcount waiting" style="width:calc(${waitingCnt / total}*100%)">${waitingCnt}</div>` : ''}
+            ${incorrectCnt ? `<div class="barcount incorrect" style="width:calc(${incorrectCnt / total}*100%)">${incorrectCnt}</div>` : ''}
+          </div>`;
+        detailedReport += `
+          <div class="detailed-report-question"${qResponses.length ? ` report="segment-question-${question.id}"` : ''}>
+            <b>Question ${question.number} (${qResponses.length} Response${qResponses.length !== 1 ? 's' : ''})</b>
+            ${barHTML}
           </div>
-        </div>
-        ${(questionResponses.length != 0) ? `<div class="section detailed-report" id="segment-question-${q.id}">
-          ${detailedReport1}
-        </div>` : ''}`;
+          ${qResponses.length ? `<div class="section detailed-report" id="segment-question-${question.id}">${detailedReportHTML}</div>` : ''}`;
       });
     } else if (reportSlug.startsWith('question-')) {
-      const course = courses.find(c => document.getElementById("course-period-input") ? (String(c.id) === document.getElementById("course-period-input").value) : null);
-      var courseQuestions = [];
-      segments.filter(s => String(s.course) === String(course?.id)).filter(s => document.getElementById("filter-segment-input")?.value ? (String(s.id) === document.getElementById("filter-segment-input").value) : true).forEach(segment => {
-        JSON.parse(segment.question_ids).filter(q => document.getElementById("sort-question-input")?.value.startsWith('"') ? (questions.find(q1 => String(q1.id) === String(q.id))?.number === document.getElementById("sort-question-input")?.value.replaceAll('"', '')) : questions.find(q1 => String(q1.id) === String(q.id))?.number.startsWith(document.getElementById("sort-question-input")?.value)).forEach(questionId => {
-          const question = questions.find(q => String(q.id) === String(questionId.id));
-          if (question) courseQuestions.push(question);
+      const $courseInput = document.getElementById('course-period-input');
+      const $segmentFilterInput = document.getElementById('filter-segment-input');
+      const $sortQuestionInput = document.getElementById('sort-question-input');
+      const $sortSeatInput = document.getElementById('sort-seat-input');
+      const $hideIncorrectChk = document.getElementById('hideIncorrectAttempts');
+      const $useRosterChk = document.getElementById('useRoster');
+      const $responseSortSel = document.querySelector('#sort-report-responses [aria-selected="true"]');
+      const $responseFilterSel = document.querySelector('#filter-report-responses [aria-selected="true"]');
+      const courseMap = new Map(courses.map(c => [String(c.id), c]));
+      const segmentMap = new Map(segments.map(s => [String(s.id), s]));
+      const questionMap = new Map(questions.map(q => [String(q.id), q]));
+      const currentCourse = $courseInput?.value ? courseMap.get($courseInput.value) : null;
+      let filteredSegments = segments.filter(s => String(s.course) === String(currentCourse?.id));
+      if ($segmentFilterInput?.value) filteredSegments = filteredSegments.filter(s => String(s.id) === $segmentFilterInput.value);
+      const qNumCache = new Map();
+      function getQuestionNumber(q) {
+        if (!qNumCache.has(q.id)) qNumCache.set(q.id, q.number);
+        return qNumCache.get(q.id);
+      }
+      const courseQuestions = [];
+      filteredSegments.forEach(seg => {
+        const segQIds = JSON.parse(seg.question_ids);
+        segQIds.forEach(qIdObj => {
+          const qId = String(qIdObj.id);
+          const q = questionMap.get(qId);
+          if (!q) return;
+          const sortVal = $sortQuestionInput?.value ?? '';
+          const matches = sortVal.startsWith('"') ? getQuestionNumber(q) === sortVal.replaceAll('"', '') : getQuestionNumber(q).startsWith(sortVal);
+          if (matches) courseQuestions.push(q);
         });
       });
-      var question = courseQuestions.find(q => ('question-' + q.id) === reportSlug);
-      var questionResponses = responses.filter(r => r.question_id === question.id).filter(r => JSON.parse(courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value).periods).includes(Number(String(r.seatCode)[0]))).filter(r => String(r.seatCode).startsWith(document.getElementById("sort-seat-input")?.value));
-      if (document.getElementById('hideIncorrectAttempts').checked) questionResponses = questionResponses.filter((r, index, self) => r.status === 'Correct' || !self.some(other => other.question_id === r.question_id && other.status === 'Correct'));
-      if (document.querySelector('#filter-report-responses [aria-selected="true"]').getAttribute('data-value') === 'first') {
-        questionResponses = questionResponses.filter(r => r.id === Math.min(...questionResponses.filter(r1 => r1.seatCode === r.seatCode && r1.question_id === r.question_id).map(r1 => r1.id)));
-      } else if (document.querySelector('#filter-report-responses [aria-selected="true"]').getAttribute('data-value') === 'last') {
-        questionResponses = questionResponses.filter(r => r.id === Math.max(...questionResponses.filter(r1 => r1.seatCode === r.seatCode && r1.question_id === r.question_id).map(r1 => r1.id)));
+      const question = courseQuestions.find(q => `question-${q.id}` === reportSlug);
+      if (!question) return;
+      let validPeriods = [];
+      if (currentCourse) {
+        try {
+          validPeriods = JSON.parse(currentCourse.periods).map(Number);
+        } catch (e) { }
       }
-      switch (document.querySelector('#sort-report-responses [aria-selected="true"]').getAttribute('data-value')) {
-        case 'seatCode':
-          questionResponses = questionResponses.sort((a, b) => a.seatCode - b.seatCode);
-          break;
-        case 'studentName':
-          questionResponses = questionResponses.sort((a, b) => {
-            var nameA = "Unknown";
-            var nameB = "Unknown";
-            if (document.getElementById('useRoster').checked) {
-              var roster = rosters.find(roster => roster.period === Number(String(a.seatCode)[0]));
-              if (roster) {
-                var studentA = JSON.parse(roster.data).find(student => String(student.seatCode) === String(a.seatCode));
-                if (studentA) nameA = `${studentA.last}, ${studentA.first}`;
-                var studentB = JSON.parse(roster.data).find(student => String(student.seatCode) === String(b.seatCode));
-                if (studentB) nameB = `${studentB.last}, ${studentB.first}`;
-              }
-            }
-            return nameA.localeCompare(nameB);
-          });
-          break;
+      let questionResponses = responses.filter(r => r.question_id === question.id);
+      if (validPeriods.length) questionResponses = questionResponses.filter(r => validPeriods.includes(Number(String(r.seatCode)[0])));
+      if ($sortSeatInput?.value) questionResponses = questionResponses.filter(r => String(r.seatCode).startsWith($sortSeatInput.value));
+      if ($hideIncorrectChk?.checked) {
+        const hasCorrect = new Set();
+        questionResponses.forEach(r => {
+          if (r.status === 'Correct') hasCorrect.add(r.question_id);
+        });
+        questionResponses = questionResponses.filter(r => r.status === 'Correct' || !hasCorrect.has(r.question_id));
+      }
+      const filterMode = $responseFilterSel?.getAttribute('data-value');
+      if (filterMode === 'first' || filterMode === 'last') {
+        const map = new Map();
+        questionResponses.forEach(r => {
+          const key = `${r.seatCode}|${r.question_id}`;
+          const existing = map.get(key);
+          if (!existing) {
+            map.set(key, r);
+          } else {
+            const better = filterMode === 'first' ? r.id < existing.id ? r : existing : r.id > existing.id ? r : existing;
+            map.set(key, better);
+          }
+        });
+        questionResponses = Array.from(map.values());
+      }
+      const sortMode = $responseSortSel?.getAttribute('data-value');
+      if (sortMode === 'seatCode') {
+        questionResponses.sort((a, b) => a.seatCode - b.seatCode);
+      } else if (sortMode === 'studentName') {
+        const rosterCache = new Map();
+        function getStudentName(seatCode) {
+          const period = Number(String(seatCode)[0]);
+          if (!rosterCache.has(period)) {
+            const roster = rosters.find(r => r.period === period);
+            rosterCache.set(period, roster ? JSON.parse(roster.data) : null);
+          }
+          const data = rosterCache.get(period);
+          if (!data) return 'Unknown';
+          const stu = data.find(s => String(s.seatCode) === String(seatCode));
+          return stu ? `${stu.last}, ${stu.first}` : 'Unknown';
+        }
+        questionResponses.sort((a, b) => {
+          const nameA = $useRosterChk?.checked ? getStudentName(a.seatCode) : 'Unknown';
+          const nameB = $useRosterChk?.checked ? getStudentName(b.seatCode) : 'Unknown';
+          return nameA.localeCompare(nameB);
+        });
+      }
+      function calculateTimeDifference(current, previous) {
+        return new Date(current) - new Date(previous);
+      }
+      function formatTimeDifference(diffMs) {
+        const sec = Math.floor(diffMs / 1000) % 60;
+        const min = Math.floor(diffMs / 60000) % 60;
+        const hr = Math.floor(diffMs / 3600000);
+        return `${hr}h ${min}m ${sec}s`;
       }
       questionResponses.forEach(r => {
-        var name = "Unknown";
-        if (document.getElementById('useRoster').checked) {
-          var roster = rosters.find(roster => roster.period === Number(String(r.seatCode)[0]));
+        let name = 'Unknown';
+        if ($useRosterChk?.checked) {
+          const period = Number(String(r.seatCode)[0]);
+          const roster = rosters.find(rt => rt.period === period);
           if (roster) {
-            var student = JSON.parse(roster.data).find(student => String(student.seatCode) === String(r.seatCode));
-            if (student) name = `${student.last}, ${student.first}`;
+            const stu = JSON.parse(roster.data).find(s => String(s.seatCode) === String(r.seatCode));
+            if (stu) name = `${stu.last}, ${stu.first}`;
           }
         }
-        const currentDate = new Date(r.timestamp);
-        var timeTaken = "N/A";
-        const sameSeatCodeResponses = responses
-          .filter(r => courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value) ? JSON.parse(courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value)?.periods).includes(Number(String(r.seatCode)[0])) : false)
-          .filter(r => document.getElementById("filter-segment-input")?.value ? (String(segments.find(s => (String(s.id) === String(r.segment)) && (courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value) ? (String(s.course) === String(courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value).id)) : true)) ? (segments.find(s => (String(s.id) === String(r.segment)) && (courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value) ? (String(s.course) === String(courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value).id)) : true)).id || r.segment) : (segments.find(s => (courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value) ? (String(s.course) === String(courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value).id)) : false) && JSON.parse(s.question_ids || [])?.find(q => String(q.id) === String(r.question_id)))?.id || '-')) === document.getElementById("filter-segment-input").value) : true)
-          .filter(r => document.getElementById("sort-question-input")?.value.startsWith('"') ? (questions.find(q => String(q.id) === String(r.question_id))?.number === document.getElementById("sort-question-input")?.value.replaceAll('"', '')) : questions.find(q => String(q.id) === String(r.question_id))?.number.startsWith(document.getElementById("sort-question-input")?.value))
-          .filter(r => String(r.seatCode).startsWith(document.getElementById("sort-seat-input")?.value))
+        const sameResponses = responses
+          .filter(res => {
+            if (validPeriods.length && !validPeriods.includes(Number(String(res.seatCode)[0]))) return false;
+            if ($segmentFilterInput?.value && String(res.segment) !== $segmentFilterInput.value) return false;
+            const qNum = getQuestionNumber(questionMap.get(String(res.question_id)));
+            const sortVal = $sortQuestionInput?.value ?? '';
+            const matches = sortVal.startsWith('"') ? qNum === sortVal.replaceAll('"', '') : qNum.startsWith(sortVal);
+            if (!matches) return false;
+            if ($sortSeatInput?.value && !String(res.seatCode).startsWith($sortSeatInput.value)) return false;
+            return true;
+          })
+          .filter(res => Number(res.seatCode) === Number(r.seatCode))
           .sort((a, b) => {
             if (a.flagged && !b.flagged) return -1;
             if (!a.flagged && b.flagged) return 1;
             return b.id - a.id;
           })
-          .filter(a => a.seatCode === r.seatCode)
           .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-        const lastResponseIndex = sameSeatCodeResponses.findIndex(a => new Date(a.timestamp) >= currentDate) - 1;
-        const lastResponse = lastResponseIndex >= 0 ? sameSeatCodeResponses[lastResponseIndex] : null;
-        let timeDifference;
-        if (lastResponse) {
-          timeDifference = calculateTimeDifference(currentDate, lastResponse.timestamp);
-          timeTaken = formatTimeDifference(timeDifference);
+        const lastIdx = sameResponses.findIndex(s => new Date(s.timestamp) >= new Date(r.timestamp)) - 1;
+        const lastRes = lastIdx >= 0 ? sameResponses[lastIdx] : null;
+        let timeTaken = 'N/A';
+        if (lastRes) {
+          const diff = calculateTimeDifference(r.timestamp, lastRes.timestamp);
+          timeTaken = formatTimeDifference(diff);
         }
-        detailedReport += `<div class="detailed-report-question">
-          <div class="color">
-            <span class="color-box ${(r.status === 'Correct') ? 'correct' : (r.status === 'Incorrect') ? 'incorrect' : r.status.includes('Recorded') ? 'waiting' : 'other'}"></span>
-            <span class="color-name">${document.getElementById('useRoster').checked ? `${name} (${r.seatCode})` : r.seatCode}<p class="showonhover"> (${time.unixToString(r.timestamp)})</p>: ${escapeHTML(r.response)}</span>
-          </div>
-          <div class="color">
-            <span class="color-name">${timeTaken}</span>
-            <span class="color-box ${(r.status === 'Correct') ? 'correct' : (r.status === 'Incorrect') ? 'incorrect' : r.status.includes('Recorded') ? 'waiting' : 'other'}"></span>
-          </div>
-        </div>`
+        const statusClass = r.status === 'Correct' ? 'correct' : r.status === 'Incorrect' ? 'incorrect' : r.status.includes('Recorded') ? 'waiting' : 'other';
+        detailedReport += `
+          <div class="detailed-report-question">
+            <div class="color">
+              <span class="color-box ${statusClass}"></span>
+              <span class="color-name">
+                ${$useRosterChk?.checked ? `${name} (${r.seatCode})` : r.seatCode}
+                <p class="showonhover"> (${time.unixToString(r.timestamp)})</p>: ${escapeHTML(r.response)}
+              </span>
+            </div>
+            <div class="color">
+              <span class="color-name">${timeTaken}</span>
+              <span class="color-box ${statusClass}"></span>
+            </div>
+          </div>`;
       });
     }
     detailedReportElement.innerHTML = detailedReport || 'Failed to render.';
@@ -3633,75 +4014,136 @@ try {
   }
 
   function updateQuestionReports() {
-    expandedReports = [];
-    document.querySelectorAll('.detailed-report.active').forEach(dr => expandedReports.push(dr.id));
-    if (!document.querySelector('.question-reports') || (questions.length === 0)) return;
-    document.querySelector('.question-reports').innerHTML = '';
-    const course = courses.find(c => document.getElementById("course-period-input") ? (String(c.id) === document.getElementById("course-period-input").value) : null);
-    var courseQuestions = [];
-    segments.filter(s => String(s.course) === String(course?.id)).filter(s => document.getElementById("filter-segment-input")?.value ? (String(s.id) === document.getElementById("filter-segment-input").value) : true).forEach(segment => {
-      JSON.parse(segment.question_ids).filter(q => document.getElementById("sort-question-input")?.value.startsWith('"') ? (questions.find(q1 => String(q1.id) === String(q.id))?.number === document.getElementById("sort-question-input")?.value.replaceAll('"', '')) : questions.find(q1 => String(q1.id) === String(q.id))?.number.startsWith(document.getElementById("sort-question-input")?.value)).forEach(questionId => {
-        const question = questions.find(q => String(q.id) === String(questionId.id));
-        if (question) courseQuestions.push(question);
-      });
-    });
-    courseQuestions.filter(q => document.getElementById("sort-question-input")?.value.startsWith('"') ? (q.number === document.getElementById("sort-question-input")?.value.replaceAll('"', '')) : q.number.startsWith(document.getElementById("sort-question-input")?.value)).sort((a, b) => document.getElementById("filter-segment-input")?.value ? 0 : (a.id - b.id)).forEach(question => {
-      var questionResponses = responses.filter(r => r.question_id === question.id).filter(r => JSON.parse(courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value).periods).includes(Number(String(r.seatCode)[0]))).filter(r => String(r.seatCode).startsWith(document.getElementById("sort-seat-input")?.value));
-      if (document.getElementById('hideIncorrectAttempts').checked) questionResponses = questionResponses.filter((r, index, self) => r.status === 'Correct' || !self.some(other => other.question_id === r.question_id && other.status === 'Correct'));
-      if (document.querySelector('#filter-report-responses [aria-selected="true"]').getAttribute('data-value') === 'first') {
-        questionResponses = questionResponses.filter(r => r.id === Math.min(...questionResponses.filter(r1 => r1.seatCode === r.seatCode && r1.question_id === r.question_id).map(r1 => r1.id)));
-      } else if (document.querySelector('#filter-report-responses [aria-selected="true"]').getAttribute('data-value') === 'last') {
-        questionResponses = questionResponses.filter(r => r.id === Math.max(...questionResponses.filter(r1 => r1.seatCode === r.seatCode && r1.question_id === r.question_id).map(r1 => r1.id)));
+    const expandedReports = [...document.querySelectorAll('.detailed-report.active')].map(dr => dr.id);
+    if (!document.querySelector('.question-reports') || !questions.length) return;
+    const reportsEl = document.querySelector('.question-reports');
+    reportsEl.innerHTML = '';
+    const courseInput = document.getElementById('course-period-input');
+    const course = courses.find(c => courseInput && String(c.id) === courseInput.value);
+    const segmentFilter = document.getElementById('filter-segment-input')?.value;
+    const sortQuestionVal = document.getElementById('sort-question-input')?.value;
+    const sortSeatVal = document.getElementById('sort-seat-input')?.value;
+    const hideIncorrect = document.getElementById('hideIncorrectAttempts').checked;
+    const hideUnanswered = document.getElementById('hideUnanswered').checked;
+    const useRoster = document.getElementById('useRoster').checked;
+    const reportMode = document
+      .querySelector('#filter-report-responses [aria-selected="true"]')
+      .getAttribute('data-value');
+    const sortMode = document
+      .querySelector('#sort-report-responses [aria-selected="true"]')
+      .getAttribute('data-value');
+    const courseSegments = segments.filter(s => String(s.course) === String(course?.id) && (!segmentFilter || String(s.id) === segmentFilter));
+    let courseQuestions = [];
+    for (const seg of courseSegments) {
+      const ids = JSON.parse(seg.question_ids);
+      if (sortQuestionVal?.startsWith('"')) {
+        const target = sortQuestionVal.replaceAll('"', '');
+        ids.forEach(qid => {
+          const q = questions.find(q => String(q.id) === String(qid.id));
+          if (q && q.number === target) courseQuestions.push(q);
+        });
+      } else {
+        const prefix = sortQuestionVal ?? '';
+        ids.forEach(qid => {
+          const q = questions.find(q => String(q.id) === String(qid.id));
+          if (q && q.number.startsWith(prefix)) courseQuestions.push(q);
+        });
       }
-      switch (document.querySelector('#sort-report-responses [aria-selected="true"]').getAttribute('data-value')) {
-        case 'seatCode':
-          questionResponses = questionResponses.sort((a, b) => a.seatCode - b.seatCode);
-          break;
-        case 'studentName':
-          questionResponses = questionResponses.sort((a, b) => {
-            var nameA = "Unknown";
-            var nameB = "Unknown";
-            if (document.getElementById('useRoster').checked) {
-              var roster = rosters.find(roster => roster.period === Number(String(a.seatCode)[0]));
-              if (roster) {
-                var studentA = JSON.parse(roster.data).find(student => String(student.seatCode) === String(a.seatCode));
-                if (studentA) nameA = `${studentA.last}, ${studentA.first}`;
-                var studentB = JSON.parse(roster.data).find(student => String(student.seatCode) === String(b.seatCode));
-                if (studentB) nameB = `${studentB.last}, ${studentB.first}`;
-              }
+    }
+    courseQuestions = courseQuestions
+      .filter(q => sortQuestionVal?.startsWith('"') ? q.number === sortQuestionVal.replaceAll('"', '') : q.number.startsWith(sortQuestionVal ?? ''))
+      .sort((a, b) => document.getElementById('filter-segment-input')?.value ? 0 : a.id - b.id);
+    for (const question of courseQuestions) {
+      let qResponses = responses.filter(r => r.question_id === question.id);
+      if (courseInput) {
+        const periodSet = new Set(JSON.parse(courses.find(c => String(c.id) === courseInput.value).periods).map(Number));
+        qResponses = qResponses.filter(r =>
+          periodSet.has(Number(String(r.seatCode)[0])) &&
+          String(r.seatCode).startsWith(sortSeatVal ?? '')
+        );
+      }
+      if (hideIncorrect) {
+        const seen = new Set();
+        qResponses = qResponses.filter(r => {
+          const key = `${r.question_id}-${r.seatCode}`;
+          if (r.status === 'Correct') {
+            seen.add(key);
+            return true;
+          }
+          if (seen.has(key)) return false;
+          return true;
+        });
+      }
+      if (reportMode === 'first') {
+        const minId = new Map();
+        qResponses.forEach(r => {
+          const key = `${r.question_id}-${r.seatCode}`;
+          if (!minId.has(key) || r.id < minId.get(key)) minId.set(key, r.id);
+        });
+        qResponses = qResponses.filter(r => r.id === minId.get(`${r.question_id}-${r.seatCode}`));
+      } else if (reportMode === 'last') {
+        const maxId = new Map();
+        qResponses.forEach(r => {
+          const key = `${r.question_id}-${r.seatCode}`;
+          if (!maxId.has(key) || r.id > maxId.get(key)) maxId.set(key, r.id);
+        });
+        qResponses = qResponses.filter(r => r.id === maxId.get(`${r.question_id}-${r.seatCode}`));
+      }
+      if (sortMode === 'seatCode') {
+        qResponses.sort((a, b) => a.seatCode - b.seatCode);
+      } else if (sortMode === 'studentName' && useRoster) {
+        const rosterCache = new Map();
+        qResponses.sort((a, b) => {
+          const periodA = Number(String(a.seatCode)[0]);
+          const periodB = Number(String(b.seatCode)[0]);
+          const getName = (seat, period) => {
+            if (!rosterCache.has(period)) {
+              const r = rosters.find(ro => ro.period === period);
+              rosterCache.set(period, r ? JSON.parse(r.data) : []);
             }
-            return nameA.localeCompare(nameB);
-          });
-          break;
+            const student = rosterCache.get(period).find(s => String(s.seatCode) === String(seat));
+            return student ? `${student.last}, ${student.first}` : 'Unknown';
+          };
+          const nameA = getName(a.seatCode, periodA);
+          const nameB = getName(b.seatCode, periodB);
+          return nameA.localeCompare(nameB);
+        });
       }
-      var total = questionResponses.length || 1;
-      var unansweredStudentsCount = 0;
-      if (document.getElementById('useRoster').checked && (document.querySelector('#filter-report-responses [aria-selected="true"]').getAttribute('data-value') !== 'all') && !document.getElementById('hideUnanswered').checked) {
-        var courseRosters = rosters.filter(roster => JSON.parse(courses.find(course => String(course.id) === document.getElementById("course-period-input").value)?.periods).includes(Number(String(roster.period))));
-        var totalRosterStudents = [...new Set(courseRosters.flatMap(a => JSON.parse(a.data).map(b => Number(b.seatCode))))];
-        if (totalRosterStudents.length) {
-          var answeredStudentsCount = [...new Set(questionResponses.flatMap(a => a.seatCode).filter(x => totalRosterStudents.includes(x)))].length;
-          unansweredStudentsCount = totalRosterStudents.length - answeredStudentsCount;
-          total = questionResponses.length + unansweredStudentsCount;
+      let total = qResponses.length || 1;
+      let unanswered = 0;
+      if (useRoster && reportMode !== 'all' && !hideUnanswered) {
+        const coursePeriods = new Set(JSON.parse(courses.find(c => String(c.id) === courseInput?.value)?.periods).map(Number));
+        const relevantRosters = rosters.filter(r => coursePeriods.has(r.period));
+        const allStudents = new Set(relevantRosters.flatMap(r => JSON.parse(r.data).map(s => Number(s.seatCode))));
+        if (allStudents.size) {
+          const answered = new Set(qResponses.map(r => r.seatCode).filter(sc => allStudents.has(sc)));
+          unanswered = allStudents.size - answered.size;
+          total = qResponses.length + unanswered;
         }
       }
-      document.querySelector('.question-reports').innerHTML += `<div class="detailed-report-question"${(questionResponses.length != 0) ? ` report="question-${question.id}"` : ''}>
-        <b>Question ${question.number} (${questionResponses.length} Response${(questionResponses.length != 1) ? 's' : ''})</b>
-        <div class="barcount-wrapper">
-          ${(questionResponses.filter(r => r.status === 'Correct').length != 0) ? `<div class="barcount correct" style="width: calc(${questionResponses.filter(r => r.status === 'Correct').length / total} * 100%)">${questionResponses.filter(r => r.status === 'Correct').length}</div>` : ''}
-          ${((questionResponses.filter(r => ((r.status !== 'Correct') && (r.status !== 'Incorrect') && !r.status.includes('Recorded'))).length + unansweredStudentsCount) != 0) ? `<div class="barcount other" style="width: calc(${(questionResponses.filter(r => ((r.status !== 'Correct') && (r.status !== 'Incorrect') && !r.status.includes('Recorded'))).length + unansweredStudentsCount) / total} * 100%)">${questionResponses.filter(r => ((r.status !== 'Correct') && (r.status !== 'Incorrect') && !r.status.includes('Recorded'))).length + unansweredStudentsCount}</div>` : ''}
-          ${(questionResponses.filter(r => r.status.includes('Recorded')).length != 0) ? `<div class="barcount waiting" style="width: calc(${questionResponses.filter(r => r.status.includes('Recorded')).length / total} * 100%)">${questionResponses.filter(r => r.status.includes('Recorded')).length}</div>` : ''}
-          ${(questionResponses.filter(r => r.status === 'Incorrect').length != 0) ? `<div class="barcount incorrect" style="width: calc(${questionResponses.filter(r => r.status === 'Incorrect').length / total} * 100%)">${questionResponses.filter(r => r.status === 'Incorrect').length}</div>` : ''}
+      const correct = qResponses.filter(r => r.status === 'Correct').length;
+      const other = qResponses.filter(r => r.status !== 'Correct' && r.status !== 'Incorrect' && !r.status.includes('Recorded')).length;
+      const waiting = qResponses.filter(r => r.status.includes('Recorded')).length;
+      const incorrect = qResponses.filter(r => r.status === 'Incorrect').length;
+      const bar = (cls, count) => count ? `<div class="barcount ${cls}" style="width: calc(${count / total} * 100%)">${count}</div>` : '';
+      reportsEl.insertAdjacentHTML('beforeend',
+        `<div class="detailed-report-question"${qResponses.length ? ` report="question-${question.id}"` : ''}>
+          <b>Question ${question.number} (${qResponses.length} Response${qResponses.length !== 1 ? 's' : ''})</b>
+          <div class="barcount-wrapper">
+            ${bar('correct', correct)}
+            ${bar('other', other + unanswered)}
+            ${bar('waiting', waiting)}
+            ${bar('incorrect', incorrect)}
+          </div>
         </div>
-      </div>
-      ${(questionResponses.length != 0) ? `<div class="section detailed-report" id="question-${question.id}">Rendering...</div>` : ''}`;
-    });
-    expandedReports.forEach(er => {
-      if (document.getElementById(er)) {
-        document.getElementById(er).classList.remove('active');
-        setTimeout(() => {
-          document.getElementById(er).click();
-        }, 1000);
+        ${qResponses.length ? `<div class="section detailed-report" id="question-${question.id}">Rendering...</div>` : ''}`
+      );
+    }
+    expandedReports.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.classList.remove('active');
+        setTimeout(() => el.click(), 1000);
       }
     });
     document.querySelectorAll('[report]').forEach(a => a.addEventListener('click', toggleDetailedReport));
@@ -4003,7 +4445,7 @@ try {
       })
       .catch((e) => {
         console.error(e);
-        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if (!e.message || (e.message && (e.message.includes('NetworkError') || !e.message.includes(".")))) ui.view("api-fail");
         if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
       });
   }
@@ -4123,7 +4565,7 @@ try {
       })
       .catch((e) => {
         console.error(e);
-        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if (!e.message || (e.message && (e.message.includes('NetworkError') || !e.message.includes(".")))) ui.view("api-fail");
         if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
       });
   }
@@ -4217,7 +4659,7 @@ try {
       })
       .catch((e) => {
         console.error(e);
-        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if (!e.message || (e.message && (e.message.includes('NetworkError') || !e.message.includes(".")))) ui.view("api-fail");
         if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
       });
   }
@@ -4261,7 +4703,7 @@ try {
       })
       .catch((e) => {
         console.error(e);
-        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if (!e.message || (e.message && (e.message.includes('NetworkError') || !e.message.includes(".")))) ui.view("api-fail");
         if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
       });
   }
@@ -4374,7 +4816,7 @@ try {
       })
       .catch((e) => {
         console.error(e);
-        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if (!e.message || (e.message && (e.message.includes('NetworkError') || !e.message.includes(".")))) ui.view("api-fail");
         if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
       });
   }
@@ -4419,7 +4861,7 @@ try {
       })
       .catch((e) => {
         console.error(e);
-        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if (!e.message || (e.message && (e.message.includes('NetworkError') || !e.message.includes(".")))) ui.view("api-fail");
         if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
       });
   }
@@ -4502,7 +4944,7 @@ try {
       })
       .catch((e) => {
         console.error(e);
-        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if (!e.message || (e.message && (e.message.includes('NetworkError') || !e.message.includes(".")))) ui.view("api-fail");
         if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
       });
   }
@@ -4641,7 +5083,7 @@ try {
       })
       .catch((e) => {
         console.error(e);
-        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if (!e.message || (e.message && (e.message.includes('NetworkError') || !e.message.includes(".")))) ui.view("api-fail");
         if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
         pollingOff();
       });
@@ -4778,7 +5220,7 @@ try {
       })
       .catch((e) => {
         console.error(e);
-        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if (!e.message || (e.message && (e.message.includes('NetworkError') || !e.message.includes(".")))) ui.view("api-fail");
         if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
         pollingOff();
       });
@@ -4854,7 +5296,7 @@ try {
       })
       .catch((e) => {
         console.error(e);
-        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if (!e.message || (e.message && (e.message.includes('NetworkError') || !e.message.includes(".")))) ui.view("api-fail");
         if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
         pollingOff();
       });
@@ -4948,7 +5390,7 @@ try {
       })
       .catch((e) => {
         console.error(e);
-        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if (!e.message || (e.message && (e.message.includes('NetworkError') || !e.message.includes(".")))) ui.view("api-fail");
         if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
         pollingOff();
       });
@@ -5017,7 +5459,7 @@ try {
       })
       .catch((e) => {
         console.error(e);
-        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if (!e.message || (e.message && (e.message.includes('NetworkError') || !e.message.includes(".")))) ui.view("api-fail");
         if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
         pollingOff();
       });
@@ -5087,7 +5529,7 @@ try {
       })
       .catch((e) => {
         console.error(e);
-        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if (!e.message || (e.message && (e.message.includes('NetworkError') || !e.message.includes(".")))) ui.view("api-fail");
         if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
         pollingOff();
       });
@@ -5152,7 +5594,7 @@ try {
       })
       .catch((e) => {
         console.error(e);
-        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if (!e.message || (e.message && (e.message.includes('NetworkError') || !e.message.includes(".")))) ui.view("api-fail");
         if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
         pollingOff();
       });
@@ -5219,7 +5661,7 @@ try {
       })
       .catch((e) => {
         console.error(e);
-        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if (!e.message || (e.message && (e.message.includes('NetworkError') || !e.message.includes(".")))) ui.view("api-fail");
         if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
         pollingOff();
       });
@@ -5286,7 +5728,7 @@ try {
       })
       .catch((e) => {
         console.error(e);
-        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if (!e.message || (e.message && (e.message.includes('NetworkError') || !e.message.includes(".")))) ui.view("api-fail");
         if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
         pollingOff();
       });
@@ -5376,7 +5818,7 @@ try {
       })
       .catch((e) => {
         console.error(e);
-        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if (!e.message || (e.message && (e.message.includes('NetworkError') || !e.message.includes(".")))) ui.view("api-fail");
         if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
       });
   }
@@ -5477,7 +5919,7 @@ try {
       })
       .catch((e) => {
         console.error(e);
-        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if (!e.message || (e.message && (e.message.includes('NetworkError') || !e.message.includes(".")))) ui.view("api-fail");
         if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
         pollingOff();
       });
@@ -5547,7 +5989,7 @@ try {
       })
       .catch((e) => {
         console.error(e);
-        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if (!e.message || (e.message && (e.message.includes('NetworkError') || !e.message.includes(".")))) ui.view("api-fail");
         if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
         pollingOff();
       });
@@ -5724,7 +6166,7 @@ try {
       })
       .catch((e) => {
         console.error(e);
-        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if (!e.message || (e.message && (e.message.includes('NetworkError') || !e.message.includes(".")))) ui.view("api-fail");
         if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
       });
   }
@@ -5877,7 +6319,7 @@ try {
       })
       .catch((e) => {
         console.error(e);
-        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if (!e.message || (e.message && (e.message.includes('NetworkError') || !e.message.includes(".")))) ui.view("api-fail");
         if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
       });
   }
@@ -5887,7 +6329,7 @@ try {
     const roster = rosters.find(roster => String(roster.period) === this.parentElement.querySelector('input').id.split('period-')[1]);
     var rosterDataString = '';
     JSON.parse(roster.data).forEach(row => {
-      rosterDataString += `<br>${row.seatCode}: ${row.last}, ${row.first}`;
+      rosterDataString += `<br>${row.seatCode}: ${row.last}, ${row.first} (${row.email})`;
     });
     ui.modal({
       title: `Period ${roster.period} Roster`,
@@ -6000,7 +6442,7 @@ try {
       })
       .catch((e) => {
         console.error(e);
-        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if (!e.message || (e.message && (e.message.includes('NetworkError') || !e.message.includes(".")))) ui.view("api-fail");
         if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
         pollingOff();
       });
@@ -6146,7 +6588,7 @@ try {
       })
       .catch((e) => {
         console.error(e);
-        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if (!e.message || (e.message && (e.message.includes('NetworkError') || !e.message.includes(".")))) ui.view("api-fail");
         if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
       });
   }
@@ -6236,7 +6678,7 @@ try {
       })
       .catch((e) => {
         console.error(e);
-        if (!e.message || (e.message && !e.message.includes("."))) ui.view("api-fail");
+        if (!e.message || (e.message && (e.message.includes('NetworkError') || !e.message.includes(".")))) ui.view("api-fail");
         if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
       });
   }
@@ -6545,6 +6987,236 @@ try {
     const group = Array.from(paginationSection.parentElement.parentElement.classList).find(a => Object.keys(pagination).includes(a));
     if (!group) return;
     goToPage(paginationSection, Math.ceil(pagination[group].total / (storage.get("rowsPerPage") ? Number(storage.get("rowsPerPage")) : pagination[group].perPage)) - 1);
+  }
+
+  function toggleActionRefreshes() {
+    if (!active) return;
+    if (actionRefreshes) {
+      actionRefreshes = false;
+      document.querySelector('[data-action-refreshes] .bi-play-circle').style.display = "block";
+      document.querySelector('[data-action-refreshes] .bi-pause-circle').style.display = "none";
+      document.querySelector('[data-refresh-responses]')?.removeAttribute('hidden');
+    } else {
+      actionRefreshes = true;
+      document.querySelector('[data-action-refreshes] .bi-play-circle').style.display = "none";
+      document.querySelector('[data-action-refreshes] .bi-pause-circle').style.display = "block";
+      document.querySelector('[data-refresh-responses]')?.setAttribute('hidden', '');
+    }
+  }
+
+  function manageClassRecordings() {
+    if (!active) return;
+    // "site": "https://valleystream.sharepoint.com/sites/tvc6",
+    // "library": "Documents", // Shared Documents -> Documents
+    // "file": "TVC6 Test-20260808", // TVC6 Test-20260808_164630UTC-Meeting Recording -> TVC6 Test
+    ui.modal({
+      title: 'Manage Class Recordings',
+      body: '<p>Link this course to Microsoft Teams and SharePoint automatic meeting recordings.</p>',
+      inputs: [{
+        type: 'select',
+        label: 'Course',
+        options: courses.map(course => ({
+          value: String(course.id),
+          text: (course.makeups_payload && (course.makeups_payload !== '{}')) ? `${course.name} (exists)` : course.name,
+        })),
+        multiple: false,
+      }, {
+        type: 'select',
+        label: 'Action',
+        options: [{
+          value: 'new',
+          text: 'New / Replace',
+        }, {
+          value: 'clear',
+          text: 'Clear',
+        }],
+        multiple: false,
+      }],
+      buttons: [
+        {
+          text: 'Cancel',
+          class: 'cancel-button',
+          close: true,
+        },
+        {
+          text: 'Next',
+          class: 'submit-button',
+          onclick: async (inputValues) => {
+            const course = courses.find(course => String(course.id) === String(inputValues[0]));
+            const action = inputValues[1];
+            if (!String(course) || !action) {
+              ui.toast("Invalid course or action.", 5000, "error", "bi bi-exclamation-triangle-fill");
+              manageClassRecordings();
+              return;
+            }
+            if (action === 'new') {
+              ui.modal({
+                title: 'Manage Class Recordings',
+                body: '<p>Link this course to Microsoft Teams and SharePoint automatic meeting recordings.</p>',
+                input: {
+                  type: 'textarea',
+                  label: 'Any Previous Recording URL (From Browser Search Bar)',
+                  placeholder: 'https://organization.sharepoint.com/type/Team/_layouts/15/stream.aspx...',
+                  pattern: /https:\/\/(.*)\.sharepoint\.com\/(.*)\/(.*)\/_layouts\/15\/stream\.aspx\?id=%2F(.*)%2F(.*)%2F(.*)%2D(.*)%2D(.*)%2Emp4(.*)/,
+                },
+                buttons: [
+                  {
+                    text: 'Cancel',
+                    class: 'cancel-button',
+                    close: true,
+                  },
+                  {
+                    text: 'Validate',
+                    class: 'submit-button',
+                    onclick: async (inputValue) => {
+                      if (!inputValue) {
+                        ui.toast("Invalid recording URL.", 5000, "error", "bi bi-exclamation-triangle-fill");
+                        manageClassRecordings();
+                        return;
+                      }
+                      const pattern = /https:\/\/(.*)\.sharepoint\.com\/(.*)\/(.*)\/_layouts\/15\/stream\.aspx\?id=%2F(.*)%2F(.*)%2F(.*)%2D(.*)%2D(.*)%2Emp4(.*)/;
+                      const validation = pattern.test(inputValue);
+                      if (!validation) {
+                        ui.toast("Invalid recording URL.", 5000, "error", "bi bi-exclamation-triangle-fill");
+                        manageClassRecordings();
+                        return;
+                      }
+                      const match = [...pattern.exec(inputValue)].map(chunk => decodeURIComponent(chunk));
+                      if (!(match && (match[4].split('/')[0] === match[2]) && (match[4].split('/')[1] === match[3]) && match[4].split('/')[2] && match[4].split('/')[2].split('/')[0] && match[5] && match[6] && (match[5] === 'Recordings') && (match[8] === 'Meeting Recording'))) {
+                        ui.toast("Invalid recording URL.", 5000, "error", "bi bi-exclamation-triangle-fill");
+                        manageClassRecordings();
+                        return;
+                      }
+                      ui.modal({
+                        title: 'Manage Class Recordings',
+                        body: `<p>Does this look correct?</p><br>
+                        <p>Course: ${course.name}<br>
+                        Organization: ${match[1]}<br>
+                        Type: ${match[2]}<br>
+                        Team: ${match[3]}<br>
+                        Library: ${match[4].split('/')[2].split('/')[0].replace('Shared ', '')}<br>
+                        Meeting: ${match[6]}</p><br>`,
+                        buttons: [
+                          {
+                            text: 'No',
+                            class: 'cancel-button',
+                            onclick: manageClassRecordings,
+                            close: true,
+                          },
+                          {
+                            text: 'Yes',
+                            class: 'submit-button',
+                            onclick: async () => {
+                              await fetch(domain + '/course/recordings', {
+                                method: "POST",
+                                headers: {
+                                  "Content-Type": "application/json",
+                                },
+                                body: JSON.stringify({
+                                  usr: storage.get("usr"),
+                                  pwd: storage.get("pwd"),
+                                  course: course.id,
+                                  makeups_payload: JSON.stringify({
+                                    site: `https://${match[1]}.sharepoint.com/${match[2]}/${match[3]}`,
+                                    library: match[4].split('/')[2].split('/')[0].replace('Shared ', ''),
+                                    file: match[6],
+                                  }),
+                                }),
+                              })
+                                .then(async (r) => {
+                                  if (!r.ok) {
+                                    try {
+                                      var re = await r.json();
+                                      if (re.error || re.message) {
+                                        ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+                                        throw new Error(re.error || re.message);
+                                      } else {
+                                        throw new Error("API error");
+                                      }
+                                    } catch (e) {
+                                      throw new Error(e.message || "API error");
+                                    }
+                                  }
+                                  return await r.json();
+                                })
+                                .then(() => {
+                                  ui.setUnsavedChanges(false);
+                                  ui.toast('Successfully saved connection.', 3000, "success", "bi bi-check-lg");
+                                  init();
+                                })
+                                .catch((e) => {
+                                  console.error(e);
+                                  if (!e.message || (e.message && (e.message.includes('NetworkError') || !e.message.includes(".")))) ui.view("api-fail");
+                                  if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
+                                });
+                            },
+                            close: true,
+                          },
+                        ],
+                      });
+                    },
+                    close: true,
+                  },
+                ],
+              });
+            } else if (action === 'clear') {
+              await fetch(domain + '/course/recordings/remove', {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                  usr: storage.get("usr"),
+                  pwd: storage.get("pwd"),
+                  course: course.id,
+                }),
+              })
+                .then(async (r) => {
+                  if (!r.ok) {
+                    try {
+                      var re = await r.json();
+                      if (re.error || re.message) {
+                        ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+                        throw new Error(re.error || re.message);
+                      } else {
+                        throw new Error("API error");
+                      }
+                    } catch (e) {
+                      throw new Error(e.message || "API error");
+                    }
+                  }
+                  return await r.json();
+                })
+                .then(() => {
+                  ui.setUnsavedChanges(false);
+                  ui.toast('Successfully removed connection.', 3000, "success", "bi bi-check-lg");
+                  init();
+                })
+                .catch((e) => {
+                  console.error(e);
+                  if (!e.message || (e.message && (e.message.includes('NetworkError') || !e.message.includes(".")))) ui.view("api-fail");
+                  if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
+                });
+            }
+          },
+          close: true,
+        },
+      ],
+    });
+  }
+
+  function downloadPowerAutomateFlow() {
+    if (!active) return;
+    const templateUrl = `${domain}/flow.zip`;
+    ui.toast(`Downloading flow.zip...`, 3000, "info", "bi bi-download");
+    const link = document.createElement('a');
+    link.href = templateUrl;
+    link.download = templateUrl.split('/')[templateUrl.split('/').length - 1];
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    ui.toast("Power Automate Flow downloaded successfully.", 3000, "success", "bi bi-check-circle-fill");
+    window.open('https://make.powerautomate.com/');
   }
 } catch (error) {
   if (storage.get("developer")) {

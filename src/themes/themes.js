@@ -9,6 +9,9 @@ import * as ui from "/src/modules/ui.js";
 import storage from "/src/modules/storage.js";
 import * as auth from "/src/modules/auth.js";
 import Element from "/src/modules/element.js";
+import { syncPwaTheme } from "/src/modules/service-worker.js";
+
+import lipsky from "./lipsky/lipsky.webp";
 
 let selectedTheme = "";
 const defaultTheme = {
@@ -32,6 +35,7 @@ export function resetTheme() {
   enableTransitions();
   storage.set("theme", "default");
   storage.delete("custom-theme");
+  syncPwaTheme().catch(() => null);
 }
 
 export function disableTransitions() {
@@ -56,6 +60,7 @@ export async function syncTheme() {
     // Update developer theme input
     if (document.getElementById("theme-debug")) document.getElementById("theme-debug").value = value;
   }
+  await syncPwaTheme().catch(() => null);
 }
 
 function copyThemeCSS() {
@@ -297,11 +302,13 @@ export async function renderStore() {
                   cache.ownedThemes = ownedThemes;
                   cache.checksCount = (cache.checksCount || 0) - featuredTheme[3];
                   await storage.idbSet("cache", cache);
+                  Array.from(store.querySelectorAll('.theme-item.selected')).forEach(el => el.classList.remove('selected'));
                   Array.from(store.querySelectorAll(`.theme-item[data-theme="${featuredTheme[0]}"]`)).forEach(el => el.classList.add('selected'));
                   Array.from(store.querySelectorAll('.theme-item button')).forEach(btn => {
                     btn.textContent = btn.parentElement.classList.contains('selected') ? "Applied" : (ownedThemes.includes(btn.parentElement.getAttribute('data-theme')) ? "Owned" : "Preview");
                   });
                   checksText.innerHTML = `<i class="bi bi-check2-circle"></i> You've got ${cache.checksCount} Check${(cache.checksCount == 1) ? '' : 's'} available to spend!`;
+                  document.getElementById("controls-container")?.setAttribute('checks', cache.checksCount);
                   storage.set("theme", featuredTheme[0]);
                   document.body.setAttribute('data-theme', featuredTheme[0]);
                   await auth.syncPush("theme")
@@ -330,6 +337,8 @@ export async function renderStore() {
   freeThemesGrid.classList = 'themes-grid';
   const premiumThemesGrid = document.createElement("div");
   premiumThemesGrid.classList = 'themes-grid';
+  const animatedThemesGrid = document.createElement("div");
+  animatedThemesGrid.classList = 'themes-grid';
   themes.forEach(theme => {
     const value = theme[0];
     const name = theme[1] || theme[0];
@@ -340,7 +349,7 @@ export async function renderStore() {
       themeItem.setAttribute('tooltip', `${checks}/${theme[3]} Check${theme[3] == 1 ? '' : 's'}${theme[4].filter(t => !ownedThemes.includes(t[0])) && theme[4].filter(t => !ownedThemes.includes(t[0])).length ? `. You need: ${theme[4].filter(t => !ownedThemes.includes(t[0])).map(t => themes.find(th => th[0] == t)[1] || t).join(', ')}` : ''}`);
       themeItem.setAttribute('style', `background: url('/store/thumb/${theme[0]}.png') center / cover no-repeat !important;`);
     }
-    themeItem.innerHTML = `${theme[2] ? `<i class="bi bi-${theme[2]}"></i>` : ''}${theme[5] ? `<i class="bi bi-badge-hd-fill hd"></i>` : ''}<h5>${name}</h5><p>${theme[3] ? `${theme[3]} Check${theme[3] == 1 ? '' : 's'}` : 'Free'}</p>${theme[4] && theme[4].length ? `<small>Requires: ${theme[4].map(t => themes.find(th => th[0] == t)[1] || t).join(', ')}</small>` : ''}`;
+    themeItem.innerHTML = `${theme[2] ? `<i class="bi bi-${theme[2]}"></i>` : ''}${theme[5] ? `<i class="bi bi-badge-hd-fill hd"></i>` : ''}${theme[6] ? `<i class="bi bi-stars animated"></i>` : ''}<h5>${name}</h5><p>${theme[3] ? `${theme[3]} Check${theme[3] == 1 ? '' : 's'}` : 'Free'}</p>${theme[4] && theme[4].length ? `<small>Requires: ${theme[4].map(t => themes.find(th => th[0] == t)[1] || t).join(', ')}</small>` : ''}`;
     if (value === initialTheme) themeItem.classList.add('selected');
     const themeButton = document.createElement("button");
     themeButton.textContent = (value === initialTheme) ? "Applied" : (ownedThemes.includes(theme[0]) ? "Owned" : "Preview");
@@ -420,6 +429,7 @@ export async function renderStore() {
                   cache.ownedThemes = ownedThemes;
                   cache.checksCount = (cache.checksCount || 0) - theme[3];
                   await storage.idbSet("cache", cache);
+                  Array.from(store.querySelectorAll('.theme-item.selected')).forEach(el => el.classList.remove('selected'));
                   themeItem.classList.add('selected');
                   Array.from(store.querySelectorAll('.theme-item button')).forEach(btn => {
                     btn.textContent = btn.parentElement.classList.contains('selected') ? "Applied" : (ownedThemes.includes(btn.parentElement.getAttribute('data-theme')) ? "Owned" : "Preview");
@@ -447,8 +457,13 @@ export async function renderStore() {
       }
     });
     themeItem.appendChild(themeButton);
-    if (theme[3]) premiumThemesGrid.append(themeItem);
-    if (!theme[3]) freeThemesGrid.append(themeItem);
+    if (theme[6]) {
+      animatedThemesGrid.append(themeItem);
+    } else if (theme[3]) {
+      premiumThemesGrid.append(themeItem);
+    } else {
+      freeThemesGrid.append(themeItem);
+    }
   });
   const freeThemesGridText = document.createElement("b");
   freeThemesGridText.innerText = 'Free Themes';
@@ -468,10 +483,101 @@ export async function renderStore() {
   premiumThemesGridSuggestTheme.onclick = ui.suggestionsModal;
   premiumThemesGrid.appendChild(premiumThemesGridSuggestTheme);
   store.appendChild(premiumThemesGrid);
+  const animatedThemesGridText = document.createElement("b");
+  animatedThemesGridText.innerText = 'Animated Themes';
+  store.appendChild(animatedThemesGridText);
+  const animatedThemesGridSuggestTheme = document.createElement("div");
+  animatedThemesGridSuggestTheme.classList = 'theme-item suggest-theme';
+  animatedThemesGridSuggestTheme.innerHTML = `<i class="bi bi-plus-lg"></i>`;
+  animatedThemesGridSuggestTheme.onclick = ui.suggestionsModal;
+  animatedThemesGrid.appendChild(animatedThemesGridSuggestTheme);
+  store.appendChild(animatedThemesGrid);
   const costInfo = document.createElement("ul");
   costInfo.classList = 'cost-info';
-  costInfo.innerHTML = `<i class="bi bi-info-circle"></i> Information<li>Checks can be obtained by responding to a question correctly, at any time.</li><li>Checks conversion rate is 1 Check to 1 correct answer.</li><li>Checks may only be obtained on the Virtual Checker platform.</li><li>If your response is marked correct late, you will get your Checks at that time.</li><li>If your response is falsely marked as correct and later marked incorrect, your Checks balance will be deducted from.</li><li>The minimum Checks balance is 0.</li><li>Themes marked as "Free" can be applied without spending any Checks.</li><li>Premium themes require you to spend your available Checks to unlock and use them.</li><li>Themes that have requirements need you to own the specified themes before you can purchase them.</li><li>HD themes may require more resources to run smoothly, and cost more Checks.</li><li>All theme images are licensed Free To Use.</li><li>The cost for themes are based on average student correct answer data.</li>`;
+  costInfo.innerHTML = `<i class="bi bi-info-circle"></i> Information<li>Checks can be obtained by responding to a question correctly, at any time.</li><li>Checks conversion rate is 1 Check to 1 correct answer.</li><li>Checks may only be obtained on the Virtual Checker platform.</li><li>If your response is marked correct late, you will get your Checks at that time.</li><li>If your response is falsely marked as correct and later marked incorrect, your Checks balance will be deducted from.</li><li>The minimum Checks balance is 0.</li><li>Themes marked as "Free" can be applied without spending any Checks.</li><li>Premium and animated themes require you to spend your available Checks to unlock and use them.</li><li>Themes that have requirements need you to own the specified themes before you can purchase them.</li><li>HD and animated themes may require more resources to run smoothly, and cost more Checks.</li><li>All theme images are licensed Free To Use.</li><li>The cost for themes are based on average student correct answer data.</li><li>Purchased themes are saved to your seat code and are available on multiple devices.</li>`;
   store.appendChild(costInfo);
+  const refundButton = document.createElement('button');
+  refundButton.innerText = 'Theme Refunds';
+  store.appendChild(refundButton);
+  refundButton.addEventListener('click', async () => {
+    ui.view();
+    ui.modal({
+      title: 'Theme Refunds',
+      body: `<p>Theme refunds are available for 50% Checks back.</p>`,
+      input: {
+        label: 'Owned Themes',
+        type: 'select',
+        options: ((await storage.idbGet("cache"))?.ownedThemes || []).map(ownedTheme => {
+          let theme = themes.find(t => t[0] === ownedTheme);
+          return {
+            value: theme[0],
+            text: `${theme[1]} - ${theme[3] / 2} Checks back`,
+          };
+        }),
+        multiple: true,
+      },
+      buttons: [
+        {
+          text: 'Cancel',
+          class: 'cancel-button',
+          close: true,
+        },
+        {
+          text: 'Continue',
+          class: 'submit-button',
+          onclick: (inputValues) => {
+            if (!inputValues || !inputValues.length) {
+              ui.toast("No themes selected for refund.", 2000, "error", "bi bi-exclamation-triangle-fill");
+              return;
+            }
+            ui.modal({
+              title: 'Confirm Refund',
+              body: `<p>Are you sure you want to refund the selected theme(s) for 50% Checks back? This action cannot be undone.</p>`,
+              buttons: [
+                {
+                  text: 'Cancel',
+                  class: 'cancel-button',
+                  close: true,
+                },
+                {
+                  text: 'Confirm',
+                  class: 'submit-button',
+                  onclick: async () => {
+                    await auth.refundThemes(inputValues)
+                      .catch(error => {
+                        if (storage.get("developer")) {
+                          alert(`Error @ themes.js: ${error.message}`);
+                        } else {
+                          ui.reportBugModal(null, String(error.stack));
+                        }
+                      });
+                    const cache = await storage.idbGet("cache") || {};
+                    inputValues.forEach(ownedTheme => {
+                      let theme = themes.find(t => t[0] === ownedTheme);
+                      cache.ownedThemes = cache.ownedThemes.filter(t => t !== ownedTheme);
+                      cache.checksCount = (cache.checksCount || 0) + (theme[3] / 2);
+                    });
+                    await storage.idbSet("cache", cache);
+                    ui.toast(`Refunded ${inputValues.length} theme${(inputValues.length === 1) ? '' : 's'}.`, 2000, "success", "bi bi-check2-circle");
+                    renderStore()
+                      .catch(error => {
+                        if (storage.get("developer")) {
+                          alert(`Error @ themes.js: ${error.message}`);
+                        } else {
+                          ui.reportBugModal(null, String(error.stack));
+                        }
+                      });
+                  },
+                  close: true,
+                },
+              ],
+            });
+          },
+          close: true,
+        },
+      ],
+    })
+  });
 }
 
 export function getCurrentTheme() {
@@ -509,6 +615,7 @@ try {
     document.body.setAttribute("data-theme", theme);
     document.getElementById("theme-preview")?.setAttribute("data-theme", theme);
     selectedTheme = theme;
+    updateAnimatedThemeVideo();
   }
   enableTransitions();
 
@@ -663,6 +770,109 @@ try {
   document.querySelector('[data-modal-view="store"]')?.addEventListener("click", () => {
     ui.view();
   });
+
+  function updateAnimatedThemeVideo() {
+    const foundTheme = themes.find(theme => theme[0] === document.body.getAttribute('data-theme'));
+    var animatedThemeVideo = document.querySelector('body > video');
+    if (foundTheme && foundTheme[6]) {
+      if (!animatedThemeVideo) {
+        animatedThemeVideo = document.createElement('video');
+        animatedThemeVideo.muted = true;
+        animatedThemeVideo.autoplay = true;
+        animatedThemeVideo.loop = true;
+        animatedThemeVideo.disablePictureInPicture = true;
+        animatedThemeVideo.controlsList = "nodownload";
+        document.body.appendChild(animatedThemeVideo);
+      }
+      animatedThemeVideo.src = `/store/animated/${foundTheme[0]}.mp4`;
+    } else {
+      if (animatedThemeVideo) {
+        animatedThemeVideo.remove();
+        animatedThemeVideo = null;
+      }
+    }
+  }
+
+  const observer = new MutationObserver((mutationsList) => {
+    for (const mutation of mutationsList) {
+      if ((mutation.type === 'attributes') && (mutation.attributeName === 'data-theme')) updateAnimatedThemeVideo();
+    }
+  });
+  observer.observe(document.body, { attributes: true });
+
+  if ((new Date().getMonth() === 9) && (new Date().getDate() === 20)) {
+    const lipskys = setInterval(() => {
+      const w = [15, 20, 22, 25, 30][Math.floor(Math.random() * 5)];
+      const startX = Math.random() * (window.innerWidth - w);
+      const duration = 10000 * (window.innerHeight / 1000);
+
+      const fallingLipsky = document.createElement("img");
+      fallingLipsky.className = "star";
+      fallingLipsky.src = lipsky;
+      fallingLipsky.style.width = `${w}px`;
+      fallingLipsky.style.position = "fixed";
+      fallingLipsky.style.left = `${startX}px`;
+      fallingLipsky.style.top = `0px`;
+      document.body.append(fallingLipsky);
+
+      fallingLipsky.animate(
+        [
+          { transform: "translateY(0)" },
+          { transform: `translateY(${window.innerHeight + 30}px)` },
+        ],
+        {
+          duration,
+          easing: "linear",
+        }
+      );
+
+      setTimeout(() => fallingLipsky.remove(), duration);
+
+      let mouseX = window.innerWidth / 2;
+      let mouseY = window.innerHeight / 2;
+
+      window.addEventListener("pointermove", ev => {
+        mouseX = ev.clientX;
+        mouseY = ev.clientY;
+      });
+
+      const dodgeRadius = 100;
+      let currentX = startX;
+      const startTime = performance.now();
+
+      function dodgeLoop() {
+        const elapsed = performance.now() - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        const starY = progress * (window.innerHeight + 30);
+
+        const dx = (currentX + w / 2) - mouseX;
+        const dy = starY - mouseY;
+        const distance = Math.hypot(dx, dy);
+
+        if (distance < dodgeRadius) {
+          const direction = dx >= 0 ? 1 : -1;
+          const speed = ((dodgeRadius - distance) / dodgeRadius) * 5;
+          currentX = Math.min(
+            Math.max(currentX + direction * speed, 0),
+            window.innerWidth - w
+          );
+          fallingLipsky.style.left = `${currentX}px`;
+        }
+
+        if (progress < 1) requestAnimationFrame(dodgeLoop);
+      }
+      requestAnimationFrame(dodgeLoop);
+    }, 700);
+    const stopLipsky = document.createElement("button");
+    stopLipsky.className = "icon";
+    stopLipsky.onclick = () => {
+      clearInterval(lipskys);
+      stopLipsky.remove();
+    };
+    stopLipsky.innerHTML = '<i class="bi bi-cake2"></i>';
+    stopLipsky.setAttribute("tooltip", "Stop Lipskys");
+    document.getElementById("controls-container").appendChild(stopLipsky);
+  }
 } catch (error) {
   if (storage.get("developer")) {
     alert(`Error @ themes.js: ${error.message}`);
@@ -670,4 +880,4 @@ try {
     ui.reportBugModal(null, String(error.stack));
   }
   throw error;
-};
+}

@@ -1,5 +1,8 @@
 * {
   color: inherit;
+}
+
+body:has(> video) {
   background-color: inherit;
 }
 
@@ -93,6 +96,7 @@ button {
   transition: 100ms var(--easing);
   cursor: pointer;
   min-width: fit-content;
+  min-height: 36px;
 }
 
 button.icon {

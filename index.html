@@ -5,6 +5,8 @@
   <meta charset="UTF-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#fafafa" />
+  <link rel="manifest" href="/manifest.webmanifest" />
   <link rel="shortcut icon" href="favicon.ico" type="image/x-icon" media="(prefers-color-scheme: dark)" />
   <link rel="shortcut icon" href="favicon-dark.ico" type="image/x-icon" media="(prefers-color-scheme: light)" />
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
@@ -553,6 +555,12 @@
   </dialog>
   <dialog data-modal-page="no-course" data-page-title="Course Not Found">
     <p>The entered seat code does not match any course in the system. Please check your code and try again.</p>
+    <div data-modal-actions>
+      <button class="submit-button" data-modal-view="settings/code">Change Seat Code</button>
+    </div>
+  </dialog>
+  <dialog data-modal-page="registration-restricted" data-page-title="Registration Restricted">
+    <p>Registration is currently restricted for this course. Please contact your instructor for assistance.</p>
     <div data-modal-actions>
       <button class="submit-button" data-modal-view="settings/code">Change Seat Code</button>
     </div>
