@@ -1049,6 +1049,16 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
   background: url(/store/backdrop/calm-palm.png) !important;
 }
 
+[data-theme="japan"] {
+  color-scheme: light;
+  --text-color: #b18445;
+  --background-color: #c3c2c8;
+  --surface-color: #3b1500;
+  --accent-color: #865e23;
+  --accent-text-color: #fff;
+  background: url(/store/backdrop/japan.png) !important;
+}
+
 /* Animated Themes */
 
 [data-theme="waterfall"] {

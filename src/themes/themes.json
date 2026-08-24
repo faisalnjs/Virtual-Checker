@@ -97,5 +97,6 @@
   ["watermelon-2", "Watermelon 2", "fork-knife", 80, ["fruit", "watermelon"], false, false],
   ["watermelon-pro", "Watermelon Pro", "fork-knife", 80, ["fruit", "watermelon", "watermelon-2"], false, false],
   ["coconut-tree", "Coconut Tree", "tree", 80, ["fruit", "coconut"], false, false],
-  ["calm-palm", "Calm Palm", "tree", 60, [], false, false]
+  ["calm-palm", "Calm Palm", "tree", 60, [], false, false],
+  ["japan", "Japan", "airplane-engines", 60, [], false, false]
 ]
