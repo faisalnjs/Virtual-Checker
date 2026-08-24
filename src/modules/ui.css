@@ -1163,7 +1163,7 @@ body:has(.topbar) #checker.horizontal .column:last-child {
   left: 0;
 }
 
-[data-modal-page="store"] .themes-grid .theme-item i:not(.hd):not(.animated) {
+[data-modal-page="store"] .themes-grid .theme-item i:not(.hd):not(.animated):not(.pattern) {
   position: absolute;
   bottom: 10px;
   right: 20px;
@@ -1172,7 +1172,7 @@ body:has(.topbar) #checker.horizontal .column:last-child {
   transition: opacity 0.25s ease-in-out;
 }
 
-[data-modal-page="store"] .themes-grid .theme-item:hover i:not(.hd):not(.animated) {
+[data-modal-page="store"] .themes-grid .theme-item:hover i:not(.hd):not(.animated):not(.pattern) {
   opacity: 1;
   transition: opacity 0.25s ease-in-out;
 }
@@ -1184,15 +1184,22 @@ body:has(.topbar) #checker.horizontal .column:last-child {
   font-size: 25px;
 }
 
-[data-modal-page="store"] .themes-grid .theme-item i.animated {
+[data-modal-page="store"] .themes-grid .theme-item i.animated,
+[data-modal-page="store"] .themes-grid .theme-item i.pattern {
   position: absolute;
   top: 12.5px;
   right: 20px;
   font-size: 20px;
 }
 
-[data-modal-page="store"] .themes-grid .theme-item:has(i.hd) i.animated {
+[data-modal-page="store"] .themes-grid .theme-item:has(i.hd) i.animated,
+[data-modal-page="store"] .themes-grid .theme-item:has(i.hd):not(:has(i.animated)) i.pattern,
+[data-modal-page="store"] .themes-grid .theme-item:has(i.animated) i.pattern {
   right: 50px;
+}
+
+[data-modal-page="store"] .themes-grid .theme-item:has(i.hd):has(i.animated) i.pattern {
+  right: 75px;
 }
 
 [data-modal-page="store"] .themes-grid .theme-item h5,
