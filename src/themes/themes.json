@@ -91,9 +91,10 @@
   ["pineapple", "Pineapple", "fork-knife", 70, ["fruit"], false, false],
   ["pomegranate", "Pomegranate", "fork-knife", 70, ["fruit"], false, false],
   ["raspberry", "Raspberry", "fork-knife", 70, ["fruit"], false, false],
-  ["raspberry-blueberry", "Raspberry Blueberry", "fork-knife", 90, ["fruit", "raspberry", "blueberry"], false, false],
+  ["raspberry-blueberry", "Raspberry Blueberry", "fork-knife", 80, ["fruit", "raspberry", "blueberry"], false, false],
   ["strawberry-pro", "Strawberry Pro", "fork-knife", 70, ["fruit"], false, false],
   ["watermelon", "Watermelon", "fork-knife", 70, ["fruit"], false, false],
   ["watermelon-2", "Watermelon 2", "fork-knife", 80, ["fruit", "watermelon"], false, false],
-  ["watermelon-pro", "Watermelon Pro", "fork-knife", 90, ["fruit", "watermelon", "watermelon-2"], false, false]
+  ["watermelon-pro", "Watermelon Pro", "fork-knife", 80, ["fruit", "watermelon", "watermelon-2"], false, false],
+  ["coconut-tree", "Coconut Tree", "tree", 80, ["fruit", "coconut"], false, false]
 ]

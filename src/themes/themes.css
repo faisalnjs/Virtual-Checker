@@ -1028,6 +1028,17 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
   background: url(/store/backdrop/watermelon-pro.png) !important;
 }
 
+[data-theme="coconut-tree"] {
+  color-scheme: light;
+  --text-color: #343427;
+  --background-color: #fffffc;
+  --surface-color: #a38b68;
+  --accent-color: #5f962b;
+  --accent-text-color: #343427;
+  --error-color: #eb324b;
+  background: url(/store/backdrop/coconut-tree.png) !important;
+}
+
 /* Animated Themes */
 
 [data-theme="waterfall"] {
