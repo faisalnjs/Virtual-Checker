@@ -99,5 +99,6 @@
   ["coconut-tree", "Coconut Tree", "tree", 80, ["fruit", "coconut"], false, false],
   ["calm-palm", "Calm Palm", "tree", 60, [], false, false],
   ["japan", "Japan", "airplane-engines", 60, [], false, false],
-  ["wood", "Wood", "tree", 60, [], false, false]
+  ["wood", "Wood", "tree", 60, [], false, false],
+  ["sugar-bites", "Sugar Bites", "fork-knife", 60, [], false, false]
 ]

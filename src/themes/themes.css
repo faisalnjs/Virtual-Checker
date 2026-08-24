@@ -1069,6 +1069,16 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
   background: url(/store/backdrop/wood.png) !important;
 }
 
+[data-theme="sugar-bites"] {
+  color-scheme: light;
+  --text-color: #fff;
+  --background-color: #54df5d;
+  --surface-color: #ce6c61;
+  --accent-color: #97245d;
+  --accent-text-color: #fff;
+  background: url(/store/backdrop/sugar-bites.png) !important;
+}
+
 /* Animated Themes */
 
 [data-theme="waterfall"] {
