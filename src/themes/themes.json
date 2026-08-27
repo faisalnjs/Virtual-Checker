@@ -102,5 +102,8 @@
   ["wood", "Wood", "tree", 60, [], false, false, false, false],
   ["sugar-bites", "Sugar Bites", "fork-knife", 60, [], false, false, false, false],
   ["cookies", "Cookies", "fork-knife", 60, [], false, false, true, false],
-  ["pandas", "Pandas", "tree", 60, [], false, false, true, true]
+  ["pandas", "Pandas", "tree", 60, [], false, false, true, true],
+  ["balloon", "Balloon", "balloon", 60, [], false, false, false, true],
+  ["balloon-pro", "Balloon Pro", "balloon", 70, ["balloon"], false, false, false, true],
+  ["balloons", "Balloons", "balloon", 70, ["balloon"], false, false, true, true]
 ]

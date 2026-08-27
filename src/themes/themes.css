@@ -1046,6 +1046,7 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
   --surface-color: #338aa3;
   --accent-color: #3c5104;
   --accent-text-color: #fff;
+  --error-color: #eb324b;
   background: url(/store/backdrop/calm-palm.png) !important;
 }
 
@@ -1056,6 +1057,7 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
   --surface-color: #3b1500;
   --accent-color: #865e23;
   --accent-text-color: #fff;
+  --error-color: #eb324b;
   background: url(/store/backdrop/japan.png) !important;
 }
 
@@ -1066,6 +1068,7 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
   --surface-color: #d27a41;
   --accent-color: #9b5236;
   --accent-text-color: #f7c080;
+  --error-color: #eb324b;
   background: url(/store/backdrop/wood.png) !important;
 }
 
@@ -1076,6 +1079,7 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
   --surface-color: #ce6c61;
   --accent-color: #97245d;
   --accent-text-color: #fff;
+  --error-color: #eb324b;
   background: url(/store/backdrop/sugar-bites.png) !important;
 }
 
@@ -1086,6 +1090,7 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
   --surface-color: #f9e2b9;
   --accent-color: #d17121;
   --accent-text-color: #fff;
+  --error-color: #eb324b;
   background: url(/store/backdrop/cookies.png) !important;
   background-size: 100px !important;
   background-repeat: repeat !important;
@@ -1099,8 +1104,46 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
   --surface-color: #318060;
   --accent-color: #fff;
   --accent-text-color: #000;
+  --error-color: #eb324b;
   --backlight-color: #318060;
   background: url(/store/backdrop/pandas.png) !important;
+  background-size: 300px !important;
+  background-repeat: repeat !important;
+  background-attachment: fixed !important;
+}
+
+[data-theme="balloon"] {
+  color-scheme: light;
+  --text-color: #fff;
+  --background-color: #6ba78b;
+  --surface-color: #4f9230;
+  --accent-color: #c7f185;
+  --accent-text-color: #2b4e1f;
+  --error-color: #eb324b;
+  --backlight-color: #4f9230;
+  background: url(/store/backdrop/balloon.png) !important;
+}
+
+[data-theme="balloon-pro"] {
+  color-scheme: light;
+  --text-color: #fff;
+  --background-color: #99cdf2;
+  --surface-color: #3261dc;
+  --accent-color: #6fa9f9;
+  --accent-text-color: #111956;
+  --error-color: #eb324b;
+  background: url(/store/backdrop/balloon-pro.png) !important;
+}
+
+[data-theme="balloons"]:not(.force) {
+  color-scheme: light;
+  --text-color: #d71064;
+  --background-color: #ffcdea;
+  --surface-color: #f9abda;
+  --accent-color: #fd62a3;
+  --accent-text-color: #ffcdea;
+  --error-color: #eb324b;
+  background: url(/store/backdrop/balloons.png) !important;
   background-size: 300px !important;
   background-repeat: repeat !important;
   background-attachment: fixed !important;
