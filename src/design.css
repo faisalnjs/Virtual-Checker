@@ -1661,3 +1661,35 @@ option.incorrect {
   background-color: indianred;
   color: var(--accent-text-color);
 }
+
+#colorize {
+  color: var(--accent-color);
+  -webkit-appearance: none;
+  width: -webkit-fill-available;
+  height: 20px;
+  border-radius: 10px;
+  background: var(--surface-color);
+  outline: none;
+  margin-top: 5px;
+  accent-color: var(--accent-color);
+}
+
+#colorize::-webkit-slider-thumb,
+#colorize::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--accent-color);
+  cursor: grab;
+  transition: 0.25s;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+#colorize::-webkit-slider-thumb:active,
+#colorize::-moz-range-thumb:active {
+  width: 25px;
+  height: 25px;
+  cursor: grabbing;
+  transition: 0.25s;
+}
