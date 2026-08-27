@@ -27,6 +27,9 @@ Object.freeze(defaultTheme);
 
 const customTheme = Object.assign({}, storage.get("custom-theme") || defaultTheme);
 
+const colorizeTrigger = document.querySelector('[data-modal-view="colorize"]');
+const colorizeRange = document.getElementById('colorize');
+
 export function resetTheme() {
   disableTransitions();
   document.body.removeAttribute("data-theme");
@@ -353,7 +356,7 @@ export async function renderStore() {
         themeItem.setAttribute('style', `background: url('/store/thumb/${theme[0]}.png') center / cover no-repeat !important;`);
       }
     }
-    themeItem.innerHTML = `${theme[2] ? `<i class="bi bi-${theme[2]}"></i>` : ''}${theme[5] ? `<i class="bi bi-badge-hd-fill hd"></i>` : ''}${theme[6] ? `<i class="bi bi-stars animated"></i>` : ''}${theme[7] ? `<i class="bi bi-border pattern"></i>` : ''}<h5>${name}</h5><p>${theme[3] ? `${theme[3]} Check${theme[3] == 1 ? '' : 's'}` : 'Free'}</p>${theme[4] && theme[4].length ? `<small>Requires: ${theme[4].map(t => themes.find(th => th[0] == t)[1] || t).join(', ')}</small>` : ''}`;
+    themeItem.innerHTML = `${theme[2] ? `<i class="bi bi-${theme[2]}"></i>` : ''}${theme[5] ? `<i class="bi bi-badge-hd-fill hd"></i>` : ''}${theme[6] ? `<i class="bi bi-stars animated"></i>` : ''}${theme[7] ? `<i class="bi bi-border pattern"></i>` : ''}${theme[8] ? `<i class="bi bi-palette2 colorized"></i>` : ''}<h5>${name}</h5><p>${theme[3] ? `${theme[3]} Check${theme[3] == 1 ? '' : 's'}` : 'Free'}</p>${theme[4] && theme[4].length ? `<small>Requires: ${theme[4].map(t => themes.find(th => th[0] == t)[1] || t).join(', ')}</small>` : ''}`;
     if (value === initialTheme) themeItem.classList.add('selected');
     const themeButton = document.createElement("button");
     themeButton.textContent = (value === initialTheme) ? "Applied" : (ownedThemes.includes(theme[0]) ? "Owned" : "Preview");
@@ -620,6 +623,7 @@ try {
     document.getElementById("theme-preview")?.setAttribute("data-theme", theme);
     selectedTheme = theme;
     updateAnimatedThemeVideo();
+    updateColorizedTheme();
   }
   enableTransitions();
 
@@ -799,7 +803,10 @@ try {
 
   const observer = new MutationObserver((mutationsList) => {
     for (const mutation of mutationsList) {
-      if ((mutation.type === 'attributes') && (mutation.attributeName === 'data-theme')) updateAnimatedThemeVideo();
+      if ((mutation.type === 'attributes') && (mutation.attributeName === 'data-theme')) {
+        updateAnimatedThemeVideo();
+        updateColorizedTheme();
+      }
     }
   });
   observer.observe(document.body, { attributes: true });
@@ -877,6 +884,134 @@ try {
     stopLipsky.setAttribute("tooltip", "Stop Lipskys");
     document.getElementById("controls-container").appendChild(stopLipsky);
   }
+
+  function updateColorizedTheme() {
+    const foundTheme = themes.find(theme => theme[0] === document.body.getAttribute('data-theme'));
+    if (foundTheme && foundTheme[8]) {
+      colorizeTrigger?.removeAttribute('hidden');
+      if (storage.get('colorize') !== undefined) {
+        setColorize(storage.get('colorize'));
+      } else {
+        resetColorize();
+      }
+    } else {
+      colorizeTrigger?.setAttribute('hidden', '');
+      resetColorize();
+    }
+  }
+
+  function resetColorize() {
+    if (colorizeRange) colorizeRange.value = 0;
+    document.body.style.backdropFilter = '';
+    document.body.style.setProperty('--text-color', '');
+    document.body.style.setProperty('--background-color', '');
+    document.body.style.setProperty('--surface-color', '');
+    document.body.style.setProperty('--accent-color', '');
+    document.body.style.setProperty('--accent-text-color', '');
+  }
+
+  function setColorize(deg) {
+    if (colorizeRange) colorizeRange.value = deg;
+    document.body.style.backdropFilter = `hue-rotate(${deg}deg)`;
+    document.body.style.setProperty('--text-color', '');
+    document.body.style.setProperty('--background-color', '');
+    document.body.style.setProperty('--surface-color', '');
+    document.body.style.setProperty('--accent-color', '');
+    document.body.style.setProperty('--accent-text-color', '');
+    const computedStyle = getComputedStyle(document.body);
+    document.body.style.setProperty('--text-color', rotateHue(computedStyle.getPropertyValue("--text-color").trim(), deg));
+    document.body.style.setProperty('--background-color', rotateHue(computedStyle.getPropertyValue("--background-color").trim(), deg));
+    document.body.style.setProperty('--surface-color', rotateHue(computedStyle.getPropertyValue("--surface-color").trim(), deg));
+    document.body.style.setProperty('--accent-color', rotateHue(computedStyle.getPropertyValue("--accent-color").trim(), deg));
+    document.body.style.setProperty('--accent-text-color', rotateHue(computedStyle.getPropertyValue("--accent-text-color").trim(), deg));
+  }
+
+  function rotateHue(hex, deg) {
+    if (!/^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(hex)) throw new Error('Invalid hex color');
+    if (hex.length === 4) hex = '#' + [...hex.slice(1)].map(ch => ch + ch).join('');
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
+    const rN = r / 255;
+    const gN = g / 255;
+    const bN = b / 255;
+    const max = Math.max(rN, gN, bN);
+    const min = Math.min(rN, gN, bN);
+    const delta = max - min;
+    let h = 0;
+    let s = 0;
+    const l = (max + min) / 2;
+    if (delta !== 0) {
+      s = delta / (1 - Math.abs(2 * l - 1));
+      if (max === rN) {
+        h = ((gN - bN) / delta) % 6;
+      } else if (max === gN) {
+        h = (bN - rN) / delta + 2;
+      } else {
+        h = (rN - gN) / delta + 4;
+      }
+      h *= 60;
+      if (h < 0) h += 360;
+    } else {
+      return hex.toLowerCase();
+    }
+    h = (h + Number(deg)) % 360;
+    if (h < 0) h += 360;
+    const c = (1 - Math.abs(2 * l - 1)) * s;
+    const x = c * (1 - Math.abs(((h / 60) % 2) - 1));
+    const m = l - c / 2;
+    let r1, g1, b1;
+    if (h < 60) {
+      [r1, g1, b1] = [c, x, 0];
+    } else if (h < 120) {
+      [r1, g1, b1] = [x, c, 0];
+    } else if (h < 180) {
+      [r1, g1, b1] = [0, c, x];
+    } else if (h < 240) {
+      [r1, g1, b1] = [0, x, c];
+    } else if (h < 300) {
+      [r1, g1, b1] = [x, 0, c];
+    } else {
+      [r1, g1, b1] = [c, 0, x];
+    }
+    const newR = Math.round((r1 + m) * 255);
+    const newG = Math.round((g1 + m) * 255);
+    const newB = Math.round((b1 + m) * 255);
+    const toHex = n => n.toString(16).padStart(2, '0');
+    return `#${toHex(newR)}${toHex(newG)}${toHex(newB)}`;
+  }
+
+  colorizeRange?.addEventListener('input', (e) => {
+    if (!e.target.value) return;
+    const deg = parseInt(e.target.value);
+    setColorize(deg);
+    storage.set('colorize', deg);
+  });
+
+  colorizeRange?.addEventListener('change', (e) => {
+    if (!e.target.value) return;
+    auth.syncPush("colorize")
+      .catch(error => {
+        if (storage.get("developer")) {
+          alert(`Error @ themes.js: ${error.message}`);
+        } else {
+          ui.reportBugModal(null, String(error.stack));
+        }
+      });
+  });
+
+  document.getElementById("reset-colorize")?.addEventListener("click", () => {
+    resetColorize();
+    storage.delete('colorize');
+    auth.syncPush("colorize")
+      .catch(error => {
+        if (storage.get("developer")) {
+          alert(`Error @ themes.js: ${error.message}`);
+        } else {
+          ui.reportBugModal(null, String(error.stack));
+        }
+      });
+  });
 } catch (error) {
   if (storage.get("developer")) {
     alert(`Error @ themes.js: ${error.message}`);

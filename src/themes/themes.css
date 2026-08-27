@@ -1089,6 +1089,7 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
   background: url(/store/backdrop/cookies.png) !important;
   background-size: 100px !important;
   background-repeat: repeat !important;
+  background-attachment: fixed !important;
 }
 
 [data-theme="pandas"]:not(.force) {
@@ -1098,9 +1099,11 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
   --surface-color: #318060;
   --accent-color: #fff;
   --accent-text-color: #000;
+  --backlight-color: #318060;
   background: url(/store/backdrop/pandas.png) !important;
   background-size: 300px !important;
   background-repeat: repeat !important;
+  background-attachment: fixed !important;
 }
 
 /* Animated Themes */
