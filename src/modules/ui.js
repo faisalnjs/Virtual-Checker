@@ -51,18 +51,25 @@ export function modal(options) {
       dialog.appendChild(label);
     }
     const input = document.createElement((options.input.type === "select") ? "select" : ((options.input.type === "textarea") ? "textarea" : "input"));
-    if (options.input.type === "input") input.type = options.input.type || "text";
-    if ((options.input.type === "select") && options.input.multiple) input.multiple = options.input.multiple;
-    if ((options.input.type === "select") && options.input.options) {
-      options.input.options.forEach(option => {
-        const optionElement = document.createElement("option");
-        optionElement.value = option.value;
-        optionElement.textContent = option.text;
-        if (option.selected) optionElement.selected = true;
-        input.appendChild(optionElement);
-      });
+    switch(options.input.type) {
+      case 'select':
+        if (options.input.multiple) input.multiple = options.input.multiple;
+        if (options.input.options) {
+          options.input.options.forEach(option => {
+            const optionElement = document.createElement("option");
+            optionElement.value = option.value;
+            optionElement.textContent = option.text;
+            if (option.selected) optionElement.selected = true;
+            input.appendChild(optionElement);
+          });
+        }
+        break;
+      case 'textarea':
+        input.rows = options.input.rows || 3;
+        break;
+      default:
+        input.type = options.input.type || "text";
     }
-    if (options.input.type === "textarea") input.rows = options.input.rows || 3;
     input.placeholder = options.input.placeholder || "";
     if (options.input.defaultValue) input.value = options.input.defaultValue || "";
     if (options.input.disabled) input.disabled = true;
@@ -83,18 +90,25 @@ export function modal(options) {
         dialog.appendChild(label);
       }
       const inputElement = document.createElement((input.type === "select") ? "select" : ((input.type === "textarea") ? "textarea" : "input"));
-      if (input.type === "input") inputElement.type = input.type || "text";
-      if ((input.type === "select") && input.multiple) inputElement.multiple = input.multiple;
-      if ((input.type === "select") && input.options) {
-        input.options.forEach(option => {
-          const optionElement = document.createElement("option");
-          optionElement.value = option.value;
-          optionElement.textContent = option.text;
-          if (option.selected) optionElement.selected = true;
-          inputElement.appendChild(optionElement);
-        });
+      switch(input.type) {
+        case 'select':
+          if (input.multiple) inputElement.multiple = input.multiple;
+          if (input.options) {
+            input.options.forEach(option => {
+              const optionElement = document.createElement("option");
+              optionElement.value = option.value;
+              optionElement.textContent = option.text;
+              if (option.selected) optionElement.selected = true;
+              inputElement.appendChild(optionElement);
+            });
+          }
+          break;
+        case 'textarea':
+          inputElement.rows = input.rows || 3;
+          break;
+        default:
+          inputElement.type = input.type || "text";
       }
-      if (input.type === "textarea") inputElement.rows = input.rows || 3;
       inputElement.placeholder = input.placeholder || "";
       if (input.defaultValue) inputElement.value = input.defaultValue || "";
       if (input.disabled) inputElement.disabled = true;
