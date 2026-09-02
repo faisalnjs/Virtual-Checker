@@ -155,10 +155,12 @@ function decodeThemeCode(code) {
 }
 
 export function renderThemesGrid(originalTheme = null) {
-  const themesGrid = document.querySelector(".themes-grid");
+  alert(2)
+  const themesGrid = document.querySelector(".welcome-container .themes-grid");
+  console.log(themesGrid)
   if (!themesGrid) return;
   themesGrid.innerHTML = "";
-  themes.forEach((theme) => {
+  themes.filter(theme => !theme[3]).forEach((theme) => {
     const value = theme[0];
     const name = theme[1] || theme[0];
     const button = document.createElement("button");
@@ -166,18 +168,18 @@ export function renderThemesGrid(originalTheme = null) {
     button.setAttribute("data-theme", value);
     if (value === originalTheme) button.classList.add('selected');
     button.addEventListener("click", () => {
-      if (document.querySelector('.welcome-container').getAttribute('step') !== '11') return;
+      if (!document.querySelector('.welcome-container') || (document.querySelector('.welcome-container').getAttribute('step') !== '11')) return;
       selectedTheme = value;
-      document.querySelector('.welcome-container').setAttribute("data-theme", value);
+      document.querySelector('.welcome-container')?.setAttribute("data-theme", value);
       originalTheme = value;
       storage.set("theme", value);
       syncTheme();
     });
     button.addEventListener("mouseover", () => {
-      if (document.querySelector('.welcome-container').getAttribute('step') === '11') document.querySelector('.welcome-container').setAttribute("data-theme", value);
+      if (document.querySelector('.welcome-container') && (document.querySelector('.welcome-container').getAttribute('step') === '11')) document.querySelector('.welcome-container').setAttribute("data-theme", value);
     });
     button.addEventListener("mouseout", () => {
-      if (document.querySelector('.welcome-container').getAttribute('step') === '11') document.querySelector('.welcome-container').setAttribute("data-theme", originalTheme);
+      if (document.querySelector('.welcome-container') && (document.querySelector('.welcome-container').getAttribute('step') === '11')) document.querySelector('.welcome-container').setAttribute("data-theme", originalTheme);
     });
     themesGrid.append(button);
   });

@@ -847,7 +847,7 @@ export async function launchWelcome(returnFunction = null) {
   welcomeContainer.setAttribute('data-theme', 'stealth');
   welcomeContainer.innerHTML = `
     <div class="center" step="1">
-      <h4>Welcome to</h4>
+      <h4>Welcome to the</h4>
       <h1>Virtual Checker</h1>
       <button data-skip>Skip Intro</button>
     </div>
@@ -1010,14 +1010,15 @@ export function toWelcomeSlide(n) {
       [...welcomeContainer.querySelectorAll('#theme-preview')].find(a => document.getElementById('checker')?.classList.toString() ? a.classList.contains(document.getElementById('checker')?.classList.toString()) : true)?.classList.add('selected');
       break;
     case maxN:
-      themes.renderThemesGrid(originalTheme || "stealth")
-        .catch(error => {
-          if (storage.get("developer")) {
-            alert(`Error @ ui.js: ${error.message}`);
-          } else {
-            reportBugModal(null, String(error.stack));
-          }
-        });
+      try {
+        themes.renderThemesGrid(originalTheme || "stealth")
+      } catch (error) {
+        if (storage.get("developer")) {
+          alert(`Error @ ui.js: ${error.message}`);
+        } else {
+          reportBugModal(null, String(error.stack));
+        }
+      }
       if (originalTheme) welcomeContainer.setAttribute('data-theme', originalTheme);
       break;
   }
