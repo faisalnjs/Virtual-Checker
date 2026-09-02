@@ -859,6 +859,7 @@ body:has(.topbar) #checker.horizontal .column:last-child {
   border-radius: 5px;
   margin-top: 5px;
   margin-bottom: 5px;
+  color: var(--text-color);
 }
 
 .ai-manager label,
