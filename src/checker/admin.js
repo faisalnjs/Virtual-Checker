@@ -202,6 +202,9 @@ try {
       });
       document.querySelectorAll('[data-reset-password]').forEach(button => button.addEventListener('click', resetPasswordModal));
       document.querySelectorAll('[data-remove-password]').forEach(button => button.addEventListener('click', removePasswordModal));
+      [...document.querySelectorAll('#rotate-period-input option')].filter(option => Number(option.value)).forEach(option => {
+        option.textContent = `${option.value} - ${courses.find(course => JSON.parse(course.periods).includes(Number(option.value)))?.name || 'No Course'}`;
+      });
       ui.stopLoader();
       active = true;
     }

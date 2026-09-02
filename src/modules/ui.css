@@ -590,7 +590,7 @@ body:has(.welcome-container.active) {
   -webkit-text-fill-color: transparent;
 }
 
-.welcome-container [step] *:not(button):not(:has(> button)),
+.welcome-container [step]:not(:has(.layout-chooser)) *:not(button):not(:has(> button)),
 .welcome-container:not([step="11"]) [step="11"] button {
   pointer-events: none;
   user-select: none;
@@ -859,6 +859,7 @@ body:has(.topbar) #checker.horizontal .column:last-child {
   border-radius: 5px;
   margin-top: 5px;
   margin-bottom: 5px;
+  color: var(--text-color);
 }
 
 .ai-manager label,
