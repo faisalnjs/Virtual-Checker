@@ -31,6 +31,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
   <link rel="stylesheet"
     href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
 </head>
 
 <body class="col">
@@ -245,6 +246,11 @@
         <option value="25">25</option>
         <option value="50">50</option>
         <option value="100">100</option>
+      </select>
+      <label for="default-responses-sorting">Default Responses Sorting</label>
+      <select id="default-responses-sorting">
+        <option value="recent">Recent</option>
+        <option value="order">In Order</option>
       </select>
       <div data-modal-actions>
         <button class="submit-button" id="save-admin-settings">Save</button>

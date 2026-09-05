@@ -1638,7 +1638,7 @@ body > canvas {
   cursor: not-allowed;
 }
 
-#checker.anonymous .input-group:has(#sort-seat-input),
+#checker.anonymous .input-group:has(#filter-seat-input),
 #checker.anonymous [data-seat-code] {
   display: none !important;
 }
