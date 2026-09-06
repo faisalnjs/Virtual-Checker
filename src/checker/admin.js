@@ -889,6 +889,9 @@ try {
         draggableSegmentReorder = createSwapy(document.querySelector(".segments .section"), {
           animation: 'none'
         });
+        draggableSegmentReorder.onSwapEnd(() => {
+          ui.setUnsavedChanges(true);
+        });
       }
       if (document.querySelector('.segment-reports')) {
         const $filterSegment = document.getElementById('filter-segment-input');
@@ -3571,6 +3574,9 @@ try {
     draggableQuestionList = createSwapy(document.getElementById("question-list"), {
       animation: 'none'
     });
+    draggableQuestionList.onSwapEnd(() => {
+      ui.setUnsavedChanges(true);
+    });
     ui.setUnsavedChanges(true);
     ui.reloadUnsavedInputs();
   }
@@ -4359,6 +4365,9 @@ try {
     if (draggableQuestionList) draggableQuestionList.destroy();
     draggableQuestionList = createSwapy(document.getElementById("question-list"), {
       animation: 'none'
+    });
+    draggableQuestionList.onSwapEnd(() => {
+      ui.setUnsavedChanges(true);
     });
     ui.setUnsavedChanges(true);
     ui.reloadUnsavedInputs();
@@ -6573,8 +6582,15 @@ try {
         {
           text: 'Continue',
           class: 'submit-button',
-          onclick: () => {
+          onclick: async () => {
             rotatePeriod();
+            themes.resetTheme();
+            await storage.idbReady;
+            storage.idbDelete("cache").catch((e) => console.error('IDB delete failed', e));
+            storage.delete("lastBulkLoad");
+            storage.idbDelete("adminCache").catch((e) => console.error('IDB delete failed', e));
+            storage.delete("lastAdminBulkLoad");
+            location.reload();
           },
           close: true,
         },
