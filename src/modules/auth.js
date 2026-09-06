@@ -687,6 +687,7 @@ export async function loadAdminSettings(courses) {
             const pagesList = document.getElementById("default-page");
             const coursesList = document.getElementById("default-course");
             const rowsPerPageList = document.getElementById("default-rows-per-page");
+            const responseSortList = document.getElementById("default-responses-sorting");
             if (!pagesList || !coursesList) return;
             pagesList.innerHTML = '';
             if (window.location.pathname === '/ta/') {
@@ -713,8 +714,16 @@ export async function loadAdminSettings(courses) {
                 if (r.default_course && (String(option.value) === String(r.default_course))) option.selected = true;
                 coursesList.appendChild(option);
             });
-            rowsPerPageList.value = r.default_rows_per_page || '10';
-            storage.set('rowsPerPage', rowsPerPageList.value);
+            storage.set("rowsPerPage", r.default_rows_per_page);
+            [...rowsPerPageList.children].forEach(item => {
+                if (String(item.value) === String(r.default_rows_per_page)) item.selected = true;
+            });
+            if ((window.location.pathname === '/admin/responses') || (window.location.pathname === '/ta/')) {
+                [...responseSortList.children].forEach(item => {
+                    if (item.value === r.default_responses_sorting) item.selected = true;
+                });
+                if (document.getElementById('sort-responses-input')) document.getElementById('sort-responses-input').value = r.default_responses_sorting;
+            }
             ui.reloadUnsavedInputs();
             document.getElementById("save-admin-settings").addEventListener("click", async () => {
                 await fetch(domain + '/user/settings', {
@@ -727,6 +736,7 @@ export async function loadAdminSettings(courses) {
                         "pwd": storage.get("pwd"),
                         "page": pagesList.value,
                         "course": coursesList.value,
+                        "responsesSorting": responseSortList.value,
                         "rows": rowsPerPageList.value,
                     })
                 })

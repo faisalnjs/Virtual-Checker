@@ -96,15 +96,15 @@ try {
         filterSegmentInput.value = "";
         filterSegmentInput.dispatchEvent(new Event("change"));
       }
-      const sortQuestionInput = document.getElementById("sort-question-input");
-      if (sortQuestionInput) {
-        sortQuestionInput.value = "";
-        sortQuestionInput.dispatchEvent(new Event("input"));
+      const filterQuestionInput = document.getElementById("filter-question-input");
+      if (filterQuestionInput) {
+        filterQuestionInput.value = "";
+        filterQuestionInput.dispatchEvent(new Event("input"));
       }
-      const sortSeatInput = document.getElementById("sort-seat-input");
-      if (sortSeatInput) {
-        sortSeatInput.value = "";
-        sortSeatInput.dispatchEvent(new Event("input"));
+      const filterSeatInput = document.getElementById("filter-seat-input");
+      if (filterSeatInput) {
+        filterSeatInput.value = "";
+        filterSeatInput.dispatchEvent(new Event("input"));
       }
       const filterLogsByUsernameInput = document.getElementById("filter-logs-by-username-input");
       if (filterLogsByUsernameInput) {

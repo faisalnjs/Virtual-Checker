@@ -294,20 +294,21 @@ try {
       if (document.getElementById("course-input") && course) document.getElementById("course-input").value = course.name;
     }
     if (document.getElementById("export-report-course")) updateExportReportCourses();
-    if (document.getElementById("course-period-input")) document.getElementById("course-period-input").addEventListener("change", updateResponses);
-    if (document.getElementById("filter-segment-input")) document.getElementById("filter-segment-input").addEventListener("change", updateResponses);
-    if (document.getElementById("sort-question-input")) document.getElementById("sort-question-input").addEventListener("input", updateResponses);
-    if (document.getElementById("sort-seat-input")) document.getElementById("sort-seat-input").addEventListener("input", updateResponses);
-    if (document.getElementById("course-period-input")) document.getElementById("course-period-input").addEventListener("change", updateSegments);
-    if (document.getElementById("filter-segment-input")) document.getElementById("filter-segment-input").addEventListener("change", updateSegments);
-    if (document.getElementById("sort-question-input")) document.getElementById("sort-question-input").addEventListener("input", updateSegments);
-    if (document.getElementById("sort-seat-input")) document.getElementById("sort-seat-input").addEventListener("input", updateSegments);
-    if (document.getElementById("course-period-input")) document.getElementById("course-period-input").addEventListener("change", updateQuestionReports);
-    if (document.getElementById("filter-segment-input")) document.getElementById("filter-segment-input").addEventListener("change", updateQuestionReports);
-    if (document.getElementById("sort-question-input")) document.getElementById("sort-question-input").addEventListener("input", updateQuestionReports);
-    if (document.getElementById("sort-seat-input")) document.getElementById("sort-seat-input").addEventListener("input", updateQuestionReports);
-    if (document.getElementById("filter-segment-input")) document.getElementById("filter-segment-input").addEventListener("change", updateQuestions);
-    if (document.getElementById("course-period-input")) document.getElementById("course-period-input").addEventListener("input", updateCourses);
+    document.getElementById("course-period-input")?.addEventListener("change", updateResponses);
+    document.getElementById("filter-segment-input")?.addEventListener("change", updateResponses);
+    document.getElementById("filter-question-input")?.addEventListener("input", updateResponses);
+    document.getElementById("filter-seat-input")?.addEventListener("input", updateResponses);
+    document.getElementById("sort-responses-input")?.addEventListener("change", updateResponses);
+    document.getElementById("course-period-input")?.addEventListener("change", updateSegments);
+    document.getElementById("filter-segment-input")?.addEventListener("change", updateSegments);
+    document.getElementById("filter-question-input")?.addEventListener("input", updateSegments);
+    document.getElementById("filter-seat-input")?.addEventListener("input", updateSegments);
+    document.getElementById("course-period-input")?.addEventListener("change", updateQuestionReports);
+    document.getElementById("filter-segment-input")?.addEventListener("change", updateQuestionReports);
+    document.getElementById("filter-question-input")?.addEventListener("input", updateQuestionReports);
+    document.getElementById("filter-seat-input")?.addEventListener("input", updateQuestionReports);
+    document.getElementById("filter-segment-input")?.addEventListener("change", updateQuestions);
+    document.getElementById("course-period-input")?.addEventListener("input", updateCourses);
     if (document.getElementById("export-responses-course")) updateExportResponsesCourses();
     if (document.querySelector(".course-reorder .reorder") && !loadedSegmentEditor && !loadedSegmentCreator && !noReloadCourse) {
       document.querySelector(".course-reorder .reorder").innerHTML = "";
@@ -431,10 +432,10 @@ try {
           ui.reportBugModal(null, String(error.stack));
         }
       });
-    if (document.getElementById("filter-segment-input") && document.getElementById("sort-question-input")) document.getElementById("filter-segment-input").addEventListener("change", () => {
-      document.getElementById("sort-question-input").value = "";
+    if (document.getElementById("filter-segment-input") && document.getElementById("filter-question-input")) document.getElementById("filter-segment-input").addEventListener("change", () => {
+      document.getElementById("filter-question-input").value = "";
       const event = new Event('input', { bubbles: true });
-      document.getElementById("sort-question-input").dispatchEvent(event);
+      document.getElementById("filter-question-input").dispatchEvent(event);
     });
     if (document.getElementById("course-period-input")) document.getElementById("course-period-input").addEventListener("change", () => {
       storage.set('period', document.getElementById("course-period-input").value);
@@ -888,11 +889,14 @@ try {
         draggableSegmentReorder = createSwapy(document.querySelector(".segments .section"), {
           animation: 'none'
         });
+        draggableSegmentReorder.onSwapEnd(() => {
+          ui.setUnsavedChanges(true);
+        });
       }
       if (document.querySelector('.segment-reports')) {
         const $filterSegment = document.getElementById('filter-segment-input');
-        const $sortQuestion = document.getElementById('sort-question-input');
-        const $sortSeat = document.getElementById('sort-seat-input');
+        const $filterQuestion = document.getElementById('filter-question-input');
+        const $sortSeat = document.getElementById('filter-seat-input');
         const $filterReport = document.querySelector('#filter-report-responses [aria-selected="true"]');
         const $sortReport = document.querySelector('#sort-report-responses [aria-selected="true"]');
         const $hideIncorrect = document.getElementById('hideIncorrectAttempts');
@@ -921,7 +925,7 @@ try {
           const matchingQuestions = questionIds.filter(qId => {
             const q = questions.find(q1 => String(q1.id) === String(qId));
             if (!q) return false;
-            const sortVal = $sortQuestion?.value ?? '';
+            const sortVal = $filterQuestion?.value ?? '';
             if (sortVal.startsWith('"')) return q.number === sortVal.replaceAll('"', '');
             return q.number.startsWith(sortVal);
           });
@@ -1113,7 +1117,7 @@ try {
     document.querySelectorAll('[report]').forEach(a => a.addEventListener('click', toggleDetailedReport));
     document.querySelectorAll('[data-edit-segment]').forEach(a => a.addEventListener('click', editSegment));
     document.querySelectorAll('[data-archive-segment]').forEach(a => a.addEventListener('click', () => {
-      if (a.parentElement.parentElement.id) archiveModal('segment', a.parentElement.parentElement.id.split('segment-')[1]);
+      if (a.parentElement.parentElement.querySelector('[data-swapy-item]') || a.parentElement.parentElement.id) archiveModal('segment', (a.parentElement.parentElement.querySelector('[data-swapy-item]') ? a.parentElement.parentElement.querySelector('[data-swapy-item]').getAttribute('data-swapy-item').split('segmentReorder-')[1] : a.parentElement.parentElement.id.split('segment-')[1]));
     }));
     if (!loadedSegmentEditor && !loadedSegmentCreator) ui.setUnsavedChanges(false);
     ui.reloadUnsavedInputs();
@@ -1126,7 +1130,7 @@ try {
 
   function editSegment(event, segment) {
     if (!active) return;
-    if (!segment && this && this.parentElement && this.parentElement.parentElement && this.parentElement.parentElement.id) segment = this.parentElement.parentElement.id.split('segment-')[1];
+    if (!segment && this && this.parentElement && this.parentElement.parentElement && (this.parentElement.parentElement.querySelector('[data-swapy-item]') || this.parentElement.parentElement.id)) segment = (this.parentElement.parentElement.querySelector('[data-swapy-item]') ? this.parentElement.parentElement.querySelector('[data-swapy-item]').getAttribute('data-swapy-item').split('segmentReorder-')[1] : this.parentElement.parentElement.id.split('segment-')[1]);
     return window.location.href = segment ? `/admin/editor?segment=${segment}` : '/admin/';
   }
 
@@ -1305,24 +1309,24 @@ try {
         },
         segments: []
       };
-      Array.from(document.querySelectorAll('.segments .section .section'))
-        .filter(w => w.id)
-        .forEach(segment => {
-          updatedInfo.segments.push({
-            order: segments.find(s => String(s.id) === String(segment.id.split('-')[1])).order,
-            id: segment.id.split('-')[1],
-            number: segment.querySelector('#segment-number-input').value,
-            name: segment.querySelector('#segment-name-input').value,
-            // question_ids: JSON.stringify(Array.from(segment.querySelectorAll('#segment-question-name-input')).filter(q => (q.value.length > 0) && (q.value != ' ') && (q.nextElementSibling.value.length > 0) && (q.nextElementSibling.value != ' ')).map(q => {
-            //   return {
-            //     name: q.value,
-            //     id: q.nextElementSibling.value
-            //   };
-            // })),
-            question_ids: segments.find(s => String(s.id) === String(segment.id.split('-')[1])).question_ids,
-            due: segment.querySelector('#segment-due-date').value || null,
-          });
+      for (const segmentOrder in Array.from(document.querySelectorAll('.segments .section .section')).filter(w => w.querySelector('[data-swapy-item]') || w.id)) {
+        const segment = Array.from(document.querySelectorAll('.segments .section .section')).filter(w => w.querySelector('[data-swapy-item]') || w.id)[segmentOrder];
+        const segmentId = (segment.querySelector('[data-swapy-item]') ? segment.querySelector('[data-swapy-item]').getAttribute('data-swapy-item') : segment.id).split('-')[1];
+        updatedInfo.segments.push({
+          order: segmentOrder,
+          id: segmentId,
+          number: segment.querySelector('#segment-number-input').value,
+          name: segment.querySelector('#segment-name-input').value,
+          // question_ids: JSON.stringify(Array.from(segment.querySelectorAll('#segment-question-name-input')).filter(q => (q.value.length > 0) && (q.value != ' ') && (q.nextElementSibling.value.length > 0) && (q.nextElementSibling.value != ' ')).map(q => {
+          //   return {
+          //     name: q.value,
+          //     id: q.nextElementSibling.value
+          //   };
+          // })),
+          question_ids: segments.find(s => String(s.id) === String(segmentId)).question_ids,
+          due: segment.querySelector('#segment-due-date').value || null,
         });
+      }
     } else if (document.querySelector('.questions.section')) {
       updatedInfo = {
         questions: []
@@ -1343,27 +1347,28 @@ try {
       Array.from(document.querySelectorAll('.questions .section .section'))
         .filter(w => w.id)
         .forEach(question => {
-          if (!newQuestions.find(q => String(q.id) === question.id.split('-')[1])) return;
-          newQuestions.find(q => String(q.id) === question.id.split('-')[1]).number = question.querySelector('#question-number-input').value;
-          newQuestions.find(q => String(q.id) === question.id.split('-')[1]).segment = question.querySelector('#question-segment-input').value;
-          newQuestions.find(q => String(q.id) === question.id.split('-')[1]).question = question.querySelector('#question-text-input').value;
-          newQuestions.find(q => String(q.id) === question.id.split('-')[1]).stem = question.querySelector('#question-stem-input')?.value || null;
-          newQuestions.find(q => String(q.id) === question.id.split('-')[1]).nonscored = question.querySelector('#question-nonscored-input')?.value || null;
-          if (renderedEditors[Number(question.id.split('-')[1])]) newQuestions.find(q => String(q.id) === question.id.split('-')[1]).description = JSON.stringify(renderedEditors[Number(question.id.split('-')[1])].getContents());
-          newQuestions.find(q => String(q.id) === question.id.split('-')[1]).images = Array.from(question.querySelectorAll('.attachments .image > *')).map(q => {
+          const questionId = (question.querySelector('data-swapy-item-id') ? question.querySelector('data-swapy-item-id').getAttribute('data-swapy-item-id') : question.id).split('-')[1];
+          if (!newQuestions.find(q => String(q.id) === questionId)) return;
+          newQuestions.find(q => String(q.id) === questionId).number = question.querySelector('#question-number-input').value;
+          newQuestions.find(q => String(q.id) === questionId).segment = question.querySelector('#question-segment-input').value;
+          newQuestions.find(q => String(q.id) === questionId).question = question.querySelector('#question-text-input').value;
+          newQuestions.find(q => String(q.id) === questionId).stem = question.querySelector('#question-stem-input')?.value || null;
+          newQuestions.find(q => String(q.id) === questionId).nonscored = question.querySelector('#question-nonscored-input')?.value || null;
+          if (renderedEditors[Number(questionId)]) newQuestions.find(q => String(q.id) === questionId).description = JSON.stringify(renderedEditors[Number(questionId)].getContents());
+          newQuestions.find(q => String(q.id) === questionId).images = Array.from(question.querySelectorAll('.attachments .image > *')).map(q => {
             return q.getAttribute('data-src');
           });
-          newQuestions.find(q => String(q.id) === question.id.split('-')[1]).correctAnswers = Array.from(question.querySelectorAll('#question-correct-answer-input')).map(q => {
+          newQuestions.find(q => String(q.id) === questionId).correctAnswers = Array.from(question.querySelectorAll('#question-correct-answer-input')).map(q => {
             return q.value;
           });
-          newQuestions.find(q => String(q.id) === question.id.split('-')[1]).incorrectAnswers = Array.from(question.querySelectorAll('.incorrectAnswers .inputs')).map(q => {
+          newQuestions.find(q => String(q.id) === questionId).incorrectAnswers = Array.from(question.querySelectorAll('.incorrectAnswers .inputs')).map(q => {
             return {
               answer: q.querySelector('#question-incorrect-answer-input').value,
               reason: q.querySelector('#question-incorrect-answer-reason-input').value
             };
           });
-          newQuestions.find(q => String(q.id) === question.id.split('-')[1]).latex = question.querySelector('[data-toggle-latex] i')?.classList.contains('bi-calculator-fill') || false;
-          if (question.getAttribute('modified')) newQuestions.find(q => String(q.id) === question.id.split('-')[1]).modifiedAnswers = true;
+          newQuestions.find(q => String(q.id) === questionId).latex = question.querySelector('[data-toggle-latex] i')?.classList.contains('bi-calculator-fill') || false;
+          if (question.getAttribute('modified')) newQuestions.find(q => String(q.id) === questionId).modifiedAnswers = true;
         });
       var editedQuestions = [];
       newQuestions.forEach(q => {
@@ -2265,8 +2270,9 @@ try {
     var timedResponses = [];
     const coursePeriodInput = document.getElementById("course-period-input");
     const filterSegmentInput = document.getElementById("filter-segment-input");
-    const sortQuestionInput = document.getElementById("sort-question-input");
-    const sortSeatInput = document.getElementById("sort-seat-input");
+    const filterQuestionInput = document.getElementById("filter-question-input");
+    const filterSeatInput = document.getElementById("filter-seat-input");
+    const sortResponsesInput = document.getElementById("sort-responses-input");
     const awaitingSection = document.querySelector('.awaitingResponses .section');
     const responsesSection = document.querySelector('.responses .section');
     const hasAwaitingSection = !!awaitingSection;
@@ -2275,8 +2281,9 @@ try {
     const selectedCourseId = selectedCourse ? String(selectedCourse.id) : null;
     const selectedCoursePeriods = selectedCourse?.periods ? JSON.parse(selectedCourse.periods) : null;
     const filterSegmentValue = filterSegmentInput?.value;
-    const sortQuestionValue = sortQuestionInput?.value || '';
-    const sortSeatValue = sortSeatInput?.value || '';
+    const filterQuestionValue = filterQuestionInput?.value || '';
+    const filterSeatValue = filterSeatInput?.value || '';
+    const sortResponsesValue = sortResponsesInput?.value || '';
     const questionById = new Map(questions.map(question => [String(question.id), question]));
     const answerById = new Map(answers.map(answer => [String(answer.id), answer]));
     const segmentById = new Map(segments.map(segment => [String(segment.id), segment]));
@@ -2302,15 +2309,40 @@ try {
     var responses1 = responses
       .filter(r => selectedCoursePeriods ? selectedCoursePeriods.includes(Number(String(r.seatCode)[0])) : false)
       .filter(r => filterSegmentValue ? String(getResponseSegment(r)?.id || '-') === filterSegmentValue : true)
-      .filter(r => sortQuestionValue.startsWith('"') ? (questionById.get(String(r.question_id))?.number === sortQuestionValue.replaceAll('"', '')) : (questionById.get(String(r.question_id))?.number || '').startsWith(sortQuestionValue))
-      .filter(r => String(r.seatCode).startsWith(sortSeatValue))
+      .filter(r => filterQuestionValue.startsWith('"') ? (questionById.get(String(r.question_id))?.number === filterQuestionValue.replaceAll('"', '')) : (questionById.get(String(r.question_id))?.number || '').startsWith(filterQuestionValue))
+      .filter(r => String(r.seatCode).startsWith(filterSeatValue))
       .filter(r => !questionById.get(String(r.question_id))?.nonscored)
       .sort((a, b) => {
         if (a.flagged && !b.flagged) return -1;
         if (!a.flagged && b.flagged) return 1;
         return b.id - a.id;
       });
-    if (this && ((this.id === 'course-period-input') || (this.id === 'filter-segment-input') || (this.id === 'sort-question-input') || (this.id === 'sort-seat-input'))) {
+    if (sortResponsesValue === 'order') responses1 = responses1.sort((a, b) => {
+      if (a.flagged && !b.flagged) return -1;
+      if (!a.flagged && b.flagged) return 1;
+      const segmentA = getResponseSegment(a);
+      const segmentB = getResponseSegment(b);
+      if (segmentA && segmentB) {
+        if (segmentA.order && segmentB.order && (segmentA.order !== segmentB.order)) return segmentB.order - segmentA.order;
+        if (segmentA.due && segmentB.due && (segmentA.due !== segmentB.due)) return new Date(`${segmentB.due}T00:00:00`) - new Date(`${segmentA.due}T00:00:00`);
+        if (segmentA.number !== segmentB.number) {
+          const nameA = String(segmentA.number);
+          const nameB = String(segmentB.number);
+          const numA = parseInt(nameA.match(/\d+/) ? nameA.match(/\d+/)[0] : '0');
+          const numB = parseInt(nameB.match(/\d+/) ? nameB.match(/\d+/)[0] : '0');
+          const alphaA = (nameA.match(/[a-zA-Z]+/) || [''])[0];
+          const alphaB = (nameB.match(/[a-zA-Z]+/) || [''])[0];
+          if (numA !== numB) return numB - numA;
+          if (alphaA > alphaB) return -1;
+          if (alphaA < alphaB) return 1;
+        }
+        const questionAOrder = JSON.parse(segmentA.question_ids).findIndex(question => String(question.id) === String(a.question_id));
+        const questionBOrder = JSON.parse(segmentB.question_ids).findIndex(question => String(question.id) === String(b.question_id));
+        if ((questionAOrder !== -1) && (questionBOrder !== -1) && (questionAOrder !== questionBOrder)) return questionAOrder - questionBOrder;
+      }
+      return b.id - a.id;
+    });
+    if (this && ((this.id === 'course-period-input') || (this.id === 'filter-segment-input') || (this.id === 'filter-question-input') || (this.id === 'filter-seat-input'))) {
       pagination.awaitingResponses.page = 0;
       pagination.responses.page = 0;
     }
@@ -2494,7 +2526,7 @@ try {
           responseQuestionInput.addEventListener('click', (e) => {
             if (e.target.getAttribute('data-question')) {
               if (e.target.getAttribute('data-segment')) document.getElementById("filter-segment-input").value = e.target.getAttribute('data-segment');
-              document.getElementById("sort-question-input").value = `"${e.target.getAttribute('data-question')}"`;
+              document.getElementById("filter-question-input").value = `"${e.target.getAttribute('data-question')}"`;
               updateResponses();
             }
           });
@@ -2752,11 +2784,11 @@ try {
       document.querySelector('.trendingResponses .section .button-grid:last-child #response-question-input').addEventListener('click', (e) => {
         if (e.target.getAttribute('data-question')) {
           if (e.target.getAttribute('data-segment')) document.getElementById("filter-segment-input").value = e.target.getAttribute('data-segment');
-          document.getElementById("sort-question-input").value = `"${e.target.getAttribute('data-question')}"`;
+          document.getElementById("filter-question-input").value = `"${e.target.getAttribute('data-question')}"`;
           updateResponses();
         }
       });
-      if (isMatrix) document.qquerySelector('.trendingResponses .section .button-grid:last-child #response-response-input').addEventListener('click', () => ui.expandMatrix(isMatrix));
+      if (isMatrix) document.querySelector('.trendingResponses .section .button-grid:last-child #response-response-input').addEventListener('click', () => ui.expandMatrix(isMatrix));
     });
     const responsesArchiveTab = document.querySelector('[data-archive-type="responses"]');
     if (responsesArchiveTab) {
@@ -3483,10 +3515,10 @@ try {
     var updatedQuestions = [...document.getElementById("question-list").children].filter(q => q.classList.contains('question'));
     switch (type) {
       case '19':
-        updatedQuestions.sort((a, b) => Number(a.id.split('questionList-')[1]) - Number(b.id.split('questionList-')[1]));
+        updatedQuestions.sort((a, b) => Number((a.querySelector('data-swapy-item') ? a.querySelector('data-swapy-item').getAttribute('data-swapy-item') : a.id).split('questionList-')[1]) - Number((b.querySelector('data-swapy-item') ? b.querySelector('data-swapy-item').getAttribute('data-swapy-item') : b.id).split('questionList-')[1]));
         break;
       case '91':
-        updatedQuestions.sort((a, b) => Number(b.id.split('questionList-')[1]) - Number(a.id.split('questionList-')[1]));
+        updatedQuestions.sort((a, b) => Number((b.querySelector('data-swapy-item') ? b.querySelector('data-swapy-item').getAttribute('data-swapy-item') : b.id).split('questionList-')[1]) - Number((a.querySelector('data-swapy-item') ? a.querySelector('data-swapy-item').getAttribute('data-swapy-item') : a.id).split('questionList-')[1]));
         break;
       case 'az':
         updatedQuestions.sort((a, b) => {
@@ -3543,6 +3575,9 @@ try {
     draggableQuestionList = createSwapy(document.getElementById("question-list"), {
       animation: 'none'
     });
+    draggableQuestionList.onSwapEnd(() => {
+      ui.setUnsavedChanges(true);
+    });
     ui.setUnsavedChanges(true);
     ui.reloadUnsavedInputs();
   }
@@ -3593,8 +3628,8 @@ try {
       const course = courses.find(c => String(c.id) === courseId);
       const coursePeriods = course ? JSON.parse(course.periods) : [];
       const segmentFilter = getValue('filter-segment-input');
-      const sortQuestion = getValue('sort-question-input');
-      const sortSeat = getValue('sort-seat-input');
+      const filterQuestion = getValue('filter-question-input');
+      const sortSeat = getValue('filter-seat-input');
       const hideIncorrect = getElementById('hideIncorrectAttempts')?.checked;
       const courseMap = new Map(courses.map(c => [String(c.id), c]));
       const segmentMap = new Map(segments.map(s => [String(s.id), s]));
@@ -3613,8 +3648,8 @@ try {
           const q = questionMap.get(String(r.question_id));
           if (!q) return false;
           const num = q.number ?? '';
-          if (sortQuestion.startsWith('"')) return num === sortQuestion.replaceAll('"', '');
-          return num.startsWith(sortQuestion);
+          if (filterQuestion.startsWith('"')) return num === filterQuestion.replaceAll('"', '');
+          return num.startsWith(filterQuestion);
         })
         .filter(r => String(r.seatCode).startsWith(sortSeat))
         .sort((a, b) => {
@@ -3697,8 +3732,8 @@ try {
       const reportContainer = querySelector('#detailed-report');
       if (reportContainer) reportContainer.innerHTML = detailedReport;
     } else if (reportSlug.startsWith('segment-')) {
-      const sortQuestionInput = document.getElementById("sort-question-input");
-      const sortSeatInput = document.getElementById("sort-seat-input");
+      const filterQuestionInput = document.getElementById("filter-question-input");
+      const filterSeatInput = document.getElementById("filter-seat-input");
       const coursePeriodInput = document.getElementById("course-period-input");
       const hideIncorrectChk = document.getElementById('hideIncorrectAttempts');
       const hideUnansweredChk = document.getElementById('hideUnanswered');
@@ -3744,7 +3779,7 @@ try {
           })
           .filter(r => String(r.segment) === String(segment.id))
           .filter(r => r.question_id === question.id)
-          .filter(r => String(r.seatCode).startsWith(sortSeatInput?.value ?? ''));
+          .filter(r => String(r.seatCode).startsWith(filterSeatInput?.value ?? ''));
         if (hideIncorrectChecked()) {
           const hasCorrect = new Set(
             qResponses
@@ -3796,10 +3831,10 @@ try {
             .filter(x => {
               const q = questions.find(q => String(q.id) === String(x.question_id));
               if (!q) return false;
-              const val = sortQuestionInput?.value ?? '';
+              const val = filterQuestionInput?.value ?? '';
               return val.startsWith('"') ? q.number === val.replaceAll('"', '') : q.number.startsWith(val);
             })
-            .filter(x => String(x.seatCode).startsWith(sortSeatInput?.value ?? ''))
+            .filter(x => String(x.seatCode).startsWith(filterSeatInput?.value ?? ''))
             .sort((a, b) => {
               if (a.flagged && !b.flagged) return -1;
               if (!a.flagged && b.flagged) return 1;
@@ -3867,8 +3902,8 @@ try {
     } else if (reportSlug.startsWith('question-')) {
       const $courseInput = document.getElementById('course-period-input');
       const $segmentFilterInput = document.getElementById('filter-segment-input');
-      const $sortQuestionInput = document.getElementById('sort-question-input');
-      const $sortSeatInput = document.getElementById('sort-seat-input');
+      const $filterQuestionInput = document.getElementById('filter-question-input');
+      const $filterSeatInput = document.getElementById('filter-seat-input');
       const $hideIncorrectChk = document.getElementById('hideIncorrectAttempts');
       const $useRosterChk = document.getElementById('useRoster');
       const $responseSortSel = document.querySelector('#sort-report-responses [aria-selected="true"]');
@@ -3891,7 +3926,7 @@ try {
           const qId = String(qIdObj.id);
           const q = questionMap.get(qId);
           if (!q) return;
-          const sortVal = $sortQuestionInput?.value ?? '';
+          const sortVal = $filterQuestionInput?.value ?? '';
           const matches = sortVal.startsWith('"') ? getQuestionNumber(q) === sortVal.replaceAll('"', '') : getQuestionNumber(q).startsWith(sortVal);
           if (matches) courseQuestions.push(q);
         });
@@ -3906,7 +3941,7 @@ try {
       }
       let questionResponses = responses.filter(r => r.question_id === question.id);
       if (validPeriods.length) questionResponses = questionResponses.filter(r => validPeriods.includes(Number(String(r.seatCode)[0])));
-      if ($sortSeatInput?.value) questionResponses = questionResponses.filter(r => String(r.seatCode).startsWith($sortSeatInput.value));
+      if ($filterSeatInput?.value) questionResponses = questionResponses.filter(r => String(r.seatCode).startsWith($filterSeatInput.value));
       if ($hideIncorrectChk?.checked) {
         const hasCorrect = new Set();
         questionResponses.forEach(r => {
@@ -3975,10 +4010,10 @@ try {
             if (validPeriods.length && !validPeriods.includes(Number(String(res.seatCode)[0]))) return false;
             if ($segmentFilterInput?.value && String(res.segment) !== $segmentFilterInput.value) return false;
             const qNum = getQuestionNumber(questionMap.get(String(res.question_id)));
-            const sortVal = $sortQuestionInput?.value ?? '';
+            const sortVal = $filterQuestionInput?.value ?? '';
             const matches = sortVal.startsWith('"') ? qNum === sortVal.replaceAll('"', '') : qNum.startsWith(sortVal);
             if (!matches) return false;
-            if ($sortSeatInput?.value && !String(res.seatCode).startsWith($sortSeatInput.value)) return false;
+            if ($filterSeatInput?.value && !String(res.seatCode).startsWith($filterSeatInput.value)) return false;
             return true;
           })
           .filter(res => Number(res.seatCode) === Number(r.seatCode))
@@ -4024,8 +4059,8 @@ try {
     const courseInput = document.getElementById('course-period-input');
     const course = courses.find(c => courseInput && String(c.id) === courseInput.value);
     const segmentFilter = document.getElementById('filter-segment-input')?.value;
-    const sortQuestionVal = document.getElementById('sort-question-input')?.value;
-    const sortSeatVal = document.getElementById('sort-seat-input')?.value;
+    const filterQuestionVal = document.getElementById('filter-question-input')?.value;
+    const sortSeatVal = document.getElementById('filter-seat-input')?.value;
     const hideIncorrect = document.getElementById('hideIncorrectAttempts').checked;
     const hideUnanswered = document.getElementById('hideUnanswered').checked;
     const useRoster = document.getElementById('useRoster').checked;
@@ -4039,14 +4074,14 @@ try {
     let courseQuestions = [];
     for (const seg of courseSegments) {
       const ids = JSON.parse(seg.question_ids);
-      if (sortQuestionVal?.startsWith('"')) {
-        const target = sortQuestionVal.replaceAll('"', '');
+      if (filterQuestionVal?.startsWith('"')) {
+        const target = filterQuestionVal.replaceAll('"', '');
         ids.forEach(qid => {
           const q = questions.find(q => String(q.id) === String(qid.id));
           if (q && q.number === target) courseQuestions.push(q);
         });
       } else {
-        const prefix = sortQuestionVal ?? '';
+        const prefix = filterQuestionVal ?? '';
         ids.forEach(qid => {
           const q = questions.find(q => String(q.id) === String(qid.id));
           if (q && q.number.startsWith(prefix)) courseQuestions.push(q);
@@ -4054,7 +4089,7 @@ try {
       }
     }
     courseQuestions = courseQuestions
-      .filter(q => sortQuestionVal?.startsWith('"') ? q.number === sortQuestionVal.replaceAll('"', '') : q.number.startsWith(sortQuestionVal ?? ''))
+      .filter(q => filterQuestionVal?.startsWith('"') ? q.number === filterQuestionVal.replaceAll('"', '') : q.number.startsWith(filterQuestionVal ?? ''))
       .sort((a, b) => document.getElementById('filter-segment-input')?.value ? 0 : a.id - b.id);
     for (const question of courseQuestions) {
       let qResponses = responses.filter(r => r.question_id === question.id);
@@ -4332,6 +4367,9 @@ try {
     draggableQuestionList = createSwapy(document.getElementById("question-list"), {
       animation: 'none'
     });
+    draggableQuestionList.onSwapEnd(() => {
+      ui.setUnsavedChanges(true);
+    });
     ui.setUnsavedChanges(true);
     ui.reloadUnsavedInputs();
   }
@@ -4339,7 +4377,7 @@ try {
   function editExistingQuestion() {
     if (!active) return;
     if (ui.unsavedChanges) return ui.toast("You have unsaved changes. Please save or discard them before editing questions.", 3000, "error", "bi bi-exclamation-triangle-fill");
-    const url = `/admin/questions?segment=${loadedSegment.id}&question=${this?.parentElement?.parentElement?.id?.split('questionList-')[1]}`;
+    const url = `/admin/questions?segment=${loadedSegment.id}&question=${(this?.parentElement?.parentElement?.querySelector('[data-swapy-item]')?.getAttribute('data-swapy-item') || this?.parentElement?.parentElement?.id)?.split('questionList-')[1]}`;
     const width = window.outerWidth;
     const height = window.outerHeight;
     const left = window.screenLeft;
@@ -6074,8 +6112,8 @@ try {
     var archivingListString = "";
     document.querySelectorAll('.selected').forEach(e => {
       if (!e.id) return;
-      var itemType = e.id.split('-')[0];
-      var itemId = e.id.split('-')[1];
+      var itemType = (e.querySelector('data-swapy-item') ? e.querySelector('data-swapy-item').getAttribute('data-swapy-item') : e.id).split('-')[0];
+      var itemId = (e.querySelector('data-swapy-item-id') ? e.querySelector('data-swapy-item-id').getAttribute('data-swapy-item-id') : e.id).split('-')[1];
       var itemName = null;
       switch (itemType) {
         case 'segment':
@@ -6545,8 +6583,15 @@ try {
         {
           text: 'Continue',
           class: 'submit-button',
-          onclick: () => {
+          onclick: async () => {
             rotatePeriod();
+            themes.resetTheme();
+            await storage.idbReady;
+            storage.idbDelete("cache").catch((e) => console.error('IDB delete failed', e));
+            storage.delete("lastBulkLoad");
+            storage.idbDelete("adminCache").catch((e) => console.error('IDB delete failed', e));
+            storage.delete("lastAdminBulkLoad");
+            location.reload();
           },
           close: true,
         },

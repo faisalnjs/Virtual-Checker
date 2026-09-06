@@ -285,8 +285,8 @@ export function renderExtras() {
     if (!island) return;
     if (island.classList.contains('rendered')) return;
     var textarea = island.querySelector('.description .textarea');
-    if (textarea) {
-        var textareaContent = textarea.getAttribute('content');
+    var textareaContent = textarea?.getAttribute('content');
+    if (textarea && textareaContent && textareaContent.includes('ops') && (textareaContent !== '{"ops":[{"insert":"\\n"}]}')) {
         var quill = new Quill(textarea, {
             readOnly: true,
             modules: {

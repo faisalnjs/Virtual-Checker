@@ -82,16 +82,25 @@
           </div>
         </div>
         <div class="input-group small">
-          <label for="sort-question-input">Question</label>
+          <label for="filter-question-input">Question</label>
           <div class="space" id="question-container">
-            <input type="text" autocomplete="off" id="sort-question-input" value="" placeholder="1a" />
+            <input type="text" autocomplete="off" id="filter-question-input" value="" placeholder="1a" />
           </div>
         </div>
         <div class="input-group small">
-          <label for="sort-seat-input">Seat</label>
+          <label for="filter-seat-input">Seat</label>
           <div class="space" id="question-container">
-            <input type="number" autocomplete="off" id="sort-seat-input" value="" placeholder="311" max="999"
+            <input type="number" autocomplete="off" id="filter-seat-input" value="" placeholder="311" max="999"
               maxlength="3" />
+          </div>
+        </div>
+        <div class="input-group smedium">
+          <label for="sort-responses-input">Sort</label>
+          <div class="space" id="question-container">
+            <select id="sort-responses-input" value="">
+              <option value="recent">Recent</option>
+              <option value="order">In Order</option>
+            </select>
           </div>
         </div>
       </div>
@@ -322,6 +331,11 @@
         <option value="25">25</option>
         <option value="50">50</option>
         <option value="100">100</option>
+      </select>
+      <label for="default-responses-sorting">Default Responses Sorting</label>
+      <select id="default-responses-sorting">
+        <option value="recent">Recent</option>
+        <option value="order">In Order</option>
       </select>
       <div data-modal-actions>
         <button class="submit-button" id="save-admin-settings">Save</button>

@@ -113,8 +113,9 @@ try {
     document.getElementById("course-period-input")?.addEventListener("input", updateCourses);
     document.getElementById("course-period-input")?.addEventListener("change", updateResponses);
     document.getElementById("filter-segment-input").addEventListener("change", updateResponses);
-    document.getElementById("sort-question-input")?.addEventListener("input", updateResponses);
-    document.getElementById("sort-seat-input")?.addEventListener("input", updateResponses);
+    document.getElementById("filter-question-input")?.addEventListener("input", updateResponses);
+    document.getElementById("filter-seat-input")?.addEventListener("input", updateResponses);
+    document.getElementById("sort-responses-input")?.addEventListener("change", updateResponses);
     if (document.getElementById("filter-segment-input")) updateCourses();
     if (responses.find(response => String(response.seatCode).includes('xx'))) document.getElementById("checker").classList.add("anonymous");
     if (document.querySelector('.questions.section')) {
@@ -140,10 +141,10 @@ try {
     active = true;
     ui.stopLoader();
     ui.toast("Data restored.", 1000, "info", "bi bi-cloud-arrow-down");
-    if (document.getElementById("sort-question-input")) document.getElementById("filter-segment-input").addEventListener("change", () => {
-      document.getElementById("sort-question-input").value = "";
+    if (document.getElementById("filter-question-input")) document.getElementById("filter-segment-input").addEventListener("change", () => {
+      document.getElementById("filter-question-input").value = "";
       const event = new Event('input', { bubbles: true });
-      document.getElementById("sort-question-input").dispatchEvent(event);
+      document.getElementById("filter-question-input").dispatchEvent(event);
     });
     ui.reloadUnsavedInputs();
   }
@@ -324,27 +325,28 @@ try {
       Array.from(document.querySelectorAll('.questions .section .section'))
         .filter(w => w.id)
         .forEach(question => {
-          if (!newQuestions.find(q => String(q.id) === question.id.split('-')[1])) return;
-          newQuestions.find(q => String(q.id) === question.id.split('-')[1]).number = question.querySelector('#question-number-input').value;
-          newQuestions.find(q => String(q.id) === question.id.split('-')[1]).segment = question.querySelector('#question-segment-input').value;
-          newQuestions.find(q => String(q.id) === question.id.split('-')[1]).question = question.querySelector('#question-text-input').value;
-          newQuestions.find(q => String(q.id) === question.id.split('-')[1]).stem = question.querySelector('#question-stem-input')?.value || null;
-          newQuestions.find(q => String(q.id) === question.id.split('-')[1]).nonscored = question.querySelector('#question-nonscored-input')?.value || null;
-          if (renderedEditors[Number(question.id.split('-')[1])]) newQuestions.find(q => String(q.id) === question.id.split('-')[1]).description = JSON.stringify(renderedEditors[Number(question.id.split('-')[1])].getContents());
-          newQuestions.find(q => String(q.id) === question.id.split('-')[1]).images = Array.from(question.querySelectorAll('.attachments .image > *')).map(q => {
+          const questionId = (question.querySelector('data-swapy-item-id') ? question.querySelector('data-swapy-item-id').getAttribute('data-swapy-item-id') : question.id).split('-')[1];
+          if (!newQuestions.find(q => String(q.id) === questionId)) return;
+          newQuestions.find(q => String(q.id) === questionId).number = question.querySelector('#question-number-input').value;
+          newQuestions.find(q => String(q.id) === questionId).segment = question.querySelector('#question-segment-input').value;
+          newQuestions.find(q => String(q.id) === questionId).question = question.querySelector('#question-text-input').value;
+          newQuestions.find(q => String(q.id) === questionId).stem = question.querySelector('#question-stem-input')?.value || null;
+          newQuestions.find(q => String(q.id) === questionId).nonscored = question.querySelector('#question-nonscored-input')?.value || null;
+          if (renderedEditors[Number(questionId)]) newQuestions.find(q => String(q.id) === questionId).description = JSON.stringify(renderedEditors[Number(questionId)].getContents());
+          newQuestions.find(q => String(q.id) === questionId).images = Array.from(question.querySelectorAll('.attachments .image > *')).map(q => {
             return q.getAttribute('data-src');
           });
-          newQuestions.find(q => String(q.id) === question.id.split('-')[1]).correctAnswers = Array.from(question.querySelectorAll('#question-correct-answer-input')).map(q => {
+          newQuestions.find(q => String(q.id) === questionId).correctAnswers = Array.from(question.querySelectorAll('#question-correct-answer-input')).map(q => {
             return q.value;
           });
-          newQuestions.find(q => String(q.id) === question.id.split('-')[1]).incorrectAnswers = Array.from(question.querySelectorAll('.incorrectAnswers .inputs')).map(q => {
+          newQuestions.find(q => String(q.id) === questionId).incorrectAnswers = Array.from(question.querySelectorAll('.incorrectAnswers .inputs')).map(q => {
             return {
               answer: q.querySelector('#question-incorrect-answer-input').value,
               reason: q.querySelector('#question-incorrect-answer-reason-input').value
             };
           });
-          newQuestions.find(q => String(q.id) === question.id.split('-')[1]).latex = question.querySelector('[data-toggle-latex] i')?.classList.contains('bi-calculator-fill') || false;
-          if (question.getAttribute('modified')) newQuestions.find(q => String(q.id) === question.id.split('-')[1]).modifiedAnswers = true;
+          newQuestions.find(q => String(q.id) === questionId).latex = question.querySelector('[data-toggle-latex] i')?.classList.contains('bi-calculator-fill') || false;
+          if (question.getAttribute('modified')) newQuestions.find(q => String(q.id) === questionId).modifiedAnswers = true;
         });
       var editedQuestions = [];
       newQuestions.forEach(q => {
@@ -710,8 +712,9 @@ try {
     var timedResponses = [];
     const coursePeriodInput = document.getElementById("course-period-input");
     const filterSegmentInput = document.getElementById("filter-segment-input");
-    const sortQuestionInput = document.getElementById("sort-question-input");
-    const sortSeatInput = document.getElementById("sort-seat-input");
+    const filterQuestionInput = document.getElementById("filter-question-input");
+    const filterSeatInput = document.getElementById("filter-seat-input");
+    const sortResponsesInput = document.getElementById("sort-responses-input");
     const awaitingSection = document.querySelector('.awaitingResponses .section');
     const responsesSection = document.querySelector('.responses .section');
     const hasAwaitingSection = !!awaitingSection;
@@ -720,8 +723,9 @@ try {
     const selectedCourseId = selectedCourse ? String(selectedCourse.id) : null;
     const selectedCoursePeriods = selectedCourse?.periods ? JSON.parse(selectedCourse.periods) : null;
     const filterSegmentValue = filterSegmentInput?.value;
-    const sortQuestionValue = sortQuestionInput?.value || '';
-    const sortSeatValue = sortSeatInput?.value || '';
+    const filterQuestionValue = filterQuestionInput?.value || '';
+    const filterSeatValue = filterSeatInput?.value || '';
+    const sortResponsesValue = sortResponsesInput?.value || '';
     const questionById = new Map(questions.map(question => [String(question.id), question]));
     const answerById = new Map(answers.map(answer => [String(answer.id), answer]));
     const segmentById = new Map(segments.map(segment => [String(segment.id), segment]));
@@ -747,15 +751,40 @@ try {
     var responses1 = responses
       .filter(r => selectedCoursePeriods ? selectedCoursePeriods.includes(Number(String(r.seatCode)[0])) : false)
       .filter(r => filterSegmentValue ? String(getResponseSegment(r)?.id || '-') === filterSegmentValue : true)
-      .filter(r => sortQuestionValue.startsWith('"') ? (questionById.get(String(r.question_id))?.number === sortQuestionValue.replaceAll('"', '')) : (questionById.get(String(r.question_id))?.number || '').startsWith(sortQuestionValue))
-      .filter(r => String(r.seatCode).startsWith(sortSeatValue))
+      .filter(r => filterQuestionValue.startsWith('"') ? (questionById.get(String(r.question_id))?.number === filterQuestionValue.replaceAll('"', '')) : (questionById.get(String(r.question_id))?.number || '').startsWith(filterQuestionValue))
+      .filter(r => String(r.seatCode).startsWith(filterSeatValue))
       .filter(r => !questionById.get(String(r.question_id))?.nonscored)
       .sort((a, b) => {
         if (a.flagged && !b.flagged) return -1;
         if (!a.flagged && b.flagged) return 1;
         return b.id - a.id;
       });
-    if (this && ((this.id === 'course-period-input') || (this.id === 'filter-segment-input') || (this.id === 'sort-question-input') || (this.id === 'sort-seat-input'))) {
+    if (sortResponsesValue === 'order') responses1 = responses1.sort((a, b) => {
+      if (a.flagged && !b.flagged) return -1;
+      if (!a.flagged && b.flagged) return 1;
+      const segmentA = getResponseSegment(a);
+      const segmentB = getResponseSegment(b);
+      if (segmentA && segmentB) {
+        if (segmentA.order && segmentB.order && (segmentA.order !== segmentB.order)) return segmentB.order - segmentA.order;
+        if (segmentA.due && segmentB.due && (segmentA.due !== segmentB.due)) return new Date(`${segmentB.due}T00:00:00`) - new Date(`${segmentA.due}T00:00:00`);
+        if (segmentA.number !== segmentB.number) {
+          const nameA = String(segmentA.number);
+          const nameB = String(segmentB.number);
+          const numA = parseInt(nameA.match(/\d+/) ? nameA.match(/\d+/)[0] : '0');
+          const numB = parseInt(nameB.match(/\d+/) ? nameB.match(/\d+/)[0] : '0');
+          const alphaA = (nameA.match(/[a-zA-Z]+/) || [''])[0];
+          const alphaB = (nameB.match(/[a-zA-Z]+/) || [''])[0];
+          if (numA !== numB) return numB - numA;
+          if (alphaA > alphaB) return -1;
+          if (alphaA < alphaB) return 1;
+        }
+        const questionAOrder = JSON.parse(segmentA.question_ids).findIndex(question => String(question.id) === String(a.question_id));
+        const questionBOrder = JSON.parse(segmentB.question_ids).findIndex(question => String(question.id) === String(b.question_id));
+        if ((questionAOrder !== -1) && (questionBOrder !== -1) && (questionAOrder !== questionBOrder)) return questionAOrder - questionBOrder;
+      }
+      return b.id - a.id;
+    });
+    if (this && ((this.id === 'course-period-input') || (this.id === 'filter-segment-input') || (this.id === 'filter-question-input') || (this.id === 'filter-seat-input'))) {
       pagination.awaitingResponses.page = 0;
       pagination.responses.page = 0;
     }
@@ -939,7 +968,7 @@ try {
         responseQuestionInput.addEventListener('click', (e) => {
           if (e.target.getAttribute('data-question')) {
             if (e.target.getAttribute('data-segment')) document.getElementById("filter-segment-input").value = e.target.getAttribute('data-segment');
-            document.getElementById("sort-question-input").value = `"${e.target.getAttribute('data-question')}"`;
+            document.getElementById("filter-question-input").value = `"${e.target.getAttribute('data-question')}"`;
             updateResponses();
           }
         });
@@ -1024,7 +1053,7 @@ try {
       document.querySelector('.trendingResponses .section .button-grid:last-child #response-question-input').addEventListener('click', (e) => {
         if (e.target.getAttribute('data-question')) {
           if (e.target.getAttribute('data-segment')) document.getElementById("filter-segment-input").value = e.target.getAttribute('data-segment');
-          if (document.getElementById("sort-question-input")) document.getElementById("sort-question-input").value = `"${e.target.getAttribute('data-question')}"`;
+          if (document.getElementById("filter-question-input")) document.getElementById("filter-question-input").value = `"${e.target.getAttribute('data-question')}"`;
           updateResponses();
         }
       });
