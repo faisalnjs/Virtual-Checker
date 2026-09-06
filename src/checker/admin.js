@@ -1117,7 +1117,7 @@ try {
     document.querySelectorAll('[report]').forEach(a => a.addEventListener('click', toggleDetailedReport));
     document.querySelectorAll('[data-edit-segment]').forEach(a => a.addEventListener('click', editSegment));
     document.querySelectorAll('[data-archive-segment]').forEach(a => a.addEventListener('click', () => {
-      if (a.parentElement.parentElement.id) archiveModal('segment', a.parentElement.parentElement.id.split('segment-')[1]);
+      if (a.parentElement.parentElement.querySelector('[data-swapy-item]') || a.parentElement.parentElement.id) archiveModal('segment', (a.parentElement.parentElement.querySelector('[data-swapy-item]') ? a.parentElement.parentElement.querySelector('[data-swapy-item]').getAttribute('data-swapy-item').split('segmentReorder-')[1] : a.parentElement.parentElement.id.split('segment-')[1]));
     }));
     if (!loadedSegmentEditor && !loadedSegmentCreator) ui.setUnsavedChanges(false);
     ui.reloadUnsavedInputs();
@@ -1130,7 +1130,7 @@ try {
 
   function editSegment(event, segment) {
     if (!active) return;
-    if (!segment && this && this.parentElement && this.parentElement.parentElement && this.parentElement.parentElement.id) segment = this.parentElement.parentElement.id.split('segment-')[1];
+    if (!segment && this && this.parentElement && this.parentElement.parentElement && (this.parentElement.parentElement.querySelector('[data-swapy-item]') || this.parentElement.parentElement.id)) segment = (this.parentElement.parentElement.querySelector('[data-swapy-item]') ? this.parentElement.parentElement.querySelector('[data-swapy-item]').getAttribute('data-swapy-item').split('segmentReorder-')[1] : this.parentElement.parentElement.id.split('segment-')[1]);
     return window.location.href = segment ? `/admin/editor?segment=${segment}` : '/admin/';
   }
 
@@ -1309,24 +1309,24 @@ try {
         },
         segments: []
       };
-      Array.from(document.querySelectorAll('.segments .section .section'))
-        .filter(w => w.id)
-        .forEach(segment => {
-          updatedInfo.segments.push({
-            order: segments.find(s => String(s.id) === String(segment.id.split('-')[1])).order,
-            id: segment.id.split('-')[1],
-            number: segment.querySelector('#segment-number-input').value,
-            name: segment.querySelector('#segment-name-input').value,
-            // question_ids: JSON.stringify(Array.from(segment.querySelectorAll('#segment-question-name-input')).filter(q => (q.value.length > 0) && (q.value != ' ') && (q.nextElementSibling.value.length > 0) && (q.nextElementSibling.value != ' ')).map(q => {
-            //   return {
-            //     name: q.value,
-            //     id: q.nextElementSibling.value
-            //   };
-            // })),
-            question_ids: segments.find(s => String(s.id) === String(segment.id.split('-')[1])).question_ids,
-            due: segment.querySelector('#segment-due-date').value || null,
-          });
+      for (const segmentOrder in Array.from(document.querySelectorAll('.segments .section .section')).filter(w => w.querySelector('[data-swapy-item]') || w.id)) {
+        const segment = Array.from(document.querySelectorAll('.segments .section .section')).filter(w => w.querySelector('[data-swapy-item]') || w.id)[segmentOrder];
+        const segmentId = (segment.querySelector('[data-swapy-item]') ? segment.querySelector('[data-swapy-item]').getAttribute('data-swapy-item') : segment.id).split('-')[1];
+        updatedInfo.segments.push({
+          order: segmentOrder,
+          id: segmentId,
+          number: segment.querySelector('#segment-number-input').value,
+          name: segment.querySelector('#segment-name-input').value,
+          // question_ids: JSON.stringify(Array.from(segment.querySelectorAll('#segment-question-name-input')).filter(q => (q.value.length > 0) && (q.value != ' ') && (q.nextElementSibling.value.length > 0) && (q.nextElementSibling.value != ' ')).map(q => {
+          //   return {
+          //     name: q.value,
+          //     id: q.nextElementSibling.value
+          //   };
+          // })),
+          question_ids: segments.find(s => String(s.id) === String(segmentId)).question_ids,
+          due: segment.querySelector('#segment-due-date').value || null,
         });
+      }
     } else if (document.querySelector('.questions.section')) {
       updatedInfo = {
         questions: []
@@ -1347,27 +1347,28 @@ try {
       Array.from(document.querySelectorAll('.questions .section .section'))
         .filter(w => w.id)
         .forEach(question => {
-          if (!newQuestions.find(q => String(q.id) === question.id.split('-')[1])) return;
-          newQuestions.find(q => String(q.id) === question.id.split('-')[1]).number = question.querySelector('#question-number-input').value;
-          newQuestions.find(q => String(q.id) === question.id.split('-')[1]).segment = question.querySelector('#question-segment-input').value;
-          newQuestions.find(q => String(q.id) === question.id.split('-')[1]).question = question.querySelector('#question-text-input').value;
-          newQuestions.find(q => String(q.id) === question.id.split('-')[1]).stem = question.querySelector('#question-stem-input')?.value || null;
-          newQuestions.find(q => String(q.id) === question.id.split('-')[1]).nonscored = question.querySelector('#question-nonscored-input')?.value || null;
-          if (renderedEditors[Number(question.id.split('-')[1])]) newQuestions.find(q => String(q.id) === question.id.split('-')[1]).description = JSON.stringify(renderedEditors[Number(question.id.split('-')[1])].getContents());
-          newQuestions.find(q => String(q.id) === question.id.split('-')[1]).images = Array.from(question.querySelectorAll('.attachments .image > *')).map(q => {
+          const questionId = (question.querySelector('data-swapy-item-id') ? question.querySelector('data-swapy-item-id').getAttribute('data-swapy-item-id') : question.id).split('-')[1];
+          if (!newQuestions.find(q => String(q.id) === questionId)) return;
+          newQuestions.find(q => String(q.id) === questionId).number = question.querySelector('#question-number-input').value;
+          newQuestions.find(q => String(q.id) === questionId).segment = question.querySelector('#question-segment-input').value;
+          newQuestions.find(q => String(q.id) === questionId).question = question.querySelector('#question-text-input').value;
+          newQuestions.find(q => String(q.id) === questionId).stem = question.querySelector('#question-stem-input')?.value || null;
+          newQuestions.find(q => String(q.id) === questionId).nonscored = question.querySelector('#question-nonscored-input')?.value || null;
+          if (renderedEditors[Number(questionId)]) newQuestions.find(q => String(q.id) === questionId).description = JSON.stringify(renderedEditors[Number(questionId)].getContents());
+          newQuestions.find(q => String(q.id) === questionId).images = Array.from(question.querySelectorAll('.attachments .image > *')).map(q => {
             return q.getAttribute('data-src');
           });
-          newQuestions.find(q => String(q.id) === question.id.split('-')[1]).correctAnswers = Array.from(question.querySelectorAll('#question-correct-answer-input')).map(q => {
+          newQuestions.find(q => String(q.id) === questionId).correctAnswers = Array.from(question.querySelectorAll('#question-correct-answer-input')).map(q => {
             return q.value;
           });
-          newQuestions.find(q => String(q.id) === question.id.split('-')[1]).incorrectAnswers = Array.from(question.querySelectorAll('.incorrectAnswers .inputs')).map(q => {
+          newQuestions.find(q => String(q.id) === questionId).incorrectAnswers = Array.from(question.querySelectorAll('.incorrectAnswers .inputs')).map(q => {
             return {
               answer: q.querySelector('#question-incorrect-answer-input').value,
               reason: q.querySelector('#question-incorrect-answer-reason-input').value
             };
           });
-          newQuestions.find(q => String(q.id) === question.id.split('-')[1]).latex = question.querySelector('[data-toggle-latex] i')?.classList.contains('bi-calculator-fill') || false;
-          if (question.getAttribute('modified')) newQuestions.find(q => String(q.id) === question.id.split('-')[1]).modifiedAnswers = true;
+          newQuestions.find(q => String(q.id) === questionId).latex = question.querySelector('[data-toggle-latex] i')?.classList.contains('bi-calculator-fill') || false;
+          if (question.getAttribute('modified')) newQuestions.find(q => String(q.id) === questionId).modifiedAnswers = true;
         });
       var editedQuestions = [];
       newQuestions.forEach(q => {
@@ -3514,10 +3515,10 @@ try {
     var updatedQuestions = [...document.getElementById("question-list").children].filter(q => q.classList.contains('question'));
     switch (type) {
       case '19':
-        updatedQuestions.sort((a, b) => Number(a.id.split('questionList-')[1]) - Number(b.id.split('questionList-')[1]));
+        updatedQuestions.sort((a, b) => Number((a.querySelector('data-swapy-item') ? a.querySelector('data-swapy-item').getAttribute('data-swapy-item') : a.id).split('questionList-')[1]) - Number((b.querySelector('data-swapy-item') ? b.querySelector('data-swapy-item').getAttribute('data-swapy-item') : b.id).split('questionList-')[1]));
         break;
       case '91':
-        updatedQuestions.sort((a, b) => Number(b.id.split('questionList-')[1]) - Number(a.id.split('questionList-')[1]));
+        updatedQuestions.sort((a, b) => Number((b.querySelector('data-swapy-item') ? b.querySelector('data-swapy-item').getAttribute('data-swapy-item') : b.id).split('questionList-')[1]) - Number((a.querySelector('data-swapy-item') ? a.querySelector('data-swapy-item').getAttribute('data-swapy-item') : a.id).split('questionList-')[1]));
         break;
       case 'az':
         updatedQuestions.sort((a, b) => {
@@ -4376,7 +4377,7 @@ try {
   function editExistingQuestion() {
     if (!active) return;
     if (ui.unsavedChanges) return ui.toast("You have unsaved changes. Please save or discard them before editing questions.", 3000, "error", "bi bi-exclamation-triangle-fill");
-    const url = `/admin/questions?segment=${loadedSegment.id}&question=${this?.parentElement?.parentElement?.id?.split('questionList-')[1]}`;
+    const url = `/admin/questions?segment=${loadedSegment.id}&question=${(this?.parentElement?.parentElement?.querySelector('[data-swapy-item]')?.getAttribute('data-swapy-item') || this?.parentElement?.parentElement?.id)?.split('questionList-')[1]}`;
     const width = window.outerWidth;
     const height = window.outerHeight;
     const left = window.screenLeft;
@@ -6111,8 +6112,8 @@ try {
     var archivingListString = "";
     document.querySelectorAll('.selected').forEach(e => {
       if (!e.id) return;
-      var itemType = e.id.split('-')[0];
-      var itemId = e.id.split('-')[1];
+      var itemType = (e.querySelector('data-swapy-item') ? e.querySelector('data-swapy-item').getAttribute('data-swapy-item') : e.id).split('-')[0];
+      var itemId = (e.querySelector('data-swapy-item-id') ? e.querySelector('data-swapy-item-id').getAttribute('data-swapy-item-id') : e.id).split('-')[1];
       var itemName = null;
       switch (itemType) {
         case 'segment':

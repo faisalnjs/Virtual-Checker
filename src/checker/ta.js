@@ -325,27 +325,28 @@ try {
       Array.from(document.querySelectorAll('.questions .section .section'))
         .filter(w => w.id)
         .forEach(question => {
-          if (!newQuestions.find(q => String(q.id) === question.id.split('-')[1])) return;
-          newQuestions.find(q => String(q.id) === question.id.split('-')[1]).number = question.querySelector('#question-number-input').value;
-          newQuestions.find(q => String(q.id) === question.id.split('-')[1]).segment = question.querySelector('#question-segment-input').value;
-          newQuestions.find(q => String(q.id) === question.id.split('-')[1]).question = question.querySelector('#question-text-input').value;
-          newQuestions.find(q => String(q.id) === question.id.split('-')[1]).stem = question.querySelector('#question-stem-input')?.value || null;
-          newQuestions.find(q => String(q.id) === question.id.split('-')[1]).nonscored = question.querySelector('#question-nonscored-input')?.value || null;
-          if (renderedEditors[Number(question.id.split('-')[1])]) newQuestions.find(q => String(q.id) === question.id.split('-')[1]).description = JSON.stringify(renderedEditors[Number(question.id.split('-')[1])].getContents());
-          newQuestions.find(q => String(q.id) === question.id.split('-')[1]).images = Array.from(question.querySelectorAll('.attachments .image > *')).map(q => {
+          const questionId = (question.querySelector('data-swapy-item-id') ? question.querySelector('data-swapy-item-id').getAttribute('data-swapy-item-id') : question.id).split('-')[1];
+          if (!newQuestions.find(q => String(q.id) === questionId)) return;
+          newQuestions.find(q => String(q.id) === questionId).number = question.querySelector('#question-number-input').value;
+          newQuestions.find(q => String(q.id) === questionId).segment = question.querySelector('#question-segment-input').value;
+          newQuestions.find(q => String(q.id) === questionId).question = question.querySelector('#question-text-input').value;
+          newQuestions.find(q => String(q.id) === questionId).stem = question.querySelector('#question-stem-input')?.value || null;
+          newQuestions.find(q => String(q.id) === questionId).nonscored = question.querySelector('#question-nonscored-input')?.value || null;
+          if (renderedEditors[Number(questionId)]) newQuestions.find(q => String(q.id) === questionId).description = JSON.stringify(renderedEditors[Number(questionId)].getContents());
+          newQuestions.find(q => String(q.id) === questionId).images = Array.from(question.querySelectorAll('.attachments .image > *')).map(q => {
             return q.getAttribute('data-src');
           });
-          newQuestions.find(q => String(q.id) === question.id.split('-')[1]).correctAnswers = Array.from(question.querySelectorAll('#question-correct-answer-input')).map(q => {
+          newQuestions.find(q => String(q.id) === questionId).correctAnswers = Array.from(question.querySelectorAll('#question-correct-answer-input')).map(q => {
             return q.value;
           });
-          newQuestions.find(q => String(q.id) === question.id.split('-')[1]).incorrectAnswers = Array.from(question.querySelectorAll('.incorrectAnswers .inputs')).map(q => {
+          newQuestions.find(q => String(q.id) === questionId).incorrectAnswers = Array.from(question.querySelectorAll('.incorrectAnswers .inputs')).map(q => {
             return {
               answer: q.querySelector('#question-incorrect-answer-input').value,
               reason: q.querySelector('#question-incorrect-answer-reason-input').value
             };
           });
-          newQuestions.find(q => String(q.id) === question.id.split('-')[1]).latex = question.querySelector('[data-toggle-latex] i')?.classList.contains('bi-calculator-fill') || false;
-          if (question.getAttribute('modified')) newQuestions.find(q => String(q.id) === question.id.split('-')[1]).modifiedAnswers = true;
+          newQuestions.find(q => String(q.id) === questionId).latex = question.querySelector('[data-toggle-latex] i')?.classList.contains('bi-calculator-fill') || false;
+          if (question.getAttribute('modified')) newQuestions.find(q => String(q.id) === questionId).modifiedAnswers = true;
         });
       var editedQuestions = [];
       newQuestions.forEach(q => {
