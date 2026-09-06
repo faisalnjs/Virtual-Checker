@@ -387,7 +387,7 @@ div[data-color-input] > div[data-color-preview]:hover {
   display: none;
 }
 
-.island::before {
+.island:has(.extra)::before {
   content: "Use = to show extra fields";
   position: absolute;
   right: 20px;
