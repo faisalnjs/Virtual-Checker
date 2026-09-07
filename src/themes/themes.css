@@ -326,7 +326,7 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
   --accent-color: #054dc6;
   --accent-text-color: #7bace5;
   --error-color: #eb324b;
-  background: url(/store/backdrop/jellyfish.png) !important;
+  background: url(https://assets.vssfalcons.com/store/backdrop/jellyfish.png) !important;
 }
 
 [data-theme="jellyfish-2"] {
@@ -337,7 +337,7 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
   --accent-color: #575ed3;
   --accent-text-color: #ffffff;
   --error-color: #eb324b;
-  background: url(/store/backdrop/jellyfish-2.png) !important;
+  background: url(https://assets.vssfalcons.com/store/backdrop/jellyfish-2.png) !important;
 }
 
 [data-theme="jellyfish-pro"] {
@@ -348,7 +348,7 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
   --accent-color: #575ed3;
   --accent-text-color: #ffffff;
   --error-color: #eb324b;
-  background: url(/store/backdrop/jellyfish-pro.png) !important;
+  background: url(https://assets.vssfalcons.com/store/backdrop/jellyfish-pro.png) !important;
 }
 
 [data-theme="black-sand"] {
@@ -359,7 +359,7 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
   --accent-color: #444d58;
   --accent-text-color: #ffffff;
   --error-color: #eb324b;
-  background: url(/store/backdrop/black-sand.png) !important;
+  background: url(https://assets.vssfalcons.com/store/backdrop/black-sand.png) !important;
 }
 
 [data-theme="blizzard-pro"] {
@@ -370,7 +370,7 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
   --accent-color: #71b2d3;
   --accent-text-color: #2c2c2c;
   --error-color: #eb324b;
-  background: url(/store/backdrop/blizzard-pro.png) !important;
+  background: url(https://assets.vssfalcons.com/store/backdrop/blizzard-pro.png) !important;
 }
 
 [data-theme="sage-pro"] {
@@ -381,7 +381,7 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
   --accent-color: #5c8a5b;
   --accent-text-color: #2c2c2c;
   --error-color: #eb324b;
-  background: url(/store/backdrop/sage-pro.png) !important;
+  background: url(https://assets.vssfalcons.com/store/backdrop/sage-pro.png) !important;
 }
 
 [data-theme="sandy-beach"] {
@@ -392,7 +392,7 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
   --accent-color: #a58d6b;
   --accent-text-color: #2c2c2c;
   --error-color: #eb324b;
-  background: url(/store/backdrop/sandy-beach.png) !important;
+  background: url(https://assets.vssfalcons.com/store/backdrop/sandy-beach.png) !important;
 }
 
 [data-theme="rose-pro"] {
@@ -403,7 +403,7 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
   --accent-color: #ff6767;
   --accent-text-color: #ffffff;
   --error-color: #eb324b;
-  background: url(/store/backdrop/rose-pro.png) !important;
+  background: url(https://assets.vssfalcons.com/store/backdrop/rose-pro.png) !important;
 }
 
 [data-theme="lavender-pro"] {
@@ -414,7 +414,7 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
   --accent-color: #866ed5;
   --accent-text-color: #d7d7d7;
   --error-color: #eb324b;
-  background: url(/store/backdrop/lavender-pro.png) !important;
+  background: url(https://assets.vssfalcons.com/store/backdrop/lavender-pro.png) !important;
 }
 
 [data-theme="stealth-2"] {
@@ -425,7 +425,7 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
   --accent-color: #4c4746;
   --accent-text-color: #f2f2f2;
   --error-color: #eb324b;
-  background: url(/store/backdrop/stealth-2.png) !important;
+  background: url(https://assets.vssfalcons.com/store/backdrop/stealth-2.png) !important;
 }
 
 [data-theme="synthwave-pro"] {
@@ -437,7 +437,7 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
   --accent-text-color: #2de2e6;
   --error-color: #ea1b2d;
   --backlight-color: #ff00ec;
-  background: url(/store/backdrop/synthwave-pro.png) !important;
+  background: url(https://assets.vssfalcons.com/store/backdrop/synthwave-pro.png) !important;
 }
 
 [data-theme="aeroplane"] {
@@ -449,7 +449,7 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
   --accent-text-color: #1c1c1c;
   --error-color: #eb324b;
   --backlight-color: #141414;
-  background: url(/store/backdrop/aeroplane.png) !important;
+  background: url(https://assets.vssfalcons.com/store/backdrop/aeroplane.png) !important;
 }
 
 [data-theme="lavender-2"] {
@@ -460,7 +460,7 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
   --accent-color: #825895;
   --accent-text-color: #e4e4e4;
   --error-color: #eb324b;
-  background: url(/store/backdrop/lavender-2.png) !important;
+  background: url(https://assets.vssfalcons.com/store/backdrop/lavender-2.png) !important;
 }
 
 [data-theme="rainy-day"] {
@@ -471,7 +471,7 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
   --accent-color: #2d8ba5;
   --accent-text-color: #e4e4e4;
   --error-color: #eb324b;
-  background: url(/store/backdrop/rainy-day.png) !important;
+  background: url(https://assets.vssfalcons.com/store/backdrop/rainy-day.png) !important;
 }
 
 [data-theme="snow"] {
@@ -482,7 +482,7 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
   --accent-color: #9cb7d2;
   --accent-text-color: #474747;
   --error-color: #eb324b;
-  background: url(/store/backdrop/snow.png) !important;
+  background: url(https://assets.vssfalcons.com/store/backdrop/snow.png) !important;
 }
 
 [data-theme="shells"] {
@@ -493,7 +493,7 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
   --accent-color: #b28766;
   --accent-text-color: #2c2c2c;
   --error-color: #eb324b;
-  background: url(/store/backdrop/shells.png) !important;
+  background: url(https://assets.vssfalcons.com/store/backdrop/shells.png) !important;
 }
 
 [data-theme="tides"] {
@@ -504,7 +504,7 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
   --accent-color: #2e9993;
   --accent-text-color: #fafafa;
   --error-color: #eb324b;
-  background: url(/store/backdrop/tides.png) !important;
+  background: url(https://assets.vssfalcons.com/store/backdrop/tides.png) !important;
 }
 
 [data-theme="northern-lights"] {
@@ -515,7 +515,7 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
   --accent-color: #1e644a;
   --accent-text-color: #e4e4e4;
   --error-color: #eb324b;
-  background: url(/store/backdrop/northern-lights.png) !important;
+  background: url(https://assets.vssfalcons.com/store/backdrop/northern-lights.png) !important;
 }
 
 [data-theme="galaxy"] {
@@ -526,7 +526,7 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
   --accent-color: #6269af;
   --accent-text-color: #dee3fc;
   --error-color: #eb324b;
-  background: url(/store/backdrop/galaxy.png) !important;
+  background: url(https://assets.vssfalcons.com/store/backdrop/galaxy.png) !important;
 }
 
 [data-theme="galaxy-2"] {
@@ -537,7 +537,7 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
   --accent-color: #bb9890;
   --accent-text-color: #e5e4cd;
   --error-color: #eb324b;
-  background: url(/store/backdrop/galaxy-2.png) !important;
+  background: url(https://assets.vssfalcons.com/store/backdrop/galaxy-2.png) !important;
 }
 
 [data-theme="milky-way"] {
@@ -548,7 +548,7 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
   --accent-color: #a5978e;
   --accent-text-color: #171719;
   --error-color: #eb324b;
-  background: url(/store/backdrop/milky-way.png) !important;
+  background: url(https://assets.vssfalcons.com/store/backdrop/milky-way.png) !important;
 }
 
 [data-theme="siege"] {
@@ -559,7 +559,7 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
   --accent-color: #b57c49;
   --accent-text-color: #ede5a9;
   --error-color: #cb5a4f;
-  background: url(/store/backdrop/siege.png) !important;
+  background: url(https://assets.vssfalcons.com/store/backdrop/siege.png) !important;
 }
 
 [data-theme="snowflakes"] {
@@ -570,7 +570,7 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
   --accent-color: #73b9dc;
   --accent-text-color: #e7e4ec;
   --error-color: #eb324b;
-  background: url(/store/backdrop/snowflakes.png) !important;
+  background: url(https://assets.vssfalcons.com/store/backdrop/snowflakes.png) !important;
 }
 
 [data-theme="chocolate-hearts"] {
@@ -582,7 +582,7 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
   --accent-text-color: #ffffff;
   --error-color: #b90024;
   --backlight-color: #d50035;
-  background: url(/store/backdrop/chocolate-hearts.png) !important;
+  background: url(https://assets.vssfalcons.com/store/backdrop/chocolate-hearts.png) !important;
 }
 
 [data-theme="chocolate-hearts-2"] {
@@ -593,7 +593,7 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
   --accent-color: #cc0039;
   --accent-text-color: #ffffff;
   --error-color: #b90024;
-  background: url(/store/backdrop/chocolate-hearts-2.png) !important;
+  background: url(https://assets.vssfalcons.com/store/backdrop/chocolate-hearts-2.png) !important;
 }
 
 [data-theme="rocket-league"] {
@@ -604,7 +604,7 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
   --accent-color: #eb9100;
   --accent-text-color: #ffffff;
   --error-color: #b90024;
-  background: url(/store/backdrop/rocket-league.png) !important;
+  background: url(https://assets.vssfalcons.com/store/backdrop/rocket-league.png) !important;
 }
 
 [data-theme="rocket-league-2"] {
@@ -615,7 +615,7 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
   --accent-color: #2567ff;
   --accent-text-color: #ffffff;
   --error-color: #b90024;
-  background: url(/store/backdrop/rocket-league-2.png) !important;
+  background: url(https://assets.vssfalcons.com/store/backdrop/rocket-league-2.png) !important;
 }
 
 [data-theme="rocket-league-ice"] {
@@ -626,7 +626,7 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
   --accent-color: #db131f;
   --accent-text-color: #2c2c2c;
   --error-color: #db131f;
-  background: url(/store/backdrop/rocket-league-ice.png) !important;
+  background: url(https://assets.vssfalcons.com/store/backdrop/rocket-league-ice.png) !important;
 }
 
 [data-theme="rocket-league-synthwave"] {
@@ -637,7 +637,7 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
   --accent-color: #811b80;
   --accent-text-color: #2de2e6;
   --error-color: #ea1b2d;
-  background: url(/store/backdrop/rocket-league-synthwave.png) !important;
+  background: url(https://assets.vssfalcons.com/store/backdrop/rocket-league-synthwave.png) !important;
 }
 
 [data-theme="friends"] {
@@ -648,7 +648,7 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
   --accent-color: #660940;
   --accent-text-color: #f8f3d9;
   --error-color: #ea1b2d;
-  background: url(/store/backdrop/friends.png) !important;
+  background: url(https://assets.vssfalcons.com/store/backdrop/friends.png) !important;
 }
 
 [data-theme="lebron"] {
@@ -660,7 +660,7 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
   --accent-text-color: #000;
   --error-color: #e21b00;
   --backlight-color: #6a6665;
-  background: url(/store/backdrop/lebron.jpg) !important;
+  background: url(https://assets.vssfalcons.com/store/backdrop/lebron.jpg) !important;
 }
 
 [data-theme="lebron-pro"] {
@@ -671,7 +671,7 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
   --accent-color: #e21b00;
   --accent-text-color: #000;
   --error-color: #e21b00;
-  background: url(/store/backdrop/lebron-pro.jpg) !important;
+  background: url(https://assets.vssfalcons.com/store/backdrop/lebron-pro.jpg) !important;
 }
 
 [data-theme="messi"] {
@@ -683,7 +683,7 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
   --accent-text-color: #000;
   --error-color: #ee1c36;
   --backlight-color: #276cf9;
-  background: url(/store/backdrop/messi.png) !important;
+  background: url(https://assets.vssfalcons.com/store/backdrop/messi.png) !important;
 }
 
 [data-theme="messi-neymar"] {
@@ -694,7 +694,7 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
   --accent-color: #f3dc15;
   --accent-text-color: #70161d;
   --error-color: #a21b2a;
-  background: url(/store/backdrop/messi-neymar.jpg) !important;
+  background: url(https://assets.vssfalcons.com/store/backdrop/messi-neymar.jpg) !important;
 }
 
 [data-theme="one-piece"] {
@@ -705,7 +705,7 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
   --accent-color: #9d5053;
   --accent-text-color: #fff;
   --error-color: #9d5053;
-  background: url(/store/backdrop/one-piece.jpg) !important;
+  background: url(https://assets.vssfalcons.com/store/backdrop/one-piece.jpg) !important;
 }
 
 [data-theme="super-mario"] {
@@ -716,7 +716,7 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
   --accent-color: #d42404;
   --accent-text-color: #fff;
   --error-color: #d42404;
-  background: url(/store/backdrop/super-mario.jpg) !important;
+  background: url(https://assets.vssfalcons.com/store/backdrop/super-mario.jpg) !important;
 }
 
 [data-theme="black-ice"] {
@@ -728,7 +728,7 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
   --accent-text-color: #00110f;
   --error-color: #eb324b;
   --backlight-color: #00988a;
-  background: url(/store/backdrop/black-ice.jpg) !important;
+  background: url(https://assets.vssfalcons.com/store/backdrop/black-ice.jpg) !important;
 }
 
 [data-theme="mountains"] {
@@ -739,7 +739,7 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
 	--accent-color: #1881c2;
 	--accent-text-color: #fff;
 	--error-color: #eb324b;
-	background: url(/store/backdrop/mountains.jpg) !important;
+	background: url(https://assets.vssfalcons.com/store/backdrop/mountains.jpg) !important;
 }
 
 [data-theme="cherry-blossoms"] {
@@ -750,7 +750,7 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
   --accent-color: #c673a9;
   --accent-text-color: #ffffff;
   --error-color: #9e3b39;
-  background: url(/store/backdrop/cherry-blossoms.png) !important;
+  background: url(https://assets.vssfalcons.com/store/backdrop/cherry-blossoms.png) !important;
 }
 
 [data-theme="cherry-blossoms-2"] {
@@ -761,7 +761,7 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
   --accent-color: #c85b73;
   --accent-text-color: #ffffff;
   --error-color: #c32b28;
-  background: url(/store/backdrop/cherry-blossoms-2.png) !important;
+  background: url(https://assets.vssfalcons.com/store/backdrop/cherry-blossoms-2.png) !important;
 }
 
 [data-theme="fruit"] {
@@ -772,7 +772,7 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
   --accent-color: #7fb92c;
   --accent-text-color: #ffffff;
   --error-color: #f27606;
-  background: url(/store/backdrop/fruit.png) !important;
+  background: url(https://assets.vssfalcons.com/store/backdrop/fruit.png) !important;
 }
 
 [data-theme="apple"] {
@@ -783,7 +783,7 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
   --accent-color: #c4060d;
   --accent-text-color: #ffffff;
   --error-color: #fd3135;
-  background: url(/store/backdrop/apple.png) !important;
+  background: url(https://assets.vssfalcons.com/store/backdrop/apple.png) !important;
 }
 
 [data-theme="avocado"] {
@@ -794,7 +794,7 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
   --accent-color: #202e09;
   --accent-text-color: #ffffff;
   --error-color: #eb324b;
-  background: url(/store/backdrop/avocado.png) !important;
+  background: url(https://assets.vssfalcons.com/store/backdrop/avocado.png) !important;
 }
 
 [data-theme="blueberry"] {
@@ -805,7 +805,7 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
   --accent-color: #719ed7;
   --accent-text-color: #16213d;
   --error-color: #eb324b;
-  background: url(/store/backdrop/blueberry.png) !important;
+  background: url(https://assets.vssfalcons.com/store/backdrop/blueberry.png) !important;
 }
 
 [data-theme="banana"] {
@@ -816,7 +816,7 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
   --accent-color: #c88e00;
   --accent-text-color: #ffffff;
   --error-color: #eb324b;
-  background: url(/store/backdrop/banana.png) !important;
+  background: url(https://assets.vssfalcons.com/store/backdrop/banana.png) !important;
 }
 
 [data-theme="coconut"] {
@@ -827,7 +827,7 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
   --accent-color: #965a38;
   --accent-text-color: #ffffff;
   --error-color: #eb324b;
-  background: url(/store/backdrop/coconut.png) !important;
+  background: url(https://assets.vssfalcons.com/store/backdrop/coconut.png) !important;
 }
 
 [data-theme="dragon-fruit"] {
@@ -838,7 +838,7 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
   --accent-color: #fa4899;
   --accent-text-color: #ffffff;
   --error-color: #cc3559;
-  background: url(/store/backdrop/dragon-fruit.png) !important;
+  background: url(https://assets.vssfalcons.com/store/backdrop/dragon-fruit.png) !important;
 }
 
 [data-theme="grape"] {
@@ -849,7 +849,7 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
   --accent-color: #b9bc01;
   --accent-text-color: #ffffff;
   --error-color: #eb324b;
-  background: url(/store/backdrop/grape.png) !important;
+  background: url(https://assets.vssfalcons.com/store/backdrop/grape.png) !important;
 }
 
 [data-theme="kiwi"] {
@@ -860,7 +860,7 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
   --accent-color: #7a1;
   --accent-text-color: #ffffff;
   --error-color: #eb324b;
-  background: url(/store/backdrop/kiwi.png) !important;
+  background: url(https://assets.vssfalcons.com/store/backdrop/kiwi.png) !important;
 }
 
 [data-theme="kumquat"] {
@@ -871,7 +871,7 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
   --accent-color: #dfd5ab;
   --accent-text-color: #db8820;
   --error-color: #eb324b;
-  background: url(/store/backdrop/kumquat.png) !important;
+  background: url(https://assets.vssfalcons.com/store/backdrop/kumquat.png) !important;
 }
 
 [data-theme="lemon"] {
@@ -882,7 +882,7 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
   --accent-color: #b08a0c;
   --accent-text-color: #ffffff;
   --error-color: #eb324b;
-  background: url(/store/backdrop/lemon.png) !important;
+  background: url(https://assets.vssfalcons.com/store/backdrop/lemon.png) !important;
 }
 
 [data-theme="lime"] {
@@ -893,7 +893,7 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
   --accent-color: #429119;
   --accent-text-color: #ffffff;
   --error-color: #eb324b;
-  background: url(/store/backdrop/lime.png) !important;
+  background: url(https://assets.vssfalcons.com/store/backdrop/lime.png) !important;
 }
 
 [data-theme="mango"] {
@@ -904,7 +904,7 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
   --accent-color: #eca200;
   --accent-text-color: #ffffff;
   --error-color: #eb324b;
-  background: url(/store/backdrop/mango.png) !important;
+  background: url(https://assets.vssfalcons.com/store/backdrop/mango.png) !important;
 }
 
 [data-theme="orange"] {
@@ -915,7 +915,7 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
   --accent-color: #fe5504;
   --accent-text-color: #ffffff;
   --error-color: #eb324b;
-  background: url(/store/backdrop/orange.png) !important;
+  background: url(https://assets.vssfalcons.com/store/backdrop/orange.png) !important;
 }
 
 [data-theme="peach"] {
@@ -926,7 +926,7 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
   --accent-color: #e8c54c;
   --accent-text-color: #0d0007;
   --error-color: #eb324b;
-  background: url(/store/backdrop/peach.png) !important;
+  background: url(https://assets.vssfalcons.com/store/backdrop/peach.png) !important;
 }
 
 [data-theme="pear"] {
@@ -937,7 +937,7 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
   --accent-color: #da9e7a;
   --accent-text-color: #1d2d13;
   --error-color: #eb324b;
-  background: url(/store/backdrop/pear.png) !important;
+  background: url(https://assets.vssfalcons.com/store/backdrop/pear.png) !important;
 }
 
 [data-theme="pineapple"] {
@@ -948,7 +948,7 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
   --accent-color: #e58532;
   --accent-text-color: #ffffff;
   --error-color: #97390e;
-  background: url(/store/backdrop/pineapple.png) !important;
+  background: url(https://assets.vssfalcons.com/store/backdrop/pineapple.png) !important;
 }
 
 [data-theme="pomegranate"] {
@@ -959,7 +959,7 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
   --accent-color: #2a1115;
   --accent-text-color: #ffffff;
   --error-color: #901115;
-  background: url(/store/backdrop/pomegranate.png) !important;
+  background: url(https://assets.vssfalcons.com/store/backdrop/pomegranate.png) !important;
 }
 
 [data-theme="raspberry"] {
@@ -970,7 +970,7 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
   --accent-color: #650c0f;
   --accent-text-color: #ffffff;
   --error-color: #eb324b;
-  background: url(/store/backdrop/raspberry.png) !important;
+  background: url(https://assets.vssfalcons.com/store/backdrop/raspberry.png) !important;
 }
 
 [data-theme="raspberry-blueberry"] {
@@ -981,7 +981,7 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
   --accent-color: #1b3550;
   --accent-text-color: #ffffff;
   --error-color: #d7011b;
-  background: url(/store/backdrop/raspberry-blueberry.png) !important;
+  background: url(https://assets.vssfalcons.com/store/backdrop/raspberry-blueberry.png) !important;
 }
 
 [data-theme="strawberry-pro"] {
@@ -992,7 +992,7 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
   --accent-color: #5a8527;
   --accent-text-color: #ffffff;
   --error-color: #c80000;
-  background: url(/store/backdrop/strawberry-pro.png) !important;
+  background: url(https://assets.vssfalcons.com/store/backdrop/strawberry-pro.png) !important;
 }
 
 [data-theme="watermelon"] {
@@ -1003,7 +1003,7 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
   --accent-color: #efd25b;
   --accent-text-color: #070500;
   --error-color: #eb324b;
-  background: url(/store/backdrop/watermelon.png) !important;
+  background: url(https://assets.vssfalcons.com/store/backdrop/watermelon.png) !important;
 }
 
 [data-theme="watermelon-2"] {
@@ -1014,7 +1014,7 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
   --accent-color: #063857;
   --accent-text-color: #fff;
   --error-color: #eb324b;
-  background: url(/store/backdrop/watermelon-2.png) !important;
+  background: url(https://assets.vssfalcons.com/store/backdrop/watermelon-2.png) !important;
 }
 
 [data-theme="watermelon-pro"] {
@@ -1025,7 +1025,7 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
   --accent-color: #d3190d;
   --accent-text-color: #fff;
   --error-color: #eb324b;
-  background: url(/store/backdrop/watermelon-pro.png) !important;
+  background: url(https://assets.vssfalcons.com/store/backdrop/watermelon-pro.png) !important;
 }
 
 [data-theme="coconut-tree"] {
@@ -1036,7 +1036,7 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
   --accent-color: #5f962b;
   --accent-text-color: #343427;
   --error-color: #eb324b;
-  background: url(/store/backdrop/coconut-tree.png) !important;
+  background: url(https://assets.vssfalcons.com/store/backdrop/coconut-tree.png) !important;
 }
 
 [data-theme="calm-palm"] {
@@ -1047,7 +1047,7 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
   --accent-color: #3c5104;
   --accent-text-color: #fff;
   --error-color: #eb324b;
-  background: url(/store/backdrop/calm-palm.png) !important;
+  background: url(https://assets.vssfalcons.com/store/backdrop/calm-palm.png) !important;
 }
 
 [data-theme="japan"] {
@@ -1058,7 +1058,7 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
   --accent-color: #865e23;
   --accent-text-color: #fff;
   --error-color: #eb324b;
-  background: url(/store/backdrop/japan.png) !important;
+  background: url(https://assets.vssfalcons.com/store/backdrop/japan.png) !important;
 }
 
 [data-theme="wood"] {
@@ -1069,7 +1069,7 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
   --accent-color: #9b5236;
   --accent-text-color: #f7c080;
   --error-color: #eb324b;
-  background: url(/store/backdrop/wood.png) !important;
+  background: url(https://assets.vssfalcons.com/store/backdrop/wood.png) !important;
 }
 
 [data-theme="sugar-bites"] {
@@ -1080,7 +1080,7 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
   --accent-color: #97245d;
   --accent-text-color: #fff;
   --error-color: #eb324b;
-  background: url(/store/backdrop/sugar-bites.png) !important;
+  background: url(https://assets.vssfalcons.com/store/backdrop/sugar-bites.png) !important;
 }
 
 [data-theme="cookies"]:not(.force) {
@@ -1091,7 +1091,7 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
   --accent-color: #d17121;
   --accent-text-color: #fff;
   --error-color: #eb324b;
-  background: url(/store/backdrop/cookies.png) !important;
+  background: url(https://assets.vssfalcons.com/store/backdrop/cookies.png) !important;
   background-size: 100px !important;
   background-repeat: repeat !important;
   background-attachment: fixed !important;
@@ -1106,7 +1106,7 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
   --accent-text-color: #000;
   --error-color: #eb324b;
   --backlight-color: #318060;
-  background: url(/store/backdrop/pandas.png) !important;
+  background: url(https://assets.vssfalcons.com/store/backdrop/pandas.png) !important;
   background-size: 300px !important;
   background-repeat: repeat !important;
   background-attachment: fixed !important;
@@ -1121,7 +1121,7 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
   --accent-text-color: #2b4e1f;
   --error-color: #eb324b;
   --backlight-color: #4f9230;
-  background: url(/store/backdrop/balloon.png) !important;
+  background: url(https://assets.vssfalcons.com/store/backdrop/balloon.png) !important;
 }
 
 [data-theme="balloon-pro"] {
@@ -1132,7 +1132,7 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
   --accent-color: #6fa9f9;
   --accent-text-color: #111956;
   --error-color: #eb324b;
-  background: url(/store/backdrop/balloon-pro.png) !important;
+  background: url(https://assets.vssfalcons.com/store/backdrop/balloon-pro.png) !important;
 }
 
 [data-theme="balloons"]:not(.force) {
@@ -1143,7 +1143,7 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
   --accent-color: #fd62a3;
   --accent-text-color: #ffcdea;
   --error-color: #eb324b;
-  background: url(/store/backdrop/balloons.png) !important;
+  background: url(https://assets.vssfalcons.com/store/backdrop/balloons.png) !important;
   background-size: 300px !important;
   background-repeat: repeat !important;
   background-attachment: fixed !important;
@@ -1159,7 +1159,7 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
   --accent-color: #78cab8;
   --accent-text-color: #14302a;
   --error-color: #eb324b;
-  background: url(/store/backdrop/waterfall.png) !important;
+  background: url(https://assets.vssfalcons.com/store/backdrop/waterfall.png) !important;
 }
 
 [data-theme="water"] {
@@ -1170,7 +1170,7 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
   --accent-color: #2b333e;
   --accent-text-color: #fff;
   --error-color: #eb324b;
-  background: url(/store/backdrop/water.png) !important;
+  background: url(https://assets.vssfalcons.com/store/backdrop/water.png) !important;
 }
 
 [data-theme="snowstorm"] {
@@ -1181,7 +1181,7 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
   --accent-color: #367ec2;
   --accent-text-color: #fff;
   --error-color: #eb324b;
-  background: url(/store/backdrop/snowstorm.png) !important;
+  background: url(https://assets.vssfalcons.com/store/backdrop/snowstorm.png) !important;
 }
 
 [data-theme="usa"] {
@@ -1193,7 +1193,7 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
   --accent-text-color: #fff;
   --error-color: #9f244a;
   --backlight-color: #9f244a;
-  background: url(/store/backdrop/usa.png) !important;
+  background: url(https://assets.vssfalcons.com/store/backdrop/usa.png) !important;
 }
 
 [data-theme="synthwave-terrain"] {
@@ -1204,5 +1204,5 @@ body[data-theme="dune-2"] #header > .virtual-checker-logo {
   --accent-color: #e68450;
   --accent-text-color: #fff;
   --error-color: #c66180;
-  background: url(/store/backdrop/synthwave-terrain.png) !important;
+  background: url(https://assets.vssfalcons.com/store/backdrop/synthwave-terrain.png) !important;
 }

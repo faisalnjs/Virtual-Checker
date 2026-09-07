@@ -353,9 +353,9 @@ export async function renderStore() {
     if (theme[3]) {
       themeItem.setAttribute('tooltip', `${checks}/${theme[3]} Check${theme[3] == 1 ? '' : 's'}${theme[4].filter(t => !ownedThemes.includes(t[0])) && theme[4].filter(t => !ownedThemes.includes(t[0])).length ? `. You need: ${theme[4].filter(t => !ownedThemes.includes(t[0])).map(t => themes.find(th => th[0] == t)[1] || t).join(', ')}` : ''}`);
       if (theme[7]) {
-        themeItem.setAttribute('style', `background: url('/store/thumb/${theme[0]}.png') center / 100px repeat !important;`);
+        themeItem.setAttribute('style', `background: url('https://assets.vssfalcons.com/store/thumb/${theme[0]}.png') center / 100px repeat !important;`);
       } else {
-        themeItem.setAttribute('style', `background: url('/store/thumb/${theme[0]}.png') center / cover no-repeat !important;`);
+        themeItem.setAttribute('style', `background: url('https://assets.vssfalcons.com/store/thumb/${theme[0]}.png') center / cover no-repeat !important;`);
       }
     }
     themeItem.innerHTML = `${theme[2] ? `<i class="bi bi-${theme[2]}"></i>` : ''}${theme[5] ? `<i class="bi bi-badge-hd-fill hd"></i>` : ''}${theme[6] ? `<i class="bi bi-stars animated"></i>` : ''}${theme[7] ? `<i class="bi bi-border pattern"></i>` : ''}${theme[8] ? `<i class="bi bi-palette2 colorized"></i>` : ''}<h5>${name}</h5><p>${theme[3] ? `${theme[3]} Check${theme[3] == 1 ? '' : 's'}` : 'Free'}</p>${theme[4] && theme[4].length ? `<small>Requires: ${theme[4].map(t => themes.find(th => th[0] == t)[1] || t).join(', ')}</small>` : ''}`;
@@ -794,7 +794,7 @@ try {
         animatedThemeVideo.controlsList = "nodownload";
         document.body.appendChild(animatedThemeVideo);
       }
-      animatedThemeVideo.src = `/store/animated/${foundTheme[0]}.mp4`;
+      animatedThemeVideo.src = `https://assets.vssfalcons.com/store/animated/${foundTheme[0]}.mp4`;
     } else {
       if (animatedThemeVideo) {
         animatedThemeVideo.remove();
