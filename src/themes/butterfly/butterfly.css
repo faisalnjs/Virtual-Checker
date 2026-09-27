@@ -31,7 +31,7 @@ body[data-theme="butterfly"] {
   background-image: url("./background.png");
   font-family: "typerwriter";
   font-weight: normal;
-  line-height: 1.35;
+  line-height: 1.34;
 }
 
 body[data-theme="butterfly"] .virtual-checker-butterfly {
