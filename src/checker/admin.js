@@ -140,7 +140,7 @@ try {
         return a.username.localeCompare(b.username);
       });
       users.forEach(user => {
-        document.querySelector('.users').innerHTML += `<div class="enhanced-item" id="${user.username}">
+        document.querySelector('.users').innerHTML += `<div class="enhanced-item" data-record-id="${user.username}">
               <span class="username">${user.username}</span>
               <span class="role">${user.role}</span>
               <span class="partialAccessCourses">${JSON.stringify(user.main_courses)}</span>
@@ -187,7 +187,7 @@ try {
       }
       passwords = passwords.sort((a, b) => a.seatCode - b.seatCode);
       passwords.forEach(password => {
-        document.querySelector('.passwords').innerHTML += `<div class="enhanced-item" id="${password.seatCode}">
+        document.querySelector('.passwords').innerHTML += `<div class="enhanced-item" data-record-id="${password.seatCode}">
               <span class="seatCode">${password.seatCode}</span>
               <span class="settings">${(password.settings !== '{}') ? '<i class="bi bi-check-lg"></i>' : ''}</span>
               <span class="actions">
@@ -229,7 +229,7 @@ try {
         return `${size.toFixed(2)} ${units[unitIndex]}`;
       }
       backups.forEach(backup => {
-        document.querySelector('.backups').innerHTML += `<div class="enhanced-item" id="${backup.full_url}">
+        document.querySelector('.backups').innerHTML += `<div class="enhanced-item" data-record-id="${backup.full_url}">
               <span class="file_name">${backup.file_name.split('.')[0]}</span>
               <span class="type"><code>${backup.file_name.split('.')[1].toUpperCase()}</code></span>
               <span class="modified">${time.unixToString(backup.modified)}</span>
@@ -281,34 +281,34 @@ try {
       ui.reloadUnsavedInputs();
       return;
     }
-    if (document.getElementById("course-period-input") && !loadedSegmentEditor && !loadedSegmentCreator && !noReloadCourse) {
-      document.getElementById("course-period-input").innerHTML = "";
+    if (document.querySelector(".course-period-input") && !loadedSegmentEditor && !loadedSegmentCreator && !noReloadCourse) {
+      document.querySelector(".course-period-input").innerHTML = "";
       courses.sort((a, b) => a.id - b.id).forEach(course => {
         var coursePeriods = JSON.parse(course.periods);
         const option = document.createElement("option");
         option.value = course.id;
-        option.innerHTML = document.getElementById("course-input") ? course.name : `${course.name}${(coursePeriods.length > 0) ? ` (Period${(coursePeriods.length > 1) ? 's' : ''} ${coursePeriods.join(', ')})` : ''}`;
-        document.getElementById("course-period-input").appendChild(option);
+        option.innerHTML = document.querySelector(".course-input") ? course.name : `${course.name}${(coursePeriods.length > 0) ? ` (Period${(coursePeriods.length > 1) ? 's' : ''} ${coursePeriods.join(', ')})` : ''}`;
+        document.querySelector(".course-period-input").appendChild(option);
       });
-      const course = courses.find(c => String(c.id) === document.getElementById("course-period-input").value);
-      if (document.getElementById("course-input") && course) document.getElementById("course-input").value = course.name;
+      const course = courses.find(c => String(c.id) === document.querySelector(".course-period-input").value);
+      if (document.querySelector(".course-input") && course) document.querySelector(".course-input").value = course.name;
     }
     if (document.getElementById("export-report-course")) updateExportReportCourses();
-    document.getElementById("course-period-input")?.addEventListener("change", updateResponses);
-    document.getElementById("filter-segment-input")?.addEventListener("change", updateResponses);
-    document.getElementById("filter-question-input")?.addEventListener("input", updateResponses);
-    document.getElementById("filter-seat-input")?.addEventListener("input", updateResponses);
-    document.getElementById("sort-responses-input")?.addEventListener("change", updateResponses);
-    document.getElementById("course-period-input")?.addEventListener("change", updateSegments);
-    document.getElementById("filter-segment-input")?.addEventListener("change", updateSegments);
-    document.getElementById("filter-question-input")?.addEventListener("input", updateSegments);
-    document.getElementById("filter-seat-input")?.addEventListener("input", updateSegments);
-    document.getElementById("course-period-input")?.addEventListener("change", updateQuestionReports);
-    document.getElementById("filter-segment-input")?.addEventListener("change", updateQuestionReports);
-    document.getElementById("filter-question-input")?.addEventListener("input", updateQuestionReports);
-    document.getElementById("filter-seat-input")?.addEventListener("input", updateQuestionReports);
-    document.getElementById("filter-segment-input")?.addEventListener("change", updateQuestions);
-    document.getElementById("course-period-input")?.addEventListener("input", updateCourses);
+    document.querySelector(".course-period-input")?.addEventListener("change", updateResponses);
+    document.querySelector(".filter-segment-input")?.addEventListener("change", updateResponses);
+    document.querySelector(".filter-question-input")?.addEventListener("input", updateResponses);
+    document.querySelector(".filter-seat-input")?.addEventListener("input", updateResponses);
+    document.querySelector(".sort-responses-input")?.addEventListener("change", updateResponses);
+    document.querySelector(".course-period-input")?.addEventListener("change", updateSegments);
+    document.querySelector(".filter-segment-input")?.addEventListener("change", updateSegments);
+    document.querySelector(".filter-question-input")?.addEventListener("input", updateSegments);
+    document.querySelector(".filter-seat-input")?.addEventListener("input", updateSegments);
+    document.querySelector(".course-period-input")?.addEventListener("change", updateQuestionReports);
+    document.querySelector(".filter-segment-input")?.addEventListener("change", updateQuestionReports);
+    document.querySelector(".filter-question-input")?.addEventListener("input", updateQuestionReports);
+    document.querySelector(".filter-seat-input")?.addEventListener("input", updateQuestionReports);
+    document.querySelector(".filter-segment-input")?.addEventListener("change", updateQuestions);
+    document.querySelector(".course-period-input")?.addEventListener("input", updateCourses);
     if (document.getElementById("export-responses-course")) updateExportResponsesCourses();
     if (document.querySelector(".course-reorder .reorder") && !loadedSegmentEditor && !loadedSegmentCreator && !noReloadCourse) {
       document.querySelector(".course-reorder .reorder").innerHTML = "";
@@ -323,7 +323,7 @@ try {
           coursesSelectorString += `<option value="${course.id}" ${(periodCourseId === course.id) ? 'selected' : ''}>${course.name}</option>`;
         });
         var periodLocked = periodCourse ? JSON.parse(periodCourse.registration_locked || '[]').includes(i) : false;
-        elem.innerHTML = `<input type="text" autocomplete="off" id="period-${i}" class="small" value="Period ${i}" disabled /><select id="periodCourseSelector" value="${periodCourse ? periodCourseId : ''}"><option value="" ${periodCourse ? '' : 'selected'}></option>${coursesSelectorString}</select>${rosters.find(roster => String(roster.period) === String(i)) ? '<button class="fit" style="min-width: 126px !important;" data-view-roster>View Roster</button>' : '<button class="fit" style="min-width: 126px !important;" data-upload-roster>Upload Roster</button>'}<button square tooltip="Toggle Registration" data-restrict-registration><i class="bi bi-lock" ${periodLocked ? '' : 'hidden'}></i><i class="bi bi-unlock" ${periodLocked ? 'hidden' : ''}></i></button>`;
+        elem.innerHTML = `<input type="text" autocomplete="off" data-period="${i}" class="small" value="Period ${i}" disabled /><select class="period-course-selector" value="${periodCourse ? periodCourseId : ''}"><option value="" ${periodCourse ? '' : 'selected'}></option>${coursesSelectorString}</select>${rosters.find(roster => String(roster.period) === String(i)) ? '<button class="fit" style="min-width: 126px !important;" data-view-roster>View Roster</button>' : '<button class="fit" style="min-width: 126px !important;" data-upload-roster>Upload Roster</button>'}<button square tooltip="Toggle Registration" data-restrict-registration><i class="bi bi-lock" ${periodLocked ? '' : 'hidden'}></i><i class="bi bi-unlock" ${periodLocked ? 'hidden' : ''}></i></button>`;
         document.querySelector(".course-reorder .reorder").appendChild(elem);
       }
       document.querySelectorAll("[data-view-roster]").forEach(a => a.addEventListener("click", viewRoster));
@@ -332,14 +332,14 @@ try {
         for (let child of a.children) child.toggleAttribute('hidden');
       }));
     }
-    if (document.getElementById("course-period-input") && !loadedSegmentEditor && !loadedSegmentCreator && !noReloadCourse) updateSegments();
-    if (document.getElementById("filter-segment-input")) updateCourses();
-    if (document.getElementById("speed-mode-segments")) updateSpeedModeSegments();
+    if (document.querySelector(".course-period-input") && !loadedSegmentEditor && !loadedSegmentCreator && !noReloadCourse) updateSegments();
+    if (document.querySelector(".filter-segment-input")) updateCourses();
+    if (document.querySelector(".speed-mode-segments")) updateSpeedModeSegments();
     if (window.location.pathname.split('/admin/')[1] === 'editor') loadSegmentEditor();
     if (document.getElementById("add-question-input")) {
       document.getElementById("add-question-input").innerHTML = '';
       questions.sort((a, b) => a.id - b.id).forEach(question => {
-        if (document.querySelector(`#question-list .question:has(input[id="${question.id}"])`)) return;
+        if (document.querySelector(`#question-list .question:has(input[data-question-id="${question.id}"])`)) return;
         const option = document.createElement("option");
         option.value = question.id;
         option.innerHTML = `ID ${question.id} #${question.number} - ${question.question}`;
@@ -347,7 +347,7 @@ try {
       });
       if (questions.length === 0) document.getElementById("add-existing-question-button").disabled = true;
     }
-    if (document.getElementById("speed-mode-starting-question")) updateSpeedModeStartingQuestion();
+    if (document.querySelector(".speed-mode-starting-question")) updateSpeedModeStartingQuestion();
     if (document.querySelector('.questions.section')) {
       await updateQuestions()
         .catch(error => {
@@ -359,23 +359,23 @@ try {
         });
       if (params?.question) toggleQuestion(null, params.question);
     }
-    if (document.getElementById("course-period-input") && !loadedSegmentEditor && !noReloadCourse) {
-      document.getElementById("course-period-input").value = (storage.get('period') && courses.find(c => String(c.id) === String(storage.get('period')))) ? storage.get('period') : (((ui.defaultCourse !== null) && courses.find(c => String(c.id) === String(ui.defaultCourse))) ? ui.defaultCourse : courses.find(c => responses.some(r => JSON.parse(c.periods).includes(Number(String(r.seatCode)[0])))) ? courses.find(c => responses.some(r => JSON.parse(c.periods).includes(Number(String(r.seatCode)[0])))).id : courses.sort((a, b) => a.id - b.id)[0]?.id);
+    if (document.querySelector(".course-period-input") && !loadedSegmentEditor && !noReloadCourse) {
+      document.querySelector(".course-period-input").value = (storage.get('period') && courses.find(c => String(c.id) === String(storage.get('period')))) ? storage.get('period') : (((ui.defaultCourse !== null) && courses.find(c => String(c.id) === String(ui.defaultCourse))) ? ui.defaultCourse : courses.find(c => responses.some(r => JSON.parse(c.periods).includes(Number(String(r.seatCode)[0])))) ? courses.find(c => responses.some(r => JSON.parse(c.periods).includes(Number(String(r.seatCode)[0])))).id : courses.sort((a, b) => a.id - b.id)[0]?.id);
       if (document.getElementById("export-report-course")) document.getElementById("export-report-course").value = (storage.get('period') && courses.find(c => String(c.id) === String(storage.get('period')))) ? storage.get('period') : (((ui.defaultCourse !== null) && courses.find(c => String(c.id) === String(ui.defaultCourse))) ? ui.defaultCourse : courses.find(c => responses.some(r => JSON.parse(c.periods).includes(Number(String(r.seatCode)[0])))) ? courses.find(c => responses.some(r => JSON.parse(c.periods).includes(Number(String(r.seatCode)[0])))).id : courses.sort((a, b) => a.id - b.id)[0]?.id);
     }
-    if ((document.getElementById("course-period-input") && !loadedSegmentEditor && !loadedSegmentCreator && !noReloadCourse) || noReloadCourse) await updateResponses();
+    if ((document.querySelector(".course-period-input") && !loadedSegmentEditor && !loadedSegmentCreator && !noReloadCourse) || noReloadCourse) await updateResponses();
     if (document.querySelector('.segment-reports')) updateSegments();
     if (document.querySelector('.question-reports')) updateQuestionReports();
-    if (document.getElementById("period-input")) courses.flatMap(course => JSON.parse(course.periods).map(period => { return { period, name: course.name } })).sort((a, b) => a.period - b.period).forEach(coursePeriod => {
-      document.getElementById("period-input").innerHTML += `<option value="${coursePeriod.period}">Period ${coursePeriod.period} - ${coursePeriod.name}</option>`;
+    if (document.querySelector(".period-input")) courses.flatMap(course => JSON.parse(course.periods).map(period => { return { period, name: course.name } })).sort((a, b) => a.period - b.period).forEach(coursePeriod => {
+      document.querySelector(".period-input").innerHTML += `<option value="${coursePeriod.period}">Period ${coursePeriod.period} - ${coursePeriod.name}</option>`;
     });
     if (document.getElementById('live-drawing-periods')) {
       var currentPeriod = getExtendedPeriod();
-      if ((currentPeriod != -1) && courses.flatMap(course => JSON.parse(course.periods).map(period => { return { period, name: course.name } })).some(coursePeriod => coursePeriod.period === (currentPeriod + 1))) document.getElementById("period-input").value = getExtendedPeriod() + 1;
+      if ((currentPeriod != -1) && courses.flatMap(course => JSON.parse(course.periods).map(period => { return { period, name: course.name } })).some(coursePeriod => coursePeriod.period === (currentPeriod + 1))) document.querySelector(".period-input").value = getExtendedPeriod() + 1;
       document.querySelector('[start-live-drawings]')?.addEventListener('click', () => {
         document.querySelector('[start-live-drawings]').setAttribute('hidden', '');
         document.querySelector('[start-live-drawings]').setAttribute('disabled', '');
-        document.getElementById('period-input')?.setAttribute('disabled', '');
+        document.querySelector(".period-input")?.setAttribute('disabled', '');
         if (document.getElementById('hide-seat-codes')) document.getElementById('hide-seat-codes').checked = true;
         draw.connect(HTTPSockServerDomain, domain);
         ui.setUnsavedChanges(false);
@@ -391,7 +391,7 @@ try {
       const savedSessionJSON = await savedSession.json();
       document.title = `${savedSessionJSON.session.name} - Virtual Checker`;
       document.querySelector('.section h1').innerText = savedSessionJSON.session.name;
-      document.getElementById("period-input").value = savedSessionJSON.session.meta.period;
+      document.querySelector(".period-input").value = savedSessionJSON.session.meta.period;
       draw.liveDrawingSessions[sessionId] = savedSessionJSON.session;
       savedSessionJSON.session.strokes.forEach(session => {
         draw.createSession({
@@ -418,13 +418,13 @@ try {
         }
       });
     }
-    if (document.getElementById("course-period-input") && !loadedSegmentEditor && !loadedSegmentCreator && !noReloadCourse) {
+    if (document.querySelector(".course-period-input") && !loadedSegmentEditor && !loadedSegmentCreator && !noReloadCourse) {
       document.querySelectorAll('[data-remove-segment-input]').forEach(a => a.removeEventListener('click', removeSegment));
       document.querySelectorAll('[data-remove-segment-input]').forEach(a => a.addEventListener('click', removeSegment));
-      if (document.getElementById("course-input")) document.getElementById("course-input").value = courses.find(c => String(c.id) === document.getElementById("course-period-input").value).name;
+      if (document.querySelector(".course-input")) document.querySelector(".course-input").value = courses.find(c => String(c.id) === document.querySelector(".course-period-input").value).name;
       updateSegments();
     }
-    if (document.getElementById("sort-segments-types")) document.getElementById("sort-segments-types").value = await getSettings('sort-segments')
+    if (document.querySelector(".sort-segments-types")) document.querySelector(".sort-segments-types").value = await getSettings('sort-segments')
       .catch(error => {
         if (storage.get("developer")) {
           alert(`Error @ admin.js: ${error.message}`);
@@ -432,14 +432,14 @@ try {
           ui.reportBugModal(null, String(error.stack));
         }
       });
-    if (document.getElementById("filter-segment-input") && document.getElementById("filter-question-input")) document.getElementById("filter-segment-input").addEventListener("change", () => {
-      document.getElementById("filter-question-input").value = "";
+    if (document.querySelector(".filter-segment-input") && document.querySelector(".filter-question-input")) document.querySelector(".filter-segment-input").addEventListener("change", () => {
+      document.querySelector(".filter-question-input").value = "";
       const event = new Event('input', { bubbles: true });
-      document.getElementById("filter-question-input").dispatchEvent(event);
+      document.querySelector(".filter-question-input").dispatchEvent(event);
     });
-    if (document.getElementById("course-period-input")) document.getElementById("course-period-input").addEventListener("change", () => {
-      storage.set('period', document.getElementById("course-period-input").value);
-      if (document.getElementById("export-report-course")) document.getElementById("export-report-course").value = document.getElementById("course-period-input").value;
+    if (document.querySelector(".course-period-input")) document.querySelector(".course-period-input").addEventListener("change", () => {
+      storage.set('period', document.querySelector(".course-period-input").value);
+      if (document.getElementById("export-report-course")) document.getElementById("export-report-course").value = document.querySelector(".course-period-input").value;
     });
     ui.reloadUnsavedInputs();
   }
@@ -462,11 +462,11 @@ try {
   document.querySelector('[data-polling]')?.addEventListener("click", togglePolling);
   document.querySelector('[data-timestamps]')?.addEventListener("click", toggleTimestamps);
   document.querySelector('[data-speed]')?.addEventListener("click", toggleSpeedMode);
-  document.getElementById('enable-speed-mode-button')?.addEventListener("click", enableSpeedMode);
+  document.querySelector(".enable-speed-mode-button")?.addEventListener("click", enableSpeedMode);
   document.getElementById('sort-segments-due')?.addEventListener("click", sortSegmentsDue);
   document.getElementById('sort-segments-increasing')?.addEventListener("click", sortSegmentsIncreasing);
   document.getElementById('sort-segments-decreasing')?.addEventListener("click", sortSegmentsDecreasing);
-  document.getElementById('sort-segments-button')?.addEventListener("click", sortSegments);
+  document.querySelector(".sort-segments-button")?.addEventListener("click", sortSegments);
   document.getElementById('hideIncorrectAttempts')?.addEventListener("change", updateSegments);
   document.getElementById('hideIncorrectAttempts')?.addEventListener("change", updateResponses);
   document.getElementById('hideIncorrectAttempts')?.addEventListener("change", updateQuestionReports);
@@ -503,10 +503,10 @@ try {
   document.querySelector('[data-checker-announcement-clear]')?.addEventListener("click", () => clearAnnouncement('checker'));
   document.querySelector('[data-action-refreshes]')?.addEventListener("click", toggleActionRefreshes);
   document.querySelector('[data-refresh-responses]')?.addEventListener("click", init);
-  document.querySelectorAll('#previous-page-button').forEach(a => a.addEventListener("click", () => previousPage(a)));
-  document.querySelectorAll('#next-page-button').forEach(a => a.addEventListener("click", () => nextPage(a)));
-  document.querySelectorAll('#first-page-button').forEach(a => a.addEventListener("click", () => firstPage(a)));
-  document.querySelectorAll('#last-page-button').forEach(a => a.addEventListener("click", () => lastPage(a)));
+  document.querySelectorAll('.previous-page-button').forEach(a => a.addEventListener("click", () => previousPage(a)));
+  document.querySelectorAll('.next-page-button').forEach(a => a.addEventListener("click", () => nextPage(a)));
+  document.querySelectorAll('.first-page-button').forEach(a => a.addEventListener("click", () => firstPage(a)));
+  document.querySelectorAll('.last-page-button').forEach(a => a.addEventListener("click", () => lastPage(a)));
   document.querySelector('[data-recordings]')?.addEventListener("click", manageClassRecordings);
   document.querySelector('[data-recordings-flow]')?.addEventListener("click", downloadPowerAutomateFlow);
 
@@ -584,25 +584,25 @@ try {
       timestamps = false;
       document.querySelector('[data-timestamps] .bi-clock').style.display = "block";
       document.querySelector('[data-timestamps] .bi-clock-fill').style.display = "none";
-      document.querySelector('#checker').classList.remove('timestamps');
+      document.querySelector('.checker').classList.remove('timestamps');
     } else {
       timestamps = true;
       document.querySelector('[data-timestamps] .bi-clock').style.display = "none";
       document.querySelector('[data-timestamps] .bi-clock-fill').style.display = "block";
-      document.querySelector('#checker').classList.add('timestamps');
+      document.querySelector('.checker').classList.add('timestamps');
     }
   }
 
   function updateCourses() {
-    if (document.getElementById("filter-segment-input")) {
-      document.getElementById("filter-segment-input").innerHTML = '<option value="" selected>#</option>';
+    if (document.querySelector(".filter-segment-input")) {
+      document.querySelector(".filter-segment-input").innerHTML = '<option value="" selected>#</option>';
       var filteredSegments = segments;
-      const course = courses.find(c => document.getElementById("course-period-input") ? (String(c.id) === document.getElementById("course-period-input").value) : null);
+      const course = courses.find(c => document.querySelector(".course-period-input") ? (String(c.id) === document.querySelector(".course-period-input").value) : null);
       if (course) filteredSegments = filteredSegments.filter(segment => String(segment.course) === String(course.id));
       filteredSegments.forEach(segment => {
-        document.getElementById("filter-segment-input").innerHTML += `<option value="${segment.id}" ${(params?.segment === String(segment.id)) ? 'selected' : ''}>${segment.number} - ${segment.name}${segment.due ? ` (Due ${new Date(`${segment.due}T00:00:00`).toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })})` : ''}</option>`;
+        document.querySelector(".filter-segment-input").innerHTML += `<option value="${segment.id}" ${(params?.segment === String(segment.id)) ? 'selected' : ''}>${segment.number} - ${segment.name}${segment.due ? ` (Due ${new Date(`${segment.due}T00:00:00`).toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })})` : ''}</option>`;
       });
-      if (keepSegment) document.getElementById("filter-segment-input").value = keepSegment;
+      if (keepSegment) document.querySelector(".filter-segment-input").value = keepSegment;
       keepSegment = null;
     }
     const coursesArchiveTab = document.querySelector('[data-archive-type="courses"]');
@@ -610,10 +610,10 @@ try {
       const coursesArchives = coursesArchiveTab.querySelector('.archives');
       const coursesArchivesList = coursesArchives.querySelector('.section');
       if (courses.length > 0) {
-        coursesArchiveTab.querySelector('#no-archive').setAttribute('hidden', '');
+        coursesArchiveTab.querySelector('.no-archive').setAttribute('hidden', '');
         coursesArchives.removeAttribute('hidden');
       } else {
-        coursesArchiveTab.querySelector('#no-archive').removeAttribute('hidden');
+        coursesArchiveTab.querySelector('.no-archive').removeAttribute('hidden');
         coursesArchives.setAttribute('hidden', '');
       }
       coursesArchivesList.innerHTML = '';
@@ -621,26 +621,26 @@ try {
         var buttonGrid = document.createElement('div');
         buttonGrid.className = "button-grid inputs";
         buttonGrid.setAttribute('archive-type', 'course');
-        buttonGrid.id = course.id;
+        buttonGrid.dataset.archiveId = course.id;
         buttonGrid.innerHTML = `<button square data-select tooltip="Select Item"><i class="bi bi-circle"></i><i class="bi bi-circle-fill"></i></button>
         <div class="input-group rsmall">
-          <div class="space" id="question-container">
-            <input type="text" id="course-id-input" value="${course.id}" disabled />
+          <div class="question-container space">
+            <input type="text" class="course-id-input" value="${course.id}" disabled />
           </div>
         </div>
         <div class="input-group">
-          <div class="space" id="question-container">
-            <input type="text" id="course-name-input" value="${course.name}" disabled />
+          <div class="question-container space">
+            <input type="text" class="course-name-input" value="${course.name}" disabled />
           </div>
         </div>
         <div class="input-group small">
-          <div class="space" id="question-container">
-            <input type="text" id="course-periods-input" value="${JSON.parse(course.periods).join(', ')}" disabled />
+          <div class="question-container space">
+            <input type="text" class="course-periods-input" value="${JSON.parse(course.periods).join(', ')}" disabled />
           </div>
         </div>
         <div class="input-group">
-          <div class="space" id="question-container">
-            <input type="text" id="course-syllabus-input" value="${course.syllabus || ''}" disabled />
+          <div class="question-container space">
+            <input type="text" class="course-syllabus-input" value="${course.syllabus || ''}" disabled />
           </div>
         </div>
         <button square data-restore-item tooltip="Restore Item"><i class="bi bi-arrow-counterclockwise"></i></button>`;
@@ -654,8 +654,8 @@ try {
   function updateSegments() {
     expandedReports = [];
     document.querySelectorAll('.detailed-report.active').forEach(dr => expandedReports.push(dr.id));
-    const course = courses.find(c => document.getElementById("course-period-input") ? (String(c.id) === document.getElementById("course-period-input").value) : null);
-    if (document.getElementById("course-input") && course) document.getElementById("course-input").value = course.name;
+    const course = courses.find(c => document.querySelector(".course-period-input") ? (String(c.id) === document.querySelector(".course-period-input").value) : null);
+    if (document.querySelector(".course-input") && course) document.querySelector(".course-input").value = course.name;
     document.querySelector('[data-clicker-announcement-image-upload]')?.setAttribute('hidden', '');
     document.querySelector('[data-clicker-announcement-image-remove]')?.setAttribute('hidden', '');
     if (document.getElementById('clicker-announcement-title')) document.getElementById('clicker-announcement-title').value = "";
@@ -857,7 +857,7 @@ try {
             var buttonGrid = document.createElement('div');
             buttonGrid.className = "button-grid inputs";
             buttonGrid.setAttribute("data-swapy-item", `segmentReorder-${s.id}`);
-            buttonGrid.innerHTML = `<button square data-select tooltip="Select Segment"><i class="bi bi-circle"></i><i class="bi bi-circle-fill"></i></button><div class="input-group small"><div class="space" id="question-container"><input type="text" autocomplete="off" id="segment-number-input" value="${s.number}" placeholder="${s.number}" /></div></div><div class="input-group"><div class="space" id="question-container"><input type="text" autocomplete="off" id="segment-name-input" value="${s.name}" placeholder="${s.name}" /></div></div><div class="input-group mediuml"><div class="space" id="question-container"><input type="date" id="segment-due-date" value="${s.due || ''}"></div></div><button square data-remove-segment-input tooltip="Remove Segment"><i class="bi bi-trash"></i></button><button square data-archive-segment tooltip="Archive Segment"><i class="bi bi-archive"></i></button><button square data-edit-segment tooltip="Edit Segment"><i class="bi bi-pencil"></i></button><div class="drag" data-swapy-handle><i class="bi bi-grip-vertical"></i></div>`;
+            buttonGrid.innerHTML = `<button square data-select tooltip="Select Segment"><i class="bi bi-circle"></i><i class="bi bi-circle-fill"></i></button><div class="input-group small"><div class="question-container space"><input type="text" autocomplete="off" class="segment-number-input" value="${s.number}" placeholder="${s.number}" /></div></div><div class="input-group"><div class="question-container space"><input type="text" autocomplete="off" class="segment-name-input" value="${s.name}" placeholder="${s.name}" /></div></div><div class="input-group mediuml"><div class="question-container space"><input type="date" class="segment-due-date" value="${s.due || ''}"></div></div><button square data-remove-segment-input tooltip="Remove Segment"><i class="bi bi-trash"></i></button><button square data-archive-segment tooltip="Archive Segment"><i class="bi bi-archive"></i></button><button square data-edit-segment tooltip="Edit Segment"><i class="bi bi-pencil"></i></button><div class="drag" data-swapy-handle><i class="bi bi-grip-vertical"></i></div>`;
             if (window.innerWidth >= 1000) {
               buttonGrid.addEventListener('mouseenter', () => {
                 island(buttonGrid, c.sort((a, b) => a.order - b.order), 'segment', {
@@ -894,15 +894,15 @@ try {
         });
       }
       if (document.querySelector('.segment-reports')) {
-        const $filterSegment = document.getElementById('filter-segment-input');
-        const $filterQuestion = document.getElementById('filter-question-input');
-        const $sortSeat = document.getElementById('filter-seat-input');
+        const $filterSegment = document.querySelector(".filter-segment-input");
+        const $filterQuestion = document.querySelector(".filter-question-input");
+        const $sortSeat = document.querySelector(".filter-seat-input");
         const $filterReport = document.querySelector('#filter-report-responses [aria-selected="true"]');
         const $sortReport = document.querySelector('#sort-report-responses [aria-selected="true"]');
         const $hideIncorrect = document.getElementById('hideIncorrectAttempts');
         const $hideUnanswered = document.getElementById('hideUnanswered');
         const $useRoster = document.getElementById('useRoster');
-        const $coursePeriod = document.getElementById('course-period-input');
+        const $coursePeriod = document.querySelector(".course-period-input");
         const course = courses.find(c => String(c.id) === $coursePeriod?.value) || {};
         const coursePeriods = new Set(JSON.parse(course.periods || '[]'));
         const rosterByPeriod = {};
@@ -1036,10 +1036,10 @@ try {
       const segmentsArchives = segmentsArchiveTab.querySelector('.archives');
       const segmentsArchivesList = segmentsArchives.querySelector('.section');
       if (segments.length > 0) {
-        segmentsArchiveTab.querySelector('#no-archive').setAttribute('hidden', '');
+        segmentsArchiveTab.querySelector('.no-archive').setAttribute('hidden', '');
         segmentsArchives.removeAttribute('hidden');
       } else {
-        segmentsArchiveTab.querySelector('#no-archive').removeAttribute('hidden');
+        segmentsArchiveTab.querySelector('.no-archive').removeAttribute('hidden');
         segmentsArchives.setAttribute('hidden', '');
       }
       segmentsArchivesList.innerHTML = '';
@@ -1047,31 +1047,31 @@ try {
         var buttonGrid = document.createElement('div');
         buttonGrid.className = "button-grid inputs";
         buttonGrid.setAttribute('archive-type', 'segment');
-        buttonGrid.id = segment.id;
+        buttonGrid.dataset.archiveId = segment.id;
         buttonGrid.innerHTML = `<button square data-select tooltip="Select Item"><i class="bi bi-circle"></i><i class="bi bi-circle-fill"></i></button>
         <div class="input-group small">
-          <div class="space" id="question-container">
-            <input type="text" id="segment-number-input" value="${segment.number}" disabled />
+          <div class="question-container space">
+            <input type="text" class="segment-number-input" value="${segment.number}" disabled />
           </div>
         </div>
         <div class="input-group">
-          <div class="space" id="question-container">
-            <input type="text" id="segment-name-input" value="${segment.name || ''}" disabled />
+          <div class="question-container space">
+            <input type="text" class="segment-name-input" value="${segment.name || ''}" disabled />
           </div>
         </div>
         <div class="input-group">
-          <div class="space" id="question-container">
-            <input type="text" id="segment-question-ids-input" value="${JSON.parse(segment.question_ids).map(q => q.id).join(', ')}" disabled />
+          <div class="question-container space">
+            <input type="text" class="segment-question-ids-input" value="${JSON.parse(segment.question_ids).map(q => q.id).join(', ')}" disabled />
           </div>
         </div>
         <div class="input-group small">
-          <div class="space" id="question-container">
-            <input type="text" id="segment-course-input" value="${segment.course || ''}" disabled />
+          <div class="question-container space">
+            <input type="text" class="segment-course-input" value="${segment.course || ''}" disabled />
           </div>
         </div>
         <div class="input-group smedium">
-          <div class="space" id="question-container">
-            <input type="text" id="segment-due-date-input" value="${segment.due || ''}" disabled />
+          <div class="question-container space">
+            <input type="text" class="segment-due-date-input" value="${segment.due || ''}" disabled />
           </div>
         </div>
         <button square data-restore-item tooltip="Restore Item"><i class="bi bi-arrow-counterclockwise"></i></button>`;
@@ -1191,7 +1191,7 @@ try {
               coursesSelectorString += `<option value="${course.id}" ${(periodCourseId === course.id) ? 'selected' : ''}>${course.name}</option>`;
             });
             var periodLocked = periodCourse ? JSON.parse(periodCourse.registration_locked || '[]').includes(i) : false;
-            elem.innerHTML = `<input type="text" autocomplete="off" id="period-${i}" class="small" value="Period ${i}" disabled /><select id="periodCourseSelector" value="${periodCourse ? periodCourseId : ''}"><option value="" ${periodCourse ? '' : 'selected'}></option>${coursesSelectorString}</select>${rosters.find(r => String(r.period) === String(i)) ? '<button class="fit" style="min-width: 126px !important;" data-view-roster>View Roster</button>' : '<button class="fit" style="min-width: 126px !important;" data-upload-roster>Upload Roster</button>'}<button square tooltip="Toggle Registration" data-restrict-registration><i class="bi bi-lock" ${periodLocked ? '' : 'hidden'}></i><i class="bi bi-unlock" ${periodLocked ? 'hidden' : ''}></i></button>`;
+            elem.innerHTML = `<input type="text" autocomplete="off" data-period="${i}" class="small" value="Period ${i}" disabled /><select class="period-course-selector" value="${periodCourse ? periodCourseId : ''}"><option value="" ${periodCourse ? '' : 'selected'}></option>${coursesSelectorString}</select>${rosters.find(r => String(r.period) === String(i)) ? '<button class="fit" style="min-width: 126px !important;" data-view-roster>View Roster</button>' : '<button class="fit" style="min-width: 126px !important;" data-upload-roster>Upload Roster</button>'}<button square tooltip="Toggle Registration" data-restrict-registration><i class="bi bi-lock" ${periodLocked ? '' : 'hidden'}></i><i class="bi bi-unlock" ${periodLocked ? 'hidden' : ''}></i></button>`;
             document.querySelector(".course-reorder .reorder").appendChild(elem);
           }
           document.querySelectorAll("[data-view-roster]").forEach(a => a.addEventListener("click", viewRoster));
@@ -1222,7 +1222,7 @@ try {
   //       number: segmentNumber,
   //       name: segment.querySelector('input').value,
   //       question_ids: segments.find(s => String(s.number) === String(segmentNumber)).question_ids,
-  //       course: Number(document.getElementById("course-period-input").value),
+  //       course: Number(document.querySelector(".course-period-input").value),
   //       due: segments.find(s => String(s.number) === String(segmentNumber)).due
   //     };
   //   }).sort((a, b) => a.order - b.order);
@@ -1267,7 +1267,7 @@ try {
   // });
 
   // Save
-  document.querySelectorAll("#save-button").forEach(w => w.addEventListener("click", save));
+  document.querySelectorAll(".save-button").forEach(w => w.addEventListener("click", save));
   document.querySelectorAll("#create-button").forEach(w => w.addEventListener("click", createSegment));
   document.querySelectorAll("#create-and-exit-button").forEach(w => w.addEventListener("click", () => {
     createSegment(null, true);
@@ -1283,13 +1283,13 @@ try {
     removeAllSelected();
     removeSelecting();
     var updatedInfo = {};
-    if (document.getElementById('course-period-input')) {
+    if (document.querySelector(".course-period-input")) {
       updatedInfo = {
         course: {
-          id: document.getElementById("course-period-input").value,
-          name: document.getElementById("course-input").value,
+          id: document.querySelector(".course-period-input").value,
+          name: document.querySelector(".course-input").value,
           clicker_announcement: {
-            image: JSON.parse(courses.find(c => String(c.id) === String(document.getElementById("course-period-input").value))?.clicker_announcement || '{}')?.image || null,
+            image: JSON.parse(courses.find(c => String(c.id) === String(document.querySelector(".course-period-input").value))?.clicker_announcement || '{}')?.image || null,
             title: document.getElementById('clicker-announcement-title').value || null,
             content: document.getElementById('clicker-announcement-content').value || null,
             linkTitle: document.getElementById('clicker-announcement-link-title').value || null,
@@ -1298,7 +1298,7 @@ try {
             expires: document.getElementById('clicker-announcement-expires').value || null,
           },
           checker_announcement: {
-            image: JSON.parse(courses.find(c => String(c.id) === String(document.getElementById("course-period-input").value))?.checker_announcement || '{}')?.image || null,
+            image: JSON.parse(courses.find(c => String(c.id) === String(document.querySelector(".course-period-input").value))?.checker_announcement || '{}')?.image || null,
             title: document.getElementById('checker-announcement-title').value || null,
             content: document.getElementById('checker-announcement-content').value || null,
             linkTitle: document.getElementById('checker-announcement-link-title').value || null,
@@ -1315,23 +1315,23 @@ try {
         updatedInfo.segments.push({
           order: segmentOrder,
           id: segmentId,
-          number: segment.querySelector('#segment-number-input').value,
-          name: segment.querySelector('#segment-name-input').value,
-          // question_ids: JSON.stringify(Array.from(segment.querySelectorAll('#segment-question-name-input')).filter(q => (q.value.length > 0) && (q.value != ' ') && (q.nextElementSibling.value.length > 0) && (q.nextElementSibling.value != ' ')).map(q => {
+          number: segment.querySelector('.segment-number-input').value,
+          name: segment.querySelector('.segment-name-input').value,
+          // question_ids: JSON.stringify(Array.from(segment.querySelectorAll('.segment-question-name-input')).filter(q => (q.value.length > 0) && (q.value != ' ') && (q.nextElementSibling.value.length > 0) && (q.nextElementSibling.value != ' ')).map(q => {
           //   return {
           //     name: q.value,
           //     id: q.nextElementSibling.value
           //   };
           // })),
           question_ids: segments.find(s => String(s.id) === String(segmentId)).question_ids,
-          due: segment.querySelector('#segment-due-date').value || null,
+          due: segment.querySelector('.segment-due-date').value || null,
         });
       }
     } else if (document.querySelector('.questions.section')) {
       updatedInfo = {
         questions: []
       };
-      if (document.getElementById("filter-segment-input").value) updatedInfo.segment = document.getElementById("filter-segment-input").value || null;
+      if (document.querySelector(".filter-segment-input").value) updatedInfo.segment = document.querySelector(".filter-segment-input").value || null;
       var newQuestions = questions
         .filter(question => !questionsToDelete.includes(String(question.id)));
       newQuestions = newQuestions.map(q => {
@@ -1349,22 +1349,22 @@ try {
         .forEach(question => {
           const questionId = (question.querySelector('data-swapy-item-id') ? question.querySelector('data-swapy-item-id').getAttribute('data-swapy-item-id') : question.id).split('-')[1];
           if (!newQuestions.find(q => String(q.id) === questionId)) return;
-          newQuestions.find(q => String(q.id) === questionId).number = question.querySelector('#question-number-input').value;
-          newQuestions.find(q => String(q.id) === questionId).segment = question.querySelector('#question-segment-input').value;
-          newQuestions.find(q => String(q.id) === questionId).question = question.querySelector('#question-text-input').value;
-          newQuestions.find(q => String(q.id) === questionId).stem = question.querySelector('#question-stem-input')?.value || null;
-          newQuestions.find(q => String(q.id) === questionId).nonscored = question.querySelector('#question-nonscored-input')?.value || null;
+          newQuestions.find(q => String(q.id) === questionId).number = question.querySelector('.question-number-input').value;
+          newQuestions.find(q => String(q.id) === questionId).segment = question.querySelector('.question-segment-input').value;
+          newQuestions.find(q => String(q.id) === questionId).question = question.querySelector('.question-text-input').value;
+          newQuestions.find(q => String(q.id) === questionId).stem = question.querySelector('.question-stem-input')?.value || null;
+          newQuestions.find(q => String(q.id) === questionId).nonscored = question.querySelector('.question-nonscored-input')?.value || null;
           if (renderedEditors[Number(questionId)]) newQuestions.find(q => String(q.id) === questionId).description = JSON.stringify(renderedEditors[Number(questionId)].getContents());
           newQuestions.find(q => String(q.id) === questionId).images = Array.from(question.querySelectorAll('.attachments .image > *')).map(q => {
             return q.getAttribute('data-src');
           });
-          newQuestions.find(q => String(q.id) === questionId).correctAnswers = Array.from(question.querySelectorAll('#question-correct-answer-input')).map(q => {
+          newQuestions.find(q => String(q.id) === questionId).correctAnswers = Array.from(question.querySelectorAll('.question-correct-answer-input')).map(q => {
             return q.value;
           });
           newQuestions.find(q => String(q.id) === questionId).incorrectAnswers = Array.from(question.querySelectorAll('.incorrectAnswers .inputs')).map(q => {
             return {
-              answer: q.querySelector('#question-incorrect-answer-input').value,
-              reason: q.querySelector('#question-incorrect-answer-reason-input').value
+              answer: q.querySelector('.question-incorrect-answer-input').value,
+              reason: q.querySelector('.question-incorrect-answer-reason-input').value
             };
           });
           newQuestions.find(q => String(q.id) === questionId).latex = question.querySelector('[data-toggle-latex] i')?.classList.contains('bi-calculator-fill') || false;
@@ -1410,7 +1410,7 @@ try {
     formData.append('usr', storage.get("usr"));
     formData.append('pwd', storage.get("pwd"));
     ui.setUnsavedChanges(true);
-    keepSegment = document.getElementById("filter-segment-input")?.value || null;
+    keepSegment = document.querySelector(".filter-segment-input")?.value || null;
     fetch(domain + '/save', {
       method: "POST",
       body: formData,
@@ -1439,7 +1439,7 @@ try {
         if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
         pollingOff();
       });
-    document.querySelectorAll("#save-button").forEach(w => w.disabled = true);
+    document.querySelectorAll(".save-button").forEach(w => w.disabled = true);
     window.scroll(0, 0);
     if (typeof hideResult != 'boolean') ui.modeless(`<i class="bi bi-check-lg"></i>`, "Saved");
     await init()
@@ -1451,7 +1451,7 @@ try {
         }
       });
     setTimeout(() => {
-      document.querySelectorAll("#save-button").forEach(w => w.disabled = false);
+      document.querySelectorAll(".save-button").forEach(w => w.disabled = false);
     }, 2500);
   }
 
@@ -1507,11 +1507,11 @@ try {
     // group.id = 'segment-new';
     // var buttonGrid = document.createElement('div');
     // buttonGrid.className = "button-grid inputs";
-    // buttonGrid.innerHTML = `<button square data-select><i class="bi bi-circle"></i><i class="bi bi-circle-fill"></i></button><div class="input-group small"><div class="space" id="question-container"><input type="text" autocomplete="off" id="segment-number-input" value="0" /></div></div><div class="input-group"><div class="space" id="question-container"><input type="text" autocomplete="off" id="segment-name-input" value="" /></div></div><div class="input-group mediuml"><div class="space" id="question-container"><input type="date" id="segment-due-date"></div></div><button square data-remove-segment-input><i class="bi bi-trash"></i></button><button square data-toggle-segment><i class="bi bi-caret-down-fill"></i><i class="bi bi-caret-up-fill"></i></button>`;
+    // buttonGrid.innerHTML = `<button square data-select><i class="bi bi-circle"></i><i class="bi bi-circle-fill"></i></button><div class="input-group small"><div class="question-container space"><input type="text" autocomplete="off" class="segment-number-input" value="0" /></div></div><div class="input-group"><div class="question-container space"><input type="text" autocomplete="off" class="segment-name-input" value="" /></div></div><div class="input-group mediuml"><div class="question-container space"><input type="date" class="segment-due-date"></div></div><button square data-remove-segment-input><i class="bi bi-trash"></i></button><button square data-toggle-segment><i class="bi bi-caret-down-fill"></i><i class="bi bi-caret-up-fill"></i></button>`;
     // group.appendChild(buttonGrid);
     // var questions = document.createElement('div');
     // questions.classList = "questions";
-    // questions.innerHTML = `<div class="button-grid inputs"><div class="input-group small"><label>Name</label><label>ID</label></div><div class="input-group"><input type="text" autocomplete="off" id="segment-question-name-input" value="" /><input type="text" autocomplete="off" id="segment-question-id-input" value="" /></div><div class="input-group fit"><button square data-add-segment-question-input><i class="bi bi-plus"></i></button><button square data-remove-segment-question-input disabled><i class="bi bi-dash"></i></button></div></div>`;
+    // questions.innerHTML = `<div class="button-grid inputs"><div class="input-group small"><label>Name</label><label>ID</label></div><div class="input-group"><input type="text" autocomplete="off" class="segment-question-name-input" value="" /><input type="text" autocomplete="off" class="segment-question-id-input" value="" /></div><div class="input-group fit"><button square data-add-segment-question-input><i class="bi bi-plus"></i></button><button square data-remove-segment-question-input disabled><i class="bi bi-dash"></i></button></div></div>`;
     // group.appendChild(questions);
     // this.parentElement.insertBefore(group, this.parentElement.children[this.parentElement.children.length - 1]);
     // document.querySelectorAll('[data-remove-segment-input]').forEach(a => a.removeEventListener('click', removeSegment));
@@ -1555,7 +1555,7 @@ try {
     if (!active) return;
     var group = document.createElement('div');
     group.className = "input-group";
-    group.innerHTML = `<input type="text" autocomplete="off" id="segment-question-name-input" value="" /><input type="number" autocomplete="off" id="segment-question-id-input" value="" />`;
+    group.innerHTML = `<input type="text" autocomplete="off" class="segment-question-name-input" value="" /><input type="number" autocomplete="off" class="segment-question-id-input" value="" />`;
     this.parentElement.parentElement.insertBefore(group, this.parentElement);
     this.parentElement.querySelector('[data-remove-segment-question-input]').disabled = false;
     this.parentElement.querySelector('[data-remove-segment-question-input]').addEventListener('click', removeSegmentQuestion);
@@ -1574,14 +1574,14 @@ try {
     if (questions.length > 0) {
       if (document.querySelector('.questions .section')) {
         var filteredQuestions = questions;
-        if (document.getElementById("filter-segment-input")) {
-          var selectedSegment = segments.find(segment => String(segment.id) === document.getElementById("filter-segment-input").value);
+        if (document.querySelector(".filter-segment-input")) {
+          var selectedSegment = segments.find(segment => String(segment.id) === document.querySelector(".filter-segment-input").value);
           if (selectedSegment) filteredQuestions = filteredQuestions.filter(q => JSON.parse(selectedSegment.question_ids).find(qId => String(qId.id) === String(q.id)));
         }
-        if (this && (this.id === 'filter-segment-input')) pagination.questions.page = 0;
+        if (this && (this.classList.contains('filter-segment-input'))) pagination.questions.page = 0;
         pagination.questions.total = filteredQuestions.length;
-        if (document.querySelector('.questions #current-page')) {
-          const currentPage = document.querySelector('.questions #current-page');
+        if (document.querySelector('.questions .current-page')) {
+          const currentPage = document.querySelector('.questions .current-page');
           const input = currentPage.querySelector('.current-page-input');
           const totalSpan = currentPage.querySelector('.current-page-total');
           const totalPages = Math.max(1, Math.ceil((pagination.questions.total || 0) / (storage.get("rowsPerPage") ? Number(storage.get("rowsPerPage")) : pagination.questions.perPage)));
@@ -1614,7 +1614,7 @@ try {
           segments.forEach(s => {
             segmentsString += `<option value="${s.id}"${(allSegmentsQuestionIsIn[0] && (allSegmentsQuestionIsIn[0].id === s.id)) ? ' selected' : ''}>${s.number}</option>`;
           });
-          buttonGrid.innerHTML = `<button square data-select tooltip="Select Question"><i class="bi bi-circle"></i><i class="bi bi-circle-fill"></i></button><div class="input-group small"><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-id-input" value="${q.id}" disabled /></div></div><div class="input-group small"><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-number-input" value="${q.number}" placeholder="${q.number}" /></div></div><div class="input-group small ${isStem ? 'hidden' : ''}"><div class="space" id="question-container"><select id="question-segment-input">${segmentsString}</select></div></div><div class="input-group"><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-text-input" value="${q.question}" placeholder="${q.question}" /></div></div>${!isStem ? `<button square data-toggle-latex tooltip="Toggle LaTeX Title"><i class="bi bi-${q.latex ? 'calculator-fill' : 'cursor-text'}"></i></button>` : ''}<button square data-remove-question-input tooltip="Remove Question"><i class="bi bi-trash"></i></button><button square data-archive-question-input tooltip="Archive Question"><i class="bi bi-archive"></i></button><button square data-toggle-question tooltip="Expand Question"><i class="bi bi-caret-down-fill"></i><i class="bi bi-caret-up-fill"></i></button>`;
+          buttonGrid.innerHTML = `<button square data-select tooltip="Select Question"><i class="bi bi-circle"></i><i class="bi bi-circle-fill"></i></button><div class="input-group small"><div class="question-container space"><input type="text" autocomplete="off" class="question-id-input" value="${q.id}" disabled /></div></div><div class="input-group small"><div class="question-container space"><input type="text" autocomplete="off" class="question-number-input" value="${q.number}" placeholder="${q.number}" /></div></div><div class="input-group small ${isStem ? 'hidden' : ''}"><div class="question-container space"><select class="question-segment-input">${segmentsString}</select></div></div><div class="input-group"><div class="question-container space"><input type="text" autocomplete="off" class="question-text-input" value="${q.question}" placeholder="${q.question}" /></div></div>${!isStem ? `<button square data-toggle-latex tooltip="Toggle LaTeX Title"><i class="bi bi-${q.latex ? 'calculator-fill' : 'cursor-text'}"></i></button>` : ''}<button square data-remove-question-input tooltip="Remove Question"><i class="bi bi-trash"></i></button><button square data-archive-question-input tooltip="Archive Question"><i class="bi bi-archive"></i></button><button square data-toggle-question tooltip="Expand Question"><i class="bi bi-caret-down-fill"></i><i class="bi bi-caret-up-fill"></i></button>`;
           if (window.innerWidth >= 1000) {
             buttonGrid.addEventListener('mouseenter', () => {
               var question = q;
@@ -1648,7 +1648,7 @@ try {
           questionMathRendering.innerHTML = convertLatexToMarkup(q.question);
           renderMathInElement(questionMathRendering);
           question.appendChild(questionMathRendering);
-          buttonGrid.querySelector("#question-text-input").addEventListener('input', (e) => {
+          buttonGrid.querySelector(".question-text-input").addEventListener('input', (e) => {
             questionMathRendering.innerHTML = convertLatexToMarkup(e.target.value);
             renderMathInElement(questionMathRendering);
           });
@@ -1660,7 +1660,7 @@ try {
             stemLabel.innerText = "Stem"
             stemSelectContainer.appendChild(stemLabel);
             var stemSelect = document.createElement('select');
-            stemSelect.id = "question-stem-input";
+            stemSelect.classList.add('question-stem-input');
             stemSelect.classList = "stem-select";
             stemSelect.innerHTML = `<option value=""${!q.stem ? ' selected' : ''}>No Stem</option>` + questions.filter(question1 => String(question1.id) !== String(q.id)).map(question1 => `<option value="${question1.id}"${(String(q.stem || '') === String(question1.id)) ? ' selected' : ''}>${question1.number}: ${question1.question}</option>`).join('');
             stemSelectContainer.appendChild(stemSelect);
@@ -1674,7 +1674,7 @@ try {
             nonScoredLabel.innerText = "Scored"
             nonScoredContainer.appendChild(nonScoredLabel);
             var nonScoredSelect = document.createElement('select');
-            nonScoredSelect.id = "question-nonscored-input";
+            nonScoredSelect.classList.add('question-nonscored-input');
             nonScoredSelect.classList = "stem-select";
             nonScoredSelect.innerHTML = `<option value="0"${!q.nonscored ? ' selected' : ''}>Yes</option><option value="1"${q.nonscored ? ' selected' : ''}>No</option>`;
             nonScoredContainer.appendChild(nonScoredSelect);
@@ -1687,7 +1687,7 @@ try {
           var textareaContainer = document.createElement('div');
           textareaContainer.classList = "description";
           var toolbar = document.createElement('div');
-          toolbar.innerHTML = `<div id="toolbar-container">
+          toolbar.innerHTML = `<div class="toolbar-container">
             <span class="ql-formats">
               <select class="ql-font" tooltip="Font"></select>
               <select class="ql-size" tooltip="Text Size"></select>
@@ -1760,7 +1760,7 @@ try {
           var drop = document.createElement('div');
           drop.classList = "drop";
           drop.innerHTML = "+";
-          drop.id = q.id;
+          drop.dataset.questionId = q.id;
           drop.addEventListener('click', renderPond);
           images.appendChild(drop);
           question.appendChild(images);
@@ -1782,7 +1782,7 @@ try {
             var correctAnswersString = "";
             var questionAnswers = answers.find(a => a.id === q.id);
             questionAnswers.correct_answers.forEach(a => {
-              correctAnswersString += `<div class="button-grid inputs"><input type="text" autocomplete="off" id="question-correct-answer-input" value="${a}" placeholder="${a}" /><button data-remove-correct-answer-input square><i class="bi bi-dash"></i></button><button data-convert-correct-answer-to-incorrect-answer square><i class="bi bi-arrow-down-up"></i></button></div>`;
+              correctAnswersString += `<div class="button-grid inputs"><input type="text" autocomplete="off" class="question-correct-answer-input" value="${a}" placeholder="${a}" /><button data-remove-correct-answer-input square><i class="bi bi-dash"></i></button><button data-convert-correct-answer-to-incorrect-answer square><i class="bi bi-arrow-down-up"></i></button></div>`;
             });
             correctAnswers.innerHTML = `<b>Correct Answers</b><div class="section correctAnswers">${correctAnswersString}<button data-add-correct-answer-input>Add Correct Answer</button></div>`;
             question.appendChild(correctAnswers);
@@ -1790,13 +1790,13 @@ try {
             incorrectAnswers.classList = "answers";
             var incorrectAnswersString = "";
             questionAnswers.incorrect_answers.forEach(a => {
-              incorrectAnswersString += `<div class="button-grid inputs"><input type="text" autocomplete="off" id="question-incorrect-answer-input" value="${a.answer}" placeholder="${a.answer || 'Answer'}" /><input type="text" autocomplete="off" id="question-incorrect-answer-reason-input" value="${a.reason}" placeholder="${a.reason || 'Reason'}" /><button data-remove-incorrect-answer-input square><i class="bi bi-dash"></i></button><button data-convert-incorrect-answer-to-correct-answer square><i class="bi bi-arrow-down-up"></i></button></div>`;
+              incorrectAnswersString += `<div class="button-grid inputs"><input type="text" autocomplete="off" class="question-incorrect-answer-input" value="${a.answer}" placeholder="${a.answer || 'Answer'}" /><input type="text" autocomplete="off" class="question-incorrect-answer-reason-input" value="${a.reason}" placeholder="${a.reason || 'Reason'}" /><button data-remove-incorrect-answer-input square><i class="bi bi-dash"></i></button><button data-convert-incorrect-answer-to-correct-answer square><i class="bi bi-arrow-down-up"></i></button></div>`;
             });
             incorrectAnswers.innerHTML = `<b>Incorrect Answers</b><div class="section incorrectAnswers">${incorrectAnswersString}<button data-add-incorrect-answer-input>Add Incorrect Answer</button></div>`;
             question.appendChild(incorrectAnswers);
           }
           document.querySelector('.questions .section').appendChild(question);
-          if (!isStem) question.querySelectorAll('#question-correct-answer-input, #question-incorrect-answer-input, #question-incorrect-answer-reason-input').forEach(questionAnswerInput => questionAnswerInput.addEventListener('change', () => {
+          if (!isStem) question.querySelectorAll('.question-correct-answer-input, .question-incorrect-answer-input, .question-incorrect-answer-reason-input').forEach(questionAnswerInput => questionAnswerInput.addEventListener('change', () => {
             question.setAttribute('modified', 'true');
           }));
         });
@@ -1813,10 +1813,10 @@ try {
       const questionsArchives = questionsArchiveTab.querySelector('.archives');
       const questionsArchivesList = questionsArchives.querySelector('.section');
       if (questions.length > 0) {
-        questionsArchiveTab.querySelector('#no-archive').setAttribute('hidden', '');
+        questionsArchiveTab.querySelector('.no-archive').setAttribute('hidden', '');
         questionsArchives.removeAttribute('hidden');
       } else {
-        questionsArchiveTab.querySelector('#no-archive').removeAttribute('hidden');
+        questionsArchiveTab.querySelector('.no-archive').removeAttribute('hidden');
         questionsArchives.setAttribute('hidden', '');
       }
       questionsArchivesList.innerHTML = '';
@@ -1824,31 +1824,31 @@ try {
         var buttonGrid = document.createElement('div');
         buttonGrid.className = "button-grid inputs";
         buttonGrid.setAttribute('archive-type', 'question');
-        buttonGrid.id = question.id;
+        buttonGrid.dataset.archiveId = question.id;
         buttonGrid.innerHTML = `<button square data-select tooltip="Select Item"><i class="bi bi-circle"></i><i class="bi bi-circle-fill"></i></button>
         <div class="input-group rsmall">
-          <div class="space" id="question-container">
-            <input type="text" id="question-id-input" value="${question.id}" disabled />
+          <div class="question-container space">
+            <input type="text" class="question-id-input" value="${question.id}" disabled />
           </div>
         </div>
         <div class="input-group small">
-          <div class="space" id="question-container">
-            <input type="text" id="question-number-input" value="${question.number}" disabled />
+          <div class="question-container space">
+            <input type="text" class="question-number-input" value="${question.number}" disabled />
           </div>
         </div>
         <div class="input-group">
-          <div class="space" id="question-container">
-            <input type="text" id="question-question-input" value="${question.question || ''}" disabled />
+          <div class="question-container space">
+            <input type="text" class="question-question-input" value="${question.question || ''}" disabled />
           </div>
         </div>
         <div class="input-group">
-          <div class="space" id="question-container">
-            <input type="text" id="question-images-input" value="${JSON.parse(question.images).join(', ')}" disabled />
+          <div class="question-container space">
+            <input type="text" class="question-images-input" value="${JSON.parse(question.images).join(', ')}" disabled />
           </div>
         </div>
         <div class="input-group rsmall">
-          <div class="space" id="question-container">
-            <input type="text" id="question-latex-input" value="${question.latex || ''}" disabled />
+          <div class="question-container space">
+            <input type="text" class="question-latex-input" value="${question.latex || ''}" disabled />
           </div>
         </div>
         <button square data-restore-item tooltip="Restore Item"><i class="bi bi-arrow-counterclockwise"></i></button>`;
@@ -1943,7 +1943,7 @@ try {
     if (!active) return;
     var input = document.createElement('div');
     input.className = "button-grid inputs";
-    input.innerHTML = `<input type="text" autocomplete="off" id="question-correct-answer-input" value="" placeholder="Answer" /><button data-remove-correct-answer-input square><i class="bi bi-dash"></i></button><button data-convert-correct-answer-to-incorrect-answer square><i class="bi bi-arrow-down-up"></i></button>`;
+    input.innerHTML = `<input type="text" autocomplete="off" class="question-correct-answer-input" value="" placeholder="Answer" /><button data-remove-correct-answer-input square><i class="bi bi-dash"></i></button><button data-convert-correct-answer-to-incorrect-answer square><i class="bi bi-arrow-down-up"></i></button>`;
     this.parentElement.insertBefore(input, this);
     this.parentElement.parentElement.parentElement.setAttribute('modified', 'true');
     document.querySelectorAll('[data-add-correct-answer-input]').forEach(a => a.addEventListener('click', addCorrectAnswer));
@@ -1956,7 +1956,7 @@ try {
     if (!active) return;
     var input = document.createElement('div');
     input.className = "button-grid inputs";
-    input.innerHTML = `<input type="text" autocomplete="off" id="question-incorrect-answer-input" value="" placeholder="Answer" /><input type="text" autocomplete="off" id="question-incorrect-answer-reason-input" value="" placeholder="Reason" /><button data-remove-incorrect-answer-input square><i class="bi bi-dash"></i></button><button data-convert-incorrect-answer-to-correct-answer square><i class="bi bi-arrow-down-up"></i></button>`;
+    input.innerHTML = `<input type="text" autocomplete="off" class="question-incorrect-answer-input" value="" placeholder="Answer" /><input type="text" autocomplete="off" class="question-incorrect-answer-reason-input" value="" placeholder="Reason" /><button data-remove-incorrect-answer-input square><i class="bi bi-dash"></i></button><button data-convert-incorrect-answer-to-correct-answer square><i class="bi bi-arrow-down-up"></i></button>`;
     this.parentElement.insertBefore(input, this);
     this.parentElement.parentElement.parentElement.setAttribute('modified', 'true');
     document.querySelectorAll('[data-add-incorrect-answer-input]').forEach(a => a.addEventListener('click', addIncorrectAnswer));
@@ -1981,10 +1981,10 @@ try {
 
   function convertToIncorrectAnswer() {
     if (!active) return;
-    const answerText = this.parentElement.querySelector('#question-correct-answer-input').value;
+    const answerText = this.parentElement.querySelector('.question-correct-answer-input').value;
     var input = document.createElement('div');
     input.className = "button-grid inputs";
-    input.innerHTML = `<input type="text" autocomplete="off" id="question-incorrect-answer-input" value="${answerText}" placeholder="Answer" /><input type="text" autocomplete="off" id="question-incorrect-answer-reason-input" value="" placeholder="Reason" /><button data-remove-incorrect-answer-input square><i class="bi bi-dash"></i></button><button data-convert-incorrect-answer-to-correct-answer square><i class="bi bi-arrow-down-up"></i></button>`;
+    input.innerHTML = `<input type="text" autocomplete="off" class="question-incorrect-answer-input" value="${answerText}" placeholder="Answer" /><input type="text" autocomplete="off" class="question-incorrect-answer-reason-input" value="" placeholder="Reason" /><button data-remove-incorrect-answer-input square><i class="bi bi-dash"></i></button><button data-convert-incorrect-answer-to-correct-answer square><i class="bi bi-arrow-down-up"></i></button>`;
     this.parentElement.parentElement.parentElement.parentElement.querySelector('.incorrectAnswers').insertBefore(input, this.parentElement.parentElement.parentElement.parentElement.querySelector('.incorrectAnswers [data-add-incorrect-answer-input]'));
     document.querySelectorAll('[data-remove-incorrect-answer-input]').forEach(a => a.addEventListener('click', removeIncorrectAnswer));
     document.querySelectorAll('[data-convert-incorrect-answer-to-correct-answer]').forEach(a => a.addEventListener('click', convertToCorrectAnswer));
@@ -1995,10 +1995,10 @@ try {
 
   function convertToCorrectAnswer() {
     if (!active) return;
-    const answerText = this.parentElement.querySelector('#question-incorrect-answer-input').value;
+    const answerText = this.parentElement.querySelector('.question-incorrect-answer-input').value;
     var input = document.createElement('div');
     input.className = "button-grid inputs";
-    input.innerHTML = `<input type="text" autocomplete="off" id="question-correct-answer-input" value="${answerText}" placeholder="Answer" /><button data-remove-correct-answer-input square><i class="bi bi-dash"></i></button><button data-convert-correct-answer-to-incorrect-answer square><i class="bi bi-arrow-down-up"></i></button>`;
+    input.innerHTML = `<input type="text" autocomplete="off" class="question-correct-answer-input" value="${answerText}" placeholder="Answer" /><button data-remove-correct-answer-input square><i class="bi bi-dash"></i></button><button data-convert-correct-answer-to-incorrect-answer square><i class="bi bi-arrow-down-up"></i></button>`;
     this.parentElement.parentElement.parentElement.parentElement.querySelector('.correctAnswers').insertBefore(input, this.parentElement.parentElement.parentElement.parentElement.querySelector('.correctAnswers [data-add-correct-answer-input]'));
     document.querySelectorAll('[data-remove-correct-answer-input]').forEach(a => a.addEventListener('click', removeCorrectAnswer));
     document.querySelectorAll('[data-convert-correct-answer-to-incorrect-answer]').forEach(a => a.addEventListener('click', convertToIncorrectAnswer));
@@ -2011,7 +2011,7 @@ try {
     if (!active) return;
     this.disabled = true;
     const icon = this.querySelector('i');
-    const question_id = this.parentElement.querySelector('#question-id-input').value;
+    const question_id = this.parentElement.querySelector('.question-id-input').value;
     var isLatex = false;
     if (!icon.classList.contains('bi-cursor-text')) isLatex = true;
     ui.setUnsavedChanges(true);
@@ -2056,7 +2056,7 @@ try {
         if (isLatex) {
           this.parentElement.parentElement.querySelector(".renderedMath").classList.remove('show');
         } else {
-          this.parentElement.parentElement.querySelector(".renderedMath").innerHTML = convertLatexToMarkup(this.parentElement.querySelector("#question-text-input").value);
+          this.parentElement.parentElement.querySelector(".renderedMath").innerHTML = convertLatexToMarkup(this.parentElement.querySelector(".question-text-input").value);
           renderMathInElement(this.parentElement.parentElement.querySelector(".renderedMath"));
           this.parentElement.parentElement.querySelector(".renderedMath").classList.add('show');
         }
@@ -2071,7 +2071,7 @@ try {
   }
 
   async function toggleQuestion(event = null, questionId = null) {
-    if (questionId) await goToPage(document.querySelector('.questions #current-page'), pageQuestionIsOn(document.querySelector('.questions #current-page'), questionId))
+    if (questionId) await goToPage(document.querySelector('.questions .current-page'), pageQuestionIsOn(document.querySelector('.questions .current-page'), questionId))
       .catch(error => {
         if (storage.get("developer")) {
           alert(`Error @ admin.js: ${error.message}`);
@@ -2087,12 +2087,12 @@ try {
       hideAllQuestions();
       questionContainer.classList.add('expanded');
       document.querySelector('[data-add-question-input]').style.display = "none";
-      // document.querySelectorAll('#save-button').forEach(w => w.style.display = "none");
+      // document.querySelectorAll('.save-button').forEach(w => w.style.display = "none");
       if (!questionContainer.classList.contains('rendered')) {
         var textarea = questionContainer.querySelector('.description .textarea');
         if (!textarea) return;
         var textareaContent = textarea.getAttribute('content');
-        var toolbar = questionContainer.querySelector('.description #toolbar-container');
+        var toolbar = questionContainer.querySelector('.description .toolbar-container');
         var quill = new Quill(textarea, {
           modules: {
             syntax: true,
@@ -2121,7 +2121,7 @@ try {
             pastedLatex = pastedLatex.replace(/(?<!\\)\$/g, '');
           }
         });
-        renderedEditors[questionContainer.querySelector('#question-id-input').value] = quill;
+        renderedEditors[questionContainer.querySelector('.question-id-input').value] = quill;
         questionContainer.querySelectorAll('img[data-src]:not([src])').forEach(img => img.src = img.getAttribute('data-src'));
       }
     }
@@ -2131,7 +2131,7 @@ try {
     if (!active) return;
     document.querySelectorAll('.expanded').forEach(q => q.classList.remove('expanded'));
     document.querySelector('[data-add-question-input]').style.display = "block";
-    // document.querySelectorAll('#save-button').forEach(w => w.style.display = "block");
+    // document.querySelectorAll('.save-button').forEach(w => w.style.display = "block");
   }
 
   function addQuestion() {
@@ -2143,14 +2143,14 @@ try {
     buttonGrid.className = "button-grid inputs";
     var segmentsString = "";
     segments.forEach(s => segmentsString += `<option value="${s.id}"${(params.segment && (params.segment === String(s.id))) ? ' selected' : ''}>${s.number}</option>`);
-    buttonGrid.innerHTML = `<button square data-select tooltip="Select Question"><i class="bi bi-circle"></i><i class="bi bi-circle-fill"></i></button><div class="input-group small"><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-id-input" value="" disabled /></div></div><div class="input-group small"><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-number-input" value="" /></div></div><div class="input-group small"><div class="space" id="question-container"><select id="question-segment-input">${segmentsString}</select></div></div><div class="input-group"><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-text-input" value="" /></div></div><button square data-toggle-latex disabled tooltip="Toggle LaTeX Title"><i class="bi bi-cursor-text"></i></button><button square data-remove-question-input tooltip="Remove Question"><i class="bi bi-trash"></i></button><button square data-toggle-question tooltip="Expand Question"><i class="bi bi-caret-down-fill"></i><i class="bi bi-caret-up-fill"></i></button>`;
+    buttonGrid.innerHTML = `<button square data-select tooltip="Select Question"><i class="bi bi-circle"></i><i class="bi bi-circle-fill"></i></button><div class="input-group small"><div class="question-container space"><input type="text" autocomplete="off" class="question-id-input" value="" disabled /></div></div><div class="input-group small"><div class="question-container space"><input type="text" autocomplete="off" class="question-number-input" value="" /></div></div><div class="input-group small"><div class="question-container space"><select class="question-segment-input">${segmentsString}</select></div></div><div class="input-group"><div class="question-container space"><input type="text" autocomplete="off" class="question-text-input" value="" /></div></div><button square data-toggle-latex disabled tooltip="Toggle LaTeX Title"><i class="bi bi-cursor-text"></i></button><button square data-remove-question-input tooltip="Remove Question"><i class="bi bi-trash"></i></button><button square data-toggle-question tooltip="Expand Question"><i class="bi bi-caret-down-fill"></i><i class="bi bi-caret-up-fill"></i></button>`;
     group.appendChild(buttonGrid);
     this.parentElement.insertBefore(group, this.parentElement.children[this.parentElement.children.length - 1]);
     document.querySelectorAll('[data-add-question-input]').forEach(a => a.addEventListener('click', addQuestion));
     document.querySelectorAll('[data-remove-question-input]').forEach(a => a.addEventListener('click', () => removeQuestion(null, a)));
     document.querySelectorAll('[data-toggle-question]').forEach(a => a.addEventListener('click', toggleQuestion));
     document.querySelectorAll('[data-select]').forEach(a => a.addEventListener('click', toggleSelected));
-    buttonGrid.querySelector("#question-number-input").focus();
+    buttonGrid.querySelector(".question-number-input").focus();
     ui.reloadUnsavedInputs();
   }
 
@@ -2172,8 +2172,8 @@ try {
           ui.reportBugModal(null, String(error.stack));
         }
       });
-    document.querySelector(`#question-${this.id} [data-toggle-question]`).click();
-    const url = '/admin/upload?question=' + this.id;
+    document.querySelector(`#question-${this.dataset.questionId} [data-toggle-question]`).click();
+    const url = '/admin/upload?question=' + this.dataset.questionId;
     const width = 600;
     const height = 600;
     const left = (window.screen.width / 2) - (width / 2);
@@ -2223,7 +2223,7 @@ try {
         body: JSON.stringify({
           usr: storage.get("usr"),
           pwd: storage.get("pwd"),
-          question_id: event.target.parentElement.parentElement.querySelector('#question-id-input').value,
+          question_id: event.target.parentElement.parentElement.querySelector('.question-id-input').value,
           file_url: event.target.querySelector('img').src
         }),
       })
@@ -2268,11 +2268,11 @@ try {
     if (document.querySelector('.seat-code-reports')) document.querySelector('.seat-code-reports').innerHTML = '';
     var trendingResponses = [];
     var timedResponses = [];
-    const coursePeriodInput = document.getElementById("course-period-input");
-    const filterSegmentInput = document.getElementById("filter-segment-input");
-    const filterQuestionInput = document.getElementById("filter-question-input");
-    const filterSeatInput = document.getElementById("filter-seat-input");
-    const sortResponsesInput = document.getElementById("sort-responses-input");
+    const coursePeriodInput = document.querySelector(".course-period-input");
+    const filterSegmentInput = document.querySelector(".filter-segment-input");
+    const filterQuestionInput = document.querySelector(".filter-question-input");
+    const filterSeatInput = document.querySelector(".filter-seat-input");
+    const sortResponsesInput = document.querySelector(".sort-responses-input");
     const awaitingSection = document.querySelector('.awaitingResponses .section');
     const responsesSection = document.querySelector('.responses .section');
     const hasAwaitingSection = !!awaitingSection;
@@ -2342,14 +2342,14 @@ try {
       }
       return b.id - a.id;
     });
-    if (this && ((this.id === 'course-period-input') || (this.id === 'filter-segment-input') || (this.id === 'filter-question-input') || (this.id === 'filter-seat-input'))) {
+    if (this && ((this.classList.contains('course-period-input')) || (this.classList.contains('filter-segment-input')) || (this.classList.contains('filter-question-input')) || (this.classList.contains('filter-seat-input')))) {
       pagination.awaitingResponses.page = 0;
       pagination.responses.page = 0;
     }
     pagination.awaitingResponses.total = responses1.filter(r => ((r.status === 'Invalid Format') || (r.status === 'Unknown, Recorded')) && document.querySelector('.awaitingResponses .section')).length;
     pagination.responses.total = responses1.filter(r => !((r.status === 'Invalid Format') || (r.status === 'Unknown, Recorded')) && document.querySelector('.responses .section')).length;
-    if (document.querySelector('.awaitingResponses #current-page')) {
-      const currentPage = document.querySelector('.awaitingResponses #current-page');
+    if (document.querySelector('.awaitingResponses .current-page')) {
+      const currentPage = document.querySelector('.awaitingResponses .current-page');
       const input = currentPage.querySelector('.current-page-input');
       const totalSpan = currentPage.querySelector('.current-page-total');
       const totalPages = Math.max(1, Math.ceil((pagination.awaitingResponses.total || 0) / (storage.get("rowsPerPage") ? Number(storage.get("rowsPerPage")) : pagination.awaitingResponses.perPage)));
@@ -2366,8 +2366,8 @@ try {
         input._pageHandlerAttached = true;
       }
     }
-    if (document.querySelector('.responses #current-page')) {
-      const currentPage = document.querySelector('.responses #current-page');
+    if (document.querySelector('.responses .current-page')) {
+      const currentPage = document.querySelector('.responses .current-page');
       const input = currentPage.querySelector('.current-page-input');
       const totalSpan = currentPage.querySelector('.current-page-total');
       const totalPages = Math.max(1, Math.ceil((pagination.responses.total || 0) / (storage.get("rowsPerPage") ? Number(storage.get("rowsPerPage")) : pagination.responses.perPage)));
@@ -2470,7 +2470,7 @@ try {
         } else {
           result = `${minutes1}m`;
         }
-        const coursePeriodValue = document.getElementById("course-period-input")?.value;
+        const coursePeriodValue = document.querySelector(".course-period-input")?.value;
         const currentCourse = courses.find(course => String(course.id) === coursePeriodValue);
         const questionLookup = new Map(questions.map(q => [String(q.id), q]));
         const answerLookup = new Map(answers.map(a => [String(a.id), a]));
@@ -2480,7 +2480,7 @@ try {
         var buttonGrid = document.createElement('div');
         buttonGrid.className = "button-grid inputs";
         buttonGrid.id = `response-${r.id}`;
-        buttonGrid.innerHTML = `<button square data-select tooltip="Select Item"><i class="bi bi-circle"></i><i class="bi bi-circle-fill"></i></button><input type="text" autocomplete="off" class="small" id="response-id-input" value="${r.id}" disabled hidden />${(String(r.flagged) === '1') ? `<button square data-unflag-response tooltip="Unflag Response"><i class="bi bi-flag-fill"></i></button>` : `<button square data-flag-response tooltip="Flag Response"><i class="bi bi-flag"></i></button>`}<input type="text" autocomplete="off" class="small" id="response-segment-input" value="${foundSegment ? (foundSegment.number || r.segment) : (foundSegment2?.number || '-')}" mockDisabled data-segment="${foundSegment ? (foundSegment.id || r.segment) : (foundSegment2?.id || '-')}" /><input type="text" autocomplete="off" class="small" id="response-question-input" value="${questionLookup.get(String(r.question_id))?.number}" mockDisabled data-segment="${foundSegment ? (foundSegment.id || r.segment) : (foundSegment2?.id || '-')}" data-question="${questionLookup.get(String(r.question_id))?.number}" data-question-id="${questionLookup.get(String(r.question_id))?.id}" /><input type="text" autocomplete="off" class="small" id="response-question-id-input" value="${questionLookup.get(String(r.question_id)).id}" disabled hidden /><input type="text" autocomplete="off" class="small${(((r.status === 'Invalid Format') || (r.status === 'Unknown, Recorded')) && document.querySelector('.awaitingResponses .section') && hasCorrectResponses) ? ' hideonhover' : ''}" id="response-seat-code-input" value="${r.seatCode}" disabled data-seat-code /><input type="text" autocomplete="off" class="small" id="response-time-taken-input" value="${timeTaken}" disabled data-time-taken${(typeof timeDifference != 'undefined') ? ` time="${timeDifference}"` : ''} /><input type="text" autocomplete="off" class="small" id="response-time-taken-input" value="${timeTakenToRevise}" disabled data-time-taken${(typeof timeDifference != 'undefined') ? ` time="${timeDifference}"` : ''} /><!--<input type="text" autocomplete="off" class="small" id="response-time-taken-input" value="${result}" disabled data-time-taken />--><textarea autocomplete="off" rows="1" id="response-response-input" value="${escapeHTML(responseString)}" ${isMatrix ? 'mockDisabled' : 'disabled'}>${escapeHTML(responseString)}</textarea>${(r.status === 'Incorrect') ? `<button square data-edit-reason tooltip="Edit Reason"><i class="bi bi-reply${(r.reason) ? '-fill' : ''}"></i></button>` : ''}<input type="text" autocomplete="off" class="smedium${(((r.status === 'Invalid Format') || (r.status === 'Unknown, Recorded')) && document.querySelector('.awaitingResponses .section') && hasCorrectResponses) ? ' hideonhover' : ''}" id="response-timestamp-input" value="${date.getMonth() + 1}/${date.getDate()} ${hours % 12 || 12}:${minutes < 10 ? '0' + minutes : minutes} ${hours >= 12 ? 'PM' : 'AM'}" disabled />${(((r.status === 'Invalid Format') || (r.status === 'Unknown, Recorded')) && document.querySelector('.awaitingResponses .section') && hasCorrectResponses) ? `<textarea autocomplete="off" rows="1" class="showonhover" id="response-correct-responses-input" value="${correctResponsesString}" disabled>${correctResponsesString}</textarea>` : ''}<button square id="mark-correct-button"${(r.status === 'Correct') ? ' disabled' : ''} tooltip="Mark Correct"><i class="bi bi-check-circle${(r.status === 'Correct') ? '-fill' : ''}"></i></button><button square id="mark-incorrect-button"${(r.status === 'Incorrect') ? ' disabled' : ''} tooltip="Mark Incorrect"><i class="bi bi-x-circle${(r.status === 'Incorrect') ? '-fill' : ''}"></i></button>`;
+        buttonGrid.innerHTML = `<button square data-select tooltip="Select Item"><i class="bi bi-circle"></i><i class="bi bi-circle-fill"></i></button><input type="text" autocomplete="off" class="response-id-input small" value="${r.id}" disabled hidden />${(String(r.flagged) === '1') ? `<button square data-unflag-response tooltip="Unflag Response"><i class="bi bi-flag-fill"></i></button>` : `<button square data-flag-response tooltip="Flag Response"><i class="bi bi-flag"></i></button>`}<input type="text" autocomplete="off" class="response-segment-input small" value="${foundSegment ? (foundSegment.number || r.segment) : (foundSegment2?.number || '-')}" mockDisabled data-segment="${foundSegment ? (foundSegment.id || r.segment) : (foundSegment2?.id || '-')}" /><input type="text" autocomplete="off" class="response-question-input small" value="${questionLookup.get(String(r.question_id))?.number}" mockDisabled data-segment="${foundSegment ? (foundSegment.id || r.segment) : (foundSegment2?.id || '-')}" data-question="${questionLookup.get(String(r.question_id))?.number}" data-question-id="${questionLookup.get(String(r.question_id))?.id}" /><input type="text" autocomplete="off" class="response-question-id-input small" value="${questionLookup.get(String(r.question_id)).id}" disabled hidden /><input type="text" autocomplete="off" class="response-seat-code-input small${(((r.status === 'Invalid Format') || (r.status === 'Unknown, Recorded')) && document.querySelector('.awaitingResponses .section') && hasCorrectResponses) ? ' hideonhover' : ''}" value="${r.seatCode}" disabled data-seat-code /><input type="text" autocomplete="off" class="response-time-taken-input small" value="${timeTaken}" disabled data-time-taken${(typeof timeDifference != 'undefined') ? ` time="${timeDifference}"` : ''} /><input type="text" autocomplete="off" class="response-time-taken-input small" value="${timeTakenToRevise}" disabled data-time-taken${(typeof timeDifference != 'undefined') ? ` time="${timeDifference}"` : ''} /><!--<input type="text" autocomplete="off" class="response-time-taken-input small" value="${result}" disabled data-time-taken />--><textarea autocomplete="off" rows="1" class="response-response-input" value="${escapeHTML(responseString)}" ${isMatrix ? 'mockDisabled' : 'disabled'}>${escapeHTML(responseString)}</textarea>${(r.status === 'Incorrect') ? `<button square data-edit-reason tooltip="Edit Reason"><i class="bi bi-reply${(r.reason) ? '-fill' : ''}"></i></button>` : ''}<input type="text" autocomplete="off" class="response-timestamp-input smedium${(((r.status === 'Invalid Format') || (r.status === 'Unknown, Recorded')) && document.querySelector('.awaitingResponses .section') && hasCorrectResponses) ? ' hideonhover' : ''}" value="${date.getMonth() + 1}/${date.getDate()} ${hours % 12 || 12}:${minutes < 10 ? '0' + minutes : minutes} ${hours >= 12 ? 'PM' : 'AM'}" disabled />${(((r.status === 'Invalid Format') || (r.status === 'Unknown, Recorded')) && document.querySelector('.awaitingResponses .section') && hasCorrectResponses) ? `<textarea autocomplete="off" rows="1" class="response-correct-responses-input showonhover" value="${correctResponsesString}" disabled>${correctResponsesString}</textarea>` : ''}<button square class="mark-correct-button"${(r.status === 'Correct') ? ' disabled' : ''} tooltip="Mark Correct"><i class="bi bi-check-circle${(r.status === 'Correct') ? '-fill' : ''}"></i></button><button square class="mark-incorrect-button"${(r.status === 'Incorrect') ? ' disabled' : ''} tooltip="Mark Incorrect"><i class="bi bi-x-circle${(r.status === 'Incorrect') ? '-fill' : ''}"></i></button>`;
         if (window.innerWidth >= 1000) {
           buttonGrid.addEventListener('mouseenter', () => {
             island(buttonGrid, buttonGrid.parentElement.children, 'response', {
@@ -2514,19 +2514,19 @@ try {
           } else if (hasResponsesSection) {
             responsesSection.appendChild(buttonGrid);
           }
-          const responseSegmentInput = buttonGrid.querySelector('#response-segment-input');
-          const responseQuestionInput = buttonGrid.querySelector('#response-question-input');
-          const responseResponseInput = buttonGrid.querySelector('#response-response-input');
+          const responseSegmentInput = buttonGrid.querySelector('.response-segment-input');
+          const responseQuestionInput = buttonGrid.querySelector('.response-question-input');
+          const responseResponseInput = buttonGrid.querySelector('.response-response-input');
           responseSegmentInput.addEventListener('click', (e) => {
             if (e.target.getAttribute('data-segment')) {
-              document.getElementById("filter-segment-input").value = e.target.getAttribute('data-segment');
+              document.querySelector(".filter-segment-input").value = e.target.getAttribute('data-segment');
               updateResponses();
             }
           });
           responseQuestionInput.addEventListener('click', (e) => {
             if (e.target.getAttribute('data-question')) {
-              if (e.target.getAttribute('data-segment')) document.getElementById("filter-segment-input").value = e.target.getAttribute('data-segment');
-              document.getElementById("filter-question-input").value = `"${e.target.getAttribute('data-question')}"`;
+              if (e.target.getAttribute('data-segment')) document.querySelector(".filter-segment-input").value = e.target.getAttribute('data-segment');
+              document.querySelector(".filter-question-input").value = `"${e.target.getAttribute('data-question')}"`;
               updateResponses();
             }
           });
@@ -2573,7 +2573,7 @@ try {
         agg.total++;
         agg.responses.push(r);
       }
-      const periodInput = document.getElementById('course-period-input')?.value;
+      const periodInput = document.querySelector(".course-period-input")?.value;
       const periodInfo = courses.find(c => String(c.id) === periodInput);
       const periods = periodInfo ? JSON.parse(periodInfo.periods) : [];
       const filteredSeatCodes = [...seatMap.values()].filter(sc => periods.includes(Number(String(sc.code)[0])));
@@ -2738,14 +2738,14 @@ try {
           console.log(`Invalid JSON: ${r.response}`);
         }
       }
-      const foundCourse = courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value);
+      const foundCourse = courses.find(course => String(course.id) === document.querySelector(".course-period-input")?.value);
       const foundSegment = segments.find(s => (String(s.id) === String(r.segment)) && (foundCourse ? (String(s.course) === String(foundCourse.id)) : true));
       const foundSegment2 = segments.find(s => (foundCourse ? (String(s.course) === String(foundCourse.id)) : false) && JSON.parse(s.question_ids || [])?.find(q => String(q.id) === String(r.question_id)));
       const dataSegment = foundSegment ? (foundSegment.id || r.segment) : (foundSegment2?.id || '-');
       const dataQuestion = questions.find(q => String(q.id) === String(r.question_id));
       var buttonGrid = document.createElement('div');
       buttonGrid.className = "button-grid inputs";
-      buttonGrid.innerHTML = `<input type="text" autocomplete="off" class="small" id="response-id-input" value="${r.single_response}" disabled hidden /><input type="text" autocomplete="off" class="small" id="response-segment-input" value="${foundSegment ? (foundSegment.number || r.segment) : (foundSegment2?.number || '-')}" mockDisabled data-segment="${dataSegment}" /><input type="text" autocomplete="off" class="small" id="response-question-input" value="${dataQuestion?.number}" mockDisabled data-segment="${dataSegment}" data-question="${dataQuestion?.number}" data-question-id="${dataQuestion?.id}" /><input type="text" autocomplete="off" class="small" id="response-question-id-input" value="${dataQuestion.id}" disabled hidden /><textarea autocomplete="off" rows="1" id="response-response-input" value="${escapeHTML(responseString)}" ${isMatrix ? 'mockDisabled' : 'disabled'}>${escapeHTML(responseString)}</textarea><input type="text" autocomplete="off" class="small" id="response-count-input" value="${r.count}" disabled /><button square id="mark-correct-button"${(r.status === 'Correct') ? ' disabled' : ''} tooltip="Mark Correct"><i class="bi bi-check-circle${(r.status === 'Correct') ? '-fill' : ''}"></i></button><button square id="mark-incorrect-button"${(r.status === 'Incorrect') ? ' disabled' : ''} tooltip="Mark Incorrect"><i class="bi bi-x-circle${(r.status === 'Incorrect') ? '-fill' : ''}"></i></button>`;
+      buttonGrid.innerHTML = `<input type="text" autocomplete="off" class="response-id-input small" value="${r.single_response}" disabled hidden /><input type="text" autocomplete="off" class="response-segment-input small" value="${foundSegment ? (foundSegment.number || r.segment) : (foundSegment2?.number || '-')}" mockDisabled data-segment="${dataSegment}" /><input type="text" autocomplete="off" class="response-question-input small" value="${dataQuestion?.number}" mockDisabled data-segment="${dataSegment}" data-question="${dataQuestion?.number}" data-question-id="${dataQuestion?.id}" /><input type="text" autocomplete="off" class="response-question-id-input small" value="${dataQuestion.id}" disabled hidden /><textarea autocomplete="off" rows="1" class="response-response-input" value="${escapeHTML(responseString)}" ${isMatrix ? 'mockDisabled' : 'disabled'}>${escapeHTML(responseString)}</textarea><input type="text" autocomplete="off" class="response-count-input small" value="${r.count}" disabled /><button square class="mark-correct-button"${(r.status === 'Correct') ? ' disabled' : ''} tooltip="Mark Correct"><i class="bi bi-check-circle${(r.status === 'Correct') ? '-fill' : ''}"></i></button><button square class="mark-incorrect-button"${(r.status === 'Incorrect') ? ' disabled' : ''} tooltip="Mark Incorrect"><i class="bi bi-x-circle${(r.status === 'Incorrect') ? '-fill' : ''}"></i></button>`;
       if (window.innerWidth >= 1000) {
         buttonGrid.addEventListener('mouseenter', () => {
           var question = dataQuestion;
@@ -2775,30 +2775,30 @@ try {
         });
       }
       document.querySelector('.trendingResponses .section').appendChild(buttonGrid);
-      document.querySelector('.trendingResponses .section .button-grid:last-child #response-segment-input').addEventListener('click', (e) => {
+      document.querySelector('.trendingResponses .section .button-grid:last-child .response-segment-input').addEventListener('click', (e) => {
         if (e.target.getAttribute('data-segment')) {
-          document.getElementById("filter-segment-input").value = e.target.getAttribute('data-segment');
+          document.querySelector(".filter-segment-input").value = e.target.getAttribute('data-segment');
           updateResponses();
         }
       });
-      document.querySelector('.trendingResponses .section .button-grid:last-child #response-question-input').addEventListener('click', (e) => {
+      document.querySelector('.trendingResponses .section .button-grid:last-child .response-question-input').addEventListener('click', (e) => {
         if (e.target.getAttribute('data-question')) {
-          if (e.target.getAttribute('data-segment')) document.getElementById("filter-segment-input").value = e.target.getAttribute('data-segment');
-          document.getElementById("filter-question-input").value = `"${e.target.getAttribute('data-question')}"`;
+          if (e.target.getAttribute('data-segment')) document.querySelector(".filter-segment-input").value = e.target.getAttribute('data-segment');
+          document.querySelector(".filter-question-input").value = `"${e.target.getAttribute('data-question')}"`;
           updateResponses();
         }
       });
-      if (isMatrix) document.querySelector('.trendingResponses .section .button-grid:last-child #response-response-input').addEventListener('click', () => ui.expandMatrix(isMatrix));
+      if (isMatrix) document.querySelector('.trendingResponses .section .button-grid:last-child .response-response-input').addEventListener('click', () => ui.expandMatrix(isMatrix));
     });
     const responsesArchiveTab = document.querySelector('[data-archive-type="responses"]');
     if (responsesArchiveTab) {
       const responsesArchives = responsesArchiveTab.querySelector('.archives');
       const responsesArchivesList = responsesArchives.querySelector('.section');
       if (responses.length > 0) {
-        responsesArchiveTab.querySelector('#no-archive').setAttribute('hidden', '');
+        responsesArchiveTab.querySelector('.no-archive').setAttribute('hidden', '');
         responsesArchives.removeAttribute('hidden');
       } else {
-        responsesArchiveTab.querySelector('#no-archive').removeAttribute('hidden');
+        responsesArchiveTab.querySelector('.no-archive').removeAttribute('hidden');
         responsesArchives.setAttribute('hidden', '');
       }
       responsesArchivesList.innerHTML = '';
@@ -2806,41 +2806,41 @@ try {
         var buttonGrid = document.createElement('div');
         buttonGrid.className = "button-grid inputs";
         buttonGrid.setAttribute('archive-type', 'response');
-        buttonGrid.id = response.id;
+        buttonGrid.dataset.archiveId = response.id;
         buttonGrid.innerHTML = `<button square data-select tooltip="Select Item"><i class="bi bi-circle"></i><i class="bi bi-circle-fill"></i></button>
         <div class="input-group rsmall">
-          <div class="space" id="response-container">
-            <input type="text" id="response-id-input" value="${response.id}" disabled />
+          <div class="response-container space">
+            <input type="text" class="response-id-input" value="${response.id}" disabled />
           </div>
         </div>
         <div class="input-group rsmall">
-          <div class="space" id="response-container">
-            <input type="text" id="response-seat-code-input" value="${response.seatCode}" disabled />
+          <div class="response-container space">
+            <input type="text" class="response-seat-code-input" value="${response.seatCode}" disabled />
           </div>
         </div>
         <div class="input-group small">
-          <div class="space" id="response-container">
-            <input type="text" id="response-segment-question-input" value="${response.segment} / ${response.question_id}" disabled />
+          <div class="response-container space">
+            <input type="text" class="response-segment-question-input" value="${response.segment} / ${response.question_id}" disabled />
           </div>
         </div>
         <div class="input-group">
-          <div class="space" id="response-container">
-            <textarea rows="1" id="response-response-input" value="${escapeHTML(response.response) || ''}" style="width: -webkit-fill-available;" disabled>${escapeHTML(response.response) || ''}</textarea>
+          <div class="response-container space">
+            <textarea rows="1" class="response-response-input" value="${escapeHTML(response.response) || ''}" style="width: -webkit-fill-available;" disabled>${escapeHTML(response.response) || ''}</textarea>
           </div>
         </div>
         <div class="input-group vsmedium">
-          <div class="space" id="response-container">
-            <input type="text" id="response-status-input" value="${response.status || ''}" disabled />
+          <div class="response-container space">
+            <input type="text" class="response-status-input" value="${response.status || ''}" disabled />
           </div>
         </div>
         <div class="input-group rsmall">
-          <div class="space" id="response-container">
-            <input type="text" id="response-flagged-input" value="${response.flagged || ''}" disabled />
+          <div class="response-container space">
+            <input type="text" class="response-flagged-input" value="${response.flagged || ''}" disabled />
           </div>
         </div>
         <div class="input-group medium">
-          <div class="space" id="response-container">
-            <input type="text" id="response-timestamp-input" value="${response.timestamp ? time.unixToString(response.timestamp) : ''}" disabled />
+          <div class="response-container space">
+            <input type="text" class="response-timestamp-input" value="${response.timestamp ? time.unixToString(response.timestamp) : ''}" disabled />
           </div>
         </div>
         <button square data-restore-item tooltip="Restore Item"><i class="bi bi-arrow-counterclockwise"></i></button>`;
@@ -2856,15 +2856,15 @@ try {
         }, 1000);
       }
     });
-    document.querySelectorAll('#mark-correct-button').forEach(a => a.addEventListener('click', markCorrect));
-    document.querySelectorAll('#mark-incorrect-button').forEach(a => a.addEventListener('click', markIncorrect));
+    document.querySelectorAll('.mark-correct-button').forEach(a => a.addEventListener('click', markCorrect));
+    document.querySelectorAll('.mark-incorrect-button').forEach(a => a.addEventListener('click', markIncorrect));
     document.querySelectorAll('[data-flag-response]').forEach(a => a.addEventListener('click', flagResponse));
     document.querySelectorAll('[data-unflag-response]').forEach(a => a.addEventListener('click', unflagResponse));
     document.querySelectorAll('[data-edit-reason]').forEach(a => a.addEventListener('click', editReason));
     document.querySelectorAll('[report]').forEach(a => a.addEventListener('click', toggleDetailedReport));
     document.querySelectorAll('[data-select]').forEach(a => a.addEventListener('click', toggleSelected));
-    if (fromAwaitingScoring && !awaitingResponses.length && document.getElementById("filter-segment-input")) {
-      document.getElementById("filter-segment-input").value = '';
+    if (fromAwaitingScoring && !awaitingResponses.length && document.querySelector(".filter-segment-input")) {
+      document.querySelector(".filter-segment-input").value = '';
       fromAwaitingScoring = false;
       updateResponses();
     }
@@ -2912,7 +2912,7 @@ try {
       body: JSON.stringify({
         usr: storage.get("usr"),
         pwd: storage.get("pwd"),
-        question_id: this.parentElement.querySelector('#response-id-input').value,
+        question_id: this.parentElement.querySelector('.response-id-input').value,
       }),
     })
       .then(async (r) => {
@@ -2960,7 +2960,7 @@ try {
       body: JSON.stringify({
         usr: storage.get("usr"),
         pwd: storage.get("pwd"),
-        question_id: this.parentElement.querySelector('#response-id-input').value,
+        question_id: this.parentElement.querySelector('.response-id-input').value,
       }),
     })
       .then(async (r) => {
@@ -3008,8 +3008,8 @@ try {
       body: JSON.stringify({
         usr: storage.get("usr"),
         pwd: storage.get("pwd"),
-        question_id: this.parentElement.querySelector('#response-question-id-input').value,
-        single_response: this.parentElement.querySelector('#response-id-input').value,
+        question_id: this.parentElement.querySelector('.response-question-id-input').value,
+        single_response: this.parentElement.querySelector('.response-id-input').value,
       }),
     })
       .then(async (r) => {
@@ -3032,16 +3032,16 @@ try {
         ui.setUnsavedChanges(false);
         ui.toast("Successfully updated status.", 3000, "success", "bi bi-check-lg");
         noReloadCourse = true;
-        keepSegment = document.getElementById("filter-segment-input").value;
+        keepSegment = document.querySelector(".filter-segment-input").value;
         fromAwaitingScoring = (document.querySelector('.awaitingResponses .section') && Array.from(document.querySelector('.awaitingResponses .section').children).includes(this.parentElement)) ? true : false;
         if (actionRefreshes) {
           init();
         } else {
           const parent = this.parentElement;
-          parent.querySelector('#mark-correct-button')?.setAttribute('disabled', '');
-          if (parent.querySelector('#mark-correct-button i')) parent.querySelector('#mark-correct-button i').classList = 'bi bi-check-circle-fill';
-          parent.querySelector('#mark-incorrect-button')?.removeAttribute('disabled');
-          if (parent.querySelector('#mark-incorrect-button i')) parent.querySelector('#mark-incorrect-button i').classList = 'bi bi-x-circle';
+          parent.querySelector('.mark-correct-button')?.setAttribute('disabled', '');
+          if (parent.querySelector('.mark-correct-button i')) parent.querySelector('.mark-correct-button i').classList = 'bi bi-check-circle-fill';
+          parent.querySelector('.mark-incorrect-button')?.removeAttribute('disabled');
+          if (parent.querySelector('.mark-incorrect-button i')) parent.querySelector('.mark-incorrect-button i').classList = 'bi bi-x-circle';
         }
       })
       .catch((e) => {
@@ -3060,7 +3060,7 @@ try {
       input: {
         type: 'text',
         placeholder: 'Take the derivative of x^2 before multiplying.',
-        defaultValue: (Object.keys(lastMarkedQuestion).length && (String(lastMarkedQuestion.question_id) === this.parentElement.querySelector('#response-question-id-input').value)) ? lastMarkedQuestion.reason : '',
+        defaultValue: (Object.keys(lastMarkedQuestion).length && (String(lastMarkedQuestion.question_id) === this.parentElement.querySelector('.response-question-id-input').value)) ? lastMarkedQuestion.reason : '',
         selectAll: true,
       },
       buttons: [
@@ -3092,8 +3092,8 @@ try {
       body: JSON.stringify({
         usr: storage.get("usr"),
         pwd: storage.get("pwd"),
-        question_id: e.parentElement.querySelector('#response-question-id-input').value,
-        single_response: e.parentElement.querySelector('#response-id-input').value,
+        question_id: e.parentElement.querySelector('.response-question-id-input').value,
+        single_response: e.parentElement.querySelector('.response-id-input').value,
         reason: reason
       }),
     })
@@ -3117,21 +3117,21 @@ try {
         ui.setUnsavedChanges(false);
         ui.toast("Successfully updated status.", 3000, "success", "bi bi-check-lg");
         lastMarkedQuestion = {
-          question_id: e.parentElement.querySelector('#response-question-id-input').value,
-          single_response: e.parentElement.querySelector('#response-id-input').value,
+          question_id: e.parentElement.querySelector('.response-question-id-input').value,
+          single_response: e.parentElement.querySelector('.response-id-input').value,
           reason: reason
         };
         noReloadCourse = true;
-        keepSegment = document.getElementById("filter-segment-input").value;
+        keepSegment = document.querySelector(".filter-segment-input").value;
         fromAwaitingScoring = (document.querySelector('.awaitingResponses .section') && Array.from(document.querySelector('.awaitingResponses .section').children).includes(e.parentElement)) ? true : false;
         if (actionRefreshes) {
           init();
         } else {
           const parent = e.parentElement;
-          parent.querySelector('#mark-incorrect-button')?.setAttribute('disabled', '');
-          if (parent.querySelector('#mark-incorrect-button i')) parent.querySelector('#mark-incorrect-button i').classList = 'bi bi-x-circle-fill';
-          parent.querySelector('#mark-correct-button')?.removeAttribute('disabled');
-          if (parent.querySelector('#mark-correct-button i')) parent.querySelector('#mark-correct-button i').classList = 'bi bi-check-circle';
+          parent.querySelector('.mark-incorrect-button')?.setAttribute('disabled', '');
+          if (parent.querySelector('.mark-incorrect-button i')) parent.querySelector('.mark-incorrect-button i').classList = 'bi bi-x-circle-fill';
+          parent.querySelector('.mark-correct-button')?.removeAttribute('disabled');
+          if (parent.querySelector('.mark-correct-button i')) parent.querySelector('.mark-correct-button i').classList = 'bi bi-check-circle';
         }
       })
       .catch((e) => {
@@ -3149,8 +3149,8 @@ try {
       body: '<p>Edit your reason that this response is incorrect.</p>',
       input: {
         type: 'text',
-        placeholder: responses.find(r => String(r.id) === this.parentElement.querySelector('#response-id-input').value).reason || '',
-        defaultValue: responses.find(r => String(r.id) === this.parentElement.querySelector('#response-id-input').value).reason || '',
+        placeholder: responses.find(r => String(r.id) === this.parentElement.querySelector('.response-id-input').value).reason || '',
+        defaultValue: responses.find(r => String(r.id) === this.parentElement.querySelector('.response-id-input').value).reason || '',
       },
       buttons: [
         {
@@ -3175,8 +3175,8 @@ try {
     if (loadedSegmentCreator) return createSegment();
     if (!speed) {
       ui.view("speed");
-      document.getElementById("speed-mode-starting-question")?.focus();
-      document.getElementById("speed-mode-starting-question")?.setSelectionRange(0, document.getElementById("speed-mode-starting-question")?.value.length);
+      document.querySelector(".speed-mode-starting-question")?.focus();
+      document.querySelector(".speed-mode-starting-question")?.setSelectionRange(0, document.querySelector(".speed-mode-starting-question")?.value.length);
       return;
     }
     speed = false;
@@ -3185,21 +3185,21 @@ try {
   }
 
   function updateSpeedModeSegments() {
-    document.getElementById("speed-mode-segments").innerHTML = '';
+    document.querySelector(".speed-mode-segments").innerHTML = '';
     segments.forEach(segment => {
       var option = document.createElement('option');
       option.value = segment.id;
       option.innerHTML = segment.name;
       if (params.segment && (params.segment === String(segment.id))) option.selected = true;
-      document.getElementById("speed-mode-segments").appendChild(option);
+      document.querySelector(".speed-mode-segments").appendChild(option);
     });
   }
 
   function updateSpeedModeStartingQuestion() {
     const lastQuestionId = (questions.length > 0) ? questions.sort((a, b) => a.id - b.id)[questions.length - 1]?.id : -1;
-    document.getElementById("speed-mode-starting-question-id").value = ((lastQuestionId !== undefined && lastQuestionId !== null) ? lastQuestionId : -1) + 1;
-    document.getElementById("speed-mode-starting-question-id").min = ((lastQuestionId !== undefined && lastQuestionId !== null) ? lastQuestionId : -1) + 1;
-    document.getElementById("speed-mode-starting-question").value = String(questions.sort((a, b) => a.id - b.id)[questions.length - 1]?.number || questions.sort((a, b) => a.id - b.id)[questions.length - 1]?.id || 0).replace(/(\d+)([a-z]*)$/, (match, num, suffix) => {
+    document.querySelector(".speed-mode-starting-question-id").value = ((lastQuestionId !== undefined && lastQuestionId !== null) ? lastQuestionId : -1) + 1;
+    document.querySelector(".speed-mode-starting-question-id").min = ((lastQuestionId !== undefined && lastQuestionId !== null) ? lastQuestionId : -1) + 1;
+    document.querySelector(".speed-mode-starting-question").value = String(questions.sort((a, b) => a.id - b.id)[questions.length - 1]?.number || questions.sort((a, b) => a.id - b.id)[questions.length - 1]?.id || 0).replace(/(\d+)([a-z]*)$/, (match, num, suffix) => {
       return !suffix ? (parseInt(num, 10) + 1).toString() : ((suffix === 'z') ? ((parseInt(num, 10) + 1) + 'a') : (num + String.fromCharCode(suffix.charCodeAt(0) + 1)));
     });
   }
@@ -3212,12 +3212,12 @@ try {
     var segmentId = 0;
     var startingQuestionId = null;
     var startingQuestion = null;
-    if (!document.getElementById("speed-mode-segments") && !document.getElementById("speed-mode-starting-question-id")) return;
-    if (document.getElementById("speed-mode-segments")) segmentId = document.getElementById("speed-mode-segments").value;
+    if (!document.querySelector(".speed-mode-segments") && !document.querySelector(".speed-mode-starting-question-id")) return;
+    if (document.querySelector(".speed-mode-segments")) segmentId = document.querySelector(".speed-mode-segments").value;
     if (loadedSegmentEditor) segmentId = loadedSegment?.id;
-    if (document.getElementById("speed-mode-starting-question-id")) {
-      startingQuestionId = document.getElementById("speed-mode-starting-question-id").value;
-      startingQuestion = document.getElementById("speed-mode-starting-question").value;
+    if (document.querySelector(".speed-mode-starting-question-id")) {
+      startingQuestionId = document.querySelector(".speed-mode-starting-question-id").value;
+      startingQuestion = document.querySelector(".speed-mode-starting-question").value;
     }
     renderSpeedPond(segmentId, startingQuestionId, startingQuestion);
   }
@@ -3297,7 +3297,7 @@ try {
           ui.reportBugModal(null, String(error.stack));
         }
       });
-    const url = '/admin/upload?syllabus=' + document.getElementById("course-period-input").value;
+    const url = '/admin/upload?syllabus=' + document.querySelector(".course-period-input").value;
     const width = 600;
     const height = 217;
     const left = (window.screen.width / 2) - (width / 2);
@@ -3333,7 +3333,7 @@ try {
           ui.reportBugModal(null, String(error.stack));
         }
       });
-    const url = '/admin/upload?course=' + document.getElementById("course-period-input").value + '&platform=' + platform;
+    const url = '/admin/upload?course=' + document.querySelector(".course-period-input").value + '&platform=' + platform;
     const width = 600;
     const height = 217;
     const left = (window.screen.width / 2) - (width / 2);
@@ -3360,25 +3360,25 @@ try {
 
   function sortSegmentsDue() {
     if (!active) return;
-    document.getElementById('sort-segments-types').value = 'due';
+    document.querySelector(".sort-segments-types").value = 'due';
     return ui.view("sort-segments");
   }
 
   function sortSegmentsIncreasing() {
     if (!active) return;
-    document.getElementById('sort-segments-types').value = 'az';
+    document.querySelector(".sort-segments-types").value = 'az';
     return ui.view("sort-segments");
   }
 
   function sortSegmentsDecreasing() {
     if (!active) return;
-    document.getElementById('sort-segments-types').value = 'za';
+    document.querySelector(".sort-segments-types").value = 'za';
     return ui.view("sort-segments");
   }
 
   async function sortSegments(event, sortAs) {
     if (!active) return;
-    await settingsPush('sort-segments', sortAs || document.getElementById('sort-segments-types').value)
+    await settingsPush('sort-segments', sortAs || document.querySelector(".sort-segments-types").value)
       .catch(error => {
         if (storage.get("developer")) {
           alert(`Error @ admin.js: ${error.message}`);
@@ -3395,7 +3395,7 @@ try {
         }
       });
     var updatedSegments = [...segments];
-    switch (sortAs || document.getElementById('sort-segments-types').value) {
+    switch (sortAs || document.querySelector(".sort-segments-types").value) {
       case 'az':
         updatedSegments.sort((a, b) => {
           const nameA = String(a.number);
@@ -3515,10 +3515,10 @@ try {
     var updatedQuestions = [...document.getElementById("question-list").children].filter(q => q.classList.contains('question'));
     switch (type) {
       case '19':
-        updatedQuestions.sort((a, b) => Number((a.querySelector('data-swapy-item') ? a.querySelector('data-swapy-item').getAttribute('data-swapy-item') : a.id).split('questionList-')[1]) - Number((b.querySelector('data-swapy-item') ? b.querySelector('data-swapy-item').getAttribute('data-swapy-item') : b.id).split('questionList-')[1]));
+        updatedQuestions.sort((a, b) => Number((a.querySelector('data-swapy-item') ? a.querySelector('data-swapy-item').getAttribute('data-swapy-item') : a.id).split('question-list-')[1]) - Number((b.querySelector('data-swapy-item') ? b.querySelector('data-swapy-item').getAttribute('data-swapy-item') : b.id).split('question-list-')[1]));
         break;
       case '91':
-        updatedQuestions.sort((a, b) => Number((b.querySelector('data-swapy-item') ? b.querySelector('data-swapy-item').getAttribute('data-swapy-item') : b.id).split('questionList-')[1]) - Number((a.querySelector('data-swapy-item') ? a.querySelector('data-swapy-item').getAttribute('data-swapy-item') : a.id).split('questionList-')[1]));
+        updatedQuestions.sort((a, b) => Number((b.querySelector('data-swapy-item') ? b.querySelector('data-swapy-item').getAttribute('data-swapy-item') : b.id).split('question-list-')[1]) - Number((a.querySelector('data-swapy-item') ? a.querySelector('data-swapy-item').getAttribute('data-swapy-item') : a.id).split('question-list-')[1]));
         break;
       case 'az':
         updatedQuestions.sort((a, b) => {
@@ -3568,8 +3568,8 @@ try {
       updatedQuestionsString += updatedQuestions[i].outerHTML;
     }
     document.getElementById("question-list").innerHTML = updatedQuestionsString;
-    document.querySelectorAll('#edit-existing-question-button').forEach(a => a.addEventListener('click', editExistingQuestion));
-    document.querySelectorAll('#remove-existing-question-button').forEach(a => a.addEventListener('click', removeExistingQuestion));
+    document.querySelectorAll('.edit-existing-question-button').forEach(a => a.addEventListener('click', editExistingQuestion));
+    document.querySelectorAll('.remove-existing-question-button').forEach(a => a.addEventListener('click', removeExistingQuestion));
     document.getElementById("add-existing-question-button").disabled = (document.getElementById("add-question-input").children.length === 0) ? true : false;
     if (draggableQuestionList) draggableQuestionList.destroy();
     draggableQuestionList = createSwapy(document.getElementById("question-list"), {
@@ -3621,7 +3621,7 @@ try {
     if (storage.get("developer")) console.log('Rendering detailed report for', reportSlug);
     if (reportSlug.startsWith('seat-code-')) {
       const getElementById = id => document.getElementById(id);
-      const getValue = id => getElementById(id)?.value ?? '';
+      const getValue = className => document.querySelector(`.${className}`)?.value ?? '';
       const querySelector = sel => document.querySelector(sel);
       const querySelectorAll = sel => document.querySelectorAll(sel);
       const courseId = getValue('course-period-input');
@@ -3732,9 +3732,9 @@ try {
       const reportContainer = querySelector('#detailed-report');
       if (reportContainer) reportContainer.innerHTML = detailedReport;
     } else if (reportSlug.startsWith('segment-')) {
-      const filterQuestionInput = document.getElementById("filter-question-input");
-      const filterSeatInput = document.getElementById("filter-seat-input");
-      const coursePeriodInput = document.getElementById("course-period-input");
+      const filterQuestionInput = document.querySelector(".filter-question-input");
+      const filterSeatInput = document.querySelector(".filter-seat-input");
+      const coursePeriodInput = document.querySelector(".course-period-input");
       const hideIncorrectChk = document.getElementById('hideIncorrectAttempts');
       const hideUnansweredChk = document.getElementById('hideUnanswered');
       const useRosterChk = document.getElementById('useRoster');
@@ -3820,7 +3820,7 @@ try {
               return c && c.periods.includes(Number(String(x.seatCode)[0]));
             })
             .filter(x => {
-              const input = document.getElementById('filter-segment-input')?.value;
+              const input = document.querySelector(".filter-segment-input")?.value;
               if (!input) return true;
               const seg = segments.find(s => String(s.id) === String(x.segment));
               if (!seg) return false;
@@ -3888,22 +3888,22 @@ try {
         const barHTML = `
           <div class="barcount-wrapper">
             ${correctCnt ? `<div class="barcount correct" style="width:calc(${correctCnt / total}*100%)">${correctCnt}</div>` : ''}
-            ${otherCnt ? `<div class="barcount other"   style="width:calc(${otherCnt / total}*100%)">${otherCnt}</div>` : ''}
+            ${otherCnt ? `<div class="barcount other"  style="width:calc(${otherCnt / total}*100%)">${otherCnt}</div>` : ''}
             ${waitingCnt ? `<div class="barcount waiting" style="width:calc(${waitingCnt / total}*100%)">${waitingCnt}</div>` : ''}
             ${incorrectCnt ? `<div class="barcount incorrect" style="width:calc(${incorrectCnt / total}*100%)">${incorrectCnt}</div>` : ''}
           </div>`;
         detailedReport += `
-          <div class="detailed-report-question"${qResponses.length ? ` report="segment-question-${question.id}"` : ''}>
+          <div class="detailed-report-question"${qResponses.length ? ` report="segment-${segmentIdFromSlug}-question-${question.id}"` : ''}>
             <b>Question ${question.number} (${qResponses.length} Response${qResponses.length !== 1 ? 's' : ''})</b>
             ${barHTML}
           </div>
-          ${qResponses.length ? `<div class="section detailed-report" id="segment-question-${question.id}">${detailedReportHTML}</div>` : ''}`;
+          ${qResponses.length ? `<div class="section detailed-report" id="segment-${segmentIdFromSlug}-question-${question.id}">${detailedReportHTML}</div>` : ''}`;
       });
     } else if (reportSlug.startsWith('question-')) {
-      const $courseInput = document.getElementById('course-period-input');
-      const $segmentFilterInput = document.getElementById('filter-segment-input');
-      const $filterQuestionInput = document.getElementById('filter-question-input');
-      const $filterSeatInput = document.getElementById('filter-seat-input');
+      const $courseInput = document.querySelector(".course-period-input");
+      const $segmentFilterInput = document.querySelector(".filter-segment-input");
+      const $filterQuestionInput = document.querySelector(".filter-question-input");
+      const $filterSeatInput = document.querySelector(".filter-seat-input");
       const $hideIncorrectChk = document.getElementById('hideIncorrectAttempts');
       const $useRosterChk = document.getElementById('useRoster');
       const $responseSortSel = document.querySelector('#sort-report-responses [aria-selected="true"]');
@@ -4056,11 +4056,11 @@ try {
     if (!document.querySelector('.question-reports') || !questions.length) return;
     const reportsEl = document.querySelector('.question-reports');
     reportsEl.innerHTML = '';
-    const courseInput = document.getElementById('course-period-input');
+    const courseInput = document.querySelector(".course-period-input");
     const course = courses.find(c => courseInput && String(c.id) === courseInput.value);
-    const segmentFilter = document.getElementById('filter-segment-input')?.value;
-    const filterQuestionVal = document.getElementById('filter-question-input')?.value;
-    const sortSeatVal = document.getElementById('filter-seat-input')?.value;
+    const segmentFilter = document.querySelector(".filter-segment-input")?.value;
+    const filterQuestionVal = document.querySelector(".filter-question-input")?.value;
+    const sortSeatVal = document.querySelector(".filter-seat-input")?.value;
     const hideIncorrect = document.getElementById('hideIncorrectAttempts').checked;
     const hideUnanswered = document.getElementById('hideUnanswered').checked;
     const useRoster = document.getElementById('useRoster').checked;
@@ -4090,7 +4090,7 @@ try {
     }
     courseQuestions = courseQuestions
       .filter(q => filterQuestionVal?.startsWith('"') ? q.number === filterQuestionVal.replaceAll('"', '') : q.number.startsWith(filterQuestionVal ?? ''))
-      .sort((a, b) => document.getElementById('filter-segment-input')?.value ? 0 : a.id - b.id);
+      .sort((a, b) => document.querySelector(".filter-segment-input")?.value ? 0 : a.id - b.id);
     for (const question of courseQuestions) {
       let qResponses = responses.filter(r => r.question_id === question.id);
       if (courseInput) {
@@ -4199,22 +4199,22 @@ try {
     if (loadedSegment && (typeof question === 'string') && JSON.parse(loadedSegment.question_ids).find(q => String(q.id) === String(question))) {
       if (!addingQuestion) return;
       document.getElementById("add-question-input").value = addingQuestion.id;
-      div.id = `questionList-${addingQuestion.id}`;
-      div.setAttribute("data-swapy-slot", `questionList-${addingQuestion.id}`);
-      inner.setAttribute("data-swapy-item", `questionList-${addingQuestion.id}`);
+      div.id = `question-list-${addingQuestion.id}`;
+      div.setAttribute("data-swapy-slot", `question-list-${addingQuestion.id}`);
+      inner.setAttribute("data-swapy-item", `question-list-${addingQuestion.id}`);
       inner.innerHTML = `<div class="drag" data-swapy-handle><i class="bi bi-grip-vertical"></i></div>
       <div class="input-group">
-        <div class="space" id="question-container">
-          <input type="text" id="${addingQuestion.id}" value="ID ${addingQuestion.id} #${addingQuestion.number} - ${addingQuestion.question}" disabled>
+        <div class="question-container space">
+          <input type="text" data-question-id="${addingQuestion.id}" value="ID ${addingQuestion.id} #${addingQuestion.number} - ${addingQuestion.question}" disabled>
         </div>
       </div>
       <div class="input-group small">
-        <div class="space" id="question-container">
+        <div class="question-container space">
           <input type="text" value="${JSON.parse(loadedSegment.question_ids).find(q => String(q.id) === String(question)).name}">
         </div>
       </div>
-      <button class="space" id="edit-existing-question-button" square tooltip="Edit Question"><i class="bi bi-pencil"></i></button>
-      <button class="space" id="remove-existing-question-button" square tooltip="Remove Question"><i class="bi bi-trash"></i></button>`;
+      <button class="edit-existing-question-button space" square tooltip="Edit Question"><i class="bi bi-pencil"></i></button>
+      <button class="remove-existing-question-button space" square tooltip="Remove Question"><i class="bi bi-trash"></i></button>`;
       if (window.innerWidth >= 1000) {
         inner.addEventListener('mouseenter', () => {
           var question = addingQuestion;
@@ -4245,22 +4245,22 @@ try {
     } else if (loadedSegmentCreator && (typeof question === 'string')) {
       if (!addingQuestion) return;
       document.getElementById("add-question-input").value = addingQuestion.id;
-      div.id = `questionList-${addingQuestion.id}`;
-      div.setAttribute("data-swapy-slot", `questionList-${addingQuestion.id}`);
-      inner.setAttribute("data-swapy-item", `questionList-${addingQuestion.id}`);
+      div.id = `question-list-${addingQuestion.id}`;
+      div.setAttribute("data-swapy-slot", `question-list-${addingQuestion.id}`);
+      inner.setAttribute("data-swapy-item", `question-list-${addingQuestion.id}`);
       inner.innerHTML = `<div class="drag" data-swapy-handle><i class="bi bi-grip-vertical"></i></div>
       <div class="input-group">
-        <div class="space" id="question-container">
-          <input type="text" id="${addingQuestion.id}" value="ID ${addingQuestion.id} #${addingQuestion.number} - ${addingQuestion.question}" disabled>
+        <div class="question-container space">
+          <input type="text" data-question-id="${addingQuestion.id}" value="ID ${addingQuestion.id} #${addingQuestion.number} - ${addingQuestion.question}" disabled>
         </div>
       </div>
       <div class="input-group small">
-        <div class="space" id="question-container">
+        <div class="question-container space">
           <input type="text" value="${addingQuestion.number}">
         </div>
       </div>
-      <button class="space" id="edit-existing-question-button" square tooltip="Edit Question"><i class="bi bi-pencil"></i></button>
-      <button class="space" id="remove-existing-question-button" square tooltip="Remove Question"><i class="bi bi-trash"></i></button>`;
+      <button class="edit-existing-question-button space" square tooltip="Edit Question"><i class="bi bi-pencil"></i></button>
+      <button class="remove-existing-question-button space" square tooltip="Remove Question"><i class="bi bi-trash"></i></button>`;
       if (window.innerWidth >= 1000) {
         inner.addEventListener('mouseenter', () => {
           var question = addingQuestion;
@@ -4291,23 +4291,23 @@ try {
     } else if (this) {
       if (!document.getElementById("add-question-input").selectedOptions[0]) return;
       var questionId = document.getElementById("add-question-input").value;
-      if (!document.getElementById(`questionList-${questionId}`)) {
-        div.id = `questionList-${questionId}`;
-        div.setAttribute("data-swapy-slot", `questionList-${questionId}`);
-        inner.setAttribute("data-swapy-item", `questionList-${questionId}`);
+      if (!document.getElementById(`question-list-${questionId}`)) {
+        div.id = `question-list-${questionId}`;
+        div.setAttribute("data-swapy-slot", `question-list-${questionId}`);
+        inner.setAttribute("data-swapy-item", `question-list-${questionId}`);
         inner.innerHTML = `<div class="drag" data-swapy-handle><i class="bi bi-grip-vertical"></i></div>
       <div class="input-group">
-        <div class="space" id="question-container">
-          <input type="text" id="${questionId}" value="${document.getElementById("add-question-input").selectedOptions[0].innerHTML}" disabled>
+        <div class="question-container space">
+          <input type="text" data-question-id="${questionId}" value="${document.getElementById("add-question-input").selectedOptions[0].innerHTML}" disabled>
         </div>
       </div>
       <div class="input-group small">
-        <div class="space" id="question-container">
+        <div class="question-container space">
           <input type="text" value="${document.getElementById("add-question-input").selectedOptions[0].innerHTML.split('#')[1].split(' ')[0]}">
         </div>
       </div>
-      <button class="space" id="edit-existing-question-button" square tooltip="Edit Question"><i class="bi bi-pencil"></i></button>
-      <button class="space" id="remove-existing-question-button" square tooltip="Remove Question"><i class="bi bi-trash"></i></button>`;
+      <button class="edit-existing-question-button space" square tooltip="Edit Question"><i class="bi bi-pencil"></i></button>
+      <button class="remove-existing-question-button space" square tooltip="Remove Question"><i class="bi bi-trash"></i></button>`;
         if (window.innerWidth >= 1000) {
           inner.addEventListener('mouseenter', () => {
             var question = questions.find(q => String(q.id) === String(questionId));
@@ -4337,31 +4337,31 @@ try {
         }
       }
       document.getElementById("add-question-input").removeChild(document.getElementById("add-question-input").selectedOptions[0]);
-      if (document.getElementById(`questionList-${questionId}`)) return;
+      if (document.getElementById(`question-list-${questionId}`)) return;
     } else {
       var newQuestion = document.getElementById("add-question-input").children[document.getElementById("add-question-input").children.length - 1];
-      div.id = `questionList-${newQuestion.value}`;
-      div.setAttribute("data-swapy-slot", `questionList-${newQuestion.value}`);
-      inner.setAttribute("data-swapy-item", `questionList-${newQuestion.value}`);
+      div.id = `question-list-${newQuestion.value}`;
+      div.setAttribute("data-swapy-slot", `question-list-${newQuestion.value}`);
+      inner.setAttribute("data-swapy-item", `question-list-${newQuestion.value}`);
       inner.innerHTML = `<div class="drag" data-swapy-handle><i class="bi bi-grip-vertical"></i></div>
       <div class="input-group">
-        <div class="space" id="question-container">
-          <input type="text" id="${newQuestion.value}" value="${newQuestion.innerHTML}" disabled>
+        <div class="question-container space">
+          <input type="text" data-question-id="${newQuestion.value}" value="${newQuestion.innerHTML}" disabled>
         </div>
       </div>
       <div class="input-group small">
-        <div class="space" id="question-container">
+        <div class="question-container space">
           <input type="text" value="${newQuestion.innerHTML.split('#')[1].split(' ')[0]}">
         </div>
       </div>
-      <button class="space" id="edit-existing-question-button" square tooltip="Edit Question"><i class="bi bi-pencil"></i></button>
-      <button class="space" id="remove-existing-question-button" square tooltip="Remove Question"><i class="bi bi-trash"></i></button>`;
+      <button class="edit-existing-question-button space" square tooltip="Edit Question"><i class="bi bi-pencil"></i></button>
+      <button class="remove-existing-question-button space" square tooltip="Remove Question"><i class="bi bi-trash"></i></button>`;
       document.getElementById("add-question-input").removeChild(document.getElementById("add-question-input").children[document.getElementById("add-question-input").children.length - 1]);
     }
     div.appendChild(inner);
     document.getElementById("question-list").appendChild(div);
-    document.querySelectorAll('#edit-existing-question-button').forEach(a => a.addEventListener('click', editExistingQuestion));
-    document.querySelectorAll('#remove-existing-question-button').forEach(a => a.addEventListener('click', removeExistingQuestion));
+    document.querySelectorAll('.edit-existing-question-button').forEach(a => a.addEventListener('click', editExistingQuestion));
+    document.querySelectorAll('.remove-existing-question-button').forEach(a => a.addEventListener('click', removeExistingQuestion));
     document.getElementById("add-existing-question-button").disabled = (document.getElementById("add-question-input").children.length === 0) ? true : false;
     if (draggableQuestionList) draggableQuestionList.destroy();
     draggableQuestionList = createSwapy(document.getElementById("question-list"), {
@@ -4377,7 +4377,7 @@ try {
   function editExistingQuestion() {
     if (!active) return;
     if (ui.unsavedChanges) return ui.toast("You have unsaved changes. Please save or discard them before editing questions.", 3000, "error", "bi bi-exclamation-triangle-fill");
-    const url = `/admin/questions?segment=${loadedSegment.id}&question=${(this?.parentElement?.parentElement?.querySelector('[data-swapy-item]')?.getAttribute('data-swapy-item') || this?.parentElement?.parentElement?.id)?.split('questionList-')[1]}`;
+    const url = `/admin/questions?segment=${loadedSegment.id}&question=${(this?.parentElement?.parentElement?.querySelector('[data-swapy-item]')?.getAttribute('data-swapy-item') || this?.parentElement?.parentElement?.id)?.split('question-list-')[1]}`;
     const width = window.outerWidth;
     const height = window.outerHeight;
     const left = window.screenLeft;
@@ -4398,7 +4398,7 @@ try {
   function removeExistingQuestion() {
     if (!active) return;
     const option = document.createElement("option");
-    option.value = this.parentElement.querySelector('input').id;
+    option.value = this.parentElement.querySelector('input').dataset.questionId;
     option.innerHTML = this.parentElement.querySelector('input').value;
     document.getElementById("add-question-input").appendChild(option);
     this.parentElement.parentElement.remove();
@@ -4414,10 +4414,10 @@ try {
 
   function createSegment(event = null, exitToCourse = false) {
     if (!active) return;
-    const course = document.getElementById("course-period-input");
-    const number = document.getElementById("segment-number-input");
-    const name = document.getElementById("segment-name-input");
-    const due = document.getElementById("segment-due-date-input").value || null;
+    const course = document.querySelector(".course-period-input");
+    const number = document.querySelector(".segment-number-input");
+    const name = document.querySelector(".segment-name-input");
+    const due = document.querySelector(".segment-due-date-input").value || null;
     course.classList.remove("attention");
     number.classList.remove("attention");
     name.classList.remove("attention");
@@ -4436,7 +4436,7 @@ try {
     const question_ids = JSON.stringify(Array.from(document.querySelectorAll('.question')).filter(q => (q.querySelectorAll('input')[1].value.length > 0) && (q.querySelectorAll('input')[1].value != ' ')).map(q => {
       return {
         name: q.querySelectorAll('input')[1].value,
-        id: q.querySelectorAll('input')[0].id
+        id: q.querySelectorAll('input')[0].dataset.questionId
       };
     }));
     ui.toast(loadedSegmentEditor ? "Updating segment..." : "Creating segment...", 3000, "info", loadedSegmentEditor ? "bi bi-floppy-fill" : "bi bi-plus-circle-fill");
@@ -4516,10 +4516,10 @@ try {
     }
     loadedSegmentEditor = true;
     active = true;
-    document.getElementById("course-period-input").value = loadedSegment.course;
-    document.getElementById("segment-number-input").value = loadedSegment.number;
-    document.getElementById("segment-name-input").value = loadedSegment.name;
-    document.getElementById("segment-due-date-input").value = loadedSegment.due;
+    document.querySelector(".course-period-input").value = loadedSegment.course;
+    document.querySelector(".segment-number-input").value = loadedSegment.number;
+    document.querySelector(".segment-name-input").value = loadedSegment.name;
+    document.querySelector(".segment-due-date-input").value = loadedSegment.due;
     document.getElementById("question-list").innerHTML = '';
     JSON.parse(loadedSegment.question_ids).filter((item, index, self) => index === self.findIndex((t) => (t.id === item.id))).forEach(q => addExistingQuestion(q.id));
     document.getElementById("create-button").innerText = "Save";
@@ -4707,7 +4707,7 @@ try {
 
   function removeAllSegmentsDueDates() {
     if (!active) return;
-    const course = courses.find(c => document.getElementById("course-period-input") ? (String(c.id) === document.getElementById("course-period-input").value) : null);
+    const course = courses.find(c => document.querySelector(".course-period-input") ? (String(c.id) === document.querySelector(".course-period-input").value) : null);
     if (!course) return;
     ui.setUnsavedChanges(true);
     fetch(domain + '/due_dates', {
@@ -4820,7 +4820,7 @@ try {
 
   function clearResponses() {
     if (!active) return;
-    const course = courses.find(c => document.getElementById("course-period-input") ? (String(c.id) === document.getElementById("course-period-input").value) : null);
+    const course = courses.find(c => document.querySelector(".course-period-input") ? (String(c.id) === document.querySelector(".course-period-input").value) : null);
     if (!course) return;
     ui.setUnsavedChanges(true);
     fetch(domain + '/responses', {
@@ -4915,7 +4915,7 @@ try {
       option.innerHTML = course.name;
       document.getElementById("export-report-course").appendChild(option);
     });
-    document.getElementById("export-report-course").value = document.getElementById("course-period-input").value;
+    document.getElementById("export-report-course").value = document.querySelector(".course-period-input").value;
   }
 
   async function exportReport() {
@@ -4992,7 +4992,7 @@ try {
 
   function editUserModal() {
     if (!active) return;
-    const user = this.parentElement.parentElement.id;
+    const user = this.parentElement.parentElement.dataset.recordId;
     const role = this.parentElement.parentElement.querySelector('.role').innerText;
     const partialAccessCourses = JSON.parse(this.parentElement.parentElement.querySelector('.partialAccessCourses').innerText);
     const fullAccessCourses = JSON.parse(this.parentElement.parentElement.querySelector('.fullAccessCourses').innerText);
@@ -5269,7 +5269,7 @@ try {
 
   function deleteUserModal() {
     if (!active) return;
-    const user = this.parentElement.parentElement.id;
+    const user = this.parentElement.parentElement.dataset.recordId;
     const role = this.parentElement.parentElement.querySelector('.role').innerText;
     ui.modal({
       title: 'Delete User',
@@ -5354,7 +5354,7 @@ try {
       document.querySelector('.logs').setAttribute('hidden', '');
     }
     filteredLogs.forEach(log => {
-      document.querySelector('.logs').innerHTML += `<div class="enhanced-item${log.undid ? ' disabled' : ''}" id="${log.id}">
+      document.querySelector('.logs').innerHTML += `<div class="enhanced-item${log.undid ? ' disabled' : ''}" data-record-id="${log.id}">
         <span class="action" hidden>${log.action}</span>
         <span class="details">${escapeHTML(log.details)}</span>
         <span class="timestamp fit">${time.unixToString(log.timestamp)}</span>
@@ -5439,7 +5439,7 @@ try {
 
   function clearLogModal() {
     if (!active) return;
-    const id = this.parentElement.parentElement.id;
+    const id = this.parentElement.parentElement.dataset.recordId;
     const details = this.parentElement.parentElement.querySelector('.details').innerText;
     const timestamp = this.parentElement.parentElement.querySelector('.timestamp').innerText;
     ui.modal({
@@ -5508,7 +5508,7 @@ try {
 
   function undoActionModal() {
     if (!active) return;
-    const id = this.parentElement.parentElement.id;
+    const id = this.parentElement.parentElement.dataset.recordId;
     const details = this.parentElement.parentElement.querySelector('.details').innerText;
     const timestamp = this.parentElement.parentElement.querySelector('.timestamp').innerText;
     const action = this.parentElement.parentElement.querySelector('.action').innerText;
@@ -5643,7 +5643,7 @@ try {
 
   function removePasswordModal() {
     if (!active) return;
-    const seatCode = this.parentElement.parentElement.id;
+    const seatCode = this.parentElement.parentElement.dataset.recordId;
     ui.modal({
       title: 'Remove Password',
       body: `<p>Are you sure you would like to remove the password from seat code <code>${seatCode}</code>? This seat code will lose all their saved settings. This action is not reversible.</p>`,
@@ -5710,7 +5710,7 @@ try {
 
   function resetPasswordModal() {
     if (!active) return;
-    const seatCode = this.parentElement.parentElement.id;
+    const seatCode = this.parentElement.parentElement.dataset.recordId;
     ui.modal({
       title: 'Reset Password',
       body: `<p>Are you sure you would like to reset this password's associated password? The seat code will be prompted to set a new password on next app load. This action is not reversible.</p>`,
@@ -5866,7 +5866,7 @@ try {
 
   function downloadBackupModal() {
     if (!active) return;
-    const filename = this.parentElement.parentElement.id;
+    const filename = this.parentElement.parentElement.dataset.recordId;
     const file_name = this.parentElement.parentElement.querySelector('.file_name').innerText;
     const type = this.parentElement.parentElement.querySelector('.type').innerText;
     const modified = this.parentElement.parentElement.querySelector('.modified').innerText;
@@ -6047,7 +6047,7 @@ try {
         item.style.display = "none";
       }
     });
-    const container = document.getElementById("answer-container");
+    const container = document.querySelector(".answer-container");
     const target = document.querySelector(`[data-archive-type="${mode}"]`);
     const toHeight = target.getBoundingClientRect().height;
     ui.animate(
@@ -6071,8 +6071,8 @@ try {
     var itemName = null;
     switch (itemType) {
       case 'course':
-        if (!itemId) itemId = document.getElementById("course-period-input") ? courses.find(c => (String(c.id) === document.getElementById("course-period-input").value))?.id : null;
-        itemName = document.getElementById("course-period-input") ? courses.find(c => (String(c.id) === document.getElementById("course-period-input").value))?.name : null;
+        if (!itemId) itemId = document.querySelector(".course-period-input") ? courses.find(c => (String(c.id) === document.querySelector(".course-period-input").value))?.id : null;
+        itemName = document.querySelector(".course-period-input") ? courses.find(c => (String(c.id) === document.querySelector(".course-period-input").value))?.name : null;
         break;
       case 'segment':
         if (!itemId) itemId = loadedSegment ? loadedSegment.id : null;
@@ -6216,7 +6216,7 @@ try {
     if (!active) return;
     if (!this || !this.parentElement) return;
     var itemType = this.parentElement.getAttribute('archive-type');
-    var itemId = this.parentElement.id;
+    var itemId = this.parentElement.dataset.archiveId;
     if (!itemType || !itemId) return;
     var itemName = null;
     switch (itemType) {
@@ -6366,8 +6366,8 @@ try {
   }
 
   function viewRoster() {
-    if (!this || !this.parentElement || !this.parentElement.querySelector('input').id) return;
-    const roster = rosters.find(roster => String(roster.period) === this.parentElement.querySelector('input').id.split('period-')[1]);
+    if (!this || !this.parentElement || !this.parentElement.querySelector('input').dataset.period) return;
+    const roster = rosters.find(roster => String(roster.period) === this.parentElement.querySelector('input').dataset.period);
     var rosterDataString = '';
     JSON.parse(roster.data).forEach(row => {
       rosterDataString += `<br>${row.seatCode}: ${row.last}, ${row.first} (${row.email})`;
@@ -6414,8 +6414,8 @@ try {
   }
 
   function uploadRoster() {
-    if (!this || !this.parentElement || !this.parentElement.querySelector('input').id) return;
-    renderRosterPond(this.parentElement.querySelector('input').id.split('period-')[1]);
+    if (!this || !this.parentElement || !this.parentElement.querySelector('input').dataset.period) return;
+    renderRosterPond(this.parentElement.querySelector('input').dataset.period);
   }
 
   async function renderRosterPond(period) {
@@ -6733,8 +6733,8 @@ try {
 
   async function autofillAnswers() {
     if (!active) return;
-    const questionId = this.parentElement.parentElement.querySelector('#question-id-input')?.value;
-    const questionTitle = this.parentElement.parentElement.querySelector('#question-text-input')?.value;
+    const questionId = this.parentElement.parentElement.querySelector('.question-id-input')?.value;
+    const questionTitle = this.parentElement.parentElement.querySelector('.question-text-input')?.value;
     const questionDescription = renderedEditors[Number(questionId)].getText().replaceAll('\\n', ' ').replaceAll('  ', ' ').trim() || null;
     const questionImages = [...new Set(JSON.parse(questions.find(q => String(q.id) === questionId).images))];
     // console.log(questionTitle, questionDescription, questionImages);
@@ -6768,20 +6768,20 @@ try {
           } else {
             const aiCorrectAnswers = output.correct || [];
             const aiIncorrectAnswers = output.incorrect || [];
-            [...this.parentElement.parentElement.querySelectorAll('.correctAnswers .button-grid')].filter(e => e.querySelector('#question-correct-answer-input').value === '').forEach(e => e.remove());
-            [...this.parentElement.parentElement.querySelectorAll('.incorrectAnswers .button-grid')].filter(e => (e.querySelector('#question-incorrect-answer-input').value === '') && (e.querySelector('#question-incorrect-answer-reason-input').value === '')).forEach(e => e.remove());
+            [...this.parentElement.parentElement.querySelectorAll('.correctAnswers .button-grid')].filter(e => e.querySelector('.question-correct-answer-input').value === '').forEach(e => e.remove());
+            [...this.parentElement.parentElement.querySelectorAll('.incorrectAnswers .button-grid')].filter(e => (e.querySelector('.question-incorrect-answer-input').value === '') && (e.querySelector('.question-incorrect-answer-reason-input').value === '')).forEach(e => e.remove());
             aiCorrectAnswers.forEach(answer => {
-              if (!answer || [...this.parentElement.parentElement.querySelectorAll('.correctAnswers .button-grid')].find(e => e.querySelector('#question-correct-answer-input').value.toLowerCase() === answer.toLowerCase())) return;
+              if (!answer || [...this.parentElement.parentElement.querySelectorAll('.correctAnswers .button-grid')].find(e => e.querySelector('.question-correct-answer-input').value.toLowerCase() === answer.toLowerCase())) return;
               var input = document.createElement('div');
               input.className = "button-grid inputs";
-              input.innerHTML = `<input type="text" autocomplete="off" id="question-correct-answer-input" value="${escapeHTML(answer)}" placeholder="Answer" /><button data-remove-correct-answer-input square><i class="bi bi-dash"></i></button><button data-convert-correct-answer-to-incorrect-answer square><i class="bi bi-arrow-down-up"></i></button>`;
+              input.innerHTML = `<input type="text" autocomplete="off" class="question-correct-answer-input" value="${escapeHTML(answer)}" placeholder="Answer" /><button data-remove-correct-answer-input square><i class="bi bi-dash"></i></button><button data-convert-correct-answer-to-incorrect-answer square><i class="bi bi-arrow-down-up"></i></button>`;
               this.parentElement.parentElement.querySelector('.correctAnswers').insertBefore(input, this.parentElement.parentElement.querySelector('.correctAnswers').children[this.parentElement.parentElement.querySelector('.correctAnswers').children.length - 1]);
             });
             aiIncorrectAnswers.forEach(answer => {
-              if (!answer.answer || !answer.reason || [...this.parentElement.parentElement.querySelectorAll('.incorrectAnswers .button-grid')].find(e => e.querySelector('#question-incorrect-answer-input').value.toLowerCase() === answer.answer.toLowerCase())) return;
+              if (!answer.answer || !answer.reason || [...this.parentElement.parentElement.querySelectorAll('.incorrectAnswers .button-grid')].find(e => e.querySelector('.question-incorrect-answer-input').value.toLowerCase() === answer.answer.toLowerCase())) return;
               var input = document.createElement('div');
               input.className = "button-grid inputs";
-              input.innerHTML = `<input type="text" autocomplete="off" id="question-incorrect-answer-input" value="${escapeHTML(answer.answer)}" placeholder="Answer" /><input type="text" autocomplete="off" id="question-incorrect-answer-reason-input" value="${escapeHTML(answer.reason)}" placeholder="Reason" /><button data-remove-incorrect-answer-input square><i class="bi bi-dash"></i></button><button data-convert-incorrect-answer-to-correct-answer square><i class="bi bi-arrow-down-up"></i></button>`;
+              input.innerHTML = `<input type="text" autocomplete="off" class="question-incorrect-answer-input" value="${escapeHTML(answer.answer)}" placeholder="Answer" /><input type="text" autocomplete="off" class="question-incorrect-answer-reason-input" value="${escapeHTML(answer.reason)}" placeholder="Reason" /><button data-remove-incorrect-answer-input square><i class="bi bi-dash"></i></button><button data-convert-incorrect-answer-to-correct-answer square><i class="bi bi-arrow-down-up"></i></button>`;
               this.parentElement.parentElement.querySelector('.incorrectAnswers').insertBefore(input, this.parentElement.parentElement.querySelector('.incorrectAnswers').children[this.parentElement.parentElement.querySelector('.incorrectAnswers').children.length - 1]);
             });
             if (aiCorrectAnswers.length || aiIncorrectAnswers.length) this.parentElement.parentElement.setAttribute('modified', 'true');
@@ -6971,7 +6971,7 @@ try {
     Object.keys(pagination).forEach(group => {
       if (document.querySelector(`.${group} .pagination`)) {
         document.querySelectorAll(`.${group} .pagination`).forEach(paginationSection => {
-          const currentPage = paginationSection.parentElement.querySelector('#current-page');
+          const currentPage = paginationSection.parentElement.querySelector('.current-page');
           const input = currentPage?.querySelector('.current-page-input');
           const totalSpan = currentPage?.querySelector('.current-page-total');
           const totalPages = Math.max(1, Math.ceil((pagination[group].total || 0) / (storage.get("rowsPerPage") ? Number(storage.get("rowsPerPage")) : pagination[group].perPage)));
@@ -6987,10 +6987,10 @@ try {
             });
             input._pageHandlerAttached = true;
           }
-          paginationSection.parentElement.querySelector('#next-page-button').disabled = (pagination[group].page + 1 >= Math.ceil(pagination[group].total / (storage.get("rowsPerPage") ? Number(storage.get("rowsPerPage")) : pagination[group].perPage))) ? true : false;
-          paginationSection.parentElement.querySelector('#previous-page-button').disabled = (pagination[group].page - 1 < 0) ? true : false;
-          paginationSection.parentElement.querySelector('#first-page-button').disabled = (pagination[group].page - 1 < 0) ? true : false;
-          paginationSection.parentElement.querySelector('#last-page-button').disabled = (pagination[group].page + 1 >= Math.ceil(pagination[group].total / (storage.get("rowsPerPage") ? Number(storage.get("rowsPerPage")) : pagination[group].perPage))) ? true : false;
+          paginationSection.parentElement.querySelector('.next-page-button').disabled = (pagination[group].page + 1 >= Math.ceil(pagination[group].total / (storage.get("rowsPerPage") ? Number(storage.get("rowsPerPage")) : pagination[group].perPage))) ? true : false;
+          paginationSection.parentElement.querySelector('.previous-page-button').disabled = (pagination[group].page - 1 < 0) ? true : false;
+          paginationSection.parentElement.querySelector('.first-page-button').disabled = (pagination[group].page - 1 < 0) ? true : false;
+          paginationSection.parentElement.querySelector('.last-page-button').disabled = (pagination[group].page + 1 >= Math.ceil(pagination[group].total / (storage.get("rowsPerPage") ? Number(storage.get("rowsPerPage")) : pagination[group].perPage))) ? true : false;
         });
       }
     });
@@ -6999,7 +6999,7 @@ try {
   function pageQuestionIsOn(paginationSection, questionId) {
     const group = Array.from(paginationSection.parentElement.parentElement.classList).find(a => Object.keys(pagination).includes(a));
     if (!group) return 0;
-    const questionIndex = questions.filter(q => document.getElementById("filter-segment-input")?.value ? segments.filter(segment => JSON.parse(segment.question_ids).find(q1 => String(q1.id) === String(q.id))).map(segment => String(segment.id)).includes(String(document.getElementById("filter-segment-input")?.value)) : true).findIndex(q => String(q.id) === String(questionId));
+    const questionIndex = questions.filter(q => document.querySelector(".filter-segment-input")?.value ? segments.filter(segment => JSON.parse(segment.question_ids).find(q1 => String(q1.id) === String(q.id))).map(segment => String(segment.id)).includes(String(document.querySelector(".filter-segment-input")?.value)) : true).findIndex(q => String(q.id) === String(questionId));
     if (questionIndex === -1) return 0;
     return Math.floor(questionIndex / (storage.get("rowsPerPage") ? Number(storage.get("rowsPerPage")) : pagination[group].perPage)) || 0;
   }

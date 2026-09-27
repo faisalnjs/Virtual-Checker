@@ -11,6 +11,12 @@
   "theme_color": "#fafafa",
   "icons": [
     {
+      "src": "/pwa-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
       "src": "/banner-meta.png",
       "sizes": "1200x630",
       "type": "image/png",

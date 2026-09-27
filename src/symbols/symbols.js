@@ -116,7 +116,7 @@ document.querySelectorAll("[data-insert-symbol]").forEach((button) => {
   });
 });
 
-if (document.querySelector("#symbols-grid")) {
+if (document.querySelector(".symbols-grid")) {
   // Loop through unique symbols and append them to DOM
   uniqueSymbols.forEach((symbol) => {
     const button = new Element("button", symbol, {
@@ -144,14 +144,14 @@ if (document.querySelector("#symbols-grid")) {
       }
     });
     button.title = keys.join(", ");
-    document.querySelector("#symbols-grid").append(button);
+    document.querySelector(".symbols-grid").append(button);
     ui.addTooltip(button, keys.join(", "));
   });
 
   // Fill missing space
   const emptySpaces = 6 - (uniqueSymbols.length % 6);
   for (let i = 0; i < emptySpaces; i++) {
-    document.querySelector("#symbols-grid").append(document.createElement("div"));
+    document.querySelector(".symbols-grid").append(document.createElement("div"));
   }
 
   // Add suggest symbols button
@@ -161,7 +161,7 @@ if (document.querySelector("#symbols-grid")) {
     },
   }).element;
   suggestButton.style.marginTop = "5px";
-  document.querySelector("#symbols-grid").parentElement.append(suggestButton);
+  document.querySelector(".symbols-grid").parentElement.append(suggestButton);
 }
 
 // Insert symbol at cursor position

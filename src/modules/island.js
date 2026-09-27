@@ -234,7 +234,7 @@ export function moveFromCurrent(moveBy) {
             };
             break;
         case 'response':
-            var newQuestion = islandSource2.find(q => String(q.id) === String(newItem.querySelector('#response-question-id-input')?.value));
+            var newQuestion = islandSource2.find(q => String(q.id) === String(newItem.querySelector('.response-question-id-input')?.value));
             newData = {
                 sourceId: String(newIndex),
                 id: `ID ${newQuestion.id}`,

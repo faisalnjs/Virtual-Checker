@@ -40,7 +40,7 @@ dialog p img {
   text-decoration: none;
 }
 
-dialog #version-string {
+dialog .version-string {
   margin: -75px auto 45px 17.5px;
   width: fit-content;
   z-index: 1;
@@ -50,7 +50,7 @@ dialog #version-string {
   gap: 7px;
 }
 
-dialog #version-string p {
+dialog .version-string p {
   font-size: 15px;
   font-weight: 600;
   line-height: 30px;
@@ -60,7 +60,7 @@ dialog #version-string p {
   -webkit-text-fill-color: transparent;
 }
 
-dialog #version-string code {
+dialog .version-string code {
   font-size: 10px;
 }
 
@@ -259,7 +259,7 @@ div[data-color-input] > div[data-color-preview]:hover {
   }
 }
 
-#loader {
+.loader {
   position: fixed;
   top: 0;
   left: 0;
@@ -275,17 +275,17 @@ div[data-color-input] > div[data-color-preview]:hover {
   transition: 0.5s opacity;
 }
 
-#loader > * {
+.loader > * {
   animation: fadeIn 1s ease-in-out infinite alternate;
 }
 
-#loader.active {
+.loader.active {
   display: flex;
   opacity: 1;
   transition: 0.5s opacity;
 }
 
-#loader .loader-bar-wrapper {
+.loader .loader-bar-wrapper {
   position: absolute;
   margin-bottom: -100px;
   width: 120px;
@@ -296,7 +296,7 @@ div[data-color-input] > div[data-color-preview]:hover {
   animation: fadeIn 0.5s ease-out 0.25s both;
 }
 
-#loader .loader-bar {
+.loader .loader-bar {
   height: 100%;
   width: 40%;
   background: var(--accent-color);
@@ -636,27 +636,27 @@ body:has(.welcome-container.active) {
   min-width: 50vw;
 }
 
-.welcome-container .layout-chooser #theme-preview {
+.welcome-container .layout-chooser .theme-preview {
   cursor: pointer;
 }
 
-.welcome-container .layout-chooser #theme-preview.selected,
-.welcome-container .layout-chooser #theme-preview:hover {
+.welcome-container .layout-chooser .theme-preview.selected,
+.welcome-container .layout-chooser .theme-preview:hover {
   background-color: var(--surface-color);
 }
 
-.welcome-container .layout-chooser #theme-preview.selected .text-placeholder,
-.welcome-container .layout-chooser #theme-preview:hover .text-placeholder {
+.welcome-container .layout-chooser .theme-preview.selected .text-placeholder,
+.welcome-container .layout-chooser .theme-preview:hover .text-placeholder {
   background-color: var(--text-color);
 }
 
-.welcome-container .layout-chooser #theme-preview.selected .control-placeholder,
-.welcome-container .layout-chooser #theme-preview:hover .control-placeholder {
+.welcome-container .layout-chooser .theme-preview.selected .control-placeholder,
+.welcome-container .layout-chooser .theme-preview:hover .control-placeholder {
   background-color: var(--accent-color);
 }
 
-.welcome-container .layout-chooser #theme-preview.selected .control-placeholder.pill,
-.welcome-container .layout-chooser #theme-preview:hover .control-placeholder.pill {
+.welcome-container .layout-chooser .theme-preview.selected .control-placeholder.pill,
+.welcome-container .layout-chooser .theme-preview:hover .control-placeholder.pill {
   border-radius: 100vh;
 }
 
@@ -807,11 +807,11 @@ body:has(.topbar) .island {
     0.25s max-height;
 }
 
-body:has(.topbar) #checker.horizontal .column:last-child {
+body:has(.topbar) .checker.horizontal .column:last-child {
   transition: 0.25s top;
 }
 
-:root:hover:has(.topbar) #checker.horizontal .column:last-child {
+:root:hover:has(.topbar) .checker.horizontal .column:last-child {
   top: 63px;
   transition: 0.25s top;
 }
@@ -983,18 +983,18 @@ body:has(.topbar) #checker.horizontal .column:last-child {
   min-height: unset !important;
 }
 
-.pagination #current-page {
+.pagination .current-page {
   padding: 0 10px;
 }
 
-.pagination #current-page label {
+.pagination .current-page label {
   display: flex;
   flex-direction: row;
   align-items: center;
   gap: 5px;
 }
 
-.pagination #current-page input {
+.pagination .current-page input {
   background: none;
   padding: 0 5px;
   height: unset;
@@ -1006,14 +1006,14 @@ body:has(.topbar) #checker.horizontal .column:last-child {
   border-radius: 5px;
 }
 
-.pagination #current-page input:not(:hover):not(:focus) {
+.pagination .current-page input:not(:hover):not(:focus) {
   padding: 0;
   appearance: textfield;
   -moz-appearance: textfield;
 }
 
-.pagination #current-page input:not(:hover):not(:focus)::-webkit-inner-spin-button,
-.pagination #current-page input:not(:hover):not(:focus)::-webkit-outer-spin-button {
+.pagination .current-page input:not(:hover):not(:focus)::-webkit-inner-spin-button,
+.pagination .current-page input:not(:hover):not(:focus)::-webkit-outer-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }

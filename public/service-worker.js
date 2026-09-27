@@ -1,3 +1,4 @@
+const DEVELOPMENT = new URL(self.location.href).searchParams.get('dev') === '1';
 const CACHE_PREFIX = 'virtual-checker';
 const CACHE_VERSION = new URL(self.location.href).searchParams.get('v') || 'v1';
 const PAGE_CACHE = `${CACHE_PREFIX}-pages-${CACHE_VERSION}`;
@@ -32,6 +33,10 @@ const PRECACHE_URLS = [
 
 self.addEventListener('install', (event) => {
   event.waitUntil((async () => {
+    if (DEVELOPMENT) {
+      await self.skipWaiting();
+      return;
+    }
     const cache = await caches.open(PAGE_CACHE);
     await cache.addAll(PRECACHE_URLS);
     await self.skipWaiting();
@@ -40,6 +45,10 @@ self.addEventListener('install', (event) => {
 
 self.addEventListener('activate', (event) => {
   event.waitUntil((async () => {
+    if (DEVELOPMENT) {
+      await self.clients.claim();
+      return;
+    }
     const cacheNames = await caches.keys();
     await Promise.all(cacheNames.map((cacheName) => {
       if (cacheName.startsWith(CACHE_PREFIX) && cacheName !== PAGE_CACHE && cacheName !== ASSET_CACHE) {
@@ -52,11 +61,12 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
+  if (DEVELOPMENT) return;
   const { request } = event;
 
   if (request.method !== 'GET' || new URL(request.url).origin !== self.location.origin) return;
 
-  if (request.mode === 'navigate') {
+  if (request.mode === 'navigate' || new URL(request.url).pathname === '/manifest.webmanifest') {
     event.respondWith(networkFirst(request));
     return;
   }
@@ -71,7 +81,7 @@ self.addEventListener('notificationclick', (event) => {
   const targetUrl = event.notification?.data?.url || '/';
 
   event.waitUntil((async () => {
-    const allClients = await clients.matchAll({ type: 'window', includeUncontrolled: true });
+    const allClients = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
     const matchingClient = allClients.find((client) => client.url.startsWith(self.location.origin));
 
     if (matchingClient) {
@@ -82,7 +92,7 @@ self.addEventListener('notificationclick', (event) => {
       return;
     }
 
-    await clients.openWindow(targetUrl);
+    await self.clients.openWindow(targetUrl);
   })());
 });
 

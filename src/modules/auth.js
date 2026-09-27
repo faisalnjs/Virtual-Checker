@@ -228,7 +228,7 @@ export async function sync(hideWelcome = true, returnFunction = null) {
                 )));
                 console.log(`${settingsIsSynced ? '🟢' : '🟡'} Settings is ${!settingsIsSynced ? 'not ' : ''}synced!`);
                 if (settingsIsSynced) {
-                    if (document.getElementById('checker')) document.getElementById('checker').classList = r.settings['layout'] || '';
+                    if (document.querySelector(".checker")) document.querySelector(".checker").classList = 'checker ' + (r.settings['layout'] || '');
                     if (returnFunction) returnFunction();
                     return;
                 }
@@ -273,7 +273,7 @@ export async function sync(hideWelcome = true, returnFunction = null) {
                                         ui.reportBugModal(null, String(error.stack));
                                     }
                                 });
-                            if (document.getElementById('checker')) document.getElementById('checker').classList = r.settings['layout'] || '';
+                            if (document.querySelector(".checker")) document.querySelector(".checker").classList = 'checker ' + (r.settings['layout'] || '');
                         }
                         ui.setUnsavedChanges(false);
                         window.location.reload();
@@ -684,10 +684,10 @@ export async function loadAdminSettings(courses) {
         .then(r => {
             if ((window.location.pathname !== '/ta/') && (r.default_page !== null) && document.referrer && (document.referrer.split(window.location.origin)[1] === '/') && (r.default_page !== window.location.pathname)) window.location.href = r.default_page;
             if (r.default_course !== null) ui.setDefaultCourse(r.default_course);
-            const pagesList = document.getElementById("default-page");
-            const coursesList = document.getElementById("default-course");
-            const rowsPerPageList = document.getElementById("default-rows-per-page");
-            const responseSortList = document.getElementById("default-responses-sorting");
+            const pagesList = document.querySelector(".default-page");
+            const coursesList = document.querySelector(".default-course");
+            const rowsPerPageList = document.querySelector(".default-rows-per-page");
+            const responseSortList = document.querySelector(".default-responses-sorting");
             if (!pagesList || !coursesList) return;
             pagesList.innerHTML = '';
             if (window.location.pathname === '/ta/') {
@@ -722,10 +722,10 @@ export async function loadAdminSettings(courses) {
                 [...responseSortList.children].forEach(item => {
                     if (item.value === r.default_responses_sorting) item.selected = true;
                 });
-                if (document.getElementById('sort-responses-input')) document.getElementById('sort-responses-input').value = r.default_responses_sorting;
+                if (document.querySelector(".sort-responses-input")) document.querySelector(".sort-responses-input").value = r.default_responses_sorting;
             }
             ui.reloadUnsavedInputs();
-            document.getElementById("save-admin-settings").addEventListener("click", async () => {
+            document.querySelector(".save-admin-settings").addEventListener("click", async () => {
                 await fetch(domain + '/user/settings', {
                     method: "POST",
                     headers: {
@@ -956,4 +956,10 @@ export async function refundThemes(themes = []) {
             console.error(e);
             if (!e.message || (e.message && (e.message.includes('NetworkError') || !e.message.includes(".")))) ui.view("api-fail");
         });
+}
+
+export function getDailyThemeImageUrl(imageUrl) {
+    const match = /^https:\/\/img\.peapix\.com\/([a-f0-9]{32})_640\.jpg$/.exec(imageUrl);
+    if (!match) throw new Error("Invalid daily theme thumbnail URL");
+    return `${domain}/daily_theme_image/${match[1]}`;
 }

@@ -27,7 +27,7 @@ var delay = ms => new Promise(res => setTimeout(res, ms));
 
 export async function connect(newDrawDomain, newDomain = null) {
     console.log('Connecting...')
-    period = document.getElementById('period-input').value;
+    period = document.querySelector(".period-input").value;
     try {
         if (!drawDomain) drawDomain = newDrawDomain;
         if (!domain && newDomain) domain = newDomain;
@@ -153,11 +153,11 @@ async function updateSession(sessionKey, strokes = []) {
         setTimeout(() => {
         var currentPeriod = getExtendedPeriod();
         if ((currentPeriod != -1) && courses.flatMap(course => JSON.parse(course.periods).map(period => { return { period, name: course.name } })).some(coursePeriod => coursePeriod.period === (currentPeriod + 1))) {
-            document.getElementById("period-input").value = getExtendedPeriod() + 1;
+            document.querySelector(".period-input").value = getExtendedPeriod() + 1;
         } else if (document.querySelectorAll('#live-drawing-periods .sessions').length) {
-            document.getElementById("period-input").value = Array.from(document.querySelectorAll('#live-drawing-periods .sessions')).sort((a, b) => b.children.length - a.children.length)[0].getAttribute('data-period');
+            document.querySelector(".period-input").value = Array.from(document.querySelectorAll('#live-drawing-periods .sessions')).sort((a, b) => b.children.length - a.children.length)[0].getAttribute('data-period');
         }
-        document.getElementById("period-input").addEventListener("change", syncLiveDrawingPeriod);
+        document.querySelector(".period-input").addEventListener("change", syncLiveDrawingPeriod);
         syncLiveDrawingPeriod();
         refreshSavedLiveDrawingSessions();
         active = true;
@@ -268,7 +268,7 @@ async function updateSingleSession(group, seatCode, oldStrokes = [], newStrokes 
         });
         const overlays = sessionDiv.querySelector('.overlays');
         const toggleBtn = document.createElement('button');
-        toggleBtn.id = 'toggle-seat-code-button';
+        toggleBtn.classList.add('toggle-seat-code-button');
         toggleBtn.setAttribute('square', '');
         toggleBtn.setAttribute('tooltip', 'Show/Hide Seat Code');
         toggleBtn.innerHTML = '<i class="bi bi-eye"></i>';
@@ -283,7 +283,7 @@ async function updateSingleSession(group, seatCode, oldStrokes = [], newStrokes 
         });
         overlays.appendChild(toggleBtn);
         const resetBtn = document.createElement('button');
-        resetBtn.id = 'clear-seat-code-button';
+        resetBtn.classList.add('clear-seat-code-button');
         resetBtn.setAttribute('square', '');
         resetBtn.setAttribute('tooltip', 'Clear Drawing Board');
         resetBtn.innerHTML = '<i class="bi bi-x-lg"></i>';
@@ -366,7 +366,7 @@ async function renderStrokesIntoSession(seatCode, oldStrokes = [], newStrokes = 
 hideSeatCodesButton?.addEventListener('change', (e) => {
     hideSeatCodes = !!e.target.checked;
     document.querySelectorAll('.session .meta').forEach(el => el.style.opacity = hideSeatCodes ? '0' : '1');
-    // document.querySelectorAll('.session #toggle-seat-code-button').forEach(btn => btn.style.display = hideSeatCodes ? 'flex' : 'none');
+    // document.querySelectorAll('.session .toggle-seat-code-button').forEach(btn => btn.style.display = hideSeatCodes ? 'flex' : 'none');
 });
 
 saveLiveDrawingsButton?.addEventListener('click', async () => {
@@ -391,8 +391,8 @@ saveLiveDrawingsButton?.addEventListener('click', async () => {
             images,
             meta: {
                 created: new Date().toISOString(),
-                period: document.getElementById('period-input').value || null,
-                name: document.getElementById('saved-session-name').value || `Live Drawing Session - Period ${document.getElementById('period-input').value || 0} - ${new Date().toLocaleString()}`,
+                period: document.querySelector(".period-input").value || null,
+                name: document.getElementById('saved-session-name').value || `Live Drawing Session - Period ${document.querySelector(".period-input").value || 0} - ${new Date().toLocaleString()}`,
             },
             usr: storage.get('usr'),
             pwd: storage.get('pwd')
@@ -447,7 +447,7 @@ export async function refreshSavedLiveDrawingSessions(newDomain = null) {
         document.querySelector('.saved-live-drawing-sessions').removeAttribute('hidden');
         refreshSessionsJSON.sessions = refreshSessionsJSON.sessions.sort((a, b) => b.created - a.created);
         refreshSessionsJSON.sessions.forEach(session => {
-            document.querySelector('.saved-live-drawing-sessions').innerHTML += `<div class="enhanced-item" id="${session.id}">
+            document.querySelector('.saved-live-drawing-sessions').innerHTML += `<div class="enhanced-item" data-session-id="${session.id}">
               <span class="sessionName">${session.name}</span>
               <span class="actions">
                 <button class="icon" data-delete-session tooltip="Delete Session">
@@ -462,10 +462,10 @@ export async function refreshSavedLiveDrawingSessions(newDomain = null) {
             </div>`;
         });
         refreshSessionsJSON.sessions.forEach(session => {
-            document.querySelector(`.saved-live-drawing-sessions [id='${session.id}'] [data-open-session]`).addEventListener('click', async () => {
+            document.querySelector(`.saved-live-drawing-sessions [data-session-id='${session.id}'] [data-open-session]`).addEventListener('click', async () => {
                 viewSavedSession(session.id);
             });
-            document.querySelector(`.saved-live-drawing-sessions [id='${session.id}'] [data-delete-session]`).addEventListener('click', async () => {
+            document.querySelector(`.saved-live-drawing-sessions [data-session-id='${session.id}'] [data-delete-session]`).addEventListener('click', async () => {
                 deleteSavedSession(session.id);
             });
         });
@@ -481,7 +481,7 @@ document.querySelector('[refresh-live-drawing-saved-sessions]')?.addEventListene
 });
 
 function syncLiveDrawingPeriod() {
-    const period = document.getElementById('period-input').value;
+    const period = document.querySelector(".period-input").value;
     document.querySelectorAll('[data-period]').forEach(sessions => {
         sessions.style.display = (sessions.getAttribute('data-period') === period) ? 'grid' : 'none';
     });
@@ -495,7 +495,7 @@ export async function close(err = null, retry = false) {
     liveDrawingPeriods?.setAttribute('hidden', '');
     startLiveDrawingsButton.removeAttribute('hidden');
     startLiveDrawingsButton.removeAttribute('disabled');
-    document.getElementById('period-input')?.removeAttribute('disabled');
+    document.querySelector(".period-input")?.removeAttribute('disabled');
     try {
         if (!retry) {
             reconnectInterval && clearInterval(reconnectInterval);

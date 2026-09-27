@@ -7,6 +7,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#fafafa" />
   <link rel="manifest" href="/manifest.webmanifest" />
+  <script type="module" src="/src/modules/pwa-install.js"></script>
   <link rel="shortcut icon" href="favicon.ico" type="image/x-icon" media="(prefers-color-scheme: dark)" />
   <link rel="shortcut icon" href="favicon-dark.ico" type="image/x-icon" media="(prefers-color-scheme: light)" />
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
@@ -37,7 +38,7 @@
 </head>
 
 <body class="col">
-  <div id="header">
+  <div class="header">
     <svg xmlns="http://www.w3.org/2000/svg" height="2.5em" viewBox="0 0 1041 732" fill="none"
       class="virtual-checker-logo">
       <path
@@ -47,13 +48,13 @@
         d="M189.838 59.888C202.279 55.741 210.44 56.363 217.578 59.931C224.715 63.5 230.493 70.81 235.656 86.298C251.225 133.005 278.027 213.412 299.189 276.896C304.344 292.362 312.472 296.957 322.252 296.957C332.033 296.957 339.718 293.692 345.627 275.965C360.443 231.517 378.763 176.556 396.583 123.097C430.426 21.567 472.963 0 567.37 0C702.785 0 897.037 0 984.213 0C1007.19 0 1013.22 4.649 1018.88 12.496C1024.53 20.342 1025.91 30.927 1020.96 45.757C1003.43 98.372 978.676 172.62 965.135 213.242C958.535 233.041 942.92 244.474 922.051 244.44C867.547 244.351 734.987 244.117 660.22 243.996C626.461 243.941 609.299 256.289 598.623 288.316C585.437 327.874 567.7 381.085 553.255 424.42C547.69 441.115 549.36 457.81 557.708 469.392C566.057 480.975 578.691 487.839 596.163 487.839C665.057 487.839 769.309 487.839 828.841 487.839C841.883 487.839 850.611 492.488 856.266 500.334C861.921 508.18 863.336 518.639 859.639 529.731C842.137 582.235 816.643 658.717 803.139 699.23C797.202 717.039 778.155 731.758 759.383 731.758C688.339 731.758 487.826 731.758 340.593 731.758C241.323 731.758 180.603 692.479 149.211 598.303C101.094 453.954 30.348 241.716 3.64795 161.614C-1.50905 146.144 -0.672047 138.629 2.89595 131.492C6.46495 124.354 10.977 119.509 28.36 113.714C72.841 98.887 145.357 74.715 189.838 59.888Z"
         fill="currentColor" />
     </svg>
-    <svg xmlns="http://www.w3.org/2000/svg" height="2.5rem" viewBox="0 0 939.26 845.57" id="atreides-logo">
+    <svg xmlns="http://www.w3.org/2000/svg" height="2.5rem" viewBox="0 0 939.26 845.57" class="atreides-logo">
       <path fill="currentColor"
         d="M939.26 0v160.43L540.42 559.27v215.51l-70.79 70.79-70.79-70.79V559.27L0 160.43V0l469.63 470.64L939.26 0z" />
       <path fill="currentColor"
         d="M372.56 569.37v179.14l-97.74-97.75v-82.63L58.83 352.14v-96.51l313.73 313.74zM547.49 358.93l-77.28 77.28-77.77-77.77 77.19-77.19h69.24l5.68 5.68v21.9l-7.34-7.34-23.58 23.58 33.86 33.86ZM566.7 569.37v179.14l97.74-97.75v-82.63l215.99-215.99v-96.51L566.7 569.37z" />
     </svg>
-    <svg xmlns="http://www.w3.org/2000/svg" height="2.5rem" viewBox="0 0 1024 806.99" id="virtual-checker-butterfly">
+    <svg xmlns="http://www.w3.org/2000/svg" height="2.5rem" viewBox="0 0 1024 806.99" class="virtual-checker-butterfly">
       <path fill="currentColor"
         d="M363.41 378.38s-41.8-226.57-225.55-224.82c-221.29 2.11-134.61 298.78-27.42 425.27 107.19 126.48 302.27 274.41 420.18 214.38 117.91-60.03 87.28-309.52 68.6-452.34-14.67-112.11-29.57-188.01-135.93-182.37-134.65 7.13-99.88 219.89-99.88 219.89Z" />
       <path fill="currentColor"
@@ -66,7 +67,7 @@
       </button>
     </div>
   </div>
-  <div id="checker">
+  <div class="checker">
     <button square data-toggle-segment-completion tooltip="Course & Segment Completion"><i
         class="bi bi-info-square"></i><i class="bi bi-info-square-fill"></i></button>
     <button square data-toggle-layout tooltip="Switch Layout"><i class="bi bi-app"></i><i
@@ -76,20 +77,20 @@
         <h1><span class="code" data-modal-view="settings/code">000</span></h1>
         <div class="button-grid inputs">
           <div class="input-group">
-            <label for="course-input">Course</label>
-            <div class="space" id="question-container">
-              <input type="text" autocomplete="off" id="course-input" value="Unknown Course" disabled />
+            <label for="index-course-input">Course</label>
+            <div class="question-container space">
+              <input id="index-course-input" type="text" autocomplete="off" class="course-input" value="Unknown Course" disabled />
             </div>
           </div>
           <div class="input-group">
             <label for="segment-input">Segment</label>
-            <div class="space" id="question-container">
+            <div class="question-container space">
               <select id="segment-input"></select>
             </div>
           </div>
           <div class="input-group">
             <label for="question-input">Question #</label>
-            <div class="space" id="question-container">
+            <div class="question-container space">
               <select id="question-input"></select>
             </div>
           </div>
@@ -179,7 +180,7 @@
       </div>
       <div class="input-group hiddenOnLoad">
         <label for="answer-input">Answer</label>
-        <div class="space" id="answer-container">
+        <div class="answer-container space">
           <div data-answer-mode="input">
             <div class="button-grid extra-space">
               <button data-multiple-choice="a">A</button>
@@ -193,7 +194,7 @@
               <p id="answer-suggestion"></p>
             </div>
             <div class="row">
-              <div class="button-grid" id="insert-row">
+              <div class="insert-row button-grid">
                 <button data-insert-symbol="0"></button>
                 <button data-insert-symbol="1"></button>
                 <button data-insert-symbol="2"></button>
@@ -221,7 +222,7 @@
           </div>
           <div data-answer-mode="set">
             <div class="row">
-              <div class="button-grid" id="insert-row">
+              <div class="insert-row button-grid">
                 <button data-insert-symbol="0" data-target-input="set-input"></button>
                 <button data-insert-symbol="1" data-target-input="set-input"></button>
                 <button data-insert-symbol="2" data-target-input="set-input"></button>
@@ -260,7 +261,7 @@
           </div>
           <div data-answer-mode="matrix">
             <div class="row">
-              <div class="button-grid" id="insert-row">
+              <div class="insert-row button-grid">
                 <button data-insert-symbol="0" data-target-input="set-input"></button>
                 <button data-insert-symbol="1" data-target-input="set-input"></button>
                 <button data-insert-symbol="2" data-target-input="set-input"></button>
@@ -278,12 +279,12 @@
             </div>
             <div class="input-group" id="matrix">
               <div class="row" data-matrix-row="1">
-                <input type="text" autocomplete="off" id="matrix-column" data-matrix-column="1" />
-                <input type="text" autocomplete="off" id="matrix-column" data-matrix-column="2" />
+                <input type="text" autocomplete="off" class="matrix-column" data-matrix-column="1" />
+                <input type="text" autocomplete="off" class="matrix-column" data-matrix-column="2" />
               </div>
               <div class="row" data-matrix-row="2">
-                <input type="text" autocomplete="off" id="matrix-column" data-matrix-column="1" />
-                <input type="text" autocomplete="off" id="matrix-column" data-matrix-column="2" />
+                <input type="text" autocomplete="off" class="matrix-column" data-matrix-column="1" />
+                <input type="text" autocomplete="off" class="matrix-column" data-matrix-column="2" />
               </div>
             </div>
             <div class="button-grid">
@@ -307,7 +308,7 @@
     </div>
   </div>
   <!-- Controls -->
-  <div id="controls-container" class="pill">
+  <div class="controls-container pill">
     <button class="icon" data-modal-view="colorize" tooltip="Colorize Theme" hidden>
       <i class="bi bi-palette2"></i>
     </button>
@@ -329,10 +330,13 @@
     <!-- <button class="icon" data-modal-view="clear-data-fix" tooltip="Clear Data Fix">
         <i class="bi bi-exclamation-triangle"></i>
       </button> -->
+    <button type="button" class="icon" data-install-pwa tooltip="Install App" aria-label="Install App" hidden>
+      <i class="bi bi-app-indicator" aria-hidden="true"></i>
+    </button>
   </div>
   <!-- Symbols -->
   <dialog data-modal-page="symbols" data-page-title="Symbols">
-    <div id="symbols-grid"></div>
+    <div class="symbols-grid"></div>
   </dialog>
   <!-- History -->
   <dialog data-modal-page="history" data-page-title="History">
@@ -362,7 +366,7 @@
   <!-- Settings -->
   <dialog data-modal-page="settings" data-page-title="Settings">
     <img src="banner.png" alt="Virtual Checker Banner">
-    <span class="version" id="version-string"></span>
+    <span class="version-string version"></span>
     <button data-modal-view="settings/code">Seat Code</button>
     <button data-modal-view="store">Theme Store</button>
     <button data-modal-view="settings/keybinds">Keyboard Shortcuts</button>
@@ -374,14 +378,14 @@
     <button data-suggestions>Make Suggestion</button>
     <button data-logout>Log Out</button>
     <div data-modal-page="code" data-page-title="Seat Code">
-      <input type="text" inputmode="numeric" placeholder="000" maxlength="3" id="code-input" />
+      <input type="text" inputmode="numeric" placeholder="000" maxlength="3" class="code-input" />
       <button data-modal-view="settings/code/help">Need help?</button>
       <div data-modal-actions>
-        <button id="save-code-button">Save</button>
+        <button class="save-code-button">Save</button>
       </div>
       <div data-modal-page="help" data-page-title="Seat Code Finder">
-        <label for="period-input">Period</label>
-        <select id="period-input">
+        <label for="index-period-input">Period</label>
+        <select id="index-period-input" class="period-input">
           <option value="1">1</option>
           <option value="2">2</option>
           <option value="3">3</option>
@@ -394,7 +398,7 @@
         </select>
         <p>Where do you sit?</p>
         <p class="hint">Screen</p>
-        <div id="seat-grid"></div>
+        <div class="seat-grid"></div>
       </div>
     </div>
     <div data-modal-page="keybinds" data-page-title="Keyboard Shortcuts">
@@ -470,7 +474,7 @@
   <!-- Theme Store -->
   <dialog data-modal-page="store" data-page-title="Theme Store" class="large">
     <div data-modal-page="theme" data-page-title="Your Themes">
-      <div id="theme-preview">
+      <div class="theme-preview">
         <h1 class="text-placeholder">000</h1>
         <p class="text-placeholder">Question</p>
         <div class="control-placeholder"></div>
@@ -576,7 +580,7 @@
       <button class="submit-button" id="reset-colorize">Reset</button>
     </div>
   </dialog>
-  <div id="loader" class="active">
+  <div class="loader active">
     <svg xmlns="http://www.w3.org/2000/svg" height="2.5em" viewBox="0 0 1041 732" fill="none"
       class="virtual-checker-logo">
       <path
