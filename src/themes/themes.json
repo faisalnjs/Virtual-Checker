@@ -24,6 +24,7 @@
   ["synthwave-2077-solarized", "Synthwave 2077 Solarized", "", 0, [], false, false, false, false],
   ["casino", "Casino", "", 0, [], false, false, false, false],
   ["kfc", "KFC", "", 0, [], false, false, false, false],
+  ["daily", "Daily Theme", "image-alt", 100, [], true, false, false, false],
   ["butterfly", "GUTS", "stars", 150, [], false, false, false, false],
   ["sage-pro", "Sage Pro", "leaf", 60, [], false, false, false, false],
   ["rose-pro", "Rose Pro", "leaf", 60, [], false, false, false, false],

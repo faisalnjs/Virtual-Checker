@@ -957,3 +957,9 @@ export async function refundThemes(themes = []) {
             if (!e.message || (e.message && (e.message.includes('NetworkError') || !e.message.includes(".")))) ui.view("api-fail");
         });
 }
+
+export function getDailyThemeImageUrl(imageUrl) {
+    const match = /^https:\/\/img\.peapix\.com\/([a-f0-9]{32})_640\.jpg$/.exec(imageUrl);
+    if (!match) throw new Error("Invalid daily theme thumbnail URL");
+    return `${domain}/daily_theme_image/${match[1]}`;
+}
