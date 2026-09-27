@@ -34,7 +34,7 @@ export function resetTheme() {
   disableTransitions();
   document.body.removeAttribute("data-theme");
   removeCustomTheme();
-  document.getElementById("theme-preview")?.removeAttribute("data-theme");
+  document.querySelector(".theme-preview")?.removeAttribute("data-theme");
   enableTransitions();
   storage.set("theme", "default");
   storage.delete("custom-theme");
@@ -115,7 +115,7 @@ function applyCustomTheme() {
     const prefix = key == "color-scheme" ? "" : "--";
     document.body.style.setProperty(prefix + key, value);
   });
-  document.getElementById("theme-preview")?.removeAttribute("data-theme");
+  document.querySelector(".theme-preview")?.removeAttribute("data-theme");
 }
 
 function removeCustomTheme() {
@@ -203,7 +203,7 @@ export async function renderStore() {
   await storage.idbReady;
   var initialTheme = storage.get("theme") || "default";
   var checks = (await storage.idbGet("cache"))?.checksCount || 0;
-  document.getElementById("controls-container")?.setAttribute('checks', checks);
+  document.querySelector(".controls-container")?.setAttribute('checks', checks);
   var ownedThemes = (await storage.idbGet("cache"))?.ownedThemes || [];
   if (document.body.getAttribute('data-theme') && !ownedThemes.includes(document.body.getAttribute('data-theme')) && themes.find(theme => theme[0] === document.body.getAttribute('data-theme'))?.[3]) {
     resetTheme();
@@ -313,7 +313,7 @@ export async function renderStore() {
                     btn.textContent = btn.parentElement.classList.contains('selected') ? "Applied" : (ownedThemes.includes(btn.parentElement.getAttribute('data-theme')) ? "Owned" : "Preview");
                   });
                   checksText.innerHTML = `<i class="bi bi-check2-circle"></i> You've got ${cache.checksCount} Check${(cache.checksCount == 1) ? '' : 's'} available to spend!`;
-                  document.getElementById("controls-container")?.setAttribute('checks', cache.checksCount);
+                  document.querySelector(".controls-container")?.setAttribute('checks', cache.checksCount);
                   storage.set("theme", featuredTheme[0]);
                   document.body.setAttribute('data-theme', featuredTheme[0]);
                   await auth.syncPush("theme")
@@ -609,7 +609,7 @@ try {
     button.textContent = name;
     button.addEventListener("click", () => {
       selectedTheme = value;
-      document.getElementById("theme-preview").setAttribute("data-theme", value);
+      document.querySelector(".theme-preview").setAttribute("data-theme", value);
     });
     document.getElementById("theme-selector")?.append(button);
   });
@@ -622,7 +622,7 @@ try {
     // Built-in theme
     const theme = storage.get("theme") || "";
     document.body.setAttribute("data-theme", theme);
-    document.getElementById("theme-preview")?.setAttribute("data-theme", theme);
+    document.querySelector(".theme-preview")?.setAttribute("data-theme", theme);
     selectedTheme = theme;
     updateAnimatedThemeVideo();
     updateColorizedTheme();
@@ -724,7 +724,7 @@ try {
         {
           input: (e) => {
             disableTransitions();
-            document.getElementById("theme-preview").setAttribute("data-theme", e.target.value);
+            document.querySelector(".theme-preview").setAttribute("data-theme", e.target.value);
             document.body.setAttribute("data-theme", e.target.value);
             removeCustomTheme();
             enableTransitions();
@@ -774,7 +774,7 @@ try {
     };
     seasonalThemeButton.innerHTML = seasonalEmoji;
     seasonalThemeButton.setAttribute("tooltip", `${seasonalName} Theme (Limited Time)`);
-    document.getElementById("controls-container")?.appendChild(seasonalThemeButton);
+    document.querySelector(".controls-container")?.appendChild(seasonalThemeButton);
   }
 
   document.querySelector('[data-modal-view="store"]')?.addEventListener("click", () => {
@@ -884,7 +884,7 @@ try {
     };
     stopLipsky.innerHTML = '<i class="bi bi-cake2"></i>';
     stopLipsky.setAttribute("tooltip", "Stop Lipskys");
-    document.getElementById("controls-container").appendChild(stopLipsky);
+    document.querySelector(".controls-container").appendChild(stopLipsky);
   }
 
   function updateColorizedTheme() {

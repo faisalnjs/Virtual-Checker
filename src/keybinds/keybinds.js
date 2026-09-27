@@ -91,17 +91,17 @@ try {
       island.classList.add('visible');
     } else if (e.key == "Backspace" && !isTyping && !anyDialogOpen) {
       e.preventDefault();
-      const filterSegmentInput = document.getElementById("filter-segment-input");
+      const filterSegmentInput = document.querySelector(".filter-segment-input");
       if (filterSegmentInput) {
         filterSegmentInput.value = "";
         filterSegmentInput.dispatchEvent(new Event("change"));
       }
-      const filterQuestionInput = document.getElementById("filter-question-input");
+      const filterQuestionInput = document.querySelector(".filter-question-input");
       if (filterQuestionInput) {
         filterQuestionInput.value = "";
         filterQuestionInput.dispatchEvent(new Event("input"));
       }
-      const filterSeatInput = document.getElementById("filter-seat-input");
+      const filterSeatInput = document.querySelector(".filter-seat-input");
       if (filterSeatInput) {
         filterSeatInput.value = "";
         filterSeatInput.dispatchEvent(new Event("input"));
@@ -147,16 +147,16 @@ try {
       if (next) setTimeout(() => next.click(), 500);
     } else if (e.key == "y" && island && islandOpen && !isTyping) {
       e.preventDefault();
-      document.querySelector('.island-extends #mark-correct-button')?.click();
+      document.querySelector('.island-extends .mark-correct-button')?.click();
     } else if (e.key == "n" && island && islandOpen && !isTyping) {
       e.preventDefault();
-      document.querySelector('.island-extends #mark-incorrect-button')?.click();
+      document.querySelector('.island-extends .mark-incorrect-button')?.click();
       setTimeout(() => {
         if (document.querySelector(".dialog-input.selectAll")) document.querySelector(".dialog-input.selectAll").value = '';
       }, 100);
     } else if (e.key == "q" && island && islandOpen && !isTyping) {
       e.preventDefault();
-      var responseData = document.querySelector('.island-extends #response-question-input');
+      var responseData = document.querySelector('.island-extends .response-question-input');
       if (!responseData || !responseData.getAttribute('data-segment') || !responseData.getAttribute('data-question-id')) return;
       const url = `/${window.location.pathname.startsWith('/ta/') ? 'ta' : 'admin'}/questions?segment=${responseData.getAttribute('data-segment')}&question=${responseData.getAttribute('data-question-id')}`;
       const width = window.outerWidth;

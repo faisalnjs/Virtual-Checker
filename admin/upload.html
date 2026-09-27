@@ -197,7 +197,7 @@
 
 <body>
     <div class="uploaders"></div>
-    <div id="loader">
+    <div class="loader">
         <svg xmlns="http://www.w3.org/2000/svg" height="2.5em" viewBox="0 0 1041 732" fill="none"
             class="virtual-checker-logo">
             <path
@@ -244,11 +244,11 @@
         var uploaders = [];
         FilePond.registerPlugin(FilePondPluginFileValidateType, FilePondPluginImagePreview);
         function startLoader() {
-            const loader = uploader.querySelector('#loader');
+            const loader = uploader.querySelector('.loader');
             if (loader) loader.classList.add('active');
         };
         function stopLoader() {
-            const loader = uploader.querySelector('#loader');
+            const loader = uploader.querySelector('.loader');
             if (loader) loader.classList.remove('active');
         };
         async function next() {
@@ -393,7 +393,7 @@
             } else {
                 var textareaContainer = uploader.querySelector('.description')
                 var toolbar = document.createElement('div');
-                toolbar.innerHTML = `<div id="toolbar-container">
+                toolbar.innerHTML = `<div class="toolbar-container">
                     <span class="ql-formats">
                         <select class="ql-font" tooltip="Font"></select>
                         <select class="ql-size" tooltip="Text Size"></select>

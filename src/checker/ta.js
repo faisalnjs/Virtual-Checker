@@ -14,7 +14,7 @@ const domain = ((window.location.hostname.search('check') != -1) || (window.loca
 if (window.location.pathname.split('?')[0].endsWith('/ta')) window.location.pathname = '/ta/';
 const params = Object.fromEntries((new URL(location)).searchParams);
 
-var period = document.getElementById("period-input")?.value;
+var period = document.querySelector(".period-input")?.value;
 
 var courses = [];
 var segments = [];
@@ -41,34 +41,34 @@ try {
     if (!storage.get("code")) return window.location.href = '/';
     if (!storage.get("pwd")) return auth.ta(init);
     // Populate seat code finder grid
-    document.getElementById("seat-grid").innerHTML = "";
+    document.querySelector(".seat-grid").innerHTML = "";
     for (let col = 1; col <= 5; col++) {
       for (let row = 6; row > 0; row--) {
-        period = document.getElementById("period-input").value;
+        period = document.querySelector(".period-input").value;
         const code = period + row.toString() + col.toString();
         const button = new Element("button", "", {
           click: () => {
-            document.getElementById("code-input").value = code;
+            document.querySelector(".code-input").value = code;
             ui.view("settings/code");
           },
         }).element;
-        document.getElementById("seat-grid").append(button);
+        document.querySelector(".seat-grid").append(button);
         ui.addTooltip(button, code);
       }
     }
-    document.getElementById("period-input").addEventListener("change", () => {
-      document.getElementById("seat-grid").innerHTML = "";
+    document.querySelector(".period-input").addEventListener("change", () => {
+      document.querySelector(".seat-grid").innerHTML = "";
       for (let col = 1; col <= 5; col++) {
         for (let row = 6; row > 0; row--) {
-          period = document.getElementById("period-input").value;
+          period = document.querySelector(".period-input").value;
           const code = period + row.toString() + col.toString();
           const button = new Element("button", "", {
             click: () => {
-              document.getElementById("code-input").value = code;
+              document.querySelector(".code-input").value = code;
               ui.view("settings/code");
             },
           }).element;
-          document.getElementById("seat-grid").append(button);
+          document.querySelector(".seat-grid").append(button);
           ui.addTooltip(button, code);
         }
       }
@@ -100,24 +100,24 @@ try {
           ui.reportBugModal(null, String(error.stack));
         }
       });
-    if (document.getElementById("course-period-input") && !noReloadCourse) {
-      document.getElementById("course-period-input").innerHTML = "";
+    if (document.querySelector(".course-period-input") && !noReloadCourse) {
+      document.querySelector(".course-period-input").innerHTML = "";
       courses.sort((a, b) => a.id - b.id).forEach(course => {
         var coursePeriods = JSON.parse(course.periods);
         const option = document.createElement("option");
         option.value = course.id;
-        option.innerHTML = document.getElementById("course-input") ? course.name : `${course.name}${(coursePeriods.length > 0) ? ` (Period${(coursePeriods.length > 1) ? 's' : ''} ${coursePeriods.join(', ')})` : ''}`;
-        document.getElementById("course-period-input").appendChild(option);
+        option.innerHTML = document.querySelector(".course-input") ? course.name : `${course.name}${(coursePeriods.length > 0) ? ` (Period${(coursePeriods.length > 1) ? 's' : ''} ${coursePeriods.join(', ')})` : ''}`;
+        document.querySelector(".course-period-input").appendChild(option);
       });
     }
-    document.getElementById("course-period-input")?.addEventListener("input", updateCourses);
-    document.getElementById("course-period-input")?.addEventListener("change", updateResponses);
-    document.getElementById("filter-segment-input").addEventListener("change", updateResponses);
-    document.getElementById("filter-question-input")?.addEventListener("input", updateResponses);
-    document.getElementById("filter-seat-input")?.addEventListener("input", updateResponses);
-    document.getElementById("sort-responses-input")?.addEventListener("change", updateResponses);
-    if (document.getElementById("filter-segment-input")) updateCourses();
-    if (responses.find(response => String(response.seatCode).includes('xx'))) document.getElementById("checker").classList.add("anonymous");
+    document.querySelector(".course-period-input")?.addEventListener("input", updateCourses);
+    document.querySelector(".course-period-input")?.addEventListener("change", updateResponses);
+    document.querySelector(".filter-segment-input").addEventListener("change", updateResponses);
+    document.querySelector(".filter-question-input")?.addEventListener("input", updateResponses);
+    document.querySelector(".filter-seat-input")?.addEventListener("input", updateResponses);
+    document.querySelector(".sort-responses-input")?.addEventListener("change", updateResponses);
+    if (document.querySelector(".filter-segment-input")) updateCourses();
+    if (responses.find(response => String(response.seatCode).includes('xx'))) document.querySelector(".checker").classList.add("anonymous");
     if (document.querySelector('.questions.section')) {
       await updateQuestions()
         .catch(error => {
@@ -129,8 +129,8 @@ try {
         });
       if (params?.question) toggleQuestion(null, params.question);
     }
-    if (document.getElementById("course-period-input") && !noReloadCourse) document.getElementById("course-period-input").value = (storage.get('period') && courses.find(c => String(c.id) === String(storage.get('period')))) ? storage.get('period') : (((ui.defaultCourse !== null) && courses.find(c => String(c.id) === String(ui.defaultCourse))) ? ui.defaultCourse : courses.find(c => JSON.parse(c.periods).includes(Number(String(responses.sort((a, b) => String(a.seatCode)[0] - String(b.seatCode)[0])[0]?.seatCode)[0]))) ? courses.find(c => JSON.parse(c.periods).includes(Number(String(responses.sort((a, b) => String(a.seatCode)[0] - String(b.seatCode)[0])[0]?.seatCode)[0]))).id : 0);
-    if (document.getElementById("course-period-input")) await updateResponses()
+    if (document.querySelector(".course-period-input") && !noReloadCourse) document.querySelector(".course-period-input").value = (storage.get('period') && courses.find(c => String(c.id) === String(storage.get('period')))) ? storage.get('period') : (((ui.defaultCourse !== null) && courses.find(c => String(c.id) === String(ui.defaultCourse))) ? ui.defaultCourse : courses.find(c => JSON.parse(c.periods).includes(Number(String(responses.sort((a, b) => String(a.seatCode)[0] - String(b.seatCode)[0])[0]?.seatCode)[0]))) ? courses.find(c => JSON.parse(c.periods).includes(Number(String(responses.sort((a, b) => String(a.seatCode)[0] - String(b.seatCode)[0])[0]?.seatCode)[0]))).id : 0);
+    if (document.querySelector(".course-period-input")) await updateResponses()
       .catch(error => {
         if (storage.get("developer")) {
           alert(`Error @ ta.js: ${error.message}`);
@@ -141,10 +141,10 @@ try {
     active = true;
     ui.stopLoader();
     ui.toast("Data restored.", 1000, "info", "bi bi-cloud-arrow-down");
-    if (document.getElementById("filter-question-input")) document.getElementById("filter-segment-input").addEventListener("change", () => {
-      document.getElementById("filter-question-input").value = "";
+    if (document.querySelector(".filter-question-input")) document.querySelector(".filter-segment-input").addEventListener("change", () => {
+      document.querySelector(".filter-question-input").value = "";
       const event = new Event('input', { bubbles: true });
-      document.getElementById("filter-question-input").dispatchEvent(event);
+      document.querySelector(".filter-question-input").dispatchEvent(event);
     });
     ui.reloadUnsavedInputs();
   }
@@ -162,18 +162,18 @@ try {
     return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
   }
 
-  document.querySelectorAll('#previous-page-button').forEach(a => a.addEventListener("click", () => previousPage(a)));
-  document.querySelectorAll('#next-page-button').forEach(a => a.addEventListener("click", () => nextPage(a)));
-  document.querySelectorAll('#first-page-button').forEach(a => a.addEventListener("click", () => firstPage(a)));
-  document.querySelectorAll('#last-page-button').forEach(a => a.addEventListener("click", () => lastPage(a)));
+  document.querySelectorAll('.previous-page-button').forEach(a => a.addEventListener("click", () => previousPage(a)));
+  document.querySelectorAll('.next-page-button').forEach(a => a.addEventListener("click", () => nextPage(a)));
+  document.querySelectorAll('.first-page-button').forEach(a => a.addEventListener("click", () => firstPage(a)));
+  document.querySelectorAll('.last-page-button').forEach(a => a.addEventListener("click", () => lastPage(a)));
 
   // Limit seat code input to integers
-  document.getElementById("code-input")?.addEventListener("input", (e) => {
+  document.querySelector(".code-input")?.addEventListener("input", (e) => {
     e.target.value = parseInt(e.target.value) || "";
   });
 
   // Save seat code on enter
-  document.getElementById("code-input")?.addEventListener("keydown", (e) => {
+  document.querySelector(".code-input")?.addEventListener("keydown", (e) => {
     if (e.key == "Enter") {
       e.preventDefault();
       setTimeout(() => {
@@ -183,11 +183,11 @@ try {
   });
 
   // Save seat code button
-  document.getElementById("save-code-button")?.addEventListener("click", saveCode);
+  document.querySelector(".save-code-button")?.addEventListener("click", saveCode);
 
   // Save seat code
   async function saveCode() {
-    const input = document.getElementById("code-input").value;
+    const input = document.querySelector(".code-input").value;
     // Tests for valid seat code
     const regex = /^[1-9][0-6][0-5]$/;
     if (regex.test(input)) {
@@ -202,7 +202,7 @@ try {
               class: 'cancel-button',
               onclick: () => {
                 ui.view("");
-                document.getElementById("code-input").focus();
+                document.querySelector(".code-input").focus();
                 ui.setUnsavedChanges(true);
                 ui.view("settings/code");
               }
@@ -276,29 +276,29 @@ try {
       timestamps = false;
       document.querySelector('[data-timestamps] .bi-clock').style.display = "block";
       document.querySelector('[data-timestamps] .bi-clock-fill').style.display = "none";
-      document.querySelector('#checker').classList.remove('timestamps');
+      document.querySelector('.checker').classList.remove('timestamps');
     } else {
       timestamps = true;
       document.querySelector('[data-timestamps] .bi-clock').style.display = "none";
       document.querySelector('[data-timestamps] .bi-clock-fill').style.display = "block";
-      document.querySelector('#checker').classList.add('timestamps');
+      document.querySelector('.checker').classList.add('timestamps');
     }
   }
 
   function updateCourses() {
-    if (document.getElementById("filter-segment-input")) {
-      document.getElementById("filter-segment-input").innerHTML = '<option value="" selected>#</option>';
+    if (document.querySelector(".filter-segment-input")) {
+      document.querySelector(".filter-segment-input").innerHTML = '<option value="" selected>#</option>';
       var filteredSegments = segments;
-      const course = courses.find(c => document.getElementById("course-period-input") ? (String(c.id) === document.getElementById("course-period-input").value) : null);
+      const course = courses.find(c => document.querySelector(".course-period-input") ? (String(c.id) === document.querySelector(".course-period-input").value) : null);
       if (course) filteredSegments = filteredSegments.filter(segment => String(segment.course) === String(course.id));
       filteredSegments.forEach(segment => {
-        document.getElementById("filter-segment-input").innerHTML += `<option value="${segment.id}" ${(document.location.search.split('?segment=')[1] && (document.location.search.split('?segment=')[1] === String(segment.id))) ? 'selected' : ''}>${segment.number} - ${segment.name}${segment.due ? ` (Due ${new Date(`${segment.due}T00:00:00`).toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })})` : ''}</option>`;
+        document.querySelector(".filter-segment-input").innerHTML += `<option value="${segment.id}" ${(document.location.search.split('?segment=')[1] && (document.location.search.split('?segment=')[1] === String(segment.id))) ? 'selected' : ''}>${segment.number} - ${segment.name}${segment.due ? ` (Due ${new Date(`${segment.due}T00:00:00`).toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })})` : ''}</option>`;
       });
-      if (keepSegment) document.getElementById("filter-segment-input").value = keepSegment;
+      if (keepSegment) document.querySelector(".filter-segment-input").value = keepSegment;
       keepSegment = null;
     }
   }// Save
-  document.querySelectorAll("#save-button").forEach(w => w.addEventListener("click", save));
+  document.querySelectorAll(".save-button").forEach(w => w.addEventListener("click", save));
 
   async function save(event, hideResult) {
     if (!active) return;
@@ -311,7 +311,7 @@ try {
       updatedInfo = {
         questions: []
       };
-      if (document.getElementById("filter-segment-input").value) updatedInfo.segment = document.getElementById("filter-segment-input").value || null;
+      if (document.querySelector(".filter-segment-input").value) updatedInfo.segment = document.querySelector(".filter-segment-input").value || null;
       var newQuestions = questions.map(q => {
         var allSegmentsQuestionIsIn = segments.filter(e => JSON.parse(e.question_ids).find(qId => String(qId.id) === String(q.id)));
         return {
@@ -327,22 +327,22 @@ try {
         .forEach(question => {
           const questionId = (question.querySelector('data-swapy-item-id') ? question.querySelector('data-swapy-item-id').getAttribute('data-swapy-item-id') : question.id).split('-')[1];
           if (!newQuestions.find(q => String(q.id) === questionId)) return;
-          newQuestions.find(q => String(q.id) === questionId).number = question.querySelector('#question-number-input').value;
-          newQuestions.find(q => String(q.id) === questionId).segment = question.querySelector('#question-segment-input').value;
-          newQuestions.find(q => String(q.id) === questionId).question = question.querySelector('#question-text-input').value;
-          newQuestions.find(q => String(q.id) === questionId).stem = question.querySelector('#question-stem-input')?.value || null;
-          newQuestions.find(q => String(q.id) === questionId).nonscored = question.querySelector('#question-nonscored-input')?.value || null;
+          newQuestions.find(q => String(q.id) === questionId).number = question.querySelector('.question-number-input').value;
+          newQuestions.find(q => String(q.id) === questionId).segment = question.querySelector('.question-segment-input').value;
+          newQuestions.find(q => String(q.id) === questionId).question = question.querySelector('.question-text-input').value;
+          newQuestions.find(q => String(q.id) === questionId).stem = question.querySelector('.question-stem-input')?.value || null;
+          newQuestions.find(q => String(q.id) === questionId).nonscored = question.querySelector('.question-nonscored-input')?.value || null;
           if (renderedEditors[Number(questionId)]) newQuestions.find(q => String(q.id) === questionId).description = JSON.stringify(renderedEditors[Number(questionId)].getContents());
           newQuestions.find(q => String(q.id) === questionId).images = Array.from(question.querySelectorAll('.attachments .image > *')).map(q => {
             return q.getAttribute('data-src');
           });
-          newQuestions.find(q => String(q.id) === questionId).correctAnswers = Array.from(question.querySelectorAll('#question-correct-answer-input')).map(q => {
+          newQuestions.find(q => String(q.id) === questionId).correctAnswers = Array.from(question.querySelectorAll('.question-correct-answer-input')).map(q => {
             return q.value;
           });
           newQuestions.find(q => String(q.id) === questionId).incorrectAnswers = Array.from(question.querySelectorAll('.incorrectAnswers .inputs')).map(q => {
             return {
-              answer: q.querySelector('#question-incorrect-answer-input').value,
-              reason: q.querySelector('#question-incorrect-answer-reason-input').value
+              answer: q.querySelector('.question-incorrect-answer-input').value,
+              reason: q.querySelector('.question-incorrect-answer-reason-input').value
             };
           });
           newQuestions.find(q => String(q.id) === questionId).latex = question.querySelector('[data-toggle-latex] i')?.classList.contains('bi-calculator-fill') || false;
@@ -369,7 +369,7 @@ try {
     formData.append('usr', storage.get("code"));
     formData.append('pwd', storage.get("password"));
     ui.setUnsavedChanges(true);
-    keepSegment = document.getElementById("filter-segment-input")?.value || null;
+    keepSegment = document.querySelector(".filter-segment-input")?.value || null;
     fetch(domain + '/save?ta=true', {
       method: "POST",
       body: formData,
@@ -397,7 +397,7 @@ try {
         if (!e.message || (e.message && (e.message.includes('NetworkError') || !e.message.includes(".")))) ui.view("api-fail");
         if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
       });
-    document.querySelectorAll("#save-button").forEach(w => w.disabled = true);
+    document.querySelectorAll(".save-button").forEach(w => w.disabled = true);
     window.scroll(0, 0);
     if (typeof hideResult != 'boolean') ui.modeless(`<i class="bi bi-check-lg"></i>`, "Saved");
     await init()
@@ -409,7 +409,7 @@ try {
         }
       });
     setTimeout(() => {
-      document.querySelectorAll("#save-button").forEach(w => w.disabled = false);
+      document.querySelectorAll(".save-button").forEach(w => w.disabled = false);
     }, 2500);
   }
 
@@ -417,14 +417,14 @@ try {
     if (questions.length > 0) {
       if (document.querySelector('.questions .section')) {
         var filteredQuestions = questions;
-        if (document.getElementById("filter-segment-input")) {
-          var selectedSegment = segments.find(segment => String(segment.id) === document.getElementById("filter-segment-input").value);
+        if (document.querySelector(".filter-segment-input")) {
+          var selectedSegment = segments.find(segment => String(segment.id) === document.querySelector(".filter-segment-input").value);
           if (selectedSegment) filteredQuestions = filteredQuestions.filter(q => JSON.parse(selectedSegment.question_ids).find(qId => String(qId.id) === String(q.id)));
         }
-        if (this && (this.id === 'filter-segment-input')) pagination.questions.page = 0;
+        if (this && (this.classList.contains('filter-segment-input'))) pagination.questions.page = 0;
         pagination.questions.total = filteredQuestions.length;
-        if (document.querySelector('.questions #current-page')) {
-          const currentPage = document.querySelector('.questions #current-page');
+        if (document.querySelector('.questions .current-page')) {
+          const currentPage = document.querySelector('.questions .current-page');
           const input = currentPage.querySelector('.current-page-input');
           const totalSpan = currentPage.querySelector('.current-page-total');
           const totalPages = Math.max(1, Math.ceil((pagination.questions.total || 0) / (storage.get("rowsPerPage") ? Number(storage.get("rowsPerPage")) : pagination.questions.perPage)));
@@ -457,7 +457,7 @@ try {
           segments.forEach(s => {
             segmentsString += `<option value="${s.id}"${(allSegmentsQuestionIsIn[0] && (allSegmentsQuestionIsIn[0].id === s.id)) ? ' selected' : ''}>${s.number}</option>`;
           });
-          buttonGrid.innerHTML = `<button square data-select tooltip="Select Question"><i class="bi bi-circle"></i><i class="bi bi-circle-fill"></i></button><div class="input-group small"><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-id-input" value="${q.id}" disabled /></div></div><div class="input-group small"><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-number-input" value="${q.number}" placeholder="${q.number}" disabled /></div></div><div class="input-group small ${isStem ? 'hidden' : ''}"><div class="space" id="question-container"><select id="question-segment-input" disabled>${segmentsString}</select></div></div><div class="input-group"><div class="space" id="question-container"><input type="text" autocomplete="off" id="question-text-input" value="${q.question}" placeholder="${q.question}" disabled /></div></div>`;
+          buttonGrid.innerHTML = `<button square data-select tooltip="Select Question"><i class="bi bi-circle"></i><i class="bi bi-circle-fill"></i></button><div class="input-group small"><div class="question-container space"><input type="text" autocomplete="off" class="question-id-input" value="${q.id}" disabled /></div></div><div class="input-group small"><div class="question-container space"><input type="text" autocomplete="off" class="question-number-input" value="${q.number}" placeholder="${q.number}" disabled /></div></div><div class="input-group small ${isStem ? 'hidden' : ''}"><div class="question-container space"><select class="question-segment-input" disabled>${segmentsString}</select></div></div><div class="input-group"><div class="question-container space"><input type="text" autocomplete="off" class="question-text-input" value="${q.question}" placeholder="${q.question}" disabled /></div></div>`;
           if (window.innerWidth >= 1000) {
             buttonGrid.addEventListener('mouseenter', () => {
               var question = q;
@@ -491,7 +491,7 @@ try {
           questionMathRendering.innerHTML = convertLatexToMarkup(q.question);
           renderMathInElement(questionMathRendering);
           question.appendChild(questionMathRendering);
-          buttonGrid.querySelector("#question-text-input").addEventListener('input', (e) => {
+          buttonGrid.querySelector(".question-text-input").addEventListener('input', (e) => {
             questionMathRendering.innerHTML = convertLatexToMarkup(e.target.value);
             renderMathInElement(questionMathRendering);
           });
@@ -503,7 +503,7 @@ try {
             stemLabel.innerText = "Stem"
             stemSelectContainer.appendChild(stemLabel);
             var stemSelect = document.createElement('select');
-            stemSelect.id = "question-stem-input";
+            stemSelect.classList.add('question-stem-input');
             stemSelect.classList = "stem-select";
             stemSelect.disabled = true;
             stemSelect.innerHTML = `<option value=""${!q.stem ? ' selected' : ''}>No Stem</option>` + questions.filter(question1 => String(question1.id) !== String(q.id)).map(question1 => `<option value="${question1.id}"${(String(q.stem || '') === String(question1.id)) ? ' selected' : ''}>${question1.number}: ${question1.question}</option>`).join('');
@@ -518,7 +518,7 @@ try {
             nonScoredLabel.innerText = "Scored"
             nonScoredContainer.appendChild(nonScoredLabel);
             var nonScoredSelect = document.createElement('select');
-            nonScoredSelect.id = "question-nonscored-input";
+            nonScoredSelect.classList.add('question-nonscored-input');
             nonScoredSelect.classList = "stem-select";
             nonScoredSelect.disabled = true;
             nonScoredSelect.innerHTML = `<option value="0"${!q.nonscored ? ' selected' : ''}>Yes</option><option value="1"${q.nonscored ? ' selected' : ''}>No</option>`;
@@ -557,7 +557,7 @@ try {
             var correctAnswersString = "";
             var questionAnswers = answers.find(a => a.id === q.id);
             questionAnswers.correct_answers.forEach(a => {
-              correctAnswersString += `<div class="button-grid inputs"><input type="text" autocomplete="off" id="question-correct-answer-input" value="${a}" placeholder="${a}" /><button data-remove-correct-answer-input square><i class="bi bi-dash"></i></button><button data-convert-correct-answer-to-incorrect-answer square><i class="bi bi-arrow-down-up"></i></button></div>`;
+              correctAnswersString += `<div class="button-grid inputs"><input type="text" autocomplete="off" class="question-correct-answer-input" value="${a}" placeholder="${a}" /><button data-remove-correct-answer-input square><i class="bi bi-dash"></i></button><button data-convert-correct-answer-to-incorrect-answer square><i class="bi bi-arrow-down-up"></i></button></div>`;
             });
             correctAnswers.innerHTML = `<b>Correct Answers</b><div class="section correctAnswers">${correctAnswersString}<button data-add-correct-answer-input>Add Correct Answer</button></div>`;
             question.appendChild(correctAnswers);
@@ -565,13 +565,13 @@ try {
             incorrectAnswers.classList = "answers";
             var incorrectAnswersString = "";
             questionAnswers.incorrect_answers.forEach(a => {
-              incorrectAnswersString += `<div class="button-grid inputs"><input type="text" autocomplete="off" id="question-incorrect-answer-input" value="${a.answer}" placeholder="${a.answer || 'Answer'}" /><input type="text" autocomplete="off" id="question-incorrect-answer-reason-input" value="${a.reason}" placeholder="${a.reason || 'Reason'}" /><button data-remove-incorrect-answer-input square><i class="bi bi-dash"></i></button><button data-convert-incorrect-answer-to-correct-answer square><i class="bi bi-arrow-down-up"></i></button></div>`;
+              incorrectAnswersString += `<div class="button-grid inputs"><input type="text" autocomplete="off" class="question-incorrect-answer-input" value="${a.answer}" placeholder="${a.answer || 'Answer'}" /><input type="text" autocomplete="off" class="question-incorrect-answer-reason-input" value="${a.reason}" placeholder="${a.reason || 'Reason'}" /><button data-remove-incorrect-answer-input square><i class="bi bi-dash"></i></button><button data-convert-incorrect-answer-to-correct-answer square><i class="bi bi-arrow-down-up"></i></button></div>`;
             });
             incorrectAnswers.innerHTML = `<b>Incorrect Answers</b><div class="section incorrectAnswers">${incorrectAnswersString}<button data-add-incorrect-answer-input>Add Incorrect Answer</button></div>`;
             question.appendChild(incorrectAnswers);
           }
           document.querySelector('.questions .section').appendChild(question);
-          if (!isStem) question.querySelectorAll('#question-correct-answer-input, #question-incorrect-answer-input, #question-incorrect-answer-reason-input').forEach(questionAnswerInput => questionAnswerInput.addEventListener('change', () => {
+          if (!isStem) question.querySelectorAll('.question-correct-answer-input, .question-incorrect-answer-input, .question-incorrect-answer-reason-input').forEach(questionAnswerInput => questionAnswerInput.addEventListener('change', () => {
             question.setAttribute('modified', 'true');
           }));
         });
@@ -593,7 +593,7 @@ try {
     if (!active) return;
     var input = document.createElement('div');
     input.className = "button-grid inputs";
-    input.innerHTML = `<input type="text" autocomplete="off" id="question-correct-answer-input" value="" placeholder="Answer" /><button data-remove-correct-answer-input square><i class="bi bi-dash"></i></button><button data-convert-correct-answer-to-incorrect-answer square><i class="bi bi-arrow-down-up"></i></button>`;
+    input.innerHTML = `<input type="text" autocomplete="off" class="question-correct-answer-input" value="" placeholder="Answer" /><button data-remove-correct-answer-input square><i class="bi bi-dash"></i></button><button data-convert-correct-answer-to-incorrect-answer square><i class="bi bi-arrow-down-up"></i></button>`;
     this.parentElement.insertBefore(input, this);
     this.parentElement.parentElement.parentElement.setAttribute('modified', 'true');
     document.querySelectorAll('[data-add-correct-answer-input]').forEach(a => a.addEventListener('click', addCorrectAnswer));
@@ -606,7 +606,7 @@ try {
     if (!active) return;
     var input = document.createElement('div');
     input.className = "button-grid inputs";
-    input.innerHTML = `<input type="text" autocomplete="off" id="question-incorrect-answer-input" value="" placeholder="Answer" /><input type="text" autocomplete="off" id="question-incorrect-answer-reason-input" value="" placeholder="Reason" /><button data-remove-incorrect-answer-input square><i class="bi bi-dash"></i></button><button data-convert-incorrect-answer-to-correct-answer square><i class="bi bi-arrow-down-up"></i></button>`;
+    input.innerHTML = `<input type="text" autocomplete="off" class="question-incorrect-answer-input" value="" placeholder="Answer" /><input type="text" autocomplete="off" class="question-incorrect-answer-reason-input" value="" placeholder="Reason" /><button data-remove-incorrect-answer-input square><i class="bi bi-dash"></i></button><button data-convert-incorrect-answer-to-correct-answer square><i class="bi bi-arrow-down-up"></i></button>`;
     this.parentElement.insertBefore(input, this);
     this.parentElement.parentElement.parentElement.setAttribute('modified', 'true');
     document.querySelectorAll('[data-add-incorrect-answer-input]').forEach(a => a.addEventListener('click', addIncorrectAnswer));
@@ -631,10 +631,10 @@ try {
 
   function convertToIncorrectAnswer() {
     if (!active) return;
-    const answerText = this.parentElement.querySelector('#question-correct-answer-input').value;
+    const answerText = this.parentElement.querySelector('.question-correct-answer-input').value;
     var input = document.createElement('div');
     input.className = "button-grid inputs";
-    input.innerHTML = `<input type="text" autocomplete="off" id="question-incorrect-answer-input" value="${answerText}" placeholder="Answer" /><input type="text" autocomplete="off" id="question-incorrect-answer-reason-input" value="" placeholder="Reason" /><button data-remove-incorrect-answer-input square><i class="bi bi-dash"></i></button><button data-convert-incorrect-answer-to-correct-answer square><i class="bi bi-arrow-down-up"></i></button>`;
+    input.innerHTML = `<input type="text" autocomplete="off" class="question-incorrect-answer-input" value="${answerText}" placeholder="Answer" /><input type="text" autocomplete="off" class="question-incorrect-answer-reason-input" value="" placeholder="Reason" /><button data-remove-incorrect-answer-input square><i class="bi bi-dash"></i></button><button data-convert-incorrect-answer-to-correct-answer square><i class="bi bi-arrow-down-up"></i></button>`;
     this.parentElement.parentElement.parentElement.parentElement.querySelector('.incorrectAnswers').insertBefore(input, this.parentElement.parentElement.parentElement.parentElement.querySelector('.incorrectAnswers [data-add-incorrect-answer-input]'));
     document.querySelectorAll('[data-remove-incorrect-answer-input]').forEach(a => a.addEventListener('click', removeIncorrectAnswer));
     document.querySelectorAll('[data-convert-incorrect-answer-to-correct-answer]').forEach(a => a.addEventListener('click', convertToCorrectAnswer));
@@ -645,10 +645,10 @@ try {
 
   function convertToCorrectAnswer() {
     if (!active) return;
-    const answerText = this.parentElement.querySelector('#question-incorrect-answer-input').value;
+    const answerText = this.parentElement.querySelector('.question-incorrect-answer-input').value;
     var input = document.createElement('div');
     input.className = "button-grid inputs";
-    input.innerHTML = `<input type="text" autocomplete="off" id="question-correct-answer-input" value="${answerText}" placeholder="Answer" /><button data-remove-correct-answer-input square><i class="bi bi-dash"></i></button><button data-convert-correct-answer-to-incorrect-answer square><i class="bi bi-arrow-down-up"></i></button>`;
+    input.innerHTML = `<input type="text" autocomplete="off" class="question-correct-answer-input" value="${answerText}" placeholder="Answer" /><button data-remove-correct-answer-input square><i class="bi bi-dash"></i></button><button data-convert-correct-answer-to-incorrect-answer square><i class="bi bi-arrow-down-up"></i></button>`;
     this.parentElement.parentElement.parentElement.parentElement.querySelector('.correctAnswers').insertBefore(input, this.parentElement.parentElement.parentElement.parentElement.querySelector('.correctAnswers [data-add-correct-answer-input]'));
     document.querySelectorAll('[data-remove-correct-answer-input]').forEach(a => a.addEventListener('click', removeCorrectAnswer));
     document.querySelectorAll('[data-convert-correct-answer-to-incorrect-answer]').forEach(a => a.addEventListener('click', convertToIncorrectAnswer));
@@ -658,7 +658,7 @@ try {
   }
 
   async function toggleQuestion(event = null, questionId = null) {
-    if (questionId) await goToPage(document.querySelector('.questions #current-page'), pageQuestionIsOn(document.querySelector('.questions #current-page'), questionId))
+    if (questionId) await goToPage(document.querySelector('.questions .current-page'), pageQuestionIsOn(document.querySelector('.questions .current-page'), questionId))
       .catch(error => {
         if (storage.get("developer")) {
           alert(`Error @ ta.js: ${error.message}`);
@@ -673,12 +673,12 @@ try {
     } else {
       hideAllQuestions();
       questionContainer.classList.add('expanded');
-      // document.querySelectorAll('#save-button').forEach(w => w.style.display = "none");
+      // document.querySelectorAll('.save-button').forEach(w => w.style.display = "none");
       if (!questionContainer.classList.contains('rendered')) {
         var textarea = questionContainer.querySelector('.description .textarea');
         if (!textarea) return;
         var textareaContent = textarea.getAttribute('content');
-        var toolbar = questionContainer.querySelector('.description #toolbar-container');
+        var toolbar = questionContainer.querySelector('.description .toolbar-container');
         var quill = new Quill(textarea, {
           modules: {
             syntax: true,
@@ -692,7 +692,7 @@ try {
         });
         if (JSON.parse(textareaContent)) quill.setContents(JSON.parse(textareaContent));
         quill.disable();
-        renderedEditors[questionContainer.querySelector('#question-id-input').value] = quill;
+        renderedEditors[questionContainer.querySelector('.question-id-input').value] = quill;
         questionContainer.querySelectorAll('img[data-src]:not([src])').forEach(img => img.src = img.getAttribute('data-src'));
       }
     }
@@ -701,7 +701,7 @@ try {
   function hideAllQuestions() {
     if (!active) return;
     document.querySelectorAll('.expanded').forEach(q => q.classList.remove('expanded'));
-    // document.querySelectorAll('#save-button').forEach(w => w.style.display = "block");
+    // document.querySelectorAll('.save-button').forEach(w => w.style.display = "block");
   }
 
   async function updateResponses() {
@@ -710,11 +710,11 @@ try {
     document.querySelector('.responses .section').innerHTML = '';
     var trendingResponses = [];
     var timedResponses = [];
-    const coursePeriodInput = document.getElementById("course-period-input");
-    const filterSegmentInput = document.getElementById("filter-segment-input");
-    const filterQuestionInput = document.getElementById("filter-question-input");
-    const filterSeatInput = document.getElementById("filter-seat-input");
-    const sortResponsesInput = document.getElementById("sort-responses-input");
+    const coursePeriodInput = document.querySelector(".course-period-input");
+    const filterSegmentInput = document.querySelector(".filter-segment-input");
+    const filterQuestionInput = document.querySelector(".filter-question-input");
+    const filterSeatInput = document.querySelector(".filter-seat-input");
+    const sortResponsesInput = document.querySelector(".sort-responses-input");
     const awaitingSection = document.querySelector('.awaitingResponses .section');
     const responsesSection = document.querySelector('.responses .section');
     const hasAwaitingSection = !!awaitingSection;
@@ -784,14 +784,14 @@ try {
       }
       return b.id - a.id;
     });
-    if (this && ((this.id === 'course-period-input') || (this.id === 'filter-segment-input') || (this.id === 'filter-question-input') || (this.id === 'filter-seat-input'))) {
+    if (this && ((this.classList.contains('course-period-input')) || (this.classList.contains('filter-segment-input')) || (this.classList.contains('filter-question-input')) || (this.classList.contains('filter-seat-input')))) {
       pagination.awaitingResponses.page = 0;
       pagination.responses.page = 0;
     }
     pagination.awaitingResponses.total = responses1.filter(r => ((r.status === 'Invalid Format') || (r.status === 'Unknown, Recorded')) && document.querySelector('.awaitingResponses .section')).length;
     pagination.responses.total = responses1.filter(r => !((r.status === 'Invalid Format') || (r.status === 'Unknown, Recorded')) && document.querySelector('.responses .section')).length;
-    if (document.querySelector('.awaitingResponses #current-page')) {
-      const currentPage = document.querySelector('.awaitingResponses #current-page');
+    if (document.querySelector('.awaitingResponses .current-page')) {
+      const currentPage = document.querySelector('.awaitingResponses .current-page');
       const input = currentPage.querySelector('.current-page-input');
       const totalSpan = currentPage.querySelector('.current-page-total');
       const totalPages = Math.max(1, Math.ceil((pagination.awaitingResponses.total || 0) / (storage.get("rowsPerPage") ? Number(storage.get("rowsPerPage")) : pagination.awaitingResponses.perPage)));
@@ -808,8 +808,8 @@ try {
         input._pageHandlerAttached = true;
       }
     }
-    if (document.querySelector('.responses #current-page')) {
-      const currentPage = document.querySelector('.responses #current-page');
+    if (document.querySelector('.responses .current-page')) {
+      const currentPage = document.querySelector('.responses .current-page');
       const input = currentPage.querySelector('.current-page-input');
       const totalSpan = currentPage.querySelector('.current-page-total');
       const totalPages = Math.max(1, Math.ceil((pagination.responses.total || 0) / (storage.get("rowsPerPage") ? Number(storage.get("rowsPerPage")) : pagination.responses.perPage)));
@@ -911,7 +911,7 @@ try {
       } else {
         result = `${minutes1}m`;
       }
-      const coursePeriodValue = document.getElementById("course-period-input")?.value;
+      const coursePeriodValue = document.querySelector(".course-period-input")?.value;
       const currentCourse = courses.find(course => String(course.id) === coursePeriodValue);
       const questionLookup = new Map(questions.map(q => [String(q.id), q]));
       const answerLookup = new Map(answers.map(a => [String(a.id), a]));
@@ -921,7 +921,7 @@ try {
       var buttonGrid = document.createElement('div');
       buttonGrid.className = "button-grid inputs";
       buttonGrid.id = `response-${r.id}`;
-      buttonGrid.innerHTML = `<input type="text" autocomplete="off" class="small" id="response-id-input" value="${r.id}" disabled hidden />${(String(r.flagged) === '1') ? `<button square data-unflag-response tooltip="Unflag Response"><i class="bi bi-flag-fill"></i></button>` : `<button square data-flag-response tooltip="Flag Response"><i class="bi bi-flag"></i></button>`}<input type="text" autocomplete="off" class="small" id="response-segment-input" value="${foundSegment ? (foundSegment.number || r.segment) : (foundSegment2?.number || '-')}" mockDisabled data-segment="${foundSegment ? (foundSegment.id || r.segment) : (foundSegment2?.id || '-')}" /><input type="text" autocomplete="off" class="small" id="response-question-input" value="${questionLookup.get(String(r.question_id))?.number}" mockDisabled data-segment="${foundSegment ? (foundSegment.id || r.segment) : (foundSegment2?.id || '-')}" data-question="${questionLookup.get(String(r.question_id))?.number}" data-question-id="${questionLookup.get(String(r.question_id))?.id}" /><input type="text" autocomplete="off" class="small" id="response-question-id-input" value="${questionLookup.get(String(r.question_id)).id}" disabled hidden /><input type="text" autocomplete="off" class="small${(((r.status === 'Invalid Format') || (r.status === 'Unknown, Recorded')) && document.querySelector('.awaitingResponses .section') && hasCorrectResponses) ? ' hideonhover' : ''}" id="response-seat-code-input" value="${r.seatCode}" disabled data-seat-code /><input type="text" autocomplete="off" class="small" id="response-time-taken-input" value="${timeTaken}" disabled data-time-taken${(typeof timeDifference != 'undefined') ? ` time="${timeDifference}"` : ''} /><input type="text" autocomplete="off" class="small" id="response-time-taken-input" value="${timeTakenToRevise}" disabled data-time-taken${(typeof timeDifference != 'undefined') ? ` time="${timeDifference}"` : ''} /><!--<input type="text" autocomplete="off" class="small" id="response-time-taken-input" value="${result}" disabled data-time-taken />--><textarea autocomplete="off" rows="1" id="response-response-input" value="${escapeHTML(responseString)}" ${isMatrix ? 'mockDisabled' : 'disabled'}>${escapeHTML(responseString)}</textarea>${(r.status === 'Incorrect') ? `<button square data-edit-reason tooltip="Edit Reason"><i class="bi bi-reply${(r.reason) ? '-fill' : ''}"></i></button>` : ''}<input type="text" autocomplete="off" class="smedium${(((r.status === 'Invalid Format') || (r.status === 'Unknown, Recorded')) && document.querySelector('.awaitingResponses .section') && hasCorrectResponses) ? ' hideonhover' : ''}" id="response-timestamp-input" value="${date.getMonth() + 1}/${date.getDate()} ${hours % 12 || 12}:${minutes < 10 ? '0' + minutes : minutes} ${hours >= 12 ? 'PM' : 'AM'}" disabled />${(((r.status === 'Invalid Format') || (r.status === 'Unknown, Recorded')) && document.querySelector('.awaitingResponses .section') && hasCorrectResponses) ? `<textarea autocomplete="off" rows="1" class="showonhover" id="response-correct-responses-input" value="${correctResponsesString}" disabled>${correctResponsesString}</textarea>` : ''}<button square id="mark-correct-button"${(r.status === 'Correct') ? ' disabled' : ''} tooltip="Mark Correct"><i class="bi bi-check-circle${(r.status === 'Correct') ? '-fill' : ''}"></i></button><button square id="mark-incorrect-button"${(r.status === 'Incorrect') ? ' disabled' : ''} tooltip="Mark Incorrect"><i class="bi bi-x-circle${(r.status === 'Incorrect') ? '-fill' : ''}"></i></button>`;
+      buttonGrid.innerHTML = `<input type="text" autocomplete="off" class="response-id-input small" value="${r.id}" disabled hidden />${(String(r.flagged) === '1') ? `<button square data-unflag-response tooltip="Unflag Response"><i class="bi bi-flag-fill"></i></button>` : `<button square data-flag-response tooltip="Flag Response"><i class="bi bi-flag"></i></button>`}<input type="text" autocomplete="off" class="response-segment-input small" value="${foundSegment ? (foundSegment.number || r.segment) : (foundSegment2?.number || '-')}" mockDisabled data-segment="${foundSegment ? (foundSegment.id || r.segment) : (foundSegment2?.id || '-')}" /><input type="text" autocomplete="off" class="response-question-input small" value="${questionLookup.get(String(r.question_id))?.number}" mockDisabled data-segment="${foundSegment ? (foundSegment.id || r.segment) : (foundSegment2?.id || '-')}" data-question="${questionLookup.get(String(r.question_id))?.number}" data-question-id="${questionLookup.get(String(r.question_id))?.id}" /><input type="text" autocomplete="off" class="response-question-id-input small" value="${questionLookup.get(String(r.question_id)).id}" disabled hidden /><input type="text" autocomplete="off" class="response-seat-code-input small${(((r.status === 'Invalid Format') || (r.status === 'Unknown, Recorded')) && document.querySelector('.awaitingResponses .section') && hasCorrectResponses) ? ' hideonhover' : ''}" value="${r.seatCode}" disabled data-seat-code /><input type="text" autocomplete="off" class="response-time-taken-input small" value="${timeTaken}" disabled data-time-taken${(typeof timeDifference != 'undefined') ? ` time="${timeDifference}"` : ''} /><input type="text" autocomplete="off" class="response-time-taken-input small" value="${timeTakenToRevise}" disabled data-time-taken${(typeof timeDifference != 'undefined') ? ` time="${timeDifference}"` : ''} /><!--<input type="text" autocomplete="off" class="response-time-taken-input small" value="${result}" disabled data-time-taken />--><textarea autocomplete="off" rows="1" class="response-response-input" value="${escapeHTML(responseString)}" ${isMatrix ? 'mockDisabled' : 'disabled'}>${escapeHTML(responseString)}</textarea>${(r.status === 'Incorrect') ? `<button square data-edit-reason tooltip="Edit Reason"><i class="bi bi-reply${(r.reason) ? '-fill' : ''}"></i></button>` : ''}<input type="text" autocomplete="off" class="response-timestamp-input smedium${(((r.status === 'Invalid Format') || (r.status === 'Unknown, Recorded')) && document.querySelector('.awaitingResponses .section') && hasCorrectResponses) ? ' hideonhover' : ''}" value="${date.getMonth() + 1}/${date.getDate()} ${hours % 12 || 12}:${minutes < 10 ? '0' + minutes : minutes} ${hours >= 12 ? 'PM' : 'AM'}" disabled />${(((r.status === 'Invalid Format') || (r.status === 'Unknown, Recorded')) && document.querySelector('.awaitingResponses .section') && hasCorrectResponses) ? `<textarea autocomplete="off" rows="1" class="response-correct-responses-input showonhover" value="${correctResponsesString}" disabled>${correctResponsesString}</textarea>` : ''}<button square class="mark-correct-button"${(r.status === 'Correct') ? ' disabled' : ''} tooltip="Mark Correct"><i class="bi bi-check-circle${(r.status === 'Correct') ? '-fill' : ''}"></i></button><button square class="mark-incorrect-button"${(r.status === 'Incorrect') ? ' disabled' : ''} tooltip="Mark Incorrect"><i class="bi bi-x-circle${(r.status === 'Incorrect') ? '-fill' : ''}"></i></button>`;
       if (window.innerWidth >= 1000) {
         buttonGrid.addEventListener('mouseenter', () => {
           var question = questions.find(q => String(q.id) === String(r.question_id));
@@ -956,19 +956,19 @@ try {
         } else if (hasResponsesSection) {
           responsesSection.appendChild(buttonGrid);
         }
-        const responseSegmentInput = buttonGrid.querySelector('#response-segment-input');
-        const responseQuestionInput = buttonGrid.querySelector('#response-question-input');
-        const responseResponseInput = buttonGrid.querySelector('#response-response-input');
+        const responseSegmentInput = buttonGrid.querySelector('.response-segment-input');
+        const responseQuestionInput = buttonGrid.querySelector('.response-question-input');
+        const responseResponseInput = buttonGrid.querySelector('.response-response-input');
         responseSegmentInput.addEventListener('click', (e) => {
           if (e.target.getAttribute('data-segment')) {
-            document.getElementById("filter-segment-input").value = e.target.getAttribute('data-segment');
+            document.querySelector(".filter-segment-input").value = e.target.getAttribute('data-segment');
             updateResponses();
           }
         });
         responseQuestionInput.addEventListener('click', (e) => {
           if (e.target.getAttribute('data-question')) {
-            if (e.target.getAttribute('data-segment')) document.getElementById("filter-segment-input").value = e.target.getAttribute('data-segment');
-            document.getElementById("filter-question-input").value = `"${e.target.getAttribute('data-question')}"`;
+            if (e.target.getAttribute('data-segment')) document.querySelector(".filter-segment-input").value = e.target.getAttribute('data-segment');
+            document.querySelector(".filter-question-input").value = `"${e.target.getAttribute('data-question')}"`;
             updateResponses();
           }
         });
@@ -1014,7 +1014,7 @@ try {
       }
       var buttonGrid = document.createElement('div');
       buttonGrid.className = "button-grid inputs";
-      buttonGrid.innerHTML = `<input type="text" autocomplete="off" class="small" id="response-id-input" value="${r.single_response}" disabled hidden /><input type="text" autocomplete="off" class="small" id="response-segment-input" value="${segments.find(s => (String(s.id) === String(r.segment)) && (courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value) ? (String(s.course) === String(courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value).id)) : true)) ? (segments.find(s => (String(s.id) === String(r.segment)) && (courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value) ? (String(s.course) === String(courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value).id)) : true)).number || r.segment) : (segments.find(s => (courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value) ? (String(s.course) === String(courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value).id)) : false) && JSON.parse(s.question_ids || [])?.find(q => String(q.id) === String(r.question_id)))?.number || '-')}" mockDisabled data-segment="${segments.find(s => (String(s.id) === String(r.segment)) && (courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value) ? (String(s.course) === String(courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value).id)) : true)) ? (segments.find(s => (String(s.id) === String(r.segment)) && (courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value) ? (String(s.course) === String(courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value).id)) : true)).id || r.segment) : (segments.find(s => (courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value) ? (String(s.course) === String(courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value).id)) : false) && JSON.parse(s.question_ids || [])?.find(q => String(q.id) === String(r.question_id)))?.id || '-')}" /><input type="text" autocomplete="off" class="small" id="response-question-input" value="${questions.find(q => String(q.id) === String(r.question_id))?.number}" mockDisabled data-segment="${segments.find(s => (String(s.id) === String(r.segment)) && (courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value) ? (String(s.course) === String(courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value).id)) : true)) ? (segments.find(s => (String(s.id) === String(r.segment)) && (courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value) ? (String(s.course) === String(courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value).id)) : true)).id || r.segment) : (segments.find(s => (courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value) ? (String(s.course) === String(courses.find(course => String(course.id) === document.getElementById("course-period-input")?.value).id)) : false) && JSON.parse(s.question_ids || [])?.find(q => String(q.id) === String(r.question_id)))?.id || '-')}" data-question="${questions.find(q => String(q.id) === String(r.question_id))?.number}" data-question-id="${questions.find(q => String(q.id) === String(r.question_id))?.id}" /><input type="text" autocomplete="off" class="small" id="response-question-id-input" value="${questions.find(q => String(q.id) === String(r.question_id)).id}" disabled hidden /><textarea autocomplete="off" rows="1" id="response-response-input" value="${escapeHTML(responseString)}" ${isMatrix ? 'mockDisabled' : 'disabled'}>${escapeHTML(responseString)}</textarea><input type="text" autocomplete="off" class="small" id="response-count-input" value="${r.count}" disabled /><button square id="mark-correct-button"${(r.status === 'Correct') ? ' disabled' : ''} tooltip="Mark Correct"><i class="bi bi-check-circle${(r.status === 'Correct') ? '-fill' : ''}"></i></button><button square id="mark-incorrect-button"${(r.status === 'Incorrect') ? ' disabled' : ''} tooltip="Mark Incorrect"><i class="bi bi-x-circle${(r.status === 'Incorrect') ? '-fill' : ''}"></i></button>`;
+      buttonGrid.innerHTML = `<input type="text" autocomplete="off" class="response-id-input small" value="${r.single_response}" disabled hidden /><input type="text" autocomplete="off" class="response-segment-input small" value="${segments.find(s => (String(s.id) === String(r.segment)) && (courses.find(course => String(course.id) === document.querySelector(".course-period-input")?.value) ? (String(s.course) === String(courses.find(course => String(course.id) === document.querySelector(".course-period-input")?.value).id)) : true)) ? (segments.find(s => (String(s.id) === String(r.segment)) && (courses.find(course => String(course.id) === document.querySelector(".course-period-input")?.value) ? (String(s.course) === String(courses.find(course => String(course.id) === document.querySelector(".course-period-input")?.value).id)) : true)).number || r.segment) : (segments.find(s => (courses.find(course => String(course.id) === document.querySelector(".course-period-input")?.value) ? (String(s.course) === String(courses.find(course => String(course.id) === document.querySelector(".course-period-input")?.value).id)) : false) && JSON.parse(s.question_ids || [])?.find(q => String(q.id) === String(r.question_id)))?.number || '-')}" mockDisabled data-segment="${segments.find(s => (String(s.id) === String(r.segment)) && (courses.find(course => String(course.id) === document.querySelector(".course-period-input")?.value) ? (String(s.course) === String(courses.find(course => String(course.id) === document.querySelector(".course-period-input")?.value).id)) : true)) ? (segments.find(s => (String(s.id) === String(r.segment)) && (courses.find(course => String(course.id) === document.querySelector(".course-period-input")?.value) ? (String(s.course) === String(courses.find(course => String(course.id) === document.querySelector(".course-period-input")?.value).id)) : true)).id || r.segment) : (segments.find(s => (courses.find(course => String(course.id) === document.querySelector(".course-period-input")?.value) ? (String(s.course) === String(courses.find(course => String(course.id) === document.querySelector(".course-period-input")?.value).id)) : false) && JSON.parse(s.question_ids || [])?.find(q => String(q.id) === String(r.question_id)))?.id || '-')}" /><input type="text" autocomplete="off" class="response-question-input small" value="${questions.find(q => String(q.id) === String(r.question_id))?.number}" mockDisabled data-segment="${segments.find(s => (String(s.id) === String(r.segment)) && (courses.find(course => String(course.id) === document.querySelector(".course-period-input")?.value) ? (String(s.course) === String(courses.find(course => String(course.id) === document.querySelector(".course-period-input")?.value).id)) : true)) ? (segments.find(s => (String(s.id) === String(r.segment)) && (courses.find(course => String(course.id) === document.querySelector(".course-period-input")?.value) ? (String(s.course) === String(courses.find(course => String(course.id) === document.querySelector(".course-period-input")?.value).id)) : true)).id || r.segment) : (segments.find(s => (courses.find(course => String(course.id) === document.querySelector(".course-period-input")?.value) ? (String(s.course) === String(courses.find(course => String(course.id) === document.querySelector(".course-period-input")?.value).id)) : false) && JSON.parse(s.question_ids || [])?.find(q => String(q.id) === String(r.question_id)))?.id || '-')}" data-question="${questions.find(q => String(q.id) === String(r.question_id))?.number}" data-question-id="${questions.find(q => String(q.id) === String(r.question_id))?.id}" /><input type="text" autocomplete="off" class="response-question-id-input small" value="${questions.find(q => String(q.id) === String(r.question_id)).id}" disabled hidden /><textarea autocomplete="off" rows="1" class="response-response-input" value="${escapeHTML(responseString)}" ${isMatrix ? 'mockDisabled' : 'disabled'}>${escapeHTML(responseString)}</textarea><input type="text" autocomplete="off" class="response-count-input small" value="${r.count}" disabled /><button square class="mark-correct-button"${(r.status === 'Correct') ? ' disabled' : ''} tooltip="Mark Correct"><i class="bi bi-check-circle${(r.status === 'Correct') ? '-fill' : ''}"></i></button><button square class="mark-incorrect-button"${(r.status === 'Incorrect') ? ' disabled' : ''} tooltip="Mark Incorrect"><i class="bi bi-x-circle${(r.status === 'Incorrect') ? '-fill' : ''}"></i></button>`;
       if (window.innerWidth >= 1000) {
         buttonGrid.addEventListener('mouseenter', () => {
           var question = questions.find(q => String(q.id) === String(r.question_id));
@@ -1044,28 +1044,28 @@ try {
         });
       }
       document.querySelector('.trendingResponses .section').appendChild(buttonGrid);
-      document.querySelector('.trendingResponses .section .button-grid:last-child #response-segment-input').addEventListener('click', (e) => {
+      document.querySelector('.trendingResponses .section .button-grid:last-child .response-segment-input').addEventListener('click', (e) => {
         if (e.target.getAttribute('data-segment')) {
-          document.getElementById("filter-segment-input").value = e.target.getAttribute('data-segment');
+          document.querySelector(".filter-segment-input").value = e.target.getAttribute('data-segment');
           updateResponses();
         }
       });
-      document.querySelector('.trendingResponses .section .button-grid:last-child #response-question-input').addEventListener('click', (e) => {
+      document.querySelector('.trendingResponses .section .button-grid:last-child .response-question-input').addEventListener('click', (e) => {
         if (e.target.getAttribute('data-question')) {
-          if (e.target.getAttribute('data-segment')) document.getElementById("filter-segment-input").value = e.target.getAttribute('data-segment');
-          if (document.getElementById("filter-question-input")) document.getElementById("filter-question-input").value = `"${e.target.getAttribute('data-question')}"`;
+          if (e.target.getAttribute('data-segment')) document.querySelector(".filter-segment-input").value = e.target.getAttribute('data-segment');
+          if (document.querySelector(".filter-question-input")) document.querySelector(".filter-question-input").value = `"${e.target.getAttribute('data-question')}"`;
           updateResponses();
         }
       });
-      if (isMatrix) document.querySelector('.trendingResponses .section .button-grid:last-child #response-response-input').addEventListener('click', () => ui.expandMatrix(isMatrix));
+      if (isMatrix) document.querySelector('.trendingResponses .section .button-grid:last-child .response-response-input').addEventListener('click', () => ui.expandMatrix(isMatrix));
     });
-    document.querySelectorAll('#mark-correct-button').forEach(a => a.addEventListener('click', markCorrect));
-    document.querySelectorAll('#mark-incorrect-button').forEach(a => a.addEventListener('click', markIncorrect));
+    document.querySelectorAll('.mark-correct-button').forEach(a => a.addEventListener('click', markCorrect));
+    document.querySelectorAll('.mark-incorrect-button').forEach(a => a.addEventListener('click', markIncorrect));
     document.querySelectorAll('[data-flag-response]').forEach(a => a.addEventListener('click', flagResponse));
     document.querySelectorAll('[data-unflag-response]').forEach(a => a.addEventListener('click', unflagResponse));
     document.querySelectorAll('[data-edit-reason]').forEach(a => a.addEventListener('click', editReason));
-    if (fromAwaitingScoring && !awaitingResponses.length && document.getElementById("filter-segment-input")) {
-      document.getElementById("filter-segment-input").value = '';
+    if (fromAwaitingScoring && !awaitingResponses.length && document.querySelector(".filter-segment-input")) {
+      document.querySelector(".filter-segment-input").value = '';
       fromAwaitingScoring = false;
       updateResponses();
     }
@@ -1113,7 +1113,7 @@ try {
       body: JSON.stringify({
         usr: storage.get("code"),
         pwd: storage.get("pwd"),
-        question_id: this.parentElement.querySelector('#response-id-input').value,
+        question_id: this.parentElement.querySelector('.response-id-input').value,
       }),
     })
       .then(async (r) => {
@@ -1161,7 +1161,7 @@ try {
       body: JSON.stringify({
         usr: storage.get("code"),
         pwd: storage.get("pwd"),
-        question_id: this.parentElement.querySelector('#response-id-input').value,
+        question_id: this.parentElement.querySelector('.response-id-input').value,
       }),
     })
       .then(async (r) => {
@@ -1209,8 +1209,8 @@ try {
       body: JSON.stringify({
         usr: storage.get("code"),
         pwd: storage.get("pwd"),
-        question_id: this.parentElement.querySelector('#response-question-id-input').value,
-        single_response: this.parentElement.querySelector('#response-id-input').value,
+        question_id: this.parentElement.querySelector('.response-question-id-input').value,
+        single_response: this.parentElement.querySelector('.response-id-input').value,
       }),
     })
       .then(async (r) => {
@@ -1233,16 +1233,16 @@ try {
         ui.setUnsavedChanges(false);
         ui.toast("Successfully updated status.", 3000, "success", "bi bi-check-lg");
         noReloadCourse = true;
-        keepSegment = document.getElementById("filter-segment-input").value;
+        keepSegment = document.querySelector(".filter-segment-input").value;
         fromAwaitingScoring = (document.querySelector('.awaitingResponses .section') && Array.from(document.querySelector('.awaitingResponses .section').children).includes(this.parentElement)) ? true : false;
         if (actionRefreshes) {
           init();
         } else {
           const parent = this.parentElement;
-          parent.querySelector('#mark-correct-button')?.setAttribute('disabled', '');
-          if (parent.querySelector('#mark-correct-button i')) parent.querySelector('#mark-correct-button i').classList = 'bi bi-check-circle-fill';
-          parent.querySelector('#mark-incorrect-button')?.removeAttribute('disabled');
-          if (parent.querySelector('#mark-incorrect-button i')) parent.querySelector('#mark-incorrect-button i').classList = 'bi bi-x-circle';
+          parent.querySelector('.mark-correct-button')?.setAttribute('disabled', '');
+          if (parent.querySelector('.mark-correct-button i')) parent.querySelector('.mark-correct-button i').classList = 'bi bi-check-circle-fill';
+          parent.querySelector('.mark-incorrect-button')?.removeAttribute('disabled');
+          if (parent.querySelector('.mark-incorrect-button i')) parent.querySelector('.mark-incorrect-button i').classList = 'bi bi-x-circle';
         }
       })
       .catch((e) => {
@@ -1260,7 +1260,7 @@ try {
       input: {
         type: 'text',
         placeholder: 'Take the derivative of x^2 before multiplying.',
-        defaultValue: (Object.keys(lastMarkedQuestion).length && (String(lastMarkedQuestion.question_id) === this.parentElement.querySelector('#response-question-id-input').value)) ? lastMarkedQuestion.reason : '',
+        defaultValue: (Object.keys(lastMarkedQuestion).length && (String(lastMarkedQuestion.question_id) === this.parentElement.querySelector('.response-question-id-input').value)) ? lastMarkedQuestion.reason : '',
         selectAll: true,
       },
       buttons: [
@@ -1292,8 +1292,8 @@ try {
       body: JSON.stringify({
         usr: storage.get("code"),
         pwd: storage.get("pwd"),
-        question_id: e.parentElement.querySelector('#response-question-id-input').value,
-        single_response: e.parentElement.querySelector('#response-id-input').value,
+        question_id: e.parentElement.querySelector('.response-question-id-input').value,
+        single_response: e.parentElement.querySelector('.response-id-input').value,
         reason: reason,
       }),
     })
@@ -1317,21 +1317,21 @@ try {
         ui.setUnsavedChanges(false);
         ui.toast("Successfully updated status.", 3000, "success", "bi bi-check-lg");
         lastMarkedQuestion = {
-          question_id: e.parentElement.querySelector('#response-question-id-input').value,
-          single_response: e.parentElement.querySelector('#response-id-input').value,
+          question_id: e.parentElement.querySelector('.response-question-id-input').value,
+          single_response: e.parentElement.querySelector('.response-id-input').value,
           reason: reason
         };
         noReloadCourse = true;
-        keepSegment = document.getElementById("filter-segment-input").value;
+        keepSegment = document.querySelector(".filter-segment-input").value;
         fromAwaitingScoring = (document.querySelector('.awaitingResponses .section') && Array.from(document.querySelector('.awaitingResponses .section').children).includes(e.parentElement)) ? true : false;
         if (actionRefreshes) {
           init();
         } else {
           const parent = e.parentElement;
-          parent.querySelector('#mark-incorrect-button')?.setAttribute('disabled', '');
-          if (parent.querySelector('#mark-incorrect-button i')) parent.querySelector('#mark-incorrect-button i').classList = 'bi bi-x-circle-fill';
-          parent.querySelector('#mark-correct-button')?.removeAttribute('disabled');
-          if (parent.querySelector('#mark-correct-button i')) parent.querySelector('#mark-correct-button i').classList = 'bi bi-check-circle';
+          parent.querySelector('.mark-incorrect-button')?.setAttribute('disabled', '');
+          if (parent.querySelector('.mark-incorrect-button i')) parent.querySelector('.mark-incorrect-button i').classList = 'bi bi-x-circle-fill';
+          parent.querySelector('.mark-correct-button')?.removeAttribute('disabled');
+          if (parent.querySelector('.mark-correct-button i')) parent.querySelector('.mark-correct-button i').classList = 'bi bi-check-circle';
         }
       })
       .catch((e) => {
@@ -1348,8 +1348,8 @@ try {
       body: '<p>Edit your reason that this response is incorrect.</p>',
       input: {
         type: 'text',
-        placeholder: responses.find(r => String(r.id) === this.parentElement.querySelector('#response-id-input').value).reason || '',
-        defaultValue: responses.find(r => String(r.id) === this.parentElement.querySelector('#response-id-input').value).reason || '',
+        placeholder: responses.find(r => String(r.id) === this.parentElement.querySelector('.response-id-input').value).reason || '',
+        defaultValue: responses.find(r => String(r.id) === this.parentElement.querySelector('.response-id-input').value).reason || '',
       },
       buttons: [
         {
@@ -1397,7 +1397,7 @@ try {
     Object.keys(pagination).forEach(group => {
       if (document.querySelector(`.${group} .pagination`)) {
         document.querySelectorAll(`.${group} .pagination`).forEach(paginationSection => {
-          const currentPage = paginationSection.parentElement.querySelector('#current-page');
+          const currentPage = paginationSection.parentElement.querySelector('.current-page');
           const input = currentPage?.querySelector('.current-page-input');
           const totalSpan = currentPage?.querySelector('.current-page-total');
           const totalPages = Math.max(1, Math.ceil((pagination[group].total || 0) / (storage.get("rowsPerPage") ? Number(storage.get("rowsPerPage")) : pagination[group].perPage)));
@@ -1413,10 +1413,10 @@ try {
             });
             input._pageHandlerAttached = true;
           }
-          paginationSection.parentElement.querySelector('#next-page-button').disabled = (pagination[group].page + 1 >= totalPages) ? true : false;
-          paginationSection.parentElement.querySelector('#previous-page-button').disabled = (pagination[group].page - 1 < 0) ? true : false;
-          paginationSection.parentElement.querySelector('#first-page-button').disabled = (pagination[group].page - 1 < 0) ? true : false;
-          paginationSection.parentElement.querySelector('#last-page-button').disabled = (pagination[group].page + 1 >= totalPages) ? true : false;
+          paginationSection.parentElement.querySelector('.next-page-button').disabled = (pagination[group].page + 1 >= totalPages) ? true : false;
+          paginationSection.parentElement.querySelector('.previous-page-button').disabled = (pagination[group].page - 1 < 0) ? true : false;
+          paginationSection.parentElement.querySelector('.first-page-button').disabled = (pagination[group].page - 1 < 0) ? true : false;
+          paginationSection.parentElement.querySelector('.last-page-button').disabled = (pagination[group].page + 1 >= totalPages) ? true : false;
         });
       }
     });
@@ -1425,7 +1425,7 @@ try {
   function pageQuestionIsOn(paginationSection, questionId) {
     const group = Array.from(paginationSection.parentElement.parentElement.classList).find(a => Object.keys(pagination).includes(a));
     if (!group) return 0;
-    const questionIndex = questions.filter(q => document.getElementById("filter-segment-input")?.value ? segments.filter(segment => JSON.parse(segment.question_ids).find(q1 => String(q1.id) === String(q.id))).map(segment => String(segment.id)).includes(String(document.getElementById("filter-segment-input")?.value)) : true).findIndex(q => String(q.id) === String(questionId));
+    const questionIndex = questions.filter(q => document.querySelector(".filter-segment-input")?.value ? segments.filter(segment => JSON.parse(segment.question_ids).find(q1 => String(q1.id) === String(q.id))).map(segment => String(segment.id)).includes(String(document.querySelector(".filter-segment-input")?.value)) : true).findIndex(q => String(q.id) === String(questionId));
     if (questionIndex === -1) return 0;
     return Math.floor(questionIndex / (storage.get("rowsPerPage") ? Number(storage.get("rowsPerPage")) : pagination[group].perPage)) || 0;
   }

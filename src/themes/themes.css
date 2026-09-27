@@ -304,15 +304,15 @@
   --error-color: #b90024;
 }
 
-#atreides-logo {
+.atreides-logo {
   display: none;
 }
 
-body[data-theme="dune-2"] #atreides-logo {
+body[data-theme="dune-2"] .atreides-logo {
   display: unset;
 }
 
-body[data-theme="dune-2"] #header > .virtual-checker-logo {
+body[data-theme="dune-2"] .header > .virtual-checker-logo {
   display: none;
 }
 

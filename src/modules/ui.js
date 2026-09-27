@@ -690,12 +690,12 @@ export function clearToasts() {
 }
 
 export function startLoader() {
-  const loader = document.getElementById("loader");
+  const loader = document.querySelector(".loader");
   if (loader) loader.classList.add("active");
 }
 
 export function stopLoader() {
-  const loader = document.getElementById("loader");
+  const loader = document.querySelector(".loader");
   if (loader) loader.classList.remove("active");
 }
 
@@ -886,7 +886,7 @@ export async function launchWelcome(returnFunction = null) {
     <div class="center" step="10">
       <h4>Choose a layout</h4>
       <div class="layout-chooser">
-        <div id="theme-preview">
+        <div class="theme-preview">
           <div class="column">
             <h2 class="text-placeholder">000</h2>
             <p class="text-placeholder">Question</p>
@@ -899,7 +899,7 @@ export async function launchWelcome(returnFunction = null) {
             <div class="control-placeholder pill"></div>
           </div>
         </div>
-        <div id="theme-preview" class="horizontal">
+        <div class="theme-preview horizontal">
           <div class="column">
             <h2 class="text-placeholder">000</h2>
             <p class="text-placeholder">Question</p>
@@ -917,7 +917,7 @@ export async function launchWelcome(returnFunction = null) {
     </div>
     <div class="center" step="11">
       <h4>Choose a theme</h4>
-      <div id="theme-preview">
+      <div class="theme-preview">
         <h2 class="text-placeholder">000</h2>
         <p class="text-placeholder">Question</p>
         <div class="control-placeholder"></div>
@@ -953,9 +953,9 @@ export async function launchWelcome(returnFunction = null) {
     removeWelcome();
     if (returnFunction) returnFunction();
   });
-  welcomeContainer.querySelectorAll('#theme-preview').forEach(a => a.addEventListener('click', () => {
-    setLayout(a.classList.toString().replaceAll('selected', '').trim());
-    welcomeContainer.querySelectorAll('#theme-preview').forEach(b => b.classList.remove('selected'));
+  welcomeContainer.querySelectorAll('.theme-preview').forEach(a => a.addEventListener('click', () => {
+    setLayout(a.classList.contains('horizontal') ? 'horizontal' : '');
+    welcomeContainer.querySelectorAll('.theme-preview').forEach(b => b.classList.remove('selected'));
     a.classList.add('selected');
   }));
   originalTheme = storage.get("theme");
@@ -1007,7 +1007,7 @@ export function toWelcomeSlide(n) {
   var maxN = welcomeContainer.querySelectorAll('[step]').length;
   switch (n) {
     case maxN - 1:
-      [...welcomeContainer.querySelectorAll('#theme-preview')].find(a => document.getElementById('checker')?.classList.toString() ? a.classList.contains(document.getElementById('checker')?.classList.toString()) : true)?.classList.add('selected');
+      [...welcomeContainer.querySelectorAll('.layout-chooser .theme-preview')].find(a => a.classList.contains('horizontal') === document.querySelector(".checker")?.classList.contains('horizontal'))?.classList.add('selected');
       break;
     case maxN:
       try {
@@ -1040,9 +1040,9 @@ export function removeWelcome() {
 }
 
 function setLayout(layout) {
-  const checker = document.getElementById('checker');
+  const checker = document.querySelector(".checker");
   if (!checker) return;
-  checker.classList = layout;
+  checker.className = `checker ${layout}`;
   storage.set('layout', layout);
   auth.syncPush('layout');
 }

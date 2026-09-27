@@ -62,7 +62,7 @@ div.spacer {
   gap: 0.75rem;
 }
 
-#header {
+.header {
   align-self: center;
   display: flex;
   flex-direction: column;
@@ -70,30 +70,30 @@ div.spacer {
   gap: 10px;
 }
 
-#header h1 {
+.header h1 {
   font-size: 1.5rem;
 }
 
-#header h6,
-#header a {
+.header h6,
+.header a {
   font-size: 1.25rem;
   font-weight: 700;
   text-decoration: none;
   line-height: 1.5;
 }
 
-#header .info {
+.header .info {
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 
-#header .menu {
+.header .menu {
   margin-top: 5px;
   border-radius: 10px;
 }
 
-#checker {
+.checker {
   flex: 1;
   align-self: center;
   display: flex;
@@ -106,18 +106,18 @@ div.spacer {
     0.25s align-self;
 }
 
-#checker:has(.responses) {
+.checker:has(.responses) {
   width: min(100%, 1000px);
 }
 
-body:has(.island.visible) #checker {
+body:has(.island.visible) .checker {
   align-self: flex-end;
   transition:
     0.25s width,
     0.25s align-self;
 }
 
-#checker .column {
+.checker .column {
   flex: 1;
   align-self: center;
   display: flex;
@@ -127,23 +127,23 @@ body:has(.island.visible) #checker {
   gap: 12.5px;
 }
 
-#checker.horizontal {
+.checker.horizontal {
   flex-direction: row;
   width: min(100%, 1400px);
   transition: 0.25s width;
 }
 
-#checker.horizontal .column {
+.checker.horizontal .column {
   align-self: flex-start;
 }
 
-#checker.horizontal .column:last-child {
+.checker.horizontal .column:last-child {
   margin-top: 6px;
   position: sticky;
   top: 30px;
 }
 
-#question-container {
+.question-container {
   display: flex;
   flex-direction: row;
   gap: 0.25rem;
@@ -157,11 +157,11 @@ body:has(.island.visible) #checker {
   min-width: 6rem;
 }
 
-#answer-container {
+.answer-container {
   border-radius: 0.5rem;
 }
 
-#answer-container:not(:hover) {
+.answer-container:not(:hover) {
   overflow: hidden;
 }
 
@@ -256,12 +256,12 @@ body:has(.island.visible) #checker {
   width: fit-content !important;
 }
 
-#insert-row {
+.insert-row {
   flex: 1;
   overflow: hidden;
 }
 
-#controls-container {
+.controls-container.pill {
   display: flex;
   flex-direction: row;
   background-color: var(--surface-color);
@@ -274,25 +274,25 @@ body:has(.island.visible) #checker {
   z-index: 5;
 }
 
-#controls-container[checks] {
+.controls-container[checks] {
   padding-left: 5px;
 }
 
-#controls-container[checks]:has(> :last-child:hover) {
+.controls-container[checks]:has(> :last-child:hover) {
   transition: 0.1s;
 }
 
-#controls-container[checks]:not(:has(> :last-child:hover)) {
+.controls-container[checks]:not(:has(> :last-child:hover)) {
   padding-right: 5px;
   transition: 0.1s;
 }
 
-#controls-container[checks]:hover {
+.controls-container[checks]:hover {
   border-radius: 0 100vh 100vh 0;
   transition: 0.5s;
 }
 
-#controls-container[checks]::before {
+.controls-container[checks]::before {
   content: attr(checks);
   position: absolute;
   bottom: 0;
@@ -308,7 +308,7 @@ body:has(.island.visible) #checker {
   opacity: 0;
 }
 
-#controls-container[checks]:hover::before {
+.controls-container[checks]:hover::before {
   right: 100%;
   background-color: var(--accent-color);
   transition: 0.5s;
@@ -316,17 +316,17 @@ body:has(.island.visible) #checker {
   opacity: 1;
 }
 
-#symbols-grid {
+.symbols-grid {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
   gap: 0.125rem;
 }
 
-#symbols-grid > button {
+.symbols-grid > button {
   background-color: var(--background-color);
 }
 
-#symbols-grid > button:hover {
+.symbols-grid > button:hover {
   color: var(--text-color);
   background-color: var(--surface-color);
 }
@@ -344,7 +344,7 @@ body:has(.island.visible) #checker {
   line-height: 1.2;
 }
 
-#seat-grid {
+.seat-grid {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
   gap: 0.25rem 1.5rem;
@@ -549,8 +549,8 @@ label:has(i) {
   z-index: 1;
 }
 
-#checker:not(.horizontal) [data-toggle-layout] .bi-app,
-#checker.horizontal [data-toggle-layout] .bi-layout-sidebar-reverse {
+.checker:not(.horizontal) [data-toggle-layout] .bi-app,
+.checker.horizontal [data-toggle-layout] .bi-layout-sidebar-reverse {
   display: none;
 }
 
@@ -561,8 +561,8 @@ label:has(i) {
   z-index: 1;
 }
 
-#checker:not(:has(#segment-completed[hidden])) [data-toggle-segment-completion] .bi-info-square,
-#checker:has(#segment-completed[hidden]) [data-toggle-segment-completion] .bi-info-square-fill {
+.checker:not(:has(#segment-completed[hidden])) [data-toggle-segment-completion] .bi-info-square,
+.checker:has(#segment-completed[hidden]) [data-toggle-segment-completion] .bi-info-square-fill {
   display: none;
 }
 
@@ -590,7 +590,7 @@ label:has(i) {
   width: -webkit-fill-available;
 }
 
-#checker:has(.live-drawings-reconnect) {
+.checker:has(.live-drawings-reconnect) {
   position: relative;
 }
 

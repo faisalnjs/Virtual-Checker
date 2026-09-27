@@ -23,7 +23,7 @@
   background-attachment: fixed !important;
 }
 
-#virtual-checker-butterfly {
+.virtual-checker-butterfly {
   display: none;
 }
 
@@ -33,15 +33,15 @@ body[data-theme="butterfly"] {
   font-weight: normal;
 }
 
-body[data-theme="butterfly"] #virtual-checker-butterfly {
+body[data-theme="butterfly"] .virtual-checker-butterfly {
   display: unset;
 }
 
-body[data-theme="butterfly"] #header > .virtual-checker-logo {
+body[data-theme="butterfly"] .header > .virtual-checker-logo {
   display: none;
 }
 
-body[data-theme="butterfly"] :is(#header, #checker) {
+body[data-theme="butterfly"] :is(.header, .checker) {
   background-color: transparent;
 }
 
@@ -49,17 +49,17 @@ body[data-theme="butterfly"] [data-button-select] {
   background-color: var(--surface-color);
 }
 
-body[data-theme="butterfly"] :is(#header, #checker > h1, #checker > label) {
+body[data-theme="butterfly"] :is(.header, .checker > h1, .checker > label) {
   color: #ffffff;
 }
 
-body[data-theme="butterfly"] #header h1 {
+body[data-theme="butterfly"] .header h1 {
   font-family: "ultinoid";
   font-size: 2.5rem;
   font-weight: normal;
 }
 
-body[data-theme="butterfly"] #checker > h1 {
+body[data-theme="butterfly"] .checker > h1 {
   animation: glow 1.5s linear infinite alternate;
 }
 
@@ -72,7 +72,7 @@ body[data-theme="butterfly"] :is(button, kbd, code, input, select, textarea) {
   font-family: inherit;
 }
 
-body[data-theme="butterfly"] #code-input {
+body[data-theme="butterfly"] .code-input {
   color: unset;
 }
 

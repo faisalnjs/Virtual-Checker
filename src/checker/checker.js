@@ -30,7 +30,7 @@ try {
   const questionImages = document.querySelector('.images');
   const nextQuestionButtons = document.querySelectorAll('[data-next-question]');
   const prevQuestionButtons = document.querySelectorAll('[data-prev-question]');
-  var period = document.getElementById("period-input")?.value;
+  var period = document.querySelector(".period-input")?.value;
 
   var courses = [];
   var segmentsArray = [];
@@ -48,39 +48,39 @@ try {
   // Initialization
   async function init() {
     ui.startLoader();
-    if (!document.getElementById("course-input")) {
+    if (!document.querySelector(".course-input")) {
       ui.stopLoader();
       return;
     }
     // Populate seat code finder grid
-    document.getElementById("seat-grid").innerHTML = "";
+    document.querySelector(".seat-grid").innerHTML = "";
     for (let col = 1; col <= 5; col++) {
       for (let row = 6; row > 0; row--) {
-        period = document.getElementById("period-input").value;
+        period = document.querySelector(".period-input").value;
         const code = period + row.toString() + col.toString();
         const button = new Element("button", "", {
           click: () => {
-            document.getElementById("code-input").value = code;
+            document.querySelector(".code-input").value = code;
             ui.view("settings/code");
           },
         }).element;
-        document.getElementById("seat-grid").append(button);
+        document.querySelector(".seat-grid").append(button);
         ui.addTooltip(button, code);
       }
     }
-    document.getElementById("period-input").addEventListener("change", () => {
-      document.getElementById("seat-grid").innerHTML = "";
+    document.querySelector(".period-input").addEventListener("change", () => {
+      document.querySelector(".seat-grid").innerHTML = "";
       for (let col = 1; col <= 5; col++) {
         for (let row = 6; row > 0; row--) {
-          period = document.getElementById("period-input").value;
+          period = document.querySelector(".period-input").value;
           const code = period + row.toString() + col.toString();
           const button = new Element("button", "", {
             click: () => {
-              document.getElementById("code-input").value = code;
+              document.querySelector(".code-input").value = code;
               ui.view("settings/code");
             },
           }).element;
-          document.getElementById("seat-grid").append(button);
+          document.querySelector(".seat-grid").append(button);
           ui.addTooltip(button, code);
         }
       }
@@ -88,7 +88,7 @@ try {
     if (document.querySelector('[data-logout]')) document.querySelector('[data-logout]').addEventListener('click', () => auth.logout(init));
     if (document.querySelector('[data-toggle-layout]')) document.querySelector('[data-toggle-layout]').addEventListener('click', toggleLayout);
     if (document.querySelector('[data-toggle-segment-completion]')) document.querySelector('[data-toggle-segment-completion]').addEventListener('click', toggleSegmentCompletion);
-    document.getElementById("code-input").value = '';
+    document.querySelector(".code-input").value = '';
     document.querySelectorAll("span.code").forEach((element) => {
       element.innerHTML = '';
     });
@@ -284,7 +284,7 @@ try {
         a++;
       });
     }
-    document.querySelectorAll('[data-answer-mode="set"] .button-grid')[1].style.flexWrap = 'nowrap';
+    document.querySelector('[data-answer-mode="set"] .button-grid:has([data-set-input])').style.flexWrap = 'nowrap';
     resetMatrix();
     // Switch input mode (exit multiple choice)
     answerMode(mode);
@@ -387,12 +387,12 @@ try {
   }
 
   // Limit seat code input to integers
-  document.getElementById("code-input")?.addEventListener("input", (e) => {
+  document.querySelector(".code-input")?.addEventListener("input", (e) => {
     e.target.value = parseInt(e.target.value) || "";
   });
 
   // Save seat code on enter
-  document.getElementById("code-input")?.addEventListener("keydown", (e) => {
+  document.querySelector(".code-input")?.addEventListener("keydown", (e) => {
     if (e.key == "Enter") {
       e.preventDefault();
       setTimeout(() => {
@@ -402,11 +402,11 @@ try {
   });
 
   // Save seat code button
-  document.getElementById("save-code-button")?.addEventListener("click", saveCode);
+  document.querySelector(".save-code-button")?.addEventListener("click", saveCode);
 
   // Save seat code
   async function saveCode() {
-    const input = document.getElementById("code-input").value;
+    const input = document.querySelector(".code-input").value;
     // Tests for valid seat code
     const regex = /^[1-9][0-6][0-5]$/;
     if (regex.test(input)) {
@@ -423,7 +423,7 @@ try {
                 ui.view("");
                 ui.setUnsavedChanges(true);
                 ui.view("settings/code");
-                document.getElementById("code-input").focus();
+                document.querySelector(".code-input").focus();
               }
             },
             {
@@ -465,7 +465,7 @@ try {
   // Update elements with new seat code
   async function updateCode() {
     const code = storage.get("code");
-    document.getElementById("code-input").value = storage.get("code");
+    document.querySelector(".code-input").value = storage.get("code");
     document.querySelectorAll("span.code").forEach((element) => {
       element.innerHTML = storage.get("code");
     });
@@ -486,7 +486,7 @@ try {
       ui.startLoader();
       return ui.view("no-course");
     }
-    if (document.getElementById("course-input")) document.getElementById("course-input").value = course.name || "Unknown Course";
+    if (document.querySelector(".course-input")) document.querySelector(".course-input").value = course.name || "Unknown Course";
     if (document.querySelector('[data-syllabus-download]')) {
       if (course.syllabus) {
         document.querySelector('[data-syllabus-download]').removeAttribute('hidden');
@@ -877,7 +877,7 @@ try {
     nextQuestionButtons.forEach(btn => btn.disabled = true);
     prevQuestionButtons.forEach(btn => btn.disabled = true);
     document.getElementById("submit-button").disabled = true;
-    document.querySelector('.hiddenOnLoad:has(#answer-container)').classList.remove('show');
+    document.querySelector('.hiddenOnLoad:has(.answer-container)').classList.remove('show');
     document.querySelector('[data-question-title]').setAttribute('hidden', '');
     document.querySelector('[data-question-description]').setAttribute('hidden', '');
     document.querySelector('[data-question-description]').innerHTML = '';
@@ -940,7 +940,7 @@ try {
       const selectedQuestionOptionIndex = Array.from(questionOptions).indexOf(selectedQuestionOption);
       nextQuestionButtons.forEach(btn => btn.disabled = selectedQuestionOptionIndex === questionOptions.length - 1);
       prevQuestionButtons.forEach(btn => btn.disabled = selectedQuestionOptionIndex === 0);
-      document.querySelector('.hiddenOnLoad:has(#answer-container)').classList.add('show');
+      document.querySelector('.hiddenOnLoad:has(.answer-container)').classList.add('show');
       document.getElementById("submit-button").disabled = false;
     }
 
@@ -956,7 +956,8 @@ try {
           return;
         }
         const button = document.createElement("button");
-        button.id = r.id;
+        button.id = `question-history-response-${r.id}`;
+        button.dataset.responseId = r.id;
         button.classList = (r.status === "Incorrect") ? 'incorrect' : (r.status === "Correct") ? 'correct' : '';
         if (r.flagged) button.classList.add('flagged');
         if (r.review_later) button.classList.add('reviewLater');
@@ -1133,7 +1134,7 @@ try {
     });
 
     // Animate container
-    const container = document.getElementById("answer-container");
+    const container = document.querySelector(".answer-container");
     const target = document.querySelector(`[data-answer-mode="${mode}"]`);
     const toHeight = target.getBoundingClientRect().height;
     ui.animate(
@@ -1272,7 +1273,8 @@ try {
         return filteredHistory;
       }
       const button = document.createElement("button");
-      button.id = r.id;
+      button.id = `history-response-${r.id}`;
+      button.dataset.responseId = r.id;
       button.classList = (r.status === "Incorrect") ? 'incorrect' : (r.status === "Correct") ? 'correct' : '';
       if (r.flagged) button.classList.add('flagged');
       if (r.review_later) button.classList.add('reviewLater');
@@ -1295,6 +1297,7 @@ try {
       }
       if (filteredHistory.find(r1 => r1.id === r.id)) feed.prepend(button);
       const button2 = button.cloneNode(true);
+      button2.id = `review-later-response-${r.id}`;
       if (r.review_later) reviewLaterFeed.prepend(button2);
       renderMathInElement(button);
       // Resubmit check
@@ -1421,7 +1424,7 @@ try {
       body: JSON.stringify({
         usr: storage.get("code"),
         pwd: storage.get("password"),
-        question_id: event.srcElement.parentElement.parentElement.id,
+        question_id: event.srcElement.parentElement.parentElement.dataset.responseId,
       }),
     })
       .then(q => q.json())
@@ -1451,7 +1454,7 @@ try {
       body: JSON.stringify({
         usr: storage.get("code"),
         pwd: storage.get("password"),
-        question_id: event.srcElement.parentElement.parentElement.id,
+        question_id: event.srcElement.parentElement.parentElement.dataset.responseId,
       }),
     })
       .then(q => q.json())
@@ -1481,7 +1484,7 @@ try {
       body: JSON.stringify({
         usr: storage.get("code"),
         pwd: storage.get("password"),
-        question_id: event.srcElement.parentElement.parentElement.id,
+        question_id: event.srcElement.parentElement.parentElement.dataset.responseId,
       }),
     })
       .then(q => q.json())
@@ -1511,7 +1514,7 @@ try {
       body: JSON.stringify({
         usr: storage.get("code"),
         pwd: storage.get("password"),
-        question_id: event.srcElement.parentElement.parentElement.id,
+        question_id: event.srcElement.parentElement.parentElement.dataset.responseId,
       }),
     })
       .then(q => q.json())
@@ -1607,12 +1610,12 @@ try {
       if (highestDataElement !== null) highestDataElement.remove();
     }
     if (setInputs.length === 2) document.querySelector("[data-remove-set-input]").disabled = true;
-    document.querySelectorAll('[data-answer-mode="set"] .button-grid')[1].style.flexWrap = (setInputs.length < 12) ? 'nowrap' : 'wrap';
+    document.querySelector('[data-answer-mode="set"] .button-grid:has([data-set-input])').style.flexWrap = (setInputs.length < 12) ? 'nowrap' : 'wrap';
   }
 
   function resetSetInput() {
     ui.setButtonSelectValue(document.getElementById("set-type-selector"), "brackets");
-    document.querySelectorAll('[data-answer-mode="set"] .button-grid')[1].innerHTML = '<input type="text" autocomplete="off" id="set-input" data-set-input="1" /><button square data-add-set-input tooltip="Add Set Item"><i class="bi bi-plus"></i></button><button square data-remove-set-input disabled tooltip="Remove Set Item"><i class="bi bi-dash"></i></button>';
+    document.querySelector('[data-answer-mode="set"] .button-grid:has([data-set-input])').innerHTML = '<input type="text" autocomplete="off" id="set-input" data-set-input="1" /><button square data-add-set-input tooltip="Add Set Item"><i class="bi bi-plus"></i></button><button square data-remove-set-input disabled tooltip="Remove Set Item"><i class="bi bi-dash"></i></button>';
     if (document.querySelector("[data-add-set-input]")) {
       document.querySelector("[data-add-set-input]").addEventListener("click", addSet);
     }
@@ -1630,6 +1633,7 @@ try {
       var newColumn = document.createElement('input');
       newColumn.setAttribute('type', 'text');
       newColumn.setAttribute('autocomplete', 'off');
+      newColumn.classList.add('matrix-column');
       newColumn.setAttribute('data-matrix-column', row.children.length + 1);
       row.appendChild(newColumn);
     });
@@ -1666,6 +1670,7 @@ try {
       var newColumn = document.createElement('input');
       newColumn.setAttribute('type', 'text');
       newColumn.setAttribute('autocomplete', 'off');
+      newColumn.classList.add('matrix-column');
       newColumn.setAttribute('data-matrix-column', column.getAttribute('data-matrix-column'));
       newRow.appendChild(newColumn);
     });
@@ -1693,7 +1698,7 @@ try {
 
   function resetMatrix() {
     var matrix = document.getElementById('matrix');
-    matrix.innerHTML = '<div class="row" data-matrix-row="1"><input type="text" autocomplete="off" id="matrix-column" data-matrix-column="1" /><input type="text" autocomplete="off" id="matrix-column" data-matrix-column="2" /></div><div class="row" data-matrix-row="2"><input type="text" autocomplete="off" id="matrix-column" data-matrix-column="1" /><input type="text" autocomplete="off" id="matrix-column" data-matrix-column="2" /></div>';
+    matrix.innerHTML = '<div class="row" data-matrix-row="1"><input type="text" autocomplete="off" class="matrix-column" data-matrix-column="1" /><input type="text" autocomplete="off" class="matrix-column" data-matrix-column="2" /></div><div class="row" data-matrix-row="2"><input type="text" autocomplete="off" class="matrix-column" data-matrix-column="1" /><input type="text" autocomplete="off" class="matrix-column" data-matrix-column="2" /></div>';
     document.querySelectorAll('[data-answer-mode="matrix"] .button-grid')[1].innerHTML = '<button square data-add-matrix-column tooltip="Add Matrix Column"><i class="bi bi-arrow-90deg-left rotate-right"></i></button><button square data-remove-matrix-column tooltip="Remove Matrix Column"><i class="bi bi-x"></i></button>';
     document.querySelectorAll('[data-answer-mode="matrix"] .button-grid')[2].innerHTML = '<button square data-add-matrix-row tooltip="Add Matrix Row"><i class="bi bi-arrow-return-left"></i></button><button square data-remove-matrix-row tooltip="Remove Matrix Row"><i class="bi bi-x"></i></button>';
     if (document.querySelector("[data-add-matrix-column]")) document.querySelector("[data-add-matrix-column]").addEventListener("click", addColumn);
@@ -1703,15 +1708,15 @@ try {
   }
 
   function toggleLayout() {
-    const checker = document.getElementById('checker');
+    const checker = document.querySelector(".checker");
     if (!checker) return;
     checker.classList.toggle('horizontal');
-    storage.set('layout', checker.classList.toString());
+    storage.set('layout', checker.classList.contains('horizontal') ? 'horizontal' : '');
     auth.syncPush('layout');
   }
 
   function toggleSegmentCompletion() {
-    const checker = document.getElementById('checker');
+    const checker = document.querySelector(".checker");
     if (!checker) return;
     const segmentCompleted = document.getElementById('segment-completed');
     const segmentsCompleted = document.getElementById('segments-completed');
