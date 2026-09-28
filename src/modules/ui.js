@@ -1070,6 +1070,11 @@ export async function setNotifications(array) {
 document.querySelectorAll('[data-report-bug]').forEach(a => a.addEventListener('click', reportBugModal));
 
 export function reportBugModal(event = null, report = null) {
+  if (report && report.includes('Script error')) {
+    view();
+    modeless('<i class="bi bi-exclamation-triangle"></i>', 'Unsupported Browser', 'This browser is currently unsupported. Try a different browser or the default browser for your device.', true);
+    return;
+  }
   if (report) toast('A bug was detected, please report it.', 10000, 'error', 'bi bi-bug-fill');
   view();
   modal({

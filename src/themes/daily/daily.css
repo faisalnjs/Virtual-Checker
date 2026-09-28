@@ -1,0 +1,43 @@
+body:not([data-theme="daily"]) .daily-theme-roll {
+  display: none !important;
+}
+
+[data-theme="daily"] {
+  color-scheme: var(--daily-theme-color-scheme, dark);
+  --text-color: var(--daily-theme-text-color, #ffffff);
+  --background-color: var(--daily-theme-background-color, #243447);
+  --surface-color: var(--daily-theme-surface-color, #182330);
+  --accent-color: var(--daily-theme-accent-color, #91c8ef);
+  --accent-text-color: var(--daily-theme-accent-text-color, #182330);
+  --error-color: var(--daily-theme-error-color, #eb324b);
+  background: var(--daily-theme-full, none) center / cover no-repeat !important;
+}
+
+[data-modal-page="store"] .theme-item[data-theme="daily"] {
+  grid-area: 1 / 1 / 3 / 2;
+}
+
+[data-modal-page="store"] :is(.theme-item, .promo)[data-theme="daily"] .daily-theme-copyright,
+.daily-theme-wallpaper-copyright {
+  color: #ffffff;
+  background: #000c;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  line-height: 1.4;
+  text-shadow: none;
+}
+
+.daily-theme-wallpaper-copyright {
+  display: none;
+  position: fixed;
+  bottom: max(8px, env(safe-area-inset-bottom));
+  right: max(8px, env(safe-area-inset-right));
+  max-width: min(80vw, 480px);
+  z-index: -1;
+  pointer-events: none;
+}
+
+body[data-theme="daily"] > .daily-theme-wallpaper-copyright {
+  display: block;
+}
