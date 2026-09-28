@@ -56,7 +56,7 @@ function themePaletteFromPixels({ data, width, height }) {
   const colors = [...buckets.values()].map(bucket => ({
     ...bucket, rgb: bucket.sum.map(value => value / bucket.count),
   })).sort((a, b) => b.count - a.count);
-  if (!colors.length) throw new Error("Daily theme image has no opaque pixels");
+  if (!colors.length) throw new Error("Theme image has no opaque pixels");
   const clusters = [];
   for (const color of colors) {
     const nearest = clusters.reduce((best, cluster) => (!best || (distance(color.rgb, cluster.rgb) < distance(color.rgb, best.rgb))) ? cluster : best, null);
@@ -90,9 +90,11 @@ function themePaletteFromPixels({ data, width, height }) {
   };
 }
 
-async function extractDailyThemePalette(url) {
-  const response = await fetch(auth.getDailyThemeImageUrl(url), { signal: AbortSignal.timeout(10000) });
-  if (!response.ok) throw new Error("Daily theme image unavailable");
+export async function extractPalette(url) {
+  const imageUrl = new URL(url, document.baseURI);
+  const source = imageUrl.hostname === "img.peapix.com" ? auth.getDailyThemeImageUrl(imageUrl.href) : imageUrl.href;
+  const response = await fetch(source, { signal: AbortSignal.timeout(10000) });
+  if (!response.ok) throw new Error("Theme image unavailable");
   const bitmap = await createImageBitmap(await response.blob());
   try {
     const canvas = document.createElement("canvas");
@@ -100,7 +102,7 @@ async function extractDailyThemePalette(url) {
     canvas.width = Math.max(1, Math.round(bitmap.width * scale));
     canvas.height = Math.max(1, Math.round(bitmap.height * scale));
     const context = canvas.getContext("2d", { willReadFrequently: true });
-    if (!context) throw new Error("Daily theme canvas unavailable");
+    if (!context) throw new Error("Theme canvas unavailable");
     context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
     return themePaletteFromPixels(context.getImageData(0, 0, canvas.width, canvas.height));
   } finally {
@@ -126,7 +128,7 @@ export function random(randomize = false) {
         if (url.protocol !== "https:") throw new Error("Invalid daily theme image URL");
         image[key] = url.href;
       }
-      image.palette = ((dailyImage?.imageUrl === image.imageUrl) && (dailyImage?.thumbUrl === image.thumbUrl) && dailyImage.palette) ? dailyImage.palette : (await extractDailyThemePalette(image.thumbUrl).catch(() => null));
+      image.palette = ((dailyImage?.imageUrl === image.imageUrl) && (dailyImage?.thumbUrl === image.thumbUrl) && dailyImage.palette) ? dailyImage.palette : (await extractPalette(image.thumbUrl).catch(() => null));
       for (const key of ["text-color", "background-color", "surface-color", "accent-color", "accent-text-color", "error-color", "color-scheme"]) {
         if (image.palette) {
           document.documentElement.style.setProperty(`--daily-theme-${key}`, image.palette[key]);

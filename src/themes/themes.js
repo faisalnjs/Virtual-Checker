@@ -31,6 +31,47 @@ const customTheme = Object.assign({}, storage.get("custom-theme") || defaultThem
 const colorizeTrigger = document.querySelector('[data-modal-view="colorize"]');
 const colorizeRange = document.getElementById('colorize');
 
+async function initializeAutomaticThemeColors(onApply) {
+  const container = document.createElement("div");
+  container.hidden = true;
+  container.style.setProperty("--text-color", "__missing_theme_text_color__");
+  const probe = document.createElement("div");
+  container.appendChild(probe);
+  document.body.appendChild(container);
+  const candidates = [];
+  try {
+    for (const [theme] of themes) {
+      if (["default", "custom", "daily"].includes(theme)) continue;
+      probe.setAttribute("data-theme", theme);
+      const computed = getComputedStyle(probe);
+      const textColor = computed.getPropertyValue("--text-color").trim();
+      if (textColor && (textColor !== "__missing_theme_text_color__")) continue;
+      const image = /url\((?:"([^"]*)"|'([^']*)'|([^)]*))\)/.exec(computed.backgroundImage);
+      if (image) candidates.push({ theme, url: image[1] || image[2] || image[3].trim() });
+    }
+  } finally {
+    container.remove();
+  }
+  if (!candidates.length) return;
+  const style = document.createElement("style");
+  style.dataset.generatedThemeColors = "";
+  document.head.appendChild(style);
+  await Promise.all(candidates.map(async ({ theme, url }) => {
+    try {
+      const palette = await daily.extractPalette(url);
+      const index = style.sheet.insertRule(`[data-theme="${CSS.escape(theme)}"] {}`, style.sheet.cssRules.length);
+      const rule = style.sheet.cssRules[index];
+      for (const [key, value] of Object.entries(palette)) rule.style.setProperty(key === "color-scheme" ? key : `--${key}`, value);
+      if (document.body.getAttribute("data-theme") === theme) {
+        onApply?.();
+        await syncPwaTheme().catch(() => null);
+      }
+    } catch (error) {
+      console.warn(`Could not generate colors for theme "${theme}".`, error);
+    }
+  }));
+}
+
 export function resetTheme() {
   disableTransitions();
   document.body.removeAttribute("data-theme");
@@ -605,6 +646,7 @@ export function getCurrentTheme() {
 }
 
 try {
+  initializeAutomaticThemeColors(updateColorizedTheme);
   themes.forEach((theme) => {
     const value = theme[0];
     const name = theme[1] || theme[0];
