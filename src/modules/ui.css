@@ -157,6 +157,7 @@ div.modeless {
   box-shadow: 0 0 2rem rgba(0, 0, 0, 0.2);
   pointer-events: none;
   background: var(--background-color);
+  text-align: center;
 }
 
 div.modeless > h2 {
