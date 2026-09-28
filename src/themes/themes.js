@@ -4,6 +4,7 @@ import themes from "./themes.json";
 
 import "./butterfly/butterfly.js";
 import "./festive/festive.js";
+import * as daily from "./daily/daily.js";
 
 import * as ui from "/src/modules/ui.js";
 import storage from "/src/modules/storage.js";
@@ -30,145 +31,6 @@ const customTheme = Object.assign({}, storage.get("custom-theme") || defaultThem
 const colorizeTrigger = document.querySelector('[data-modal-view="colorize"]');
 const colorizeRange = document.getElementById('colorize');
 
-let dailyImage = null;
-let pendingRequest = null;
-
-function addDailyThemeCopyright(parent) {
-  const copyright = document.createElement("small");
-  copyright.className = "daily-theme-copyright";
-  copyright.textContent = dailyImage?.copyright || "Daily image currently unavailable.";
-  parent.appendChild(copyright);
-  return copyright;
-}
-
-function dailyColorLuminance(rgb) {
-  const linear = rgb.map(channel => {
-    const value = channel / 255;
-    return (value <= 0.04045) ? (value / 12.92) : (((value + 0.055) / 1.055) ** 2.4);
-  });
-  return (linear[0] * 0.2126) + (linear[1] * 0.7152) + (linear[2] * 0.0722);
-}
-
-function dailyThemePaletteFromPixels({ data, width, height }) {
-  const buckets = new Map();
-  const distance = (a, b) => a.reduce((sum, value, index) => sum + ((value - b[index]) ** 2), 0);
-  const hex = rgb => "#" + rgb.map(value => Math.round(value).toString(16).padStart(2, "0")).join("");
-  const textColor = rgb => {
-    const luminance = dailyColorLuminance(rgb);
-    return (((luminance + 0.05) / 0.05) >= (1.05 / (luminance + 0.05))) ? "#000000" : "#ffffff";
-  };
-  for (let i = 0; i < data.length; i += 4) {
-    if (data[i + 3] < 128) continue;
-    const rgb = [data[i], data[i + 1], data[i + 2]];
-    const key = rgb.map(value => value >> 5).join(",");
-    const bucket = buckets.get(key) || { sum: [0, 0, 0], count: 0, edges: 0 };
-    rgb.forEach((value, channel) => { bucket.sum[channel] += value; });
-    bucket.count++;
-    const x = (i / 4) % width;
-    const y = Math.floor((i / 4) / width);
-    if ((x < (width * 0.1)) || (x >= (width * 0.9)) || (y < (height * 0.1)) || (y >= (height * 0.9))) bucket.edges++;
-    buckets.set(key, bucket);
-  }
-  const colors = [...buckets.values()].map(bucket => ({
-    ...bucket, rgb: bucket.sum.map(value => value / bucket.count),
-  })).sort((a, b) => b.count - a.count);
-  if (!colors.length) throw new Error("Daily theme image has no opaque pixels");
-  const clusters = [];
-  for (const color of colors) {
-    const nearest = clusters.reduce((best, cluster) => (!best || (distance(color.rgb, cluster.rgb) < distance(color.rgb, best.rgb))) ? cluster : best, null);
-    if (nearest && distance(color.rgb, nearest.rgb) < 48 ** 2) {
-      nearest.rgb = nearest.rgb.map((value, channel) => ((value * nearest.count) + (color.rgb[channel] * color.count)) / (nearest.count + color.count));
-      nearest.count += color.count;
-      nearest.edges += color.edges;
-    } else {
-      clusters.push({ rgb: [...color.rgb], count: color.count, edges: color.edges });
-    }
-  }
-  clusters.sort((a, b) => b.count - a.count);
-  const accent = clusters[0].rgb.map(Math.round);
-  const background = [...clusters].sort((a, b) => b.edges - a.edges)[0].rgb.map(Math.round);
-  const secondary = clusters.find(color => (color.count >= (width * height * 0.03)) && (distance(color.rgb, accent) >= (48 ** 2)))?.rgb || background;
-  const lightSurface = dailyColorLuminance(background) > 0.45;
-  const mix = (rgb, target, amount) => rgb.map(value => Math.round(value * (1 - amount) + (target * amount)));
-  let surface = mix(secondary, lightSurface ? 255 : 0, lightSurface ? 0.8 : 0.65);
-  if (distance(surface, accent) < (60 ** 2)) surface = mix(secondary, (dailyColorLuminance(accent) > 0.179) ? 0 : 255, 0.8);
-  const red = colors.find(({ rgb: [r, g, b] }) => (r >= 80) && (r > (g * 1.3)) && (r > (b * 1.15)) && ((r - Math.max(g, b)) > 35));
-  const text = textColor(surface);
-  return {
-    "text-color": text,
-    "background-color": hex(background),
-    "surface-color": hex(surface),
-    "accent-color": hex(accent),
-    "accent-text-color": textColor(accent),
-    "error-color": red ? hex(red.rgb) : "#eb324b",
-    "color-scheme": (text === "#000000") ? "light" : "dark",
-  };
-}
-
-async function extractDailyThemePalette(url) {
-  const response = await fetch(auth.getDailyThemeImageUrl(url), { signal: AbortSignal.timeout(10000) });
-  if (!response.ok) throw new Error("Daily theme image unavailable");
-  const bitmap = await createImageBitmap(await response.blob());
-  try {
-    const canvas = document.createElement("canvas");
-    const scale = 64 / Math.max(bitmap.width, bitmap.height);
-    canvas.width = Math.max(1, Math.round(bitmap.width * scale));
-    canvas.height = Math.max(1, Math.round(bitmap.height * scale));
-    const context = canvas.getContext("2d", { willReadFrequently: true });
-    if (!context) throw new Error("Daily theme canvas unavailable");
-    context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
-    return dailyThemePaletteFromPixels(context.getImageData(0, 0, canvas.width, canvas.height));
-  } finally {
-    bitmap.close();
-  }
-}
-
-function refreshDailyTheme() {
-  if (pendingRequest) return pendingRequest;
-  pendingRequest = (async () => {
-    try {
-      const response = await fetch("https://peapix.com/bing/feed", {
-        cache: "no-store",
-        signal: AbortSignal.timeout(10000),
-      });
-      if (!response.ok) throw new Error("Daily theme feed unavailable");
-      const feed = await response.json();
-      const first = Array.isArray(feed) ? feed[0] : null;
-      if (!first || (typeof first.copyright !== "string") || !first.copyright.trim()) {
-        throw new Error("Daily theme attribution missing");
-      }
-      const image = { copyright: first.copyright };
-      for (const key of ["fullUrl", "thumbUrl"]) {
-        const url = new URL(first[key]);
-        if (url.protocol !== "https:") throw new Error("Invalid daily theme image URL");
-        image[key] = url.href;
-      }
-      image.palette = ((dailyImage?.fullUrl === image.fullUrl) && (dailyImage?.thumbUrl === image.thumbUrl) && dailyImage.palette) ? dailyImage.palette : (await extractDailyThemePalette(image.thumbUrl).catch(() => null));
-      for (const key of ["text-color", "background-color", "surface-color", "accent-color", "accent-text-color", "error-color", "color-scheme"]) {
-        if (image.palette) {
-          document.documentElement.style.setProperty(`--daily-theme-${key}`, image.palette[key]);
-        } else {
-          document.documentElement.style.removeProperty(`--daily-theme-${key}`);
-        }
-      }
-      dailyImage = image;
-      document.documentElement.style.setProperty("--daily-theme-full", `url(${JSON.stringify(image.fullUrl)})`);
-      document.documentElement.style.setProperty("--daily-theme-thumb", `url(${JSON.stringify(image.thumbUrl)})`);
-      if (!document.querySelector(".daily-theme-wallpaper-copyright")) {
-        const copyright = addDailyThemeCopyright(document.body);
-        copyright.classList.add("daily-theme-wallpaper-copyright");
-      }
-      document.querySelectorAll(".daily-theme-copyright").forEach(copyright => {
-        copyright.textContent = image.copyright;
-      });
-      if (document.body.getAttribute("data-theme") === "daily") await syncPwaTheme().catch(() => null);
-    } finally {
-      pendingRequest = null;
-    }
-  })();
-  return pendingRequest;
-}
-
 export function resetTheme() {
   disableTransitions();
   document.body.removeAttribute("data-theme");
@@ -191,7 +53,7 @@ export function enableTransitions() {
 
 export async function syncTheme() {
   const value = storage.get("theme");
-  if (value === "daily") refreshDailyTheme();
+  if (value === "daily") daily.random();
   disableTransitions();
   if (value === "custom") {
     applyCustomTheme();
@@ -340,7 +202,6 @@ export async function renderStore() {
   const store = document.querySelector(`[data-modal-page="store"]`);
   if (!store) return;
   store.innerHTML = "";
-  refreshDailyTheme();
   await storage.idbReady;
   var initialTheme = storage.get("theme") || "default";
   var checks = (await storage.idbGet("cache"))?.checksCount || 0;
@@ -373,7 +234,7 @@ export async function renderStore() {
     promoInner.classList = 'promo-inner';
     promoInner.innerHTML = `<i class="bi bi-${featuredTheme[2] || 'backpack'}"></i>${featuredTheme[1] || featuredTheme[0]}<i class="bi bi-${featuredTheme[2] || 'backpack'}"></i>`;
     promo.appendChild(promoInner);
-    if (featuredTheme[0] === "daily") addDailyThemeCopyright(promo);
+    if (featuredTheme[0] === "daily") daily.addCopyright(promo);
     const promoButton = document.createElement("button");
     promoButton.textContent = ownedThemes.includes(featuredTheme[0]) ? "Owned" : "Preview Theme";
     promoButton.addEventListener("mouseover", () => {
@@ -382,7 +243,7 @@ export async function renderStore() {
       if (ownedThemes.includes(featuredTheme[0]) || !featuredTheme[3]) {
         promoButton.textContent = "Apply Theme";
       } else if (featuredTheme[4] && featuredTheme[4].length && !featuredTheme[4].some(t => ownedThemes.includes(t))) {
-        promoButton.textContent = "Locked";
+        promoButton.textContent = "Preview Theme";
       } else if (checks >= featuredTheme[3]) {
         promoButton.textContent = `Purchase for ${featuredTheme[3]} Check${featuredTheme[3] == 1 ? '' : 's'}`;
       } else {
@@ -500,8 +361,8 @@ export async function renderStore() {
         themeItem.setAttribute('style', `background: url('https://assets.vssfalcons.com/store/thumb/${theme[0]}.png') center / cover no-repeat !important;`);
       }
     }
-    themeItem.innerHTML = `${theme[2] ? `<i class="bi bi-${theme[2]}"></i>` : ''}${theme[5] ? `<i class="bi bi-badge-hd-fill hd"></i>` : ''}${theme[6] ? `<i class="bi bi-stars animated"></i>` : ''}${theme[7] ? `<i class="bi bi-border pattern"></i>` : ''}${theme[8] ? `<i class="bi bi-palette2 colorized"></i>` : ''}<h5>${name}</h5><p>${theme[3] ? `${theme[3]} Check${theme[3] == 1 ? '' : 's'}` : 'Free'}</p>${theme[4] && theme[4].length ? `<small>Requires: ${theme[4].map(t => themes.find(th => th[0] == t)[1] || t).join(', ')}</small>` : ''}`;
-    if (value === "daily") addDailyThemeCopyright(themeItem);
+    themeItem.innerHTML = `${theme[2] ? `<i class="bi bi-${theme[2]}"></i>` : ''}${theme[5] ? `<i class="bi bi-badge-hd-fill hd"></i>` : ''}${theme[6] ? `<i class="bi bi-stars animated"></i>` : ''}${theme[7] ? `<i class="bi bi-border pattern"></i>` : ''}${theme[8] ? `<i class="bi bi-palette2 colorized"></i>` : ''}${(value === "daily") ? `<i class="bi bi-dice-5 random"></i>` : ''}<h5>${name}</h5><p>${theme[3] ? `${theme[3]} Check${theme[3] == 1 ? '' : 's'}` : 'Free'}</p>${theme[4] && theme[4].length ? `<small>Requires: ${theme[4].map(t => themes.find(th => th[0] == t)[1] || t).join(', ')}</small>` : ''}`;
+    if (value === "daily") daily.addCopyright(themeItem);
     if (value === initialTheme) themeItem.classList.add('selected');
     const themeButton = document.createElement("button");
     themeButton.textContent = (value === initialTheme) ? "Applied" : (ownedThemes.includes(theme[0]) ? "Owned" : "Preview");
@@ -513,7 +374,7 @@ export async function renderStore() {
       } else if (ownedThemes.includes(theme[0]) || !theme[3]) {
         themeButton.textContent = "Apply Now";
       } else if (theme[4] && theme[4].length && !theme[4].some(t => ownedThemes.includes(t))) {
-        themeButton.textContent = "Locked";
+        themeButton.textContent = "Preview";
       } else if (checks >= theme[3]) {
         themeButton.textContent = `Purchase for ${theme[3]} Check${theme[3] == 1 ? '' : 's'}`;
       } else {
@@ -764,7 +625,7 @@ try {
   } else {
     // Built-in theme
     const theme = storage.get("theme") || "";
-    if (theme === "daily") refreshDailyTheme();
+    if (theme === "daily") daily.random();
     document.body.setAttribute("data-theme", theme);
     document.querySelector(".theme-preview")?.setAttribute("data-theme", theme);
     selectedTheme = theme;
@@ -946,6 +807,8 @@ try {
       }
     }
   }
+
+  daily.initializeControls(document.querySelector(".controls-container"));
 
   const observer = new MutationObserver((mutationsList) => {
     for (const mutation of mutationsList) {
