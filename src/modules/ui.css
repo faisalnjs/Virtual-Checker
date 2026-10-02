@@ -1026,6 +1026,30 @@ body:has(.topbar) .checker.horizontal .column:last-child {
   overflow-x: hidden;
 }
 
+[data-modal-page="store"] .theme-store-controls {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+[data-modal-page="store"] .theme-store-controls input,
+[data-modal-page="store"] .theme-store-controls select {
+  min-width: 0;
+  color: var(--text-color);
+  background: var(--surface-color);
+  border: 2px solid var(--accent-color);
+  border-radius: 6px;
+  padding: 8px 10px;
+}
+
+[data-modal-page="store"] .theme-store-controls input {
+  flex: 1;
+}
+
+[data-modal-page="store"] .theme-store-controls select {
+  width: 145px;
+}
+
 [data-modal-page="store"]::-webkit-scrollbar {
   width: 12px !important;
 }
@@ -1150,6 +1174,22 @@ body:has(.topbar) .checker.horizontal .column:last-child {
   transition: border-right-width 0.25s ease-in-out;
 }
 
+[data-modal-page="store"] .themes-grid .theme-item .theme-popularity {
+  display: flex;
+  gap: 2.5px;
+  position: absolute;
+  top: 15px;
+  right: 20px;
+}
+
+[data-modal-page="store"] .themes-grid .theme-item:has(i.hd) .theme-popularity,
+[data-modal-page="store"] .themes-grid .theme-item:has(i.random) .theme-popularity,
+[data-modal-page="store"] .themes-grid .theme-item:has(i.animated) .theme-popularity,
+[data-modal-page="store"] .themes-grid .theme-item:has(i.pattern) .theme-popularity,
+[data-modal-page="store"] .themes-grid .theme-item:has(i.colorized) .theme-popularity {
+  top: 40px;
+}
+
 [data-modal-page="store"] .themes-grid .theme-item.suggest-theme {
   border: 2px dashed var(--accent-color) !important;
   background: transparent !important;
@@ -1173,7 +1213,7 @@ body:has(.topbar) .checker.horizontal .column:last-child {
 [data-modal-page="store"]
   .themes-grid
   .theme-item
-  i:not(.hd):not(.animated):not(.pattern):not(.colorized):not(.random) {
+  i:not(.bi-people-fill):not(.hd):not(.animated):not(.pattern):not(.colorized):not(.random) {
   position: absolute;
   bottom: 10px;
   right: 20px;
@@ -1185,12 +1225,12 @@ body:has(.topbar) .checker.horizontal .column:last-child {
 [data-modal-page="store"]
   .themes-grid
   .theme-item:hover
-  i:not(.hd):not(.animated):not(.pattern):not(.colorized):not(.random) {
+  i:not(.bi-people-fill):not(.hd):not(.animated):not(.pattern):not(.colorized):not(.random) {
   opacity: 1;
   transition: opacity 0.25s ease-in-out;
 }
 
-[data-modal-page="store"] .themes-grid .theme-item i.hd{
+[data-modal-page="store"] .themes-grid .theme-item i.hd {
   position: absolute;
   top: 10px;
   right: 20px;
