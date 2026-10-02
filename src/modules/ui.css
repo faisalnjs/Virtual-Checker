@@ -1333,7 +1333,7 @@ body:has(.topbar) .checker.horizontal .column:last-child {
   width: calc(100% / 3);
   height: 100%;
   backdrop-filter: hue-rotate(-90deg);
-  z-index: 0;
+  z-index: -1;
   border-radius: 8px 0 0 8px;
 }
 
@@ -1345,7 +1345,7 @@ body:has(.topbar) .checker.horizontal .column:last-child {
   width: calc(100% / 3);
   height: 100%;
   backdrop-filter: hue-rotate(90deg);
-  z-index: 0;
+  z-index: -1;
   border-radius: 0 8px 8px 0;
 }
 
