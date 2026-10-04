@@ -677,6 +677,9 @@ label:has(i) {
   font-size: 12px;
   background: var(--accent-color);
   color: var(--accent-text-color);
+  position: absolute;
+  bottom: 2px;
+  left: 8px;
 }
 
 .suggestions-status:not(:empty),
