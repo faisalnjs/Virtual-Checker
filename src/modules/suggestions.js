@@ -1,4 +1,4 @@
-import { pushSupported, syncSuggestionPush, disableSuggestionPush } from "./suggestion-push.js";
+import { syncSuggestionPush, initializeNotificationPermission, addNotificationControl } from "./suggestion-push.js";
 import * as ui from "./ui.js";
 import * as auth from "./auth.js";
 import storage from "./storage.js";
@@ -51,8 +51,9 @@ function readState(seat) {
   try {
     const state = JSON.parse(localStorage.getItem(`suggestion-replies:${seat}`));
     return (state && (typeof state === 'object') && !Array.isArray(state)) ? state : (memoryState.get(seat) || {});
+  } catch {
+    return memoryState.get(seat) || {};
   }
-  catch { return memoryState.get(seat) || {}; }
 }
 function writeState(seat, state) {
   memoryState.set(seat, state);
@@ -60,15 +61,13 @@ function writeState(seat, state) {
 }
 function updateBadge(count) {
   document.querySelectorAll('[data-my-suggestions]').forEach(button => {
-    let badge = button.querySelector('.suggestion-count');
-    if (!badge) {
-      badge = document.createElement('span');
-      badge.className = 'suggestion-count';
-      button.append(badge);
+    if (count) {
+      button.classList.add('unread');
+    } else {
+      button.classList.remove('unread');
     }
-    badge.textContent = count ? String(count) : '';
-    badge.hidden = !count;
     button.setAttribute('aria-label', count ? `My Suggestions, ${count} unread replies` : 'My Suggestions');
+    button.setAttribute('tooltip', count ? `My Suggestions (${count} unread)` : 'My Suggestions');
   });
 }
 function renderHistory() {
@@ -148,60 +147,22 @@ export function openSuggestions() {
     ],
   });
   dialog.classList.add('suggestions-dialog');
-  if (pushSupported()) {
-    const label = document.createElement('label');
-    label.className = 'checkboxGroup suggestion-notifications';
-    const checkbox = document.createElement('input');
-    checkbox.type = 'checkbox';
-    checkbox.disabled = true;
-    const indicator = document.createElement('span');
-    indicator.className = 'checkbox';
-    indicator.setAttribute('aria-hidden', 'true');
-    const text = document.createElement('span');
-    text.textContent = 'Enable reply notifications';
-    const status = document.createElement('p');
-    status.className = 'suggestions-status';
-    status.setAttribute('role', 'status');
-    label.append(checkbox, indicator, text);
-    dialog.querySelector('.suggestions-status').after(label, status);
-
-    async function updateNotificationCheckbox() {
-      try {
-        const registration = await navigator.serviceWorker.getRegistration();
-        const subscription = await registration?.pushManager.getSubscription();
-        checkbox.checked = (Notification.permission === 'granted') && Boolean(subscription) && (localStorage.getItem('suggestion-push-enabled') === 'true') && (localStorage.getItem('suggestion-notifications-disabled') !== 'true');
-      } catch (error) {
-        checkbox.checked = false;
-        status.textContent = error.message;
-      } finally {
-        checkbox.disabled = Notification.permission === 'denied';
-        if (checkbox.disabled) status.textContent = 'Notifications blocked in browser settings.';
-      }
-    }
-
-    checkbox.addEventListener('change', async () => {
-      checkbox.disabled = true;
-      status.textContent = '';
-      try {
-        if (checkbox.checked) {
-          if (!await syncSuggestionPush(true)) throw new Error('Sign in to enable reply notifications.');
-        } else {
-          await disableSuggestionPush();
-        }
-      } catch (error) {
-        status.textContent = error.message;
-      } finally {
-        await updateNotificationCheckbox();
-      }
-    });
-    updateNotificationCheckbox();
-  }
+  const notifications = addNotificationControl(dialog);
+  if (notifications) dialog.querySelector('.suggestions-status').after(notifications);
   refresh();
 }
 
 export function initializeSuggestions() {
   if (initialized) return;
   initialized = true;
+  initializeNotificationPermission();
+  const history = document.querySelector('[data-modal-page="history"]');
+  const notifications = addNotificationControl(history);
+  if (notifications) {
+    const menu = history.querySelector('[data-modal-menu]');
+    if (menu) menu.after(notifications);
+    else history.prepend(notifications);
+  }
   document.querySelectorAll('[data-my-suggestions]').forEach(button => button.addEventListener('click', openSuggestions));
   const syncPush = () => { syncSuggestionPush().catch(() => { }); };
   syncPush();

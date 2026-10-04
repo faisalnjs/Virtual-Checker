@@ -669,19 +669,6 @@ label:has(i) {
   color: var(--text-color);
 }
 
-.suggestion-count:not([hidden]) {
-  display: inline-block;
-  margin-left: 5px;
-  padding: 2px 6px;
-  border-radius: 20px;
-  font-size: 12px;
-  background: var(--accent-color);
-  color: var(--accent-text-color);
-  position: absolute;
-  bottom: 2px;
-  left: 8px;
-}
-
 .suggestions-status:not(:empty),
 .suggestion-save-status:not(:empty) {
   display: block;
@@ -690,6 +677,8 @@ label:has(i) {
 
 .suggestion-notifications {
   position: relative;
+  margin-top: 0;
+  margin-bottom: 5px;
 }
 
 .suggestion-notifications input {

@@ -44,6 +44,47 @@ try {
   var history = [];
 
   let historyIndex = 0;
+  let feedbackRefresh = null;
+
+  async function refreshFeedback(openHistory = false) {
+    const seat = storage.get('code');
+    const password = storage.get('password');
+    if (!seat || !password) return;
+    if (feedbackRefresh) {
+      await feedbackRefresh.catch(() => {});
+      if (openHistory) document.querySelector('[data-modal-view="history"]')?.click();
+      return;
+    }
+    feedbackRefresh = (async () => {
+      const [settings] = await Promise.all([
+        auth.suggestionRequest('/password'),
+        auth.bulkLoad(['courses', 'segments', 'questions', 'responses'], seat, password),
+      ]);
+      if ((storage.get('code') !== seat) || (storage.get('password') !== password)) return;
+      await storage.idbReady;
+      history = ((await storage.idbGet('cache')) || storage.get('cache') || {}).responses || [];
+      if (openHistory) historyIndex = 0;
+      await updateHistory();
+      await ui.setNotifications(settings.notifications || []);
+      if (openHistory) document.querySelector('[data-modal-view="history"]')?.click();
+    })();
+    try {
+      await feedbackRefresh;
+    } catch (error) {
+      ui.toast(error.message || 'Could not refresh response feedback.', 5000, 'error');
+    } finally {
+      feedbackRefresh = null;
+    }
+  }
+
+  navigator.serviceWorker?.addEventListener('message', event => {
+    if (event.data?.seatCode && (String(event.data.seatCode) !== String(storage.get('code')))) return;
+    if (event.data?.type === 'feedback-updated') refreshFeedback();
+    if (event.data?.type === 'open-feedback') refreshFeedback(true);
+  });
+  window.addEventListener('hashchange', () => {
+    if (location.hash === '#history') refreshFeedback(true);
+  });
 
   // Initialization
   async function init() {
@@ -384,6 +425,7 @@ try {
         ui.view("api-fail");
       })
     ui.reloadUnsavedInputs();
+    if (location.hash === '#history') await refreshFeedback(true);
   }
 
   // Limit seat code input to integers

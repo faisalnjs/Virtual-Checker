@@ -79,12 +79,12 @@ self.addEventListener('notificationclick', (event) => {
     const allClients = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
     const matchingClient = allClients.find((client) => {
       const url = new URL(client.url);
-      return (url.origin === self.location.origin) && ((event.notification?.data?.type !== 'suggestions') || ['/', '/index.html'].includes(url.pathname));
+      return (url.origin === self.location.origin) && (!['suggestions', 'feedback'].includes(event.notification?.data?.type) || ['/', '/index.html'].includes(url.pathname));
     });
     if (matchingClient) {
       await matchingClient.focus();
-      if (event.notification?.data?.type === 'suggestions') {
-        matchingClient.postMessage({ type: 'open-suggestions' });
+      if (['suggestions', 'feedback'].includes(event.notification?.data?.type)) {
+        matchingClient.postMessage({ type: event.notification.data.type === 'feedback' ? 'open-feedback' : 'open-suggestions', seatCode: event.notification.data.seatCode });
         return;
       }
       if ('navigate' in matchingClient) await matchingClient.navigate(targetUrl);
@@ -124,14 +124,15 @@ self.addEventListener('push', event => {
     } catch {
       return;
     }
-    if (payload?.type !== 'suggestions') return;
-    await self.registration.showNotification('New suggestion response', {
-      body: 'An admin replied to your suggestion. Open My Suggestions to read it.',
+    if (!['suggestions', 'feedback'].includes(payload?.type)) return;
+    const feedback = payload.type === 'feedback';
+    await self.registration.showNotification(feedback ? 'New response feedback' : 'New suggestion response', {
+      body: feedback ? 'Your response has been reviewed. Open History to see the feedback.' : 'An admin replied to your suggestion. Open My Suggestions to read it.',
       icon: '/banner-meta.png', badge: '/favicon.ico',
-      tag: `suggestion-responses-${payload.seatCode}`,
-      data: { type: 'suggestions', url: '/#suggestions' },
+      tag: `${feedback ? 'response-feedback' : 'suggestion-responses'}-${payload.seatCode}`,
+      data: { type: payload.type, url: feedback ? '/#history' : '/#suggestions', seatCode: payload.seatCode },
     });
     const clients = await self.clients.matchAll({ type: 'window' });
-    clients.forEach(client => client.postMessage({ type: 'suggestions-updated' }));
+    clients.forEach(client => client.postMessage({ type: feedback ? 'feedback-updated' : 'suggestions-updated', seatCode: payload.seatCode }));
   })());
 });

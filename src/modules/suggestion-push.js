@@ -13,6 +13,7 @@ export async function syncSuggestionPush(enable = false) {
   if (!pushSupported()) return false;
   if (!enable && localStorage.getItem('suggestion-notifications-disabled') === 'true') return false;
   if (!storage.get('code') || !storage.get('password')) return false;
+  if (enable) localStorage.removeItem('suggestion-notifications-disabled');
   const current = account();
   if (!enable && (registeredAccount === current) && (Notification.permission === 'granted')) return true;
   if (pending) {
@@ -30,7 +31,7 @@ export async function syncSuggestionPush(enable = false) {
       return false;
     }
     let subscription = await registration.pushManager.getSubscription();
-    const optedIn = localStorage.getItem('suggestion-push-enabled') === 'true';
+    const optedIn = localStorage.getItem('suggestion-notifications-disabled') !== 'true';
     if (!subscription && !enable && !optedIn) return false;
     const config = await auth.suggestionRequest('/suggestions/push/config');
     if (!config.publicKey) {
@@ -49,7 +50,7 @@ export async function syncSuggestionPush(enable = false) {
     if (account() !== current) return false;
     if (!subscription) subscription = await registration.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: key });
     if (account() !== current) { await subscription.unsubscribe(); return false; }
-    await auth.suggestionRequest('/suggestions/push/subscribe', { subscription: subscription.toJSON() });
+    await auth.suggestionRequest('/suggestions/push/subscribe', { subscription: subscription.toJSON(), topics: ['suggestions', 'feedback'] });
     if (account() !== current) { await subscription.unsubscribe(); return false; }
     localStorage.setItem('suggestion-push-enabled', 'true');
     localStorage.removeItem('suggestion-notifications-disabled');
@@ -73,4 +74,90 @@ export async function disableSuggestionPush() {
   if (!subscription) return;
   await subscription.unsubscribe();
   if (storage.get('code') && storage.get('password')) await auth.suggestionRequest('/suggestions/push/unsubscribe', { endpoint: subscription.endpoint });
+}
+
+export function initializeNotificationPermission() {
+  if (!pushSupported()) return;
+  document.addEventListener('click', event => {
+    if (!event.isTrusted || event.target.closest('.suggestion-notifications')) return;
+    if (!storage.get('code') || !storage.get('password')) return;
+    if (Notification.permission !== 'default') return;
+    if (localStorage.getItem('suggestion-notifications-disabled') === 'true') return;
+    if (localStorage.getItem('suggestion-notification-permission-requested') === 'true') return;
+    localStorage.setItem('suggestion-notification-permission-requested', 'true');
+    syncSuggestionPush(true).catch(() => {}).finally(() => {
+      document.querySelectorAll('[data-notification-control]').forEach(control => {
+        control.dispatchEvent(new Event('notification-permission-updated'));
+      });
+    });
+  });
+}
+
+export function addNotificationControl(container) {
+  if (!container || !pushSupported()) return null;
+  const existing = container.querySelector('[data-notification-control]');
+  if (existing) return existing;
+  const control = document.createElement('div');
+  control.setAttribute('data-notification-control', '');
+  const label = document.createElement('label');
+  label.className = 'checkboxGroup suggestion-notifications';
+  const checkbox = document.createElement('input');
+  checkbox.type = 'checkbox';
+  checkbox.disabled = true;
+  const indicator = document.createElement('span');
+  indicator.className = 'checkbox';
+  indicator.setAttribute('aria-hidden', 'true');
+  const text = document.createElement('span');
+  text.textContent = 'Enable notifications';
+  const status = document.createElement('p');
+  status.className = 'suggestions-status';
+  status.setAttribute('role', 'status');
+  label.append(checkbox, indicator, text);
+  control.append(label, status);
+  container.append(control);
+
+  async function updateNotificationCheckbox() {
+    try {
+      const registration = await navigator.serviceWorker.getRegistration();
+      const subscription = await registration?.pushManager.getSubscription();
+      checkbox.checked = localStorage.getItem('suggestion-notifications-disabled') !== 'true';
+      if (checkbox.checked && Notification.permission === 'default') status.textContent = 'Notifications are enabled in the app. Allow browser permission to receive them.';
+      if (checkbox.checked && Notification.permission === 'granted' && !subscription && !status.textContent) status.textContent = 'Notifications are enabled. Connecting this device...';
+    } catch (error) {
+      checkbox.checked = localStorage.getItem('suggestion-notifications-disabled') !== 'true';
+      status.textContent = error.message;
+    } finally {
+      checkbox.disabled = false;
+      if (Notification.permission === 'denied') status.textContent = 'Notifications blocked in browser settings.';
+    }
+  }
+
+  control.addEventListener('notification-permission-updated', () => {
+    status.textContent = '';
+    updateNotificationCheckbox();
+  });
+  checkbox.addEventListener('change', async () => {
+    checkbox.disabled = true;
+    status.textContent = '';
+    try {
+      if (checkbox.checked) {
+        if (!await syncSuggestionPush(true)) throw new Error('Sign in to enable reply notifications.');
+      } else {
+        await disableSuggestionPush();
+      }
+    } catch (error) {
+      status.textContent = error.message;
+    } finally {
+      await updateNotificationCheckbox();
+      document.querySelectorAll('[data-notification-control]').forEach(other => {
+        if (other !== control) other.dispatchEvent(new Event('notification-permission-updated'));
+      });
+    }
+  });
+  updateNotificationCheckbox();
+  container.addEventListener('view', () => {
+    status.textContent = '';
+    updateNotificationCheckbox();
+  });
+  return control;
 }

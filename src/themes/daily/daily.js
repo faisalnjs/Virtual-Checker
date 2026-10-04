@@ -123,8 +123,11 @@ export function random(randomize = false) {
       const images = Array.isArray(feed) ? feed.filter(item => (typeof item?.copyright === "string") && item.copyright.trim()) : [];
       if (!images.length) throw new Error("Daily theme attribution missing");
       const candidates = (randomize && dailyImage) ? images.filter(item => {
-        try { return new URL(item.imageUrl).href !== dailyImage.imageUrl; }
-        catch { return false; }
+        try {
+          return new URL(item.imageUrl).href !== dailyImage.imageUrl;
+        } catch {
+          return false;
+        }
       }) : images;
       if (!candidates.length) throw new Error("No different daily theme image available");
       const first = candidates[randomize ? Math.floor(Math.random() * candidates.length) : 0];
