@@ -70,8 +70,8 @@
         <div class="input-group small">
           <label for="suggestions-seat">Seat</label>
           <div class="question-container space">
-            <input id="suggestions-seat" type="number" autocomplete="off" value="" placeholder="311" min="0" max="999"
-              maxlength="3" />
+            <input id="suggestions-seat" type="text" inputmode="numeric" autocomplete="off" value="" placeholder="311"
+              pattern="[0-9]{3}" minlength="3" maxlength="3" />
           </div>
         </div>
         <div class="input-group">

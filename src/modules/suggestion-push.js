@@ -72,7 +72,5 @@ export async function disableSuggestionPush() {
   const subscription = await registration?.pushManager.getSubscription();
   if (!subscription) return;
   await subscription.unsubscribe();
-  if (storage.get('code') && storage.get('password')) {
-    await auth.suggestionRequest('/suggestions/push/unsubscribe', { endpoint: subscription.endpoint });
-  }
+  if (storage.get('code') && storage.get('password')) await auth.suggestionRequest('/suggestions/push/unsubscribe', { endpoint: subscription.endpoint });
 }

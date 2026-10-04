@@ -406,6 +406,8 @@ export async function renderStore() {
         return themes.indexOf(themeA) - themes.indexOf(themeB);
       });
       items.forEach(item => grid.appendChild(item));
+      const suggestTheme = grid.querySelector('.suggest-theme');
+      if (suggestTheme) grid.appendChild(suggestTheme);
     });
   };
   searchInput.addEventListener("input", () => {

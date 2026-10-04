@@ -146,7 +146,11 @@ refresh.addEventListener('click', () => {
   drafts.clear();
   load();
 });
-for (const input of [seatFilter, platformFilter, responseFilter]) input.addEventListener('input', render);
+seatFilter.addEventListener('input', () => {
+  seatFilter.value = seatFilter.value.replace(/[^0-9]/g, '').slice(0, 3);
+  render();
+});
+for (const input of [platformFilter, responseFilter]) input.addEventListener('input', render);
 window.addEventListener('beforeunload', event => {
   if (drafts.size) {
     event.preventDefault();

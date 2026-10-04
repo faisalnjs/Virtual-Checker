@@ -965,11 +965,15 @@ export function getDailyThemeImageUrl(imageUrl) {
     if (!match) throw new Error("Invalid daily theme thumbnail URL");
     return `${domain}/daily_theme_image/${match[1]}`;
 }
-// Suggestions are authenticated separately from the public Google Form mirror.
+
 export async function suggestionRequest(path, fields = {}) {
-    const credentials = admin
-        ? { usr: storage.get("usr"), pwd: storage.get("pwd") }
-        : { seatCode: storage.get("code"), password: storage.get("password") };
+    const credentials = window.location.pathname.startsWith('/admin') ? {
+        usr: storage.get("usr"),
+        pwd: storage.get("pwd")
+    } : {
+        seatCode: storage.get("code"),
+        password: storage.get("password")
+    };
     const response = await fetch(domain + path, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
