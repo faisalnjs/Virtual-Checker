@@ -84,7 +84,7 @@ export async function notifySuggestionResponses(count, seatCode) {
   const registration = await navigator.serviceWorker.getRegistration();
   if (!registration?.active || (typeof registration.showNotification !== "function")) return false;
   if (await registration.pushManager?.getSubscription()) return true;
-  await registration.showNotification("New suggestion response", {
+  await registration.showNotification("Reply to suggestion", {
     body: `${count} suggestion${count === 1 ? ' has' : 's have'} a new reply. Open My Suggestions to read it.`,
     icon: "/banner-meta.png", badge: "/favicon.ico",
     tag: `suggestion-responses-${seatCode}`,

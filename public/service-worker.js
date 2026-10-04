@@ -126,10 +126,11 @@ self.addEventListener('push', event => {
     }
     if (!['suggestions', 'feedback'].includes(payload?.type)) return;
     const feedback = payload.type === 'feedback';
-    await self.registration.showNotification(feedback ? 'New response feedback' : 'New suggestion response', {
-      body: feedback ? 'Your response has been reviewed. Open History to see the feedback.' : 'An admin replied to your suggestion. Open My Suggestions to read it.',
+    const feedbackBody = (typeof payload.body === 'string' && payload.body.trim()) || 'Your response has been reviewed. Open History to see the feedback.';
+    await self.registration.showNotification(feedback ? 'Question feedback' : 'Reply to suggestion', {
+      body: feedback ? feedbackBody : 'Your suggestion has been replied to. Open My Suggestions to read it.',
       icon: '/banner-meta.png', badge: '/favicon.ico',
-      tag: `${feedback ? 'response-feedback' : 'suggestion-responses'}-${payload.seatCode}`,
+      tag: `${feedback ? 'response-feedback' : 'suggestion-responses'}-${payload.seatCode}${feedback && payload.responseId ? `-${payload.responseId}` : ''}`,
       data: { type: payload.type, url: feedback ? '/#history' : '/#suggestions', seatCode: payload.seatCode },
     });
     const clients = await self.clients.matchAll({ type: 'window' });
