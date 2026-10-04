@@ -1,3 +1,4 @@
+import { disableSuggestionPush } from "./suggestion-push.js";
 import * as ui from "./ui.js";
 import storage from "./storage.js";
 import * as themes from "../themes/themes.js";
@@ -97,6 +98,7 @@ export function ta(returnFunction) {
 }
 
 export function logout(returnFunction = null) {
+    disableSuggestionPush().catch(() => {});
     storage.delete("usr");
     storage.delete("pwd");
     storage.delete("code");
@@ -962,4 +964,23 @@ export function getDailyThemeImageUrl(imageUrl) {
     const match = /^https:\/\/img\.peapix\.com\/([a-f0-9]{32})_640\.jpg$/.exec(imageUrl);
     if (!match) throw new Error("Invalid daily theme thumbnail URL");
     return `${domain}/daily_theme_image/${match[1]}`;
+}
+// Suggestions are authenticated separately from the public Google Form mirror.
+export async function suggestionRequest(path, fields = {}) {
+    const credentials = admin
+        ? { usr: storage.get("usr"), pwd: storage.get("pwd") }
+        : { seatCode: storage.get("code"), password: storage.get("password") };
+    const response = await fetch(domain + path, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        cache: "no-store",
+        body: JSON.stringify({ ...fields, ...credentials }),
+    });
+    const result = await response.json();
+    if (!response.ok) {
+        const error = new Error(result.error || "Could not load suggestions.");
+        error.status = response.status;
+        throw error;
+    }
+    return result;
 }

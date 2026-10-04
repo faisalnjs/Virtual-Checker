@@ -497,6 +497,7 @@ label:has(i) {
 }
 
 .enhanced-list .header {
+  flex-direction: row;
   align-items: center;
   justify-content: space-between;
   padding: 7.5px 15px;
@@ -615,4 +616,96 @@ label:has(i) {
   opacity: 0;
   pointer-events: none;
   user-select: none;
+}
+
+.enhanced-grid {
+	display: grid;
+	gap: 16px;
+	grid-template-columns: 1fr 1fr 1fr;
+	width: -webkit-fill-available;
+}
+
+.enhanced-card {
+  display: flex;
+  flex-direction: column;
+  padding: 1em;
+  border: 1px solid var(--accent-color);
+  border-radius: 0.5rem;
+  background: var(--surface-color);
+  color: var(--text-color);
+}
+
+.enhanced-card h3 {
+  font-size: 1rem;
+}
+
+.enhanced-card small {
+  margin: 0 0 6px;
+}
+
+.suggestion-text {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.suggestion-response {
+  border-top: 1px solid var(--accent-color);
+  padding-top: 10px;
+  margin-top: 10px;
+}
+
+.enhanced-card textarea {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  margin: 8px 0;
+  min-height: 100px;
+  background-color: var(--background-color);
+  color: var(--text-color);
+}
+
+.enhanced-card button:not(:hover) {
+  background-color: var(--background-color);
+  color: var(--text-color);
+}
+
+.suggestion-count:not([hidden]) {
+  display: inline-block;
+  margin-left: 5px;
+  padding: 2px 6px;
+  border-radius: 20px;
+  font-size: 12px;
+  background: var(--accent-color);
+  color: var(--accent-text-color);
+}
+
+.suggestions-status:not(:empty),
+.suggestion-save-status:not(:empty) {
+  display: block;
+  padding: 8px 0;
+}
+
+.suggestion-notifications {
+  position: relative;
+}
+
+.suggestion-notifications input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.suggestion-notifications input:focus-visible + .checkbox {
+  outline: 2px solid var(--accent-color);
+  outline-offset: 3px;
+}
+
+.suggestion-notifications:has(input:disabled) {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.suggestion-notifications .checkbox {
+  flex-shrink: 0;
 }

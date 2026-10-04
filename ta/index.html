@@ -90,7 +90,7 @@
         <div class="input-group small">
           <label for="ta-index-filter-seat-input">Seat</label>
           <div class="question-container space">
-            <input id="ta-index-filter-seat-input" type="number" autocomplete="off" class="filter-seat-input" value="" placeholder="311" max="999"
+            <input id="ta-index-filter-seat-input" type="number" autocomplete="off" class="filter-seat-input" value="" placeholder="311" min="0" max="999"
               maxlength="3" />
           </div>
         </div>
@@ -380,6 +380,7 @@
     <div class="menu-icons">
       <a href="/ta/" class="active" tooltip="TAs"><i class="bi bi-person-check"></i></a>
       <a href="/admin/" tooltip="Admin"><i class="bi bi-gear-wide-connected"></i></a>
+      <a href="/admin/suggestions" tooltip="Suggestions"><i class="bi bi-chat-left-quote"></i></a>
       <a href="/" tooltip="Exit"><i class="bi bi-door-open"></i></a>
     </div>
   </dialog>
