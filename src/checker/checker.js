@@ -82,8 +82,16 @@ try {
     if (event.data?.type === 'feedback-updated') refreshFeedback();
     if (event.data?.type === 'open-feedback') refreshFeedback(true);
   });
+  function openDueSegment() {
+    const match = /^#segment-(\d+)$/.exec(location.hash);
+    if (!match || ![...segmentInput.options].some(option => option.value === match[1])) return;
+    segmentInput.value = match[1];
+    segmentInput.dispatchEvent(new Event('change'));
+  }
+
   window.addEventListener('hashchange', () => {
     if (location.hash === '#history') refreshFeedback(true);
+    else openDueSegment();
   });
 
   // Initialization
@@ -426,6 +434,7 @@ try {
       })
     ui.reloadUnsavedInputs();
     if (location.hash === '#history') await refreshFeedback(true);
+    else openDueSegment();
   }
 
   // Limit seat code input to integers

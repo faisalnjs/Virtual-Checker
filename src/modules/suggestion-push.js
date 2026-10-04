@@ -50,7 +50,7 @@ export async function syncSuggestionPush(enable = false) {
     if (account() !== current) return false;
     if (!subscription) subscription = await registration.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: key });
     if (account() !== current) { await subscription.unsubscribe(); return false; }
-    await auth.suggestionRequest('/suggestions/push/subscribe', { subscription: subscription.toJSON(), topics: ['suggestions', 'feedback'] });
+    await auth.suggestionRequest('/suggestions/push/subscribe', { subscription: subscription.toJSON(), topics: ['suggestions', 'feedback', 'segment_due'] });
     if (account() !== current) { await subscription.unsubscribe(); return false; }
     localStorage.setItem('suggestion-push-enabled', 'true');
     localStorage.removeItem('suggestion-notifications-disabled');
