@@ -388,6 +388,7 @@ dialog:has(.history-feed) > button {
   padding: 0.75em 0.75em 0.375em 0.75em;
   text-align: left;
   line-height: unset;
+  min-height: unset;
 }
 
 .history-feed > button > p {
