@@ -6,7 +6,9 @@ let pending = null;
 const account = () => JSON.stringify([storage.get('code'), storage.get('password')]);
 
 export function pushSupported() {
-  return window.isSecureContext && 'Notification' in window && 'serviceWorker' in navigator && 'PushManager' in window;
+  const ios = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  const standalone = navigator.standalone === true || window.matchMedia('(display-mode: standalone)').matches;
+  return window.isSecureContext && ('Notification' in window) && ('serviceWorker' in navigator) && ('PushManager' in window) && (!ios || standalone);
 }
 
 export async function syncSuggestionPush(enable = false) {
@@ -77,20 +79,7 @@ export async function disableSuggestionPush() {
 }
 
 export function initializeNotificationPermission() {
-  if (!pushSupported()) return;
-  document.addEventListener('click', event => {
-    if (!event.isTrusted || event.target.closest('.suggestion-notifications')) return;
-    if (!storage.get('code') || !storage.get('password')) return;
-    if (Notification.permission !== 'default') return;
-    if (localStorage.getItem('suggestion-notifications-disabled') === 'true') return;
-    if (localStorage.getItem('suggestion-notification-permission-requested') === 'true') return;
-    localStorage.setItem('suggestion-notification-permission-requested', 'true');
-    syncSuggestionPush(true).catch(() => {}).finally(() => {
-      document.querySelectorAll('[data-notification-control]').forEach(control => {
-        control.dispatchEvent(new Event('notification-permission-updated'));
-      });
-    });
-  });
+  return pushSupported();
 }
 
 export function addNotificationControl(container) {
@@ -120,9 +109,10 @@ export function addNotificationControl(container) {
     try {
       const registration = await navigator.serviceWorker.getRegistration();
       const subscription = await registration?.pushManager.getSubscription();
-      checkbox.checked = localStorage.getItem('suggestion-notifications-disabled') !== 'true';
-      if (checkbox.checked && Notification.permission === 'default') status.textContent = 'Notifications are enabled in the app. Allow browser permission to receive them.';
-      if (checkbox.checked && Notification.permission === 'granted' && !subscription && !status.textContent) status.textContent = 'Notifications are enabled. Connecting this device...';
+      const optedIn = localStorage.getItem('suggestion-notifications-disabled') !== 'true';
+      checkbox.checked = optedIn && Boolean(subscription);
+      if (optedIn && Notification.permission === 'default') status.textContent = 'Tap to allow notifications.';
+      if (optedIn && (Notification.permission === 'granted') && !subscription) status.textContent = 'Tap to connect this device.';
     } catch (error) {
       checkbox.checked = localStorage.getItem('suggestion-notifications-disabled') !== 'true';
       status.textContent = error.message;

@@ -88,7 +88,7 @@ async function refresh() {
     account = current;
     rows = [];
     updateBadge(0);
-    if (dialog?.open) dialog.querySelector('.enhanced-grid').replaceChildren();
+    if (dialog?.open) dialog.querySelector('.col').replaceChildren();
   }
   if (!storage.get('code') || !storage.get('password')) {
     if (dialog?.open) dialog.querySelector('.suggestions-status').textContent = 'Sign in with your seat code and password to view suggestions.';
@@ -164,11 +164,6 @@ export function initializeSuggestions() {
     else history.prepend(notifications);
   }
   document.querySelectorAll('[data-my-suggestions]').forEach(button => button.addEventListener('click', openSuggestions));
-  const syncPush = () => { syncSuggestionPush().catch(() => { }); };
-  syncPush();
-  setInterval(syncPush, 30000);
-  window.addEventListener('focus', syncPush);
-  window.addEventListener('storage', syncPush);
   window.addEventListener('suggestions-updated', refresh);
   window.addEventListener('focus', refresh);
   window.addEventListener('online', refresh);
@@ -181,5 +176,4 @@ export function initializeSuggestions() {
   });
   setInterval(refresh, 30000);
   if (location.hash === '#suggestions') openSuggestions();
-  else refresh();
 }
