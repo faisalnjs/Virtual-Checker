@@ -35,14 +35,10 @@ export async function notifyUnreadNotifications(previousCount, currentCount) {
 
   if (nextCount <= oldCount || nextCount <= 0 || !("Notification" in window)) return;
 
-  let permission = Notification.permission;
-  if (permission === "default") {
-    permission = await Notification.requestPermission();
-  }
-  if (permission !== "granted") return;
-
-  const registration = await getServiceWorkerRegistration();
-  if (!registration) return;
+  if ((Notification.permission !== 'granted') || (localStorage.getItem('suggestion-notifications-disabled') === 'true')) return;
+  const registration = await navigator.serviceWorker.getRegistration();
+  if (!registration?.active) return;
+  if ((localStorage.getItem('suggestion-push-enabled') === 'true') && (await registration.pushManager?.getSubscription())) return;
 
   await registration.showNotification("Virtual Checker", {
     body: `You have ${nextCount} unread notification${nextCount === 1 ? "" : "s"}.`,
@@ -51,7 +47,8 @@ export async function notifyUnreadNotifications(previousCount, currentCount) {
     tag: "virtual-checker-unread",
     renotify: true,
     data: {
-      url: "/",
+      url: "/#history",
+      type: "feedback",
     },
   });
 }
@@ -79,4 +76,19 @@ async function getServiceWorkerRegistration() {
   return navigator.serviceWorker.ready
     .then((registration) => registration)
     .catch(async () => navigator.serviceWorker.getRegistration());
+}
+
+export async function notifySuggestionResponses(count, seatCode) {
+  if (localStorage.getItem("suggestion-notifications-disabled") === "true") return false;
+  if (!count || !window.isSecureContext || !("Notification" in window) || !("serviceWorker" in navigator) || (Notification.permission !== "granted")) return false;
+  const registration = await navigator.serviceWorker.getRegistration();
+  if (!registration?.active || (typeof registration.showNotification !== "function")) return false;
+  if (await registration.pushManager?.getSubscription()) return true;
+  await registration.showNotification("Reply to suggestion", {
+    body: `${count} suggestion${count === 1 ? ' has' : 's have'} a new reply. Open My Suggestions to read it.`,
+    icon: "/banner-meta.png", badge: "/favicon.ico",
+    tag: `suggestion-responses-${seatCode}`,
+    data: { url: "/#suggestions", type: "suggestions" },
+  });
+  return true;
 }

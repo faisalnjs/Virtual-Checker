@@ -388,12 +388,43 @@ export async function renderStore() {
   premiumThemesGrid.classList = 'themes-grid';
   const animatedThemesGrid = document.createElement("div");
   animatedThemesGrid.classList = 'themes-grid';
-  themes.forEach(theme => {
+  const themePopularity = (await storage.idbGet("cache"))?.themePopularity || {};
+  const storeControls = document.createElement("div");
+  storeControls.className = "theme-store-controls";
+  storeControls.innerHTML = `<input type="search" placeholder="Search themes" aria-label="Search themes"><select aria-label="Sort themes"><option value="default">Default</option><option value="price">Price</option><option value="popularity">Popularity</option></select>`;
+  store.appendChild(storeControls);
+  const searchInput = storeControls.querySelector("input");
+  const sortSelect = storeControls.querySelector("select");
+  const sortThemeItems = () => {
+    const sort = sortSelect.value;
+    [freeThemesGrid, premiumThemesGrid, animatedThemesGrid].forEach(grid => {
+      const items = [...grid.querySelectorAll('.theme-item[data-theme]')].sort((a, b) => {
+        const themeA = themes.find(theme => theme[0] === a.dataset.theme);
+        const themeB = themes.find(theme => theme[0] === b.dataset.theme);
+        if (sort === "price") return (themeA[3] || 0) - (themeB[3] || 0);
+        if (sort === "popularity") return (themePopularity[themeB[0]] || 0) - (themePopularity[themeA[0]] || 0);
+        return themes.indexOf(themeA) - themes.indexOf(themeB);
+      });
+      items.forEach(item => grid.appendChild(item));
+      const suggestTheme = grid.querySelector('.suggest-theme');
+      if (suggestTheme) grid.appendChild(suggestTheme);
+    });
+  };
+  searchInput.addEventListener("input", () => {
+    const query = searchInput.value.trim().toLowerCase();
+    store.querySelectorAll('.theme-item[data-name]').forEach(item => {
+      item.hidden = !item.dataset.name.includes(query);
+    });
+  });
+  sortSelect.addEventListener("change", sortThemeItems);
+  const sortedThemes = [...themes].sort((a, b) => themes.indexOf(a) - themes.indexOf(b));
+  sortedThemes.forEach(theme => {
     const value = theme[0];
     const name = theme[1] || theme[0];
     const themeItem = document.createElement("div");
     themeItem.classList = 'theme-item';
     themeItem.setAttribute("data-theme", value);
+    themeItem.setAttribute("data-name", name.toLowerCase());
     if (theme[3]) {
       themeItem.setAttribute('tooltip', `${checks}/${theme[3]} Check${theme[3] == 1 ? '' : 's'}${theme[4].filter(t => !ownedThemes.includes(t[0])) && theme[4].filter(t => !ownedThemes.includes(t[0])).length ? `. You need: ${theme[4].filter(t => !ownedThemes.includes(t[0])).map(t => themes.find(th => th[0] == t)[1] || t).join(', ')}` : ''}`);
       if ((value !== "daily") && theme[7]) {
@@ -402,7 +433,7 @@ export async function renderStore() {
         themeItem.setAttribute('style', `background: url('https://assets.vssfalcons.com/store/thumb/${theme[0]}.png') center / cover no-repeat !important;`);
       }
     }
-    themeItem.innerHTML = `${theme[2] ? `<i class="bi bi-${theme[2]}"></i>` : ''}${theme[5] ? `<i class="bi bi-badge-hd-fill hd"></i>` : ''}${theme[6] ? `<i class="bi bi-stars animated"></i>` : ''}${theme[7] ? `<i class="bi bi-border pattern"></i>` : ''}${theme[8] ? `<i class="bi bi-palette2 colorized"></i>` : ''}${(value === "daily") ? `<i class="bi bi-dice-5 random"></i>` : ''}<h5>${name}</h5><p>${theme[3] ? `${theme[3]} Check${theme[3] == 1 ? '' : 's'}` : 'Free'}</p>${theme[4] && theme[4].length ? `<small>Requires: ${theme[4].map(t => themes.find(th => th[0] == t)[1] || t).join(', ')}</small>` : ''}`;
+    themeItem.innerHTML = `${theme[2] ? `<i class="bi bi-${theme[2]}"></i>` : ''}${theme[5] ? `<i class="bi bi-badge-hd-fill hd"></i>` : ''}${theme[6] ? `<i class="bi bi-stars animated"></i>` : ''}${theme[7] ? `<i class="bi bi-border pattern"></i>` : ''}${theme[8] ? `<i class="bi bi-palette2 colorized"></i>` : ''}${(value === "daily") ? `<i class="bi bi-dice-5 random"></i>` : ''}<h5>${name}</h5><p>${theme[3] ? `${theme[3]} Check${theme[3] == 1 ? '' : 's'}` : 'Free'}</p>${theme[3] ? `<small class="theme-popularity"><i class="bi bi-people-fill"></i> ${themePopularity[value] || 0}</small>` : ''}${theme[4] && theme[4].length ? `<small>Requires: ${theme[4].map(t => themes.find(th => th[0] == t)[1] || t).join(', ')}</small>` : ''}`;
     if (value === "daily") daily.addCopyright(themeItem);
     if (value === initialTheme) themeItem.classList.add('selected');
     const themeButton = document.createElement("button");

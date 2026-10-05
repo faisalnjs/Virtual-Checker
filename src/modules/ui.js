@@ -1147,7 +1147,8 @@ document.querySelectorAll('[data-suggest-theme]').forEach(a => a.addEventListene
 
 export function suggestionsModal(event = null, suggestion = null) {
   view();
-  modal({
+  let submitting = false;
+  const dialog = modal({
     title: 'Make Suggestion',
     body: '<p>Make a suggestion for the Virtual Checker or internal APIs.</p>',
     inputs: [
@@ -1189,30 +1190,40 @@ export function suggestionsModal(event = null, suggestion = null) {
         text: 'Submit',
         icon: 'bi-chat-left-quote-fill',
         class: 'submit-button',
-        onclick: (inputValues) => {
+        onclick: async () => {
+          if (submitting) return;
+          const inputValues = [...dialog.querySelectorAll(".dialog-input")].map(input => input.value);
+          const suggestionText = String(inputValues[1] ?? "").trim();
+          const contactInformation = String(inputValues[2] ?? "").trim();
+          if (!suggestionText) return toast('Please enter a suggestion.', 3000, 'error');
+          submitting = true;
+          const submit = dialog.querySelector('.submit-button');
+          submit.disabled = true;
           try {
-            const fields = {
-              "entry.470737118": storage.get("code"),
-              "entry.888169052": inputValues[0],
-              "entry.689497704": `${storage.get("code")}:${inputValues[1]}`,
-              "entry.1640008306": `${storage.get("code")}:${inputValues[2]}`,
-            };
-            const params = new URLSearchParams(fields).toString();
-            const url = "https://docs.google.com/forms/d/e/1FAIpQLSf5hoON2TQWxpzb1wMjW4EY2BbDtM-KLe-B7kUJj4FM6aExDw/formResponse?";
-            fetch(url + params, {
-              method: "POST",
-              mode: "no-cors",
-              headers: {
-                "Content-Type": "application/x-www-form-urlencoded",
-              },
+            const result = await auth.suggestionRequest('/suggestions', {
+              platform: String(inputValues[0]), suggestion: suggestionText, contactInformation,
             });
-            toast('Suggestion submitted successfully!', 5000, 'success', 'bi bi-check-circle-fill');
-          } catch (e) {
-            toast('Failed to submit suggestion. Please try again later.', 5000, 'error', 'bi bi-x-circle-fill');
-            reportBugModal(null, `Suggestion Submission Error: ${e.message}`);
+            const fields = {
+              "entry.470737118": result.suggestion.seatCode,
+              "entry.888169052": result.suggestion.platform,
+              "entry.689497704": `${result.suggestion.seatCode}:${suggestionText}`,
+              "entry.1640008306": `${result.suggestion.seatCode}:${contactInformation}`,
+            };
+            fetch("https://docs.google.com/forms/d/e/1FAIpQLSf5hoON2TQWxpzb1wMjW4EY2BbDtM-KLe-B7kUJj4FM6aExDw/formResponse?" + new URLSearchParams(fields), {
+              method: "POST", mode: "no-cors",
+              headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            }).catch(() => toast('Suggestion saved in My Suggestions, but the Google Forms copy could not be sent.', 6000, 'error'));
+            dialog.close();
+            toast('Suggestion saved! View replies in My Suggestions.', 5000, 'success', 'bi bi-check-circle-fill');
+            window.dispatchEvent(new Event('suggestions-updated'));
+          } catch (error) {
+            toast(error.message || 'Failed to submit suggestion. Please try again.', 5000, 'error', 'bi bi-x-circle-fill');
+          } finally {
+            submitting = false;
+            submit.disabled = false;
           }
         },
-        close: true,
+        close: false,
       },
     ],
   });

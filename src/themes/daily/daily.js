@@ -120,8 +120,17 @@ export function random(randomize = false) {
       });
       if (!response.ok) throw new Error("Daily theme feed unavailable");
       const feed = await response.json();
-      const first = Array.isArray(feed) ? feed.filter(item => (typeof item.copyright === "string") && item.copyright.trim())[randomize ? (Math.floor(Math.random() * feed.filter(item => (typeof item.copyright === "string") && item.copyright.trim()).length)) : 0] : null;
-      if (!first) throw new Error("Daily theme attribution missing");
+      const images = Array.isArray(feed) ? feed.filter(item => (typeof item?.copyright === "string") && item.copyright.trim()) : [];
+      if (!images.length) throw new Error("Daily theme attribution missing");
+      const candidates = (randomize && dailyImage) ? images.filter(item => {
+        try {
+          return new URL(item.imageUrl).href !== dailyImage.imageUrl;
+        } catch {
+          return false;
+        }
+      }) : images;
+      if (!candidates.length) throw new Error("No different daily theme image available");
+      const first = candidates[randomize ? Math.floor(Math.random() * candidates.length) : 0];
       const image = { copyright: first.copyright };
       for (const key of ["imageUrl", "thumbUrl"]) {
         const url = new URL(first[key]);
