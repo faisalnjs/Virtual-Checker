@@ -1,3 +1,4 @@
+import { forgetSwitcherAccounts } from "./account-switcher.js";
 import { disableSuggestionPush } from "./suggestion-push.js";
 import * as ui from "./ui.js";
 import storage from "./storage.js";
@@ -98,6 +99,7 @@ export function ta(returnFunction) {
 }
 
 export function logout(returnFunction = null) {
+    forgetSwitcherAccounts();
     disableSuggestionPush().catch(() => {});
     storage.delete("usr");
     storage.delete("pwd");
@@ -885,7 +887,7 @@ export async function clearBulkLoad() {
 
 export async function buyTheme(theme = null, cost = 0) {
     if (!theme || !cost || !storage.get("code")) return;
-    await fetch(domain + '/buy_theme', {
+    return await fetch(domain + '/buy_theme', {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
@@ -924,7 +926,7 @@ export async function buyTheme(theme = null, cost = 0) {
 
 export async function refundThemes(themes = []) {
     if (!themes || !Array.isArray(themes) || themes.length === 0 || !storage.get("code")) return;
-    await fetch(domain + '/refund_themes', {
+    return await fetch(domain + '/refund_themes', {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
@@ -987,4 +989,34 @@ export async function suggestionRequest(path, fields = {}) {
         throw error;
     }
     return result;
+}
+
+export async function authenticateAccountSwitch(targetSeatCode, targetPassword) {
+    const response = await fetch(domain + '/accounts/switch', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        cache: 'no-store',
+        body: JSON.stringify({ seatCode: storage.get('code'), password: storage.get('password'), targetSeatCode, targetPassword }),
+    });
+    const result = await response.json();
+    if (!response.ok) {
+        const error = new Error(result.error || 'Could not authenticate this account.');
+        error.account = result.account;
+        throw error;
+    }
+    return result;
+}
+
+export async function linkedAccounts(targetSeatCode) {
+  const response = await fetch(domain + (targetSeatCode ? '/accounts/remove' : '/accounts/list'), {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, cache: 'no-store',
+    body: JSON.stringify({ seatCode: storage.get('code'), password: storage.get('password'), targetSeatCode }),
+  });
+  const result = await response.json();
+  if (!response.ok) {
+    const error = new Error(result.error || 'Could not load linked seat codes.');
+    error.account = result.account;
+    throw error;
+  }
+  return result.accounts;
 }

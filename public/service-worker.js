@@ -129,7 +129,7 @@ self.addEventListener('push', event => {
     const reminder = payload.type === 'segment_due';
     const feedbackBody = (typeof payload.body === 'string' && payload.body.trim()) || 'Your response has been reviewed. Open History to see the feedback.';
     await self.registration.showNotification(reminder ? 'Segment due soon' : feedback ? 'Question feedback' : 'Reply to suggestion', {
-      body: reminder ? ((typeof payload.body === 'string' && payload.body.trim()) || 'You have an unfinished segment due in 2 hours.') : feedback ? feedbackBody : 'Your suggestion has been replied to. Open My Suggestions to read it.',
+      body: `Seat ${payload.seatCode}: ` + (reminder ? ((typeof payload.body === 'string' && payload.body.trim()) || 'You have an unfinished segment due in 2 hours.') : feedback ? feedbackBody : 'Your suggestion has been replied to. Open My Suggestions to read it.'),
       icon: '/banner-meta.png', badge: '/favicon.ico',
       tag: `${reminder ? 'segment-due' : feedback ? 'response-feedback' : 'suggestion-responses'}-${payload.seatCode}${reminder ? `-${payload.segmentId}` : feedback && payload.responseId ? `-${payload.responseId}` : ''}`,
       data: { type: payload.type, url: reminder ? `/#segment-${encodeURIComponent(payload.segmentId)}` : feedback ? '/#history' : '/#suggestions', seatCode: payload.seatCode },
