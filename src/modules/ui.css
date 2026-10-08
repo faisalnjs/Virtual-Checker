@@ -11,6 +11,7 @@ dialog {
   border-radius: 1rem;
   box-shadow: 0 0 2rem rgba(0, 0, 0, 0.2);
   background: var(--background-color);
+  overflow-x: hidden;
 }
 
 dialog.large {
