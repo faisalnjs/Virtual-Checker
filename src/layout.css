@@ -655,6 +655,16 @@ label:has(i) {
   margin-top: 10px;
 }
 
+.suggestion-message {
+  border-left: 3px solid var(--accent-color);
+  padding-left: 10px;
+  margin: 10px 0;
+}
+
+.suggestion-message.admin {
+  border-left-color: var(--error-color);
+}
+
 .enhanced-card textarea {
   display: block;
   width: 100%;
