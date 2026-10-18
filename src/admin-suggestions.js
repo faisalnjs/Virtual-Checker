@@ -43,6 +43,46 @@ function suggestionCard(record) {
     body.className = 'suggestion-text';
     body.textContent = message.message;
     entry.append(author, body);
+    if (message.author === 'admin') {
+      const edit = document.createElement('button');
+      edit.type = 'button';
+      edit.textContent = 'Edit';
+      edit.addEventListener('click', () => {
+        if (edit.disabled) return;
+        const input = document.createElement('textarea');
+        input.maxLength = 10000;
+        input.value = message.message;
+        const save = document.createElement('button');
+        save.type = 'button';
+        save.textContent = 'Save';
+        const cancel = document.createElement('button');
+        cancel.type = 'button';
+        cancel.textContent = 'Cancel';
+        const controls = document.createElement('div');
+        controls.className = 'button-grid';
+        controls.append(save, cancel);
+        body.replaceWith(input);
+        edit.replaceWith(controls);
+        cancel.addEventListener('click', render);
+        save.addEventListener('click', async () => {
+          const reply = input.value.trim();
+          if (!reply || save.disabled) return;
+          save.disabled = true;
+          input.disabled = true;
+          try {
+            const result = await auth.suggestionRequest(`/admin/suggestions/${record.id}/messages/${message.id}`, { message: reply, previousMessage: message.message }, true);
+            suggestions = suggestions.map(row => row.id === record.id ? result.suggestion : row);
+            render();
+            ui.toast(`Reply updated for seat ${record.seatCode}.`, 3000, 'success', 'bi bi-check-circle-fill');
+          } catch (error) {
+            input.disabled = false;
+            save.disabled = false;
+            ui.toast(error.message, 5000, 'error', 'bi bi-exclamation-triangle-fill');
+          }
+        });
+      });
+      entry.append(edit);
+    }
     thread.append(entry);
   }
   card.append(thread);
@@ -96,7 +136,7 @@ function render() {
         suggestions = suggestions.map(row => (row.id === item.id) ? result.suggestion : row);
         drafts.delete(item.id);
         render();
-        status.textContent = `Reply sent to seat ${item.seatCode}.`;
+        ui.toast(`Reply sent to seat ${item.seatCode}.`, 3000, 'success', 'bi bi-check-circle-fill');
       } catch (error) {
         message.textContent = error.message;
       } finally {
