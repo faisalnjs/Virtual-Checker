@@ -12,28 +12,59 @@ export function suggestionCard(record) {
   const timestamp = document.createElement("small");
   const date = new Date(record.timestamp);
   timestamp.textContent = Number.isNaN(date.getTime()) ? record.timestamp : date.toLocaleString();
-  const text = document.createElement("p");
-  text.className = "suggestion-text";
-  text.textContent = record.suggestion;
-  card.append(heading, timestamp, text);
+  card.append(heading, timestamp);
   if (record.contactInformation) {
     const contact = document.createElement("p");
     contact.className = "suggestion-text";
     contact.textContent = `Contact: ${record.contactInformation}`;
     card.append(contact);
   }
-  const reply = document.createElement("section");
-  reply.className = "suggestion-response";
-  const label = document.createElement("strong");
-  label.textContent = record.response ? "Response" : "Awaiting a response";
-  reply.append(label);
-  if (record.response) {
-    const response = document.createElement("p");
-    response.className = "suggestion-text";
-    response.textContent = record.response;
-    reply.append(response);
+  const thread = document.createElement("section");
+  thread.className = "suggestion-response";
+  const messages = record.messages || [{ author: 'student', message: record.suggestion, timestamp: record.timestamp }, ...(record.response ? [{ author: 'admin', message: record.response, timestamp: record.timestamp }] : [])];
+  for (const message of messages) {
+    const entry = document.createElement("div");
+    entry.className = `suggestion-message ${message.author}`;
+    const author = document.createElement("strong");
+    author.textContent = (message.author === 'admin') ? 'Admin' : 'You';
+    const body = document.createElement("p");
+    body.className = "suggestion-text";
+    body.textContent = message.message;
+    entry.append(author, body);
+    thread.append(entry);
   }
-  card.append(reply);
+  const form = document.createElement('form');
+  const input = document.createElement('textarea');
+  input.required = true;
+  input.maxLength = 10000;
+  input.placeholder = 'Reply...';
+  const send = document.createElement('button');
+  send.type = 'submit';
+  send.textContent = 'Reply';
+  const status = document.createElement('p');
+  status.className = 'suggestion-save-status';
+  status.setAttribute('role', 'status');
+  form.append(input, send, status);
+  form.addEventListener('submit', async event => {
+    event.preventDefault();
+    const message = input.value.trim();
+    if (!message || send.disabled) return;
+    send.disabled = true;
+    input.disabled = true;
+    status.textContent = 'Sending...';
+    try {
+      const result = await auth.suggestionRequest(`/suggestions/${record.id}/messages`, { message });
+      rows = rows.map(row => (row.id === record.id) ? result.suggestion : row);
+      renderHistory();
+    } catch (error) {
+      status.textContent = error.message;
+    } finally {
+      send.disabled = false;
+      input.disabled = false;
+    }
+  });
+  thread.append(form);
+  card.append(thread);
   return card;
 }
 
@@ -45,7 +76,7 @@ let pendingAccount = "";
 let initialized = false;
 const memoryState = new Map();
 const identity = () => JSON.stringify([storage.get("code"), storage.get("password")]);
-const version = row => JSON.stringify([row.timestamp, row.response]);
+const version = row => JSON.stringify((row.messages || []).filter(message => message.author === 'admin').map(message => [message.id, message.timestamp]));
 
 function readState(seat) {
   try {
@@ -112,9 +143,9 @@ async function refresh() {
       }
       const state = readState(seat);
       const visible = dialog?.open && !document.hidden;
-      const unread = rows.filter(row => row.response && (state[row.id]?.seen !== version(row)));
+      const unread = rows.filter(row => JSON.parse(version(row)).length && (state[row.id]?.seen !== version(row)));
       if (visible) {
-        for (const row of rows) if (row.response) state[row.id] = { seen: version(row), notified: version(row) };
+        for (const row of rows) if (JSON.parse(version(row)).length) state[row.id] = { seen: version(row), notified: version(row) };
         writeState(seat, state);
         updateBadge(0);
       } else {
