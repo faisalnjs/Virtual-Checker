@@ -968,6 +968,28 @@ try {
     stopLipsky.innerHTML = '<i class="bi bi-cake2"></i>';
     stopLipsky.setAttribute("tooltip", "Stop Lipskys");
     document.querySelector(".controls-container").appendChild(stopLipsky);
+  } else {
+    let typed = '';
+    window.addEventListener('keydown', event => {
+      if ((event.key.length !== 1) || event.ctrlKey || event.metaKey || event.altKey) return;
+      typed = `${typed}${event.key}`.slice(-6).toLowerCase();
+      if (typed !== 'lipsky') return;
+      typed = '';
+      for (let index = 0; index < 5; index++) setTimeout(() => {
+        const width = [15, 20, 22, 25, 30][Math.floor(Math.random() * 5)];
+        const fallingLipsky = document.createElement('img');
+        fallingLipsky.className = 'star';
+        fallingLipsky.src = lipsky;
+        fallingLipsky.style.width = `${width}px`;
+        fallingLipsky.style.position = 'fixed';
+        fallingLipsky.style.left = `${Math.random() * (window.innerWidth - width)}px`;
+        fallingLipsky.style.top = '0px';
+        document.body.append(fallingLipsky);
+        const duration = 10000 * (window.innerHeight / 1000);
+        fallingLipsky.animate([{ transform: 'translateY(0)' }, { transform: `translateY(${window.innerHeight + 30}px)` }], { duration, easing: 'linear' });
+        setTimeout(() => fallingLipsky.remove(), duration);
+      }, index * 150);
+    });
   }
 
   function updateColorizedTheme() {
