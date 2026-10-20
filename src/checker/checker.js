@@ -1747,6 +1747,36 @@ try {
     }
   }
 
+  document.getElementById('matrix')?.addEventListener('keydown', event => {
+    const cell = event.target;
+    if (!(cell instanceof HTMLInputElement) || !cell.matches('[data-matrix-column]')) return;
+    const rows = [...document.querySelectorAll('#matrix [data-matrix-row]')];
+    const rowIndex = rows.indexOf(cell.closest('[data-matrix-row]'));
+    const columns = [...rows[rowIndex].querySelectorAll('[data-matrix-column]')];
+    const columnIndex = columns.indexOf(cell);
+    let nextRow = rowIndex;
+    let nextColumn = columnIndex;
+    if (event.key === 'ArrowLeft') {
+      if ((cell.selectionStart !== cell.selectionEnd) || (cell.selectionStart !== 0)) return;
+      nextColumn--;
+    } else if (event.key === 'ArrowRight') {
+      if ((cell.selectionStart !== cell.selectionEnd) || (cell.selectionEnd !== cell.value.length)) return;
+      nextColumn++;
+    } else if (event.key === 'ArrowUp') {
+      nextRow--;
+    } else if (event.key === 'ArrowDown') {
+      nextRow++;
+    } else {
+      return;
+    }
+    const next = rows[nextRow]?.querySelectorAll('[data-matrix-column]')[nextColumn];
+    if (!next) return;
+    event.preventDefault();
+    next.focus();
+    const position = (event.key === 'ArrowLeft') ? next.value.length : ((event.key === 'ArrowRight') ? 0 : Math.min(cell.selectionStart, next.value.length));
+    next.setSelectionRange(position, position);
+  });
+
   function resetMatrix() {
     var matrix = document.getElementById('matrix');
     matrix.innerHTML = '<div class="row" data-matrix-row="1"><input type="text" autocomplete="off" class="matrix-column" data-matrix-column="1" /><input type="text" autocomplete="off" class="matrix-column" data-matrix-column="2" /></div><div class="row" data-matrix-row="2"><input type="text" autocomplete="off" class="matrix-column" data-matrix-column="1" /><input type="text" autocomplete="off" class="matrix-column" data-matrix-column="2" /></div>';
