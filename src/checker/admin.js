@@ -6397,7 +6397,7 @@ try {
           text: 'Remove',
           class: 'submit-button',
           onclick: async () => {
-            removeRoster(roster.period);
+            removeRosterConfirm(roster.period);
           },
           close: true,
         },
@@ -6444,6 +6444,30 @@ try {
         init();
       }
     }, 1000);
+  }
+
+  function removeRosterConfirm(period) {
+    if (!active) return;
+    ui.view();
+    ui.modal({
+      title: `Remove roster for Period ${period}?`,
+      body: `<p>This will remove all student seat code assignments from the system.</p>`,
+      buttons: [
+        {
+          text: 'Cancel',
+          class: 'cancel-button',
+          close: true,
+        },
+        {
+          text: 'Continue',
+          class: 'submit-button',
+          onclick: () => {
+            removeRoster(period);
+          },
+          close: true,
+        },
+      ],
+    });
   }
 
   function removeRoster(period) {
