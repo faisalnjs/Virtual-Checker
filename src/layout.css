@@ -620,10 +620,10 @@ label:has(i) {
 }
 
 .enhanced-grid {
-	display: grid;
-	gap: 16px;
-	grid-template-columns: 1fr 1fr 1fr;
-	width: -webkit-fill-available;
+  display: grid;
+  gap: 16px;
+  grid-template-columns: 1fr 1fr 1fr;
+  width: -webkit-fill-available;
 }
 
 .enhanced-card {
@@ -715,5 +715,91 @@ label:has(i) {
 }
 
 #suggestions-grid {
-	grid-template-columns: 1fr;
+  grid-template-columns: 1fr;
+}
+
+.whiteboard {
+  height: calc(100vh - 180px);
+  min-height: 500px;
+  margin-top: 12px;
+  width: 100%;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  width: calc(100% + (((100vw - min(100%, 900px)) / 2.5) * 2));
+  margin-left: calc(-1 * ((100vw - min(100%, 900px)) / 2.5));
+}
+
+.excalidraw, .excalidraw * {
+  --color-surface-high: var(--surface-color) !important;
+  --color-surface-mid: var(--surface-color) !important;
+  --color-surface-low: var(--surface-color) !important;
+  --color-surface-lowest: var(--surface-color) !important;
+  --island-bg-color: var(--surface-color) !important;
+  --popup-bg-color: var(--surface-color) !important;
+  --text-primary-color: var(--text-color) !important;
+  --color-on-surface: var(--text-color) !important;
+  --icon-fill-color: var(--text-color) !important;
+  --dialog-border-color: var(--accent-color) !important;
+  --color-primary-light: var(--background-color) !important;
+  --color-surface-primary-container: var(--accent-color) !important;
+  --color-on-primary-container: var(--accent-text-color) !important;
+  --color-primary: var(--text-color) !important;
+  --keybinding-color: var(--accent-text-color) !important;
+  --color-primary-darker: var(--color-primary) !important;
+  --color-brand-hover: var(--color-primary) !important;
+  --color-slider-track: var(--color-primary) !important;
+  --button-hover-bg: var(--accent-color) !important;
+  --default-border-color: var(--accent-color) !important;
+  --sab: 0;
+  --sal: 0;
+  --sar: 0;
+  --sat: 0;
+}
+
+.excalidraw .HelpDialog__header,
+.excalidraw .App-menu_top__left .dropdown-menu-group,
+.excalidraw .App-menu_top__left div:has(+ .dropdown-menu-group),
+.excalidraw .App-menu_top__left .dropdown-menu-group + div,
+.excalidraw .App-menu_top__left .dropdown-menu .Island > *:last-child,
+.excalidraw .scroll-back-to-content,
+.excalidraw-tooltip {
+  display: none !important;
+}
+
+.excalidraw .HelpDialog__island-content {
+  overflow: hidden;
+}
+
+.excalidraw .dropdown-menu .dropdown-menu-item svg {
+  width: 15px;
+  height: 15px;
+  max-width: unset;
+}
+
+.excalidraw .Checkbox .Checkbox-box {
+  color: var(--text-color) !important;
+}
+
+.excalidraw .Checkbox .Checkbox-box svg {
+  display: block;
+}
+
+.excalidraw .dropdown-menu-button {
+  background-color: var(--island-bg-color) !important;
+  color: var(--color-on-surface) !important;
+}
+
+.excalidraw .context-menu-item:hover {
+  background-color: var(--accent-color) !important;
+  color: var(--accent-text-color) !important;
+}
+
+.excalidraw .range-input {
+  border-radius: 0.5rem !important;
+  background: var(--color-slider-track) !important;
+}
+
+.excalidraw .range-input::-webkit-slider-thumb ,
+.excalidraw .range-input::-moz-range-thumb {
+  background: var(--accent-color) !important;
 }
