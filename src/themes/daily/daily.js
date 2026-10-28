@@ -163,6 +163,10 @@ export function random(randomize = false) {
   return pendingRequest;
 }
 
+export function load() {
+  return dailyImage ? Promise.resolve(dailyImage) : random();
+}
+
 export function initializeControls(container) {
   if (!container || container.querySelector(".daily-theme-roll")) return;
   const dailyThemeRoll = document.createElement("button");
