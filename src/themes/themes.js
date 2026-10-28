@@ -391,13 +391,42 @@ export async function renderStore() {
   premiumThemesGrid.classList = 'themes-grid';
   const animatedThemesGrid = document.createElement("div");
   animatedThemesGrid.classList = 'themes-grid';
+  let freeThemesGridText;
   const themePopularity = (await storage.idbGet("cache"))?.themePopularity || {};
   const storeControls = document.createElement("div");
   storeControls.className = "theme-store-controls";
-  storeControls.innerHTML = `<input type="search" placeholder="Search themes" aria-label="Search themes"><select aria-label="Sort themes"><option value="default">Default</option><option value="price">Price</option><option value="popularity">Popularity</option></select>`;
+  storeControls.innerHTML = `<div class="theme-store-search"><input type="search" placeholder="Search themes" aria-label="Search themes"><select aria-label="Sort themes"><option value="default">Default</option><option value="price">Price</option><option value="popularity">Popularity</option></select></div><div class="theme-icon-filters"></div>`;
   store.appendChild(storeControls);
   const searchInput = storeControls.querySelector("input");
   const sortSelect = storeControls.querySelector("select");
+  const iconFilters = storeControls.querySelector('.theme-icon-filters');
+  let selectedIcon = "";
+  const applyFilters = () => {
+    const query = searchInput.value.trim().toLowerCase();
+    freeThemesGrid.hidden = Boolean(selectedIcon);
+    freeThemesGridText?.toggleAttribute('hidden', Boolean(selectedIcon));
+    store.querySelectorAll('.theme-item[data-name]').forEach(item => {
+      item.hidden = !item.dataset.name.includes(query) || (selectedIcon && (item.dataset.icon !== selectedIcon));
+    });
+  };
+  const createIconFilter = (icon) => {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'icon';
+    button.innerHTML = `<i class="bi bi-${icon}"></i>`;
+    button.setAttribute('aria-pressed', String(icon === 'ui-checks-grid'));
+    button.addEventListener('click', () => {
+      selectedIcon = (icon === 'ui-checks-grid') ? '' : icon;
+      iconFilters.querySelectorAll('button').forEach(filter => {
+        filter.setAttribute('aria-pressed', String(filter.dataset.icon === (selectedIcon || 'ui-checks-grid')));
+      });
+      applyFilters();
+    });
+    button.dataset.icon = icon;
+    iconFilters.appendChild(button);
+  };
+  createIconFilter('ui-checks-grid');
+  [...new Set(themes.map(theme => String(theme[2] || '').trim()).filter(Boolean))].forEach(icon => createIconFilter(icon));
   const sortThemeItems = () => {
     const sort = sortSelect.value;
     [freeThemesGrid, premiumThemesGrid, animatedThemesGrid].forEach(grid => {
@@ -414,10 +443,7 @@ export async function renderStore() {
     });
   };
   searchInput.addEventListener("input", () => {
-    const query = searchInput.value.trim().toLowerCase();
-    store.querySelectorAll('.theme-item[data-name]').forEach(item => {
-      item.hidden = !item.dataset.name.includes(query);
-    });
+    applyFilters();
   });
   sortSelect.addEventListener("change", sortThemeItems);
   const sortedThemes = [...themes].sort((a, b) => themes.indexOf(a) - themes.indexOf(b));
@@ -428,6 +454,7 @@ export async function renderStore() {
     themeItem.classList = 'theme-item';
     themeItem.setAttribute("data-theme", value);
     themeItem.setAttribute("data-name", name.toLowerCase());
+    themeItem.dataset.icon = String(theme[2] || '').trim();
     if (theme[3]) {
       themeItem.setAttribute('tooltip', `${checks}/${theme[3]} Check${theme[3] == 1 ? '' : 's'}${theme[4].filter(t => !ownedThemes.includes(t[0])) && theme[4].filter(t => !ownedThemes.includes(t[0])).length ? `. You need: ${theme[4].filter(t => !ownedThemes.includes(t[0])).map(t => themes.find(th => th[0] == t)[1] || t).join(', ')}` : ''}`);
       if ((value !== "daily") && theme[7]) {
@@ -555,7 +582,7 @@ export async function renderStore() {
       freeThemesGrid.append(themeItem);
     }
   });
-  const freeThemesGridText = document.createElement("b");
+  freeThemesGridText = document.createElement("b");
   freeThemesGridText.innerText = 'Free Themes';
   store.appendChild(freeThemesGridText);
   const freeThemesGridSuggestTheme = document.createElement("div");

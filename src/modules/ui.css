@@ -1030,8 +1030,25 @@ body:has(.topbar) .checker.horizontal .column:last-child {
 
 [data-modal-page="store"] .theme-store-controls {
   display: flex;
+  flex-direction: column;
   gap: 10px;
-  align-items: center;
+  align-items: stretch;
+}
+
+[data-modal-page="store"] .theme-store-search,
+[data-modal-page="store"] .theme-icon-filters {
+  display: flex;
+  gap: 10px;
+}
+
+[data-modal-page="store"] .theme-icon-filters {
+  flex-wrap: wrap;
+}
+
+[data-modal-page="store"] .theme-icon-filters button[aria-pressed="true"] {
+  color: var(--accent-text-color);
+  background: var(--accent-color);
+  border: 2px solid var(--accent-text-color);
 }
 
 [data-modal-page="store"] .theme-store-controls input,
