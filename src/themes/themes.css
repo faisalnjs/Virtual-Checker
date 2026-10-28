@@ -1205,6 +1205,59 @@ body[data-theme="dune-2"] .header > .virtual-checker-logo {
   background: url(https://assets.vssfalcons.com/store/backdrop/pumpkins-pro.png) !important;
 }
 
+[data-theme="snowy-window"] {
+  background: url(https://assets.vssfalcons.com/store/backdrop/snowy-window.png) !important;
+}
+
+[data-theme="ornaments"] {
+  color-scheme: light;
+  --text-color: #020804;
+  --background-color: #b1a284;
+  --surface-color: #c3ab8d;
+  --accent-color: #9f0c18;
+  --accent-text-color: #efbb96;
+  --error-color: #9f0c18;
+  background: url(https://assets.vssfalcons.com/store/backdrop/ornaments.png) !important;
+}
+
+[data-theme="ornaments-2"] {
+  color-scheme: dark;
+  --text-color: #fdfdfd;
+  --background-color: #2d2d2d;
+  --surface-color: #941406;
+  --accent-color: #74b339;
+  --accent-text-color: #080901;
+  --error-color: #941406;
+  background: url(https://assets.vssfalcons.com/store/backdrop/ornaments-2.png) !important;
+}
+
+[data-theme="ornaments-pro"] {
+  color-scheme: dark;
+  --text-color: #fff;
+  --background-color: #030303;
+  --surface-color: #cda500;
+  --accent-color: #b31103;
+  --accent-text-color: #fff;
+  --error-color: #b31103;
+  background: url(https://assets.vssfalcons.com/store/backdrop/ornaments-pro.png) !important;
+}
+
+[data-theme="tree-frost"] {
+  background: url(https://assets.vssfalcons.com/store/backdrop/tree-frost.png) !important;
+}
+
+[data-theme="winter-mountain"] {
+  background: url(https://assets.vssfalcons.com/store/backdrop/winter-mountain.png) !important;
+}
+
+[data-theme="winter-mountain-2"] {
+  background: url(https://assets.vssfalcons.com/store/backdrop/winter-mountain-2.png) !important;
+}
+
+[data-theme="winter-forest-path"] {
+  background: url(https://assets.vssfalcons.com/store/backdrop/winter-forest-path.png) !important;
+}
+
 /* Animated Themes */
 
 [data-theme="waterfall"] {

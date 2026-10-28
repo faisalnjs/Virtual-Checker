@@ -112,5 +112,13 @@
   ["spider-webs", "Spider Webs", "image-alt", 60, [], false, false, true, false, false],
   ["pumpkins", "Pumpkins", "image-alt", 60, [], false, false, false, false, false],
   ["pumpkins-2", "Pumpkins 2", "image-alt", 70, ["pumpkins"], false, false, false, false, false],
-  ["pumpkins-pro", "Pumpkins Pro", "image-alt", 80, ["pumpkins", "pumpkins-2"], false, false, false, false, false]
+  ["pumpkins-pro", "Pumpkins Pro", "image-alt", 80, ["pumpkins", "pumpkins-2"], false, false, false, false, false],
+  ["snowy-window", "Snowy Window", "snow", 60, [], false, false, false, false, false],
+  ["ornaments", "Ornaments", "snow", 60, [], false, false, false, false, false],
+  ["ornaments-2", "Ornaments 2", "snow", 70, ["ornaments"], false, false, false, false, false],
+  ["ornaments-pro", "Ornaments Pro", "snow", 80, ["ornaments", "ornaments-2"], false, false, false, false, false],
+  ["tree-frost", "Tree Frost", "tree", 60, [], false, false, false, false, false],
+  ["winter-mountain", "Winter Mountain", "snow", 60, [], false, false, false, false, false],
+  ["winter-mountain-2", "Winter Mountain 2", "snow", 70, ["winter-mountain"], false, false, false, false, false],
+  ["winter-forest-path", "Winter Forest Path", "snow", 60, [], false, false, false, false, false]
 ]
