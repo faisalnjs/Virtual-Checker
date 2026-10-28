@@ -435,7 +435,7 @@ export async function renderStore() {
         themeItem.setAttribute('style', `background: url('https://assets.vssfalcons.com/store/thumb/${theme[0]}.png') center / cover no-repeat !important;`);
       }
     }
-    themeItem.innerHTML = `${theme[2] ? `<i class="bi bi-${theme[2]}"></i>` : ''}${theme[5] ? `<i class="bi bi-badge-hd-fill hd"></i>` : ''}${theme[6] ? `<i class="bi bi-stars animated"></i>` : ''}${theme[7] ? `<i class="bi bi-border pattern"></i>` : ''}${theme[8] ? `<i class="bi bi-palette2 colorized"></i>` : ''}${(value === "daily") ? `<i class="bi bi-dice-5 random"></i>` : ''}<h5>${name}</h5><p>${theme[3] ? `${theme[3]} Check${theme[3] == 1 ? '' : 's'}` : 'Free'}</p>${theme[3] ? `<small class="theme-popularity"><i class="bi bi-people-fill"></i> ${themePopularity[value] || 0}</small>` : ''}${theme[4] && theme[4].length ? `<small>Requires: ${theme[4].map(t => themes.find(th => th[0] == t)[1] || t).join(', ')}</small>` : ''}`;
+    themeItem.innerHTML = `${theme[2] ? `<i class="bi bi-${theme[2]}"></i>` : ''}${theme[5] ? `<i class="bi bi-badge-hd-fill hd"></i>` : ''}${theme[6] ? `<i class="bi bi-stars animated"></i>` : ''}${theme[7] ? `<i class="bi bi-border pattern"></i>` : ''}${theme[8] ? `<i class="bi bi-palette2 colorized"></i>` : ''}${theme[9] ? `<i class="bi bi-volume-up-fill audio"></i>` : ''}${(value === "daily") ? `<i class="bi bi-dice-5 random"></i>` : ''}<h5>${name}</h5><p>${theme[3] ? `${theme[3]} Check${theme[3] == 1 ? '' : 's'}` : 'Free'}</p>${theme[3] ? `<small class="theme-popularity"><i class="bi bi-people-fill"></i> ${themePopularity[value] || 0}</small>` : ''}${theme[4] && theme[4].length ? `<small>Requires: ${theme[4].map(t => themes.find(th => th[0] == t)[1] || t).join(', ')}</small>` : ''}`;
     if (value === "daily") daily.addCopyright(themeItem);
     if (value === initialTheme) themeItem.classList.add('selected');
     const themeButton = document.createElement("button");
@@ -884,17 +884,55 @@ try {
     }
   }
 
+  function updateThemeAudio() {
+    const foundTheme = themes.find(theme => theme[0] === document.body.getAttribute('data-theme'));
+    let audio = document.querySelector('audio[data-theme-audio]');
+    let control = document.querySelector('[data-theme-audio-control]');
+    if (!foundTheme?.[9] || (storage.get('theme') !== foundTheme[0])) {
+      audio?.pause();
+      audio?.remove();
+      control?.remove();
+      return;
+    }
+    if (!audio) {
+      audio = document.createElement('audio');
+      audio.dataset.themeAudio = '';
+      document.body.appendChild(audio);
+    }
+    audio.src = `https://assets.vssfalcons.com/store/audio/${foundTheme[0]}.mp3`;
+    if (!control) {
+      control = document.createElement('button');
+      control.className = 'icon';
+      control.dataset.themeAudioControl = '';
+      document.querySelector('.controls-container')?.appendChild(control);
+    }
+    const updateControl = () => {
+      control.innerHTML = `<i class="bi bi-volume-${audio.paused ? 'mute' : 'up'}-fill"></i>`;
+      control.setAttribute('tooltip', audio.paused ? 'Play Theme Audio' : 'Pause Theme Audio');
+    };
+    control.onclick = async () => {
+      if (audio.paused) await audio.play();
+      else audio.pause();
+    };
+    audio.onplay = updateControl;
+    audio.onpause = updateControl;
+    audio.onended = updateControl;
+    updateControl();
+  }
+
   daily.initializeControls(document.querySelector(".controls-container"));
 
   const observer = new MutationObserver((mutationsList) => {
     for (const mutation of mutationsList) {
       if ((mutation.type === 'attributes') && (mutation.attributeName === 'data-theme')) {
         updateAnimatedThemeVideo();
+        updateThemeAudio();
         updateColorizedTheme();
       }
     }
   });
   observer.observe(document.body, { attributes: true });
+  updateThemeAudio();
 
   if ((new Date().getMonth() === 9) && (new Date().getDate() === 20)) {
     const lipskys = setInterval(() => {
