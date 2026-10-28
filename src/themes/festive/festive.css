@@ -1,12 +1,11 @@
 [data-theme="festive"] {
   color-scheme: light;
   --text-color: #242424;
-  --background-color: #f1e2cc;
-  --surface-color: #dbc8ab;
+  --background-color: #e2c08e;
+  --surface-color: #f3cb8e;
   --accent-color: #f0b73c;
   --accent-text-color: #242424;
   --error-color: #e451da;
-
   --red: #f75e5e;
   --green: #42b970;
 }
@@ -41,11 +40,13 @@
     bold 16px "Segoe Script",
     "Figtree",
     sans-serif;
+  animation: scroll 0.5s linear infinite forwards;
+  animation-play-state: paused;
 }
 
 [data-theme="festive"] #submit-button:is(:hover, :focus) {
   color: var(--text-color);
-  animation: scroll 500ms linear infinite forwards;
+  animation-play-state: running;
 }
 
 [data-theme="festive"] #answer-input {
@@ -69,8 +70,9 @@
 }
 
 img.snowflake {
-  position: absolute;
-  background-color: transparent;
-  width: 50px;
   pointer-events: none;
+  position: fixed;
+  background-color: transparent;
+  top: -30px;
+  width: 50px;
 }

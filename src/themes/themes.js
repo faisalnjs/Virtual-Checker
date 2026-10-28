@@ -242,6 +242,7 @@ export function initializeThemeEditor() {
 export async function renderStore() {
   const store = document.querySelector(`[data-modal-page="store"]`);
   if (!store) return;
+  await daily.load().catch(() => null);
   store.innerHTML = "";
   await storage.idbReady;
   var initialTheme = storage.get("theme") || "default";
@@ -390,13 +391,42 @@ export async function renderStore() {
   premiumThemesGrid.classList = 'themes-grid';
   const animatedThemesGrid = document.createElement("div");
   animatedThemesGrid.classList = 'themes-grid';
+  let freeThemesGridText;
   const themePopularity = (await storage.idbGet("cache"))?.themePopularity || {};
   const storeControls = document.createElement("div");
   storeControls.className = "theme-store-controls";
-  storeControls.innerHTML = `<input type="search" placeholder="Search themes" aria-label="Search themes"><select aria-label="Sort themes"><option value="default">Default</option><option value="price">Price</option><option value="popularity">Popularity</option></select>`;
+  storeControls.innerHTML = `<div class="theme-store-search"><input type="search" placeholder="Search themes" aria-label="Search themes"><select aria-label="Sort themes"><option value="default">Default</option><option value="price">Price</option><option value="popularity">Popularity</option></select></div><div class="theme-icon-filters"></div>`;
   store.appendChild(storeControls);
   const searchInput = storeControls.querySelector("input");
   const sortSelect = storeControls.querySelector("select");
+  const iconFilters = storeControls.querySelector('.theme-icon-filters');
+  let selectedIcon = "";
+  const applyFilters = () => {
+    const query = searchInput.value.trim().toLowerCase();
+    freeThemesGrid.hidden = Boolean(selectedIcon);
+    freeThemesGridText?.toggleAttribute('hidden', Boolean(selectedIcon));
+    store.querySelectorAll('.theme-item[data-name]').forEach(item => {
+      item.hidden = !item.dataset.name.includes(query) || (selectedIcon && (item.dataset.icon !== selectedIcon));
+    });
+  };
+  const createIconFilter = (icon) => {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'icon';
+    button.innerHTML = `<i class="bi bi-${icon}"></i>`;
+    button.setAttribute('aria-pressed', String(icon === 'ui-checks-grid'));
+    button.addEventListener('click', () => {
+      selectedIcon = (icon === 'ui-checks-grid') ? '' : icon;
+      iconFilters.querySelectorAll('button').forEach(filter => {
+        filter.setAttribute('aria-pressed', String(filter.dataset.icon === (selectedIcon || 'ui-checks-grid')));
+      });
+      applyFilters();
+    });
+    button.dataset.icon = icon;
+    iconFilters.appendChild(button);
+  };
+  createIconFilter('ui-checks-grid');
+  [...new Set(themes.map(theme => String(theme[2] || '').trim()).filter(Boolean))].forEach(icon => createIconFilter(icon));
   const sortThemeItems = () => {
     const sort = sortSelect.value;
     [freeThemesGrid, premiumThemesGrid, animatedThemesGrid].forEach(grid => {
@@ -413,10 +443,7 @@ export async function renderStore() {
     });
   };
   searchInput.addEventListener("input", () => {
-    const query = searchInput.value.trim().toLowerCase();
-    store.querySelectorAll('.theme-item[data-name]').forEach(item => {
-      item.hidden = !item.dataset.name.includes(query);
-    });
+    applyFilters();
   });
   sortSelect.addEventListener("change", sortThemeItems);
   const sortedThemes = [...themes].sort((a, b) => themes.indexOf(a) - themes.indexOf(b));
@@ -427,6 +454,7 @@ export async function renderStore() {
     themeItem.classList = 'theme-item';
     themeItem.setAttribute("data-theme", value);
     themeItem.setAttribute("data-name", name.toLowerCase());
+    themeItem.dataset.icon = String(theme[2] || '').trim();
     if (theme[3]) {
       themeItem.setAttribute('tooltip', `${checks}/${theme[3]} Check${theme[3] == 1 ? '' : 's'}${theme[4].filter(t => !ownedThemes.includes(t[0])) && theme[4].filter(t => !ownedThemes.includes(t[0])).length ? `. You need: ${theme[4].filter(t => !ownedThemes.includes(t[0])).map(t => themes.find(th => th[0] == t)[1] || t).join(', ')}` : ''}`);
       if ((value !== "daily") && theme[7]) {
@@ -435,7 +463,7 @@ export async function renderStore() {
         themeItem.setAttribute('style', `background: url('https://assets.vssfalcons.com/store/thumb/${theme[0]}.png') center / cover no-repeat !important;`);
       }
     }
-    themeItem.innerHTML = `${theme[2] ? `<i class="bi bi-${theme[2]}"></i>` : ''}${theme[5] ? `<i class="bi bi-badge-hd-fill hd"></i>` : ''}${theme[6] ? `<i class="bi bi-stars animated"></i>` : ''}${theme[7] ? `<i class="bi bi-border pattern"></i>` : ''}${theme[8] ? `<i class="bi bi-palette2 colorized"></i>` : ''}${(value === "daily") ? `<i class="bi bi-dice-5 random"></i>` : ''}<h5>${name}</h5><p>${theme[3] ? `${theme[3]} Check${theme[3] == 1 ? '' : 's'}` : 'Free'}</p>${theme[3] ? `<small class="theme-popularity"><i class="bi bi-people-fill"></i> ${themePopularity[value] || 0}</small>` : ''}${theme[4] && theme[4].length ? `<small>Requires: ${theme[4].map(t => themes.find(th => th[0] == t)[1] || t).join(', ')}</small>` : ''}`;
+    themeItem.innerHTML = `${theme[2] ? `<i class="bi bi-${theme[2]}"></i>` : ''}${theme[5] ? `<i class="bi bi-badge-hd-fill hd"></i>` : ''}${theme[6] ? `<i class="bi bi-stars animated"></i>` : ''}${theme[7] ? `<i class="bi bi-border pattern"></i>` : ''}${theme[8] ? `<i class="bi bi-palette2 colorized"></i>` : ''}${theme[9] ? `<i class="bi bi-volume-up-fill audio"></i>` : ''}${(value === "daily") ? `<i class="bi bi-dice-5 random"></i>` : ''}<h5>${name}</h5><p>${theme[3] ? `${theme[3]} Check${theme[3] == 1 ? '' : 's'}` : 'Free'}</p>${theme[3] ? `<small class="theme-popularity"><i class="bi bi-people-fill"></i> ${themePopularity[value] || 0}</small>` : ''}${theme[4] && theme[4].length ? `<small>Requires: ${theme[4].map(t => themes.find(th => th[0] == t)[1] || t).join(', ')}</small>` : ''}`;
     if (value === "daily") daily.addCopyright(themeItem);
     if (value === initialTheme) themeItem.classList.add('selected');
     const themeButton = document.createElement("button");
@@ -554,7 +582,7 @@ export async function renderStore() {
       freeThemesGrid.append(themeItem);
     }
   });
-  const freeThemesGridText = document.createElement("b");
+  freeThemesGridText = document.createElement("b");
   freeThemesGridText.innerText = 'Free Themes';
   store.appendChild(freeThemesGridText);
   const freeThemesGridSuggestTheme = document.createElement("div");
@@ -884,17 +912,55 @@ try {
     }
   }
 
+  function updateThemeAudio() {
+    const foundTheme = themes.find(theme => theme[0] === document.body.getAttribute('data-theme'));
+    let audio = document.querySelector('audio[data-theme-audio]');
+    let control = document.querySelector('[data-theme-audio-control]');
+    if (!foundTheme?.[9] || (storage.get('theme') !== foundTheme[0])) {
+      audio?.pause();
+      audio?.remove();
+      control?.remove();
+      return;
+    }
+    if (!audio) {
+      audio = document.createElement('audio');
+      audio.dataset.themeAudio = '';
+      document.body.appendChild(audio);
+    }
+    audio.src = `https://assets.vssfalcons.com/store/audio/${foundTheme[0]}.mp3`;
+    if (!control) {
+      control = document.createElement('button');
+      control.className = 'icon';
+      control.dataset.themeAudioControl = '';
+      document.querySelector('.controls-container')?.appendChild(control);
+    }
+    const updateControl = () => {
+      control.innerHTML = `<i class="bi bi-volume-${audio.paused ? 'mute' : 'up'}-fill"></i>`;
+      control.setAttribute('tooltip', audio.paused ? 'Play Theme Audio' : 'Pause Theme Audio');
+    };
+    control.onclick = async () => {
+      if (audio.paused) await audio.play();
+      else audio.pause();
+    };
+    audio.onplay = updateControl;
+    audio.onpause = updateControl;
+    audio.onended = updateControl;
+    updateControl();
+  }
+
   daily.initializeControls(document.querySelector(".controls-container"));
 
   const observer = new MutationObserver((mutationsList) => {
     for (const mutation of mutationsList) {
       if ((mutation.type === 'attributes') && (mutation.attributeName === 'data-theme')) {
         updateAnimatedThemeVideo();
+        updateThemeAudio();
         updateColorizedTheme();
       }
     }
   });
   observer.observe(document.body, { attributes: true });
+  updateThemeAudio();
 
   if ((new Date().getMonth() === 9) && (new Date().getDate() === 20)) {
     const lipskys = setInterval(() => {
@@ -968,6 +1034,28 @@ try {
     stopLipsky.innerHTML = '<i class="bi bi-cake2"></i>';
     stopLipsky.setAttribute("tooltip", "Stop Lipskys");
     document.querySelector(".controls-container").appendChild(stopLipsky);
+  } else {
+    let typed = '';
+    window.addEventListener('keydown', event => {
+      if ((event.key.length !== 1) || event.ctrlKey || event.metaKey || event.altKey) return;
+      typed = `${typed}${event.key}`.slice(-6).toLowerCase();
+      if (typed !== 'lipsky') return;
+      typed = '';
+      for (let index = 0; index < 5; index++) setTimeout(() => {
+        const width = [15, 20, 22, 25, 30][Math.floor(Math.random() * 5)];
+        const fallingLipsky = document.createElement('img');
+        fallingLipsky.className = 'star';
+        fallingLipsky.src = lipsky;
+        fallingLipsky.style.width = `${width}px`;
+        fallingLipsky.style.position = 'fixed';
+        fallingLipsky.style.left = `${Math.random() * (window.innerWidth - width)}px`;
+        fallingLipsky.style.top = '0px';
+        document.body.append(fallingLipsky);
+        const duration = 10000 * (window.innerHeight / 1000);
+        fallingLipsky.animate([{ transform: 'translateY(0)' }, { transform: `translateY(${window.innerHeight + 30}px)` }], { duration, easing: 'linear' });
+        setTimeout(() => fallingLipsky.remove(), duration);
+      }, index * 150);
+    });
   }
 
   function updateColorizedTheme() {

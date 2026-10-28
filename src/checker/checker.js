@@ -1777,6 +1777,56 @@ try {
     next.setSelectionRange(position, position);
   });
 
+  function getMatrixValues() {
+    return [...document.querySelectorAll('#matrix [data-matrix-row]')].map(row =>
+      [...row.querySelectorAll('[data-matrix-column]')].map(input => input.value));
+  }
+
+  function setMatrixValues(values) {
+    const matrix = document.getElementById('matrix');
+    matrix.innerHTML = '';
+    values.forEach((values, rowIndex) => {
+      const row = document.createElement('div');
+      row.className = 'row';
+      row.dataset.matrixRow = rowIndex + 1;
+      values.forEach((value, columnIndex) => {
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.autocomplete = 'off';
+        input.className = 'matrix-column';
+        input.dataset.matrixColumn = columnIndex + 1;
+        input.value = String(value);
+        row.appendChild(input);
+      });
+      matrix.appendChild(row);
+    });
+    document.querySelector('[data-add-matrix-column]').disabled = values[0].length === 10;
+    document.querySelector('[data-remove-matrix-column]').disabled = values[0].length === 1;
+    document.querySelector('[data-add-matrix-row]').disabled = values.length === 10;
+    document.querySelector('[data-remove-matrix-row]').disabled = values.length === 1;
+    matrix.querySelector('[data-matrix-column]')?.focus();
+    ui.setUnsavedChanges(true);
+    ui.reloadUnsavedInputs();
+  }
+
+  document.getElementById('matrix')?.addEventListener('paste', event => {
+    if (!(event.target instanceof HTMLInputElement) || !event.target.matches('[data-matrix-column]')) return;
+    try {
+      const values = JSON.parse(event.clipboardData?.getData('text') || '');
+      if (!Array.isArray(values) || !values.length || (values.length > 10) || !values.every(row =>
+        Array.isArray(row) && row.length && (row.length <= 10) && (row.length === values[0].length) &&
+        row.every(value => ['string', 'number', 'boolean'].includes(typeof value)))) return;
+      event.preventDefault();
+      setMatrixValues(values);
+      ui.toast('Pasted matrix from clipboard.', 3000, "success", "bi bi-copy");
+    } catch { }
+  });
+
+  document.querySelector('[data-copy-matrix]')?.addEventListener('click', async () => {
+    await navigator.clipboard.writeText(JSON.stringify(getMatrixValues()));
+    ui.toast('Copied matrix to clipboard.', 3000, "success", "bi bi-copy");
+  });
+
   function resetMatrix() {
     var matrix = document.getElementById('matrix');
     matrix.innerHTML = '<div class="row" data-matrix-row="1"><input type="text" autocomplete="off" class="matrix-column" data-matrix-column="1" /><input type="text" autocomplete="off" class="matrix-column" data-matrix-column="2" /></div><div class="row" data-matrix-row="2"><input type="text" autocomplete="off" class="matrix-column" data-matrix-column="1" /><input type="text" autocomplete="off" class="matrix-column" data-matrix-column="2" /></div>';
