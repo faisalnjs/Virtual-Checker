@@ -649,6 +649,10 @@ label:has(i) {
   overflow-wrap: anywhere;
 }
 
+.suggestion-text:has(+ button) {
+  margin-bottom: 5px;
+}
+
 .suggestion-response {
   border-top: 1px solid var(--accent-color);
   padding-top: 10px;

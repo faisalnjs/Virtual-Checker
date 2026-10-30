@@ -1068,6 +1068,10 @@ div.ML__keyboard {
   display: none;
 }
 
+.controls-container [data-ai-grade-selected] {
+  display: none;
+}
+
 .controls-container [data-unarchive-multiple] {
   display: none;
 }
@@ -1109,6 +1113,10 @@ body:has(.selecting) .controls-container button:has(.bi-calendar-minus) {
 }
 
 body:has(.selecting) .controls-container [data-archive-multiple] {
+  display: block;
+}
+
+body:has(.selecting) .controls-container [data-ai-grade-selected] {
   display: block;
 }
 

@@ -482,6 +482,7 @@ try {
   document.querySelector('[data-archive-segment]')?.addEventListener("click", () => archiveModal('segment'));
   document.querySelector('[data-archive-multiple]')?.addEventListener("click", archiveMultipleModal);
   document.querySelector('[data-unarchive-multiple]')?.addEventListener("click", unarchiveMultipleModal);
+  document.querySelector('[data-ai-grade-selected]')?.addEventListener("click", aiGradeSelected);
   document.getElementById('filter-report-responses')?.addEventListener("input", updateSegments);
   document.getElementById('filter-report-responses')?.addEventListener("input", updateResponses);
   document.getElementById('filter-report-responses')?.addEventListener("input", updateQuestionReports);
@@ -3050,6 +3051,44 @@ try {
         if ((e.error === "Access denied.") || (e.message === "Access denied.")) return auth.admin(init);
         pollingOff();
       });
+  }
+
+  async function aiGradeSelected() {
+    if (!active) return;
+    const responseIds = [...new Set([...document.querySelectorAll('.responses .section .selected .response-id-input, .awaitingResponses .section .selected .response-id-input')]
+      .map(input => input.value)
+      .filter(Boolean))];
+    if (!responseIds.length) {
+      ui.toast("Select one or more responses.", 3000, "error", "bi bi-exclamation-triangle-fill");
+      return;
+    }
+    const button = document.querySelector('[data-ai-grade-selected]');
+    button?.setAttribute('disabled', '');
+    try {
+      const result = await fetch(domain + '/ai_grade_responses', {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          usr: storage.get("usr"),
+          pwd: storage.get("pwd"),
+          response_ids: responseIds,
+        }),
+      });
+      const payload = await result.json().catch(() => ({}));
+      if (!result.ok) throw new Error(payload.error || payload.message || "API error");
+      ui.toast(payload.message, 4000, "success", "bi bi-robot");
+      noReloadCourse = true;
+      keepSegment = document.querySelector(".filter-segment-input")?.value || null;
+      await init();
+    } catch (error) {
+      console.error(error);
+      ui.toast(error.message || "Unable to grade the selected responses.", 5000, "error", "bi bi-exclamation-triangle-fill");
+      if (error.message === "Access denied.") auth.admin(init);
+    } finally {
+      button?.removeAttribute('disabled');
+    }
   }
 
   function markIncorrect() {

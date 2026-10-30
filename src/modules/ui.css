@@ -272,7 +272,7 @@ div[data-color-input] > div[data-color-preview]:hover {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background-color: var(--background-color);
+  background-color: var(--surface-color);
   z-index: 9999;
   opacity: 0;
   transition: 0.5s opacity;
@@ -293,7 +293,7 @@ div[data-color-input] > div[data-color-preview]:hover {
   margin-bottom: -100px;
   width: 120px;
   height: 4px;
-  background: var(--surface-color);
+  background: var(--accent-color);
   border-radius: 2px;
   overflow: hidden;
   animation: fadeIn 0.5s ease-out 0.25s both;
@@ -302,7 +302,7 @@ div[data-color-input] > div[data-color-preview]:hover {
 .loader .loader-bar {
   height: 100%;
   width: 40%;
-  background: var(--accent-color);
+  background: var(--accent-text-color);
   border-radius: 2px;
   animation: loader-bar-back-forth 2s ease-in-out infinite;
 }
