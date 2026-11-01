@@ -666,7 +666,7 @@ label:has(i) {
 }
 
 .suggestion-message.admin {
-  border-left-color: var(--error-color);
+  border-left-color: var(--background-color);
 }
 
 .enhanced-card textarea {

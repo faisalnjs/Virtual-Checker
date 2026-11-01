@@ -140,6 +140,7 @@ dialog > button[data-logout],
 dialog > button[data-sync],
 dialog > button[data-welcome],
 dialog > button[data-report-bug],
+dialog > button[data-my-bug-reports],
 dialog > button[data-suggestions],
 dialog > button[data-my-suggestions] {
   text-align: unset;
