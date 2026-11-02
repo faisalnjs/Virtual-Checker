@@ -7,17 +7,20 @@ let dialog = null;
 let busy = false;
 let linked = [];
 const identity = () => JSON.stringify([storage.get('code'), storage.get('password')]);
+const validSeatCode = seatCode => /^[1-9][0-6][0-5]$/.test(String(seatCode || ''));
+const validAccounts = value => Array.isArray(value) ? value.filter(account => account && validSeatCode(account.seatCode)) : [];
 
 function accounts() {
   try {
     const value = JSON.parse(localStorage.getItem(accountKey) || '[]');
-    return Array.isArray(value) ? value.filter(item => /^[1-9][0-6][0-5]$/.test(item.seatCode) && (typeof item.password === 'string')) : [];
+    return Array.isArray(value) ? value.filter(item => item && validSeatCode(item.seatCode) && (typeof item.password === 'string')) : [];
   } catch {
     return [];
   }
 }
 
 function remember(info, password) {
+  if (!info || !validSeatCode(info.seatCode)) return;
   const saved = accounts().filter(item => item.seatCode !== info.seatCode);
   saved.push({ seatCode: info.seatCode, courses: info.courses, password: String(password) });
   localStorage.setItem(accountKey, JSON.stringify(saved));
@@ -36,6 +39,9 @@ function signInAgain() {
 async function switchAccount(seatCode, password) {
   const original = identity();
   const result = await auth.authenticateAccountSwitch(seatCode, password);
+  if (!result?.current || !result?.account || !validSeatCode(result.current.seatCode) || !validSeatCode(result.account.seatCode)) {
+    throw new Error('The seat code switcher returned an invalid account. Refresh and try again.');
+  }
   if (identity() !== original) throw new Error('The active account changed. Open Seat Code Switcher again.');
   if (ui.unsavedChanges && !window.confirm('Switch accounts and discard your unsaved work?')) return;
   remember(result.current, storage.get('password'));
@@ -111,7 +117,7 @@ function addAccount(seat = '', message = '') {
 function renderAccounts() {
   const list = dialog.querySelector('.account-switch-list');
   list.replaceChildren();
-  for (const account of linked) {
+  for (const account of validAccounts(linked)) {
     const row = document.createElement('div');
     row.className = 'button-grid';
     const current = account.seatCode === String(storage.get('code'));
@@ -158,7 +164,7 @@ function renderAccounts() {
         busy = true;
         const status = dialog.querySelector('.account-switch-status');
         try {
-          linked = await auth.linkedAccounts(account.seatCode);
+          linked = validAccounts(await auth.linkedAccounts(account.seatCode));
           localStorage.setItem(accountKey, JSON.stringify(accounts().filter(item => item.seatCode !== account.seatCode)));
           renderAccounts();
           status.textContent = '';
@@ -192,7 +198,7 @@ export async function openAccountSwitcher() {
   add.disabled = true;
   const original = identity();
   try {
-    linked = await auth.linkedAccounts();
+    linked = validAccounts(await auth.linkedAccounts());
     for (const saved of accounts()) {
       if (linked.some(account => account.seatCode === saved.seatCode)) continue;
       if (localStorage.getItem('virtual-accounts-migrated')) break;
@@ -202,7 +208,7 @@ export async function openAccountSwitcher() {
         if (error.account !== 'target') throw error;
       }
     }
-    linked = await auth.linkedAccounts();
+    linked = validAccounts(await auth.linkedAccounts());
     localStorage.setItem('virtual-accounts-migrated', 'true');
     if ((identity() !== original) || (dialog !== opened) || !opened.open) return;
     remember(linked.find(account => account.seatCode === String(storage.get('code'))), storage.get('password'));
