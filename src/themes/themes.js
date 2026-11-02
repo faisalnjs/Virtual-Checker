@@ -12,8 +12,6 @@ import * as auth from "/src/modules/auth.js";
 import Element from "/src/modules/element.js";
 import { syncPwaTheme } from "/src/modules/service-worker.js";
 
-import lipsky from "./lipsky/lipsky.webp";
-
 let selectedTheme = "";
 const defaultTheme = {
   "color-scheme": "light",
@@ -706,6 +704,114 @@ export function getCurrentTheme() {
   }
 }
 
+let balloonHueRotate = 0;
+
+export function showBirthday(birthday) {
+  const input = document.getElementById("birthday-input");
+  if (input) input.value = birthday || "";
+  const now = new Date();
+  const today = `${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+  if (birthday && (birthday.slice(5) === today)) {
+    const balloons = setInterval(() => {
+      const w = [15, 20, 22, 25, 30][Math.floor(Math.random() * 5)];
+      const startX = Math.random() * (window.innerWidth - w);
+      const duration = 10000 * (window.innerHeight / 1000);
+
+      const risingBalloon = document.createElement("img");
+      risingBalloon.className = "star";
+      risingBalloon.src = 'https://assets.vssfalcons.com/graphics/balloon.png';
+      risingBalloon.style.width = `${w}px`;
+      risingBalloon.style.position = "fixed";
+      risingBalloon.style.left = `${startX}px`;
+      risingBalloon.style.top = `100vh`;
+      risingBalloon.style.filter = `hue-rotate(${balloonHueRotate}deg)`;
+      document.body.append(risingBalloon);
+
+      risingBalloon.animate(
+        [
+          { transform: "translateY(0)" },
+          { transform: `translateY(-${window.innerHeight + 30}px)` },
+        ],
+        {
+          duration,
+          easing: "linear",
+        }
+      );
+
+      setTimeout(() => risingBalloon.remove(), duration);
+
+      let mouseX = window.innerWidth / 2;
+      let mouseY = window.innerHeight / 2;
+
+      window.addEventListener("pointermove", ev => {
+        mouseX = ev.clientX;
+        mouseY = ev.clientY;
+      });
+
+      const dodgeRadius = 100;
+      let currentX = startX;
+      const startTime = performance.now();
+
+      function dodgeLoop() {
+        const elapsed = performance.now() - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        const starY = window.innerHeight - progress * (window.innerHeight + 30);
+
+        const dx = (currentX + w / 2) - mouseX;
+        const dy = starY - mouseY;
+        const distance = Math.hypot(dx, dy);
+
+        if (distance < dodgeRadius) {
+          const direction = dx >= 0 ? 1 : -1;
+          const speed = ((dodgeRadius - distance) / dodgeRadius) * 5;
+          currentX = Math.min(
+            Math.max(currentX + direction * speed, 0),
+            window.innerWidth - w
+          );
+          risingBalloon.style.left = `${currentX}px`;
+        }
+
+        if (progress < 1) requestAnimationFrame(dodgeLoop);
+      }
+      requestAnimationFrame(dodgeLoop);
+    }, 700);
+    const stopBalloons = document.createElement("button");
+    stopBalloons.className = "icon";
+    stopBalloons.onclick = () => {
+      clearInterval(balloons);
+      stopBalloons.remove();
+    };
+    stopBalloons.innerHTML = '<i class="bi bi-cake2"></i>';
+    stopBalloons.setAttribute("tooltip", "Stop Balloons");
+    document.querySelector(".controls-container").appendChild(stopBalloons);
+  }
+}
+
+function hueRotationTo(sourceHex, targetHex) {
+  function hue(hex) {
+    const match = hex.replace(/^#/, "").match(/^([0-9a-f]{3}|[0-9a-f]{6})$/i);
+    if (!match) throw new Error(`Invalid hex color: ${hex}`);
+    let value = match[1];
+    if (value.length === 3) value = [...value].map(c => c + c).join("");
+    const [r, g, b] = value.match(/../g).map(c => parseInt(c, 16) / 255);
+    const max = Math.max(r, g, b);
+    const min = Math.min(r, g, b);
+    const delta = max - min;
+    if (delta === 0) return 0;
+    let h;
+    if (max === r) {
+      h = ((g - b) / delta) % 6;
+    } else if (max === g) {
+      h = (b - r) / delta + 2;
+    } else {
+      h = (r - g) / delta + 4;
+    }
+    return (h * 60 + 360) % 360;
+  }
+  const difference = ((hue(targetHex) - hue(sourceHex) + 540) % 360) - 180;
+  return difference;
+}
+
 try {
   initializeAutomaticThemeColors(updateColorizedTheme);
   themes.forEach((theme) => {
@@ -947,6 +1053,10 @@ try {
     updateControl();
   }
 
+  function updateBalloonHueRotate() {
+    balloonHueRotate = hueRotationTo("#ACE4E9", getCurrentTheme().accentColor);
+  }
+
   daily.initializeControls(document.querySelector(".controls-container"));
 
   const observer = new MutationObserver((mutationsList) => {
@@ -955,11 +1065,13 @@ try {
         updateAnimatedThemeVideo();
         updateThemeAudio();
         updateColorizedTheme();
+        updateBalloonHueRotate();
       }
     }
   });
   observer.observe(document.body, { attributes: true });
   updateThemeAudio();
+  updateBalloonHueRotate();
 
   if ((new Date().getMonth() === 9) && (new Date().getDate() === 20)) {
     const lipskys = setInterval(() => {
@@ -969,7 +1081,7 @@ try {
 
       const fallingLipsky = document.createElement("img");
       fallingLipsky.className = "star";
-      fallingLipsky.src = lipsky;
+      fallingLipsky.src = 'https://assets.vssfalcons.com/graphics/lipsky.png';
       fallingLipsky.style.width = `${w}px`;
       fallingLipsky.style.position = "fixed";
       fallingLipsky.style.left = `${startX}px`;
@@ -1044,7 +1156,7 @@ try {
         const width = [15, 20, 22, 25, 30][Math.floor(Math.random() * 5)];
         const fallingLipsky = document.createElement('img');
         fallingLipsky.className = 'star';
-        fallingLipsky.src = lipsky;
+        fallingLipsky.src = 'https://assets.vssfalcons.com/graphics/lipsky.png';
         fallingLipsky.style.width = `${width}px`;
         fallingLipsky.style.position = 'fixed';
         fallingLipsky.style.left = `${Math.random() * (window.innerWidth - width)}px`;

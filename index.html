@@ -367,6 +367,7 @@
     <img src="banner.png" alt="Virtual Checker Banner">
     <span class="version-string version"></span>
     <button data-modal-view="settings/code"><i class="bi bi-key"></i>Seat Code</button>
+    <button data-modal-view="settings/birthday"><i class="bi bi-cake2"></i>Birthday</button>
     <button data-modal-view="store"><i class="bi bi-shop-window"></i>Theme Store</button>
     <button data-modal-view="settings/keybinds"><i class="bi bi-keyboard"></i>Keyboard Shortcuts</button>
     <button data-modal-view="settings/reset"><i class="bi bi-arrow-counterclockwise"></i>Reset</button>
@@ -400,6 +401,13 @@
         <p>Where do you sit?</p>
         <p class="hint">Screen</p>
         <div class="seat-grid"></div>
+      </div>
+    </div>
+    <div data-modal-page="birthday" data-page-title="Birthday">
+      <label for="birthday-input">Birthday</label>
+      <input id="birthday-input" type="date" />
+      <div data-modal-actions>
+        <button id="save-birthday-button"><i class="bi bi-check-lg"></i>Save</button>
       </div>
     </div>
     <div data-modal-page="keybinds" data-page-title="Keyboard Shortcuts">
