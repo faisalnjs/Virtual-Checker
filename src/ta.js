@@ -128,6 +128,7 @@ try {
   }
 
   window.onerror = function (error, url, line) {
+    if (String(error).includes('ResizeObserver loop completed with undelivered notifications')) return true;
     ui.reportBugModal(null, `${String(error)} at ${url} line ${line}`);
   }
 } catch (error) {
