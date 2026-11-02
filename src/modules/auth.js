@@ -214,9 +214,10 @@ export async function sync(hideWelcome = true, returnFunction = null) {
             .then(async r => {
                 ui.stopLoader();
                 var password = storage.get("password");
+                const notifications = Array.isArray(r.notifications) ? r.notifications : [];
                 if (!hideWelcome) ui.toast("Welcome back!", 3000, "success", "bi bi-key");
-                ui.setNotifications(r.notifications);
-                if (r.notifications.length > 0) ui.toast(`You have ${r.notifications.length} unread notification${(r.notifications.length === 1) ? '' : 's'}.`, 5000, 'info', 'bi bi-bell-fill');
+                ui.setNotifications(notifications);
+                if (notifications.length > 0) ui.toast(`You have ${notifications.length} unread notification${(notifications.length === 1) ? '' : 's'}.`, 5000, 'info', 'bi bi-bell-fill');
                 const combinedSettings = sortKeys({
                     ...Object.fromEntries(
                         Object.entries(storage.all()).filter(([key]) => key !== "password" && key !== "code" && key !== "usr" && key !== "pwd" && key !== "history" && key !== "questionsAnswered" && key !== "developer" && key !== "cache" && key !== "lastBulkLoad" && key !== "adminCache" && key !== "lastAdminBulkLoad")
