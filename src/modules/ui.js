@@ -873,7 +873,7 @@ export async function launchWelcome(returnFunction = null) {
       <img src="../intro-step-5.gif" />
     </div>
     <div step="6">
-      <h4>See past attempts</h4>
+      <h4>View past attempts</h4>
       <img src="../intro-step-6.png" />
     </div>
     <div step="7">

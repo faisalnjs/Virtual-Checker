@@ -198,7 +198,6 @@ function decodeThemeCode(code) {
 }
 
 export function renderThemesGrid(originalTheme = null) {
-  alert(2)
   const themesGrid = document.querySelector(".welcome-container .themes-grid");
   console.log(themesGrid)
   if (!themesGrid) return;
