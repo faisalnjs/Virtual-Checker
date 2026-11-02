@@ -790,7 +790,7 @@ export function showBirthday(birthday) {
 function hueRotationTo(sourceHex, targetHex) {
   function hue(hex) {
     const match = hex.replace(/^#/, "").match(/^([0-9a-f]{3}|[0-9a-f]{6})$/i);
-    if (!match) throw new Error(`Invalid hex color: ${hex}`);
+    if (!match) return;
     let value = match[1];
     if (value.length === 3) value = [...value].map(c => c + c).join("");
     const [r, g, b] = value.match(/../g).map(c => parseInt(c, 16) / 255);
@@ -1211,7 +1211,7 @@ try {
   }
 
   function rotateHue(hex, deg) {
-    if (!/^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(hex)) throw new Error('Invalid hex color');
+    if (!/^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(hex)) return 0;
     if (hex.length === 4) hex = '#' + [...hex.slice(1)].map(ch => ch + ch).join('');
     const r = parseInt(hex.slice(1, 3), 16);
     const g = parseInt(hex.slice(3, 5), 16);
