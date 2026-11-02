@@ -1133,7 +1133,7 @@ export function reportBugModal(event = null, report = null) {
             const fields = {
               "entry.470737118": storage.get("code"),
               "entry.888169052": platform,
-              "entry.689497704": `${report ? '000' : storage.get("code")}:${description}`,
+              "entry.689497704": `${storage.get("code") || '000'}:${description}`,
             };
             const params = new URLSearchParams(fields).toString();
             const url = "https://docs.google.com/forms/d/e/1FAIpQLSdOO9-Y7IG-djY1MVFpr1qR5-vXw6asU--e61w9atFaRVOpNw/formResponse?";
