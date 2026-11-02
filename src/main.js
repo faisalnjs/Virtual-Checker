@@ -18,12 +18,14 @@ import * as ui from "/src/modules/ui.js";
 import storage from "/src/modules/storage.js";
 import Element from "/src/modules/element.js";
 import { initializeSuggestions } from "./modules/suggestions.js";
+import { initializeBugReports } from "./modules/bug-reports.js";
 import { registerServiceWorker } from "/src/modules/service-worker.js";
 
 try {
   const version = import.meta.env.PACKAGE_VERSION;
   registerServiceWorker(version);
   initializeSuggestions();
+  initializeBugReports();
 
   updateVersionString();
   function updateVersionString(beta = false) {

@@ -140,9 +140,20 @@ dialog > button[data-logout],
 dialog > button[data-sync],
 dialog > button[data-welcome],
 dialog > button[data-report-bug],
+dialog > button[data-my-bug-reports],
 dialog > button[data-suggestions],
 dialog > button[data-my-suggestions] {
   text-align: unset;
+}
+
+dialog[data-modal-page="settings"] button:not(.icon) {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+dialog[data-modal-page="settings"] > * button:not(.icon) {
+  justify-content: center;
 }
 
 div.modeless {
@@ -661,6 +672,14 @@ body:has(.welcome-container.active) {
 .welcome-container .layout-chooser .theme-preview.selected .control-placeholder.pill,
 .welcome-container .layout-chooser .theme-preview:hover .control-placeholder.pill {
   border-radius: 100vh;
+}
+
+.welcome-container img,
+.welcome-container picture,
+.welcome-container video,
+.welcome-container canvas,
+.welcome-container svg {
+  border-radius: 1rem;
 }
 
 @keyframes moveBefore {
@@ -1234,7 +1253,9 @@ body:has(.topbar) .checker.horizontal .column:last-child {
 [data-modal-page="store"]
   .themes-grid
   .theme-item
-  i:not(.bi-people-fill):not(.hd):not(.animated):not(.pattern):not(.colorized):not(.random):not(.audio) {
+  i:not(.bi-people-fill):not(.hd):not(.animated):not(.pattern):not(.colorized):not(.random):not(
+    .audio
+  ) {
   position: absolute;
   bottom: 10px;
   right: 20px;
@@ -1246,7 +1267,9 @@ body:has(.topbar) .checker.horizontal .column:last-child {
 [data-modal-page="store"]
   .themes-grid
   .theme-item:hover
-  i:not(.bi-people-fill):not(.hd):not(.animated):not(.pattern):not(.colorized):not(.random):not(.audio) {
+  i:not(.bi-people-fill):not(.hd):not(.animated):not(.pattern):not(.colorized):not(.random):not(
+    .audio
+  ) {
   opacity: 1;
   transition: opacity 0.25s ease-in-out;
 }

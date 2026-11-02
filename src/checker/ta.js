@@ -1254,13 +1254,15 @@ try {
 
   function markIncorrect() {
     if (!active) return;
+    const response = responses.find(r => String(r.id) === this.parentElement.querySelector('.response-id-input').value);
+    const previousReason = (Object.keys(lastMarkedQuestion).length && (String(lastMarkedQuestion.question_id) === this.parentElement.querySelector('.response-question-id-input').value)) ? lastMarkedQuestion.reason : '';
     ui.modal({
       title: 'Add Reason',
       body: '<p>Add a reason that this response is incorrect.</p>',
       input: {
         type: 'text',
         placeholder: 'Take the derivative of x^2 before multiplying.',
-        defaultValue: (Object.keys(lastMarkedQuestion).length && (String(lastMarkedQuestion.question_id) === this.parentElement.querySelector('.response-question-id-input').value)) ? lastMarkedQuestion.reason : '',
+        defaultValue: response?.likely_incorrect_reason || previousReason,
         selectAll: true,
       },
       buttons: [

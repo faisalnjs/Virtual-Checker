@@ -92,3 +92,18 @@ export async function notifySuggestionResponses(count, seatCode) {
   });
   return true;
 }
+
+export async function notifyBugReportReplies(count, seatCode) {
+  if (localStorage.getItem("suggestion-notifications-disabled") === "true") return false;
+  if (!count || !window.isSecureContext || !("Notification" in window) || !("serviceWorker" in navigator) || (Notification.permission !== "granted")) return false;
+  const registration = await navigator.serviceWorker.getRegistration();
+  if (!registration?.active || (typeof registration.showNotification !== "function")) return false;
+  if (await registration.pushManager?.getSubscription()) return true;
+  await registration.showNotification("Reply to bug report", {
+    body: `${count} bug report${count === 1 ? ' has' : 's have'} a new reply. Open My Bug Reports to read it.`,
+    icon: "/banner-meta.png", badge: "/favicon.ico",
+    tag: `bug-report-replies-${seatCode}`,
+    data: { url: "/#bug-reports", type: "bugs" },
+  });
+  return true;
+}

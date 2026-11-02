@@ -873,7 +873,7 @@ export async function launchWelcome(returnFunction = null) {
       <img src="../intro-step-5.gif" />
     </div>
     <div step="6">
-      <h4>See past attempts</h4>
+      <h4>View past attempts</h4>
       <img src="../intro-step-6.png" />
     </div>
     <div step="7">
@@ -1082,6 +1082,7 @@ export function reportBugModal(event = null, report = null) {
   }
   if (report) toast('A bug was detected, please report it.', 10000, 'error', 'bi bi-bug-fill');
   view();
+  let submitting = false;
   modal({
     title: 'Report Bug',
     body: '<p>Report a bug with the Virtual Checker or internal APIs.</p>',
@@ -1117,15 +1118,25 @@ export function reportBugModal(event = null, report = null) {
         text: 'Submit',
         icon: 'bi-bug-fill',
         class: 'submit-button',
-        onclick: (inputValues) => {
+        onclick: async (inputValues) => {
+          if (submitting) return;
+          submitting = true;
+          const platform = String(inputValues[0]);
+          const description = String(inputValues[1] ?? '').trim();
+          let saved = false;
           try {
+            if (storage.get('code') && storage.get('password')) {
+              await auth.suggestionRequest('/bug_reports', { platform, report: description });
+              saved = true;
+              window.dispatchEvent(new Event('bug-reports-updated'));
+            }
             const fields = {
               "entry.470737118": storage.get("code"),
-              "entry.888169052": inputValues[0],
-              "entry.689497704": `${report ? '000' : storage.get("code")}:${inputValues[1]}`,
+              "entry.888169052": platform,
+              "entry.689497704": `${report ? '000' : storage.get("code")}:${description}`,
             };
             const params = new URLSearchParams(fields).toString();
-            const url = "https://docsd.google.com/forms/d/e/1FAIpQLSdOO9-Y7IG-djY1MVFpr1qR5-vXw6asU--e61w9atFaRVOpNw/formResponse?";
+            const url = "https://docs.google.com/forms/d/e/1FAIpQLSdOO9-Y7IG-djY1MVFpr1qR5-vXw6asU--e61w9atFaRVOpNw/formResponse?";
             fetch(url + params, {
               method: "POST",
               mode: "no-cors",
@@ -1133,9 +1144,11 @@ export function reportBugModal(event = null, report = null) {
                 "Content-Type": "application/x-www-form-urlencoded",
               },
             });
-            toast('Bug report submitted successfully. Thank you!', 5000, 'success', 'bi bi-check-circle-fill');
+            toast(saved ? 'Bug report saved! View replies in My Bug Reports.' : 'Bug report submitted successfully. Thank you!', 5000, 'success', 'bi bi-check-circle-fill');
           } catch (e) {
             toast('Failed to submit bug report. Please try again later.', 5000, 'error', 'bi bi-x-circle-fill');
+          } finally {
+            submitting = false;
           }
         },
         close: true,

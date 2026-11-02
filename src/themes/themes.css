@@ -1169,6 +1169,7 @@ body[data-theme="dune-2"] .header > .virtual-checker-logo {
   --accent-text-color: #020101;
   --error-color: #ff855e;
   background: url(https://assets.vssfalcons.com/store/backdrop/bats.png) !important;
+  background-size: 300px !important;
   background-repeat: repeat !important;
   background-attachment: fixed !important;
 }
@@ -1182,6 +1183,7 @@ body[data-theme="dune-2"] .header > .virtual-checker-logo {
   --accent-text-color: #fff;
   --error-color: #b6440e;
   background: url(https://assets.vssfalcons.com/store/backdrop/spider-webs.png) !important;
+  background-size: 300px !important;
   background-repeat: repeat !important;
   background-attachment: fixed !important;
 }

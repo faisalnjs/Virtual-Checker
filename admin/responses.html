@@ -271,18 +271,18 @@
   <dialog data-modal-page="settings" data-page-title="Settings">
     <img src="../banner.png" alt="Virtual Checker Banner">
     <span class="version-string version"></span>
-    <button data-modal-view="settings/keybinds">Keyboard Shortcuts</button>
-    <button data-modal-view="settings/reset">Reset</button>
-    <button data-modal-view="settings/credits">Credits</button>
-    <button data-modal-view="settings/admin">Admin Settings</button>
-    <button data-report-bug>Report Bug</button>
-    <button data-suggestions>Make Suggestion</button>
-    <button data-logout>Log Out</button>
+    <button data-modal-view="settings/keybinds"><i class="bi bi-keyboard"></i>Keyboard Shortcuts</button>
+    <button data-modal-view="settings/reset"><i class="bi bi-arrow-counterclockwise"></i>Reset</button>
+    <button data-modal-view="settings/credits"><i class="bi bi-people"></i>Credits</button>
+    <button data-modal-view="settings/admin"><i class="bi bi-gear"></i>Admin Settings</button>
+    <button data-report-bug><i class="bi bi-bug"></i>Report Bug</button>
+    <button data-suggestions><i class="bi bi-chat-left-quote"></i>Make Suggestion</button>
+    <button data-logout><i class="bi bi-box-arrow-right"></i>Log Out</button>
     <div data-modal-page="code" data-page-title="Seat Code">
       <input type="text" inputmode="numeric" placeholder="000" maxlength="3" class="code-input" />
-      <button data-modal-view="settings/code/help">Need help?</button>
+      <button data-modal-view="settings/code/help"><i class="bi bi-question-circle"></i>Need help?</button>
       <div data-modal-actions>
-        <button class="save-code-button">Save</button>
+        <button class="save-code-button"><i class="bi bi-check-lg"></i>Save</button>
       </div>
       <div data-modal-page="help" data-page-title="Seat Code Finder">
         <label for="admin-responses-period-input">Period</label>
@@ -321,9 +321,9 @@
       <p><kbd>Ctrl</kbd> + <kbd>s</kbd> Open Make Suggestion</p>
     </div>
     <div data-modal-page="reset" data-page-title="Reset">
-      <button data-reset="all">Reset All Settings</button>
-      <button data-reset="cache">Force Reset Cache</button>
-      <button onclick="window.open('/resetcookies')">How To Reset Cookies</button>
+      <button data-reset="all"><i class="bi bi-arrow-counterclockwise"></i>Reset All Settings</button>
+      <button data-reset="cache"><i class="bi bi-arrow-counterclockwise"></i>Force Reset Cache</button>
+      <button onclick="window.open('/resetcookies')"><i class="bi bi-browser-edge"></i>How To Reset Cookies</button>
     </div>
     <div data-modal-page="credits" data-page-title="Credits">
       <img src="../banner.png" alt="Virtual Checker Banner">
@@ -361,7 +361,7 @@
         <option value="order">In Order</option>
       </select>
       <div data-modal-actions>
-        <button class="save-admin-settings submit-button">Save</button>
+        <button class="save-admin-settings submit-button"><i class="bi bi-check-lg"></i>Save</button>
       </div>
     </div>
   </dialog>

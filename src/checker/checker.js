@@ -530,6 +530,7 @@ try {
     courses = bulkLoad.courses;
     segmentsArray = bulkLoad.segments;
     questionsArray = bulkLoad.questions;
+    themes.showBirthday(bulkLoad.birthday);
     const course = courses.find(c => JSON.parse(c.periods).includes(Number(code.slice(0, 1))));
     if (course) {
       ui.view();
@@ -1905,6 +1906,22 @@ try {
       }),
     });
   }
+
+  async function saveBirthday() {
+    const birthday = document.getElementById("birthday-input").value;
+    const response = await fetch(`${domain}/birthday`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ usr: storage.get("code"), pwd: storage.get("password"), birthday }),
+    });
+    if (!response.ok) throw new Error("Unable to save birthday.");
+    ui.view("");
+    ui.toast("Birthday saved.", 3000, "success", "bi bi-check-lg");
+  }
+
+  document.getElementById("save-birthday-button")?.addEventListener("click", () => {
+    saveBirthday().catch(() => ui.view("api-fail"));
+  });
 } catch (error) {
   if (storage.get("developer")) {
     alert(`Error @ clicker.js: ${error.message}`);

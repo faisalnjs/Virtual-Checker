@@ -79,12 +79,12 @@ self.addEventListener('notificationclick', (event) => {
     const allClients = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
     const matchingClient = allClients.find((client) => {
       const url = new URL(client.url);
-      return (url.origin === self.location.origin) && (!['suggestions', 'feedback', 'segment_due'].includes(event.notification?.data?.type) || ['/', '/index.html'].includes(url.pathname));
+      return (url.origin === self.location.origin) && (!['suggestions', 'bugs', 'feedback', 'segment_due'].includes(event.notification?.data?.type) || ['/', '/index.html'].includes(url.pathname));
     });
     if (matchingClient) {
       await matchingClient.focus();
-      if (['suggestions', 'feedback'].includes(event.notification?.data?.type)) {
-        matchingClient.postMessage({ type: event.notification.data.type === 'feedback' ? 'open-feedback' : 'open-suggestions', seatCode: event.notification.data.seatCode });
+      if (['suggestions', 'bugs', 'feedback'].includes(event.notification?.data?.type)) {
+        matchingClient.postMessage({ type: event.notification.data.type === 'feedback' ? 'open-feedback' : event.notification.data.type === 'bugs' ? 'open-bug-reports' : 'open-suggestions', seatCode: event.notification.data.seatCode });
         return;
       }
       if ('navigate' in matchingClient) await matchingClient.navigate(targetUrl);
@@ -124,18 +124,19 @@ self.addEventListener('push', event => {
     } catch {
       return;
     }
-    if (!['suggestions', 'feedback', 'segment_due'].includes(payload?.type)) return;
+    if (!['suggestions', 'bugs', 'feedback', 'segment_due'].includes(payload?.type)) return;
     const feedback = payload.type === 'feedback';
+    const bug = payload.type === 'bugs';
     const reminder = payload.type === 'segment_due';
     const feedbackBody = (typeof payload.body === 'string' && payload.body.trim()) || 'Your response has been reviewed. Open History to see the feedback.';
-    await self.registration.showNotification(reminder ? 'Segment due soon' : feedback ? 'Question feedback' : 'Reply to suggestion', {
-      body: `Seat ${payload.seatCode}: ` + (reminder ? ((typeof payload.body === 'string' && payload.body.trim()) || 'You have an unfinished segment due in 2 hours.') : feedback ? feedbackBody : 'Your suggestion has been replied to. Open My Suggestions to read it.'),
+    await self.registration.showNotification(reminder ? 'Segment due soon' : feedback ? 'Question feedback' : bug ? 'Reply to bug report' : 'Reply to suggestion', {
+      body: `Seat ${payload.seatCode}: ` + (reminder ? ((typeof payload.body === 'string' && payload.body.trim()) || 'You have an unfinished segment due in 2 hours.') : feedback ? feedbackBody : bug ? 'Your bug report has been replied to. Open My Bug Reports to read it.' : 'Your suggestion has been replied to. Open My Suggestions to read it.'),
       icon: '/banner-meta.png', badge: '/favicon.ico',
-      tag: `${reminder ? 'segment-due' : feedback ? 'response-feedback' : 'suggestion-responses'}-${payload.seatCode}${reminder ? `-${payload.segmentId}` : feedback && payload.responseId ? `-${payload.responseId}` : ''}`,
-      data: { type: payload.type, url: reminder ? `/#segment-${encodeURIComponent(payload.segmentId)}` : feedback ? '/#history' : '/#suggestions', seatCode: payload.seatCode },
+      tag: `${reminder ? 'segment-due' : feedback ? 'response-feedback' : bug ? 'bug-report-replies' : 'suggestion-responses'}-${payload.seatCode}${reminder ? `-${payload.segmentId}` : feedback && payload.responseId ? `-${payload.responseId}` : ''}`,
+      data: { type: payload.type, url: reminder ? `/#segment-${encodeURIComponent(payload.segmentId)}` : feedback ? '/#history' : bug ? '/#bug-reports' : '/#suggestions', seatCode: payload.seatCode },
     });
     if (reminder) return;
     const clients = await self.clients.matchAll({ type: 'window' });
-    clients.forEach(client => client.postMessage({ type: feedback ? 'feedback-updated' : 'suggestions-updated', seatCode: payload.seatCode }));
+    clients.forEach(client => client.postMessage({ type: feedback ? 'feedback-updated' : bug ? 'bug-reports-updated' : 'suggestions-updated', seatCode: payload.seatCode }));
   })());
 });

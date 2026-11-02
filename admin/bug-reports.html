@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bug Reports - Virtual Checker</title>
+</head>
+<body class="col">
+  <div class="header"><div class="info"><h1>Virtual Checker</h1><button class="icon menu" data-modal-view="menu" tooltip="Menu" reverse><i class="bi bi-list"></i></button></div></div>
+  <main class="checker">
+    <section class="section">
+      <h1>Bug Reports</h1>
+      <div class="button-grid inputs">
+        <div class="input-group small"><label for="bug-reports-seat">Seat</label><div class="question-container space"><input id="bug-reports-seat" type="text" inputmode="numeric" autocomplete="off" placeholder="311" maxlength="3" /></div></div>
+        <div class="input-group"><label for="bug-reports-platform">Type</label><div class="question-container space"><select id="bug-reports-platform"><option value="">All</option><option>Virtual Checker</option><option>Virtual Clicker</option><option>Homework Checker (API)</option></select></div></div>
+        <div class="input-group"><label for="bug-reports-response">Status</label><div class="question-container space"><select id="bug-reports-response"><option value="">All</option><option value="unanswered">Awaiting response</option><option value="answered">Answered</option></select></div></div>
+        <button square data-refresh-bug-reports tooltip="Refresh Bug Reports"><i class="bi bi-arrow-clockwise"></i></button>
+      </div>
+      <p id="bug-reports-status" class="suggestions-status" role="status"></p>
+      <p id="bug-reports-count"></p>
+      <div id="bug-reports-grid" class="enhanced-grid"></div>
+    </section>
+  </main>
+  <div class="controls-container pill"><a class="icon" href="/admin/suggestions" tooltip="Suggestions"><i class="bi bi-chat-left-quote"></i></a></div>
+  <dialog data-modal-page="menu" data-page-title="Virtual Checker"><div class="menu-icons"><a href="/admin/suggestions" tooltip="Suggestions"><i class="bi bi-chat-left-quote"></i></a><a href="/admin/bug-reports" class="active" tooltip="Bug Reports"><i class="bi bi-bug"></i></a><a href="/" tooltip="Exit"><i class="bi bi-door-open"></i></a></div></dialog>
+  <div class="loader active"></div>
+  <script src="../src/admin-bug-reports.js" type="module"></script>
+</body>
+</html>
