@@ -6,6 +6,7 @@ import { moveFromCurrent, renderExtras } from "/src/modules/island.js";
 
 try {
   document.addEventListener("keydown", async (e) => {
+    if (!e.key) return;
     const anyDialogOpen = Array.from(document.querySelectorAll("dialog")).some(
       (dialog) => dialog.open,
     );
@@ -15,23 +16,23 @@ try {
     const isWelcomeActive = document.querySelector('.welcome-container');
     const zoomOverlay = document.querySelector('.medium-zoom-overlay');
     if (e.ctrlKey) {
-      if (e.key == "Enter" && !anyDialogOpen) {
+      if ((e.key == "Enter") && !anyDialogOpen) {
         e.preventDefault();
         document.getElementById("submit-button")?.click();
       }
-      if (e.key == "," && !anyDialogOpen) {
+      if ((e.key == ",") && !anyDialogOpen) {
         e.preventDefault();
         ui.view("settings");
       }
-      if (e.key == "." && !anyDialogOpen) {
+      if ((e.key == ".") && !anyDialogOpen) {
         e.preventDefault();
         ui.view("history");
       }
-      if (e.key == "/" && !anyDialogOpen) {
+      if ((e.key == "/") && !anyDialogOpen) {
         e.preventDefault();
         ui.view("settings/keybinds");
       }
-      if (e.key == "s" && !anyDialogOpen) {
+      if ((e.key == "s") && !anyDialogOpen) {
         if (document.querySelector('[data-speed]')) {
           e.preventDefault();
           document.querySelector('[data-speed]').click();
@@ -40,15 +41,15 @@ try {
           ui.suggestionsModal();
         }
       }
-      if (e.key == "i" && !anyDialogOpen) {
+      if ((e.key == "i") && !anyDialogOpen) {
         e.preventDefault();
         ui.launchWelcome();
       }
-      if (e.key == "ArrowLeft" && document.querySelector('[data-prev-question]')) {
+      if ((e.key == "ArrowLeft") && document.querySelector('[data-prev-question]')) {
         e.preventDefault();
         document.querySelector('[data-prev-question]').click();
       }
-      if (e.key == "ArrowRight" && document.querySelector('[data-next-question]')) {
+      if ((e.key == "ArrowRight") && document.querySelector('[data-next-question]')) {
         e.preventDefault();
         document.querySelector('[data-next-question]').click();
       }

@@ -310,9 +310,7 @@ try {
 
   // Prevent MathLive default behavior
   mf?.addEventListener("keydown", (e) => {
-    if (e.ctrlKey && e.key == "Enter") {
-      e.preventDefault();
-    }
+    if (e.ctrlKey && e.key && (e.key == "Enter")) e.preventDefault();
   });
 
   // Reset inputs to default state
@@ -444,6 +442,7 @@ try {
 
   // Save seat code on enter
   document.querySelector(".code-input")?.addEventListener("keydown", (e) => {
+    if (!e.key) return;
     if (e.key == "Enter") {
       e.preventDefault();
       setTimeout(() => {
@@ -1749,6 +1748,7 @@ try {
   }
 
   document.getElementById('matrix')?.addEventListener('keydown', event => {
+    if (!event.key) return;
     const cell = event.target;
     if (!(cell instanceof HTMLInputElement) || !cell.matches('[data-matrix-column]')) return;
     const rows = [...document.querySelectorAll('#matrix [data-matrix-row]')];

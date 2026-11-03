@@ -174,6 +174,7 @@ try {
 
   // Save seat code on enter
   document.querySelector(".code-input")?.addEventListener("keydown", (e) => {
+    if (!e.key) return;
     if (e.key == "Enter") {
       e.preventDefault();
       setTimeout(() => {
@@ -831,7 +832,7 @@ try {
     const normalResponses = [];
     const responsesBySeat = new Map();
     for (const r of responses1) {
-      if (r.status === 'Invalid Format' || r.status === 'Unknown, Recorded') {
+      if ((r.status === 'Invalid Format') || (r.status === 'Unknown, Recorded')) {
         awaitingResponses.push(r);
       } else {
         normalResponses.push(r);

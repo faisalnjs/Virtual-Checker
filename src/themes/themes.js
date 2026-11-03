@@ -916,9 +916,8 @@ try {
 
   document.getElementById("theme-code")?.addEventListener("blur", validateThemeCode);
   document.getElementById("theme-code")?.addEventListener("keydown", (e) => {
-    if (e.key == "Enter") {
-      validateThemeCode();
-    }
+    if (!e.key) return;
+    if (e.key == "Enter") validateThemeCode();
   });
 
   // Load theme editor
@@ -1148,7 +1147,7 @@ try {
   } else {
     let typed = '';
     window.addEventListener('keydown', event => {
-      if ((event.key.length !== 1) || event.ctrlKey || event.metaKey || event.altKey) return;
+      if (!event.key || (event.key.length !== 1) || event.ctrlKey || event.metaKey || event.altKey) return;
       typed = `${typed}${event.key}`.slice(-6).toLowerCase();
       if (typed !== 'lipsky') return;
       typed = '';
