@@ -945,10 +945,10 @@ try {
 
             if ($hideIncorrect?.checked) {
               const correctIds = new Set(resp.filter(r => r.status === 'Correct').map(r => `${r.question_id}|${r.seatCode}`));
-              resp = resp.filter(r => r.status === 'Correct' || !correctIds.has(`${r.question_id}|${r.seatCode}`));
+              resp = resp.filter(r => (r.status === 'Correct') || !correctIds.has(`${r.question_id}|${r.seatCode}`));
             }
             const filterMode = $filterReport?.getAttribute('data-value');
-            if (filterMode === 'first' || filterMode === 'last') {
+            if ((filterMode === 'first') || (filterMode === 'last')) {
               const map = new Map();
               resp.forEach(r => {
                 const key = `${r.seatCode}|${r.question_id}`;
@@ -956,7 +956,7 @@ try {
                 if (!cur) {
                   map.set(key, r);
                 } else {
-                  if ((filterMode === 'first' && r.id < cur.id) || (filterMode === 'last' && r.id > cur.id)) map.set(key, r);
+                  if (((filterMode === 'first') && r.id < cur.id) || ((filterMode === 'last') && r.id > cur.id)) map.set(key, r);
                 }
               });
               resp = Array.from(map.values());
@@ -964,7 +964,7 @@ try {
             const sortMode = $sortReport?.getAttribute('data-value');
             if (sortMode === 'seatCode') {
               resp.sort((a, b) => a.seatCode - b.seatCode);
-            } else if (sortMode === 'studentName' && $useRoster?.checked) {
+            } else if ((sortMode === 'studentName') && $useRoster?.checked) {
               resp.sort((a, b) => {
                 const getName = seat => {
                   const period = Number(String(seat)[0]);
@@ -980,7 +980,7 @@ try {
           });
           let total = segmentResponses.length || 1;
           let unansweredStudentsCount = 0;
-          if ($useRoster?.checked && $filterReport?.getAttribute('data-value') !== 'all' && !$hideUnanswered?.checked) {
+          if ($useRoster?.checked && ($filterReport?.getAttribute('data-value') !== 'all') && !$hideUnanswered?.checked) {
             const totalRosterStudents = new Set();
             Object.values(rosterByPeriod).forEach(roster => {
               JSON.parse(roster.data).forEach(st => totalRosterStudents.add(Number(st.seatCode)));
@@ -2390,7 +2390,7 @@ try {
     const normalResponses = [];
     const responsesBySeat = new Map();
     for (const r of responses1) {
-      if (r.status === 'Invalid Format' || r.status === 'Unknown, Recorded') {
+      if ((r.status === 'Invalid Format') || (r.status === 'Unknown, Recorded')) {
         awaitingResponses.push(r);
       } else {
         normalResponses.push(r);
@@ -2664,7 +2664,7 @@ try {
           seatResponses = seatResponses.filter(r => {
             const key = `${r.question_id}`;
             if (r.status === 'Correct') seenCorrect.add(key);
-            return r.status === 'Correct' || !seenCorrect.has(key);
+            return (r.status === 'Correct') || !seenCorrect.has(key);
           });
         }
         if (filterVal === 'first') {
@@ -2690,7 +2690,7 @@ try {
           correct: seatResponses.filter(r => r.status === 'Correct').length,
           incorrect: seatResponses.filter(r => r.status === 'Incorrect').length,
           waiting: seatResponses.filter(r => r.status.includes('Recorded')).length,
-          other: seatResponses.filter(r => r.status !== 'Correct' && r.status !== 'Incorrect' && !r.status.includes('Recorded')).length
+          other: seatResponses.filter(r => (r.status !== 'Correct') && (r.status !== 'Incorrect') && !r.status.includes('Recorded')).length
         };
         const barHTML = `
             <b>${document.getElementById('useRoster')?.checked ?
@@ -3827,10 +3827,10 @@ try {
               .filter(r => r.status === 'Correct')
               .map(r => r.question_id)
           );
-          qResponses = qResponses.filter(r => r.status === 'Correct' || !hasCorrect.has(r.question_id));
+          qResponses = qResponses.filter(r => (r.status === 'Correct') || !hasCorrect.has(r.question_id));
         }
         const mode = responseFilterMode();
-        if (mode === 'first' || mode === 'last') {
+        if ((mode === 'first') || (mode === 'last')) {
           const map = new Map();
           for (const r of qResponses) {
             const key = `${r.seatCode}|${r.question_id}`;
@@ -3838,7 +3838,7 @@ try {
             if (!cur) {
               map.set(key, r);
             } else {
-              const replace = (mode === 'first' && r.id < cur.id) || (mode === 'last' && r.id > cur.id);
+              const replace = ((mode === 'first') && r.id < cur.id) || ((mode === 'last') && r.id > cur.id);
               if (replace) map.set(key, r);
             }
           }
@@ -3913,7 +3913,7 @@ try {
         }
         const totalResponses = qResponses.length || 1;
         let unansweredStudents = 0;
-        if (useRosterChecked() && filterReportBtn?.getAttribute('data-value') !== 'all' && !hideUnansweredChk?.checked) {
+        if (useRosterChecked() && (filterReportBtn?.getAttribute('data-value') !== 'all') && !hideUnansweredChk?.checked) {
           const rostersInCourse = rosters.filter(r => currentCourse?.periods.includes(r.period));
           const allSeatCodes = [...new Set(rostersInCourse.flatMap(r => JSON.parse(r.data).map(s => Number(s.seatCode))))];
           if (allSeatCodes.length) {
@@ -3925,7 +3925,7 @@ try {
         const correctCnt = qResponses.filter(r => r.status === 'Correct').length;
         const incorrectCnt = qResponses.filter(r => r.status === 'Incorrect').length;
         const waitingCnt = qResponses.filter(r => r.status.includes('Recorded')).length;
-        const otherCnt = qResponses.filter(r => r.status !== 'Correct' && r.status !== 'Incorrect' && !r.status.includes('Recorded')).length + unansweredStudents;
+        const otherCnt = qResponses.filter(r => (r.status !== 'Correct') && (r.status !== 'Incorrect') && !r.status.includes('Recorded')).length + unansweredStudents;
         const barHTML = `
           <div class="barcount-wrapper">
             ${correctCnt ? `<div class="barcount correct" style="width:calc(${correctCnt / total}*100%)">${correctCnt}</div>` : ''}
@@ -3988,10 +3988,10 @@ try {
         questionResponses.forEach(r => {
           if (r.status === 'Correct') hasCorrect.add(r.question_id);
         });
-        questionResponses = questionResponses.filter(r => r.status === 'Correct' || !hasCorrect.has(r.question_id));
+        questionResponses = questionResponses.filter(r => (r.status === 'Correct') || !hasCorrect.has(r.question_id));
       }
       const filterMode = $responseFilterSel?.getAttribute('data-value');
-      if (filterMode === 'first' || filterMode === 'last') {
+      if ((filterMode === 'first') || (filterMode === 'last')) {
         const map = new Map();
         questionResponses.forEach(r => {
           const key = `${r.seatCode}|${r.question_id}`;
@@ -3999,7 +3999,7 @@ try {
           if (!existing) {
             map.set(key, r);
           } else {
-            const better = filterMode === 'first' ? r.id < existing.id ? r : existing : r.id > existing.id ? r : existing;
+            const better = (filterMode === 'first') ? r.id < existing.id ? r : existing : r.id > existing.id ? r : existing;
             map.set(key, better);
           }
         });
@@ -4170,7 +4170,7 @@ try {
       }
       if (sortMode === 'seatCode') {
         qResponses.sort((a, b) => a.seatCode - b.seatCode);
-      } else if (sortMode === 'studentName' && useRoster) {
+      } else if ((sortMode === 'studentName') && useRoster) {
         const rosterCache = new Map();
         qResponses.sort((a, b) => {
           const periodA = Number(String(a.seatCode)[0]);
@@ -4190,7 +4190,7 @@ try {
       }
       let total = qResponses.length || 1;
       let unanswered = 0;
-      if (useRoster && reportMode !== 'all' && !hideUnanswered) {
+      if (useRoster && (reportMode !== 'all') && !hideUnanswered) {
         const coursePeriods = new Set(JSON.parse(courses.find(c => String(c.id) === courseInput?.value)?.periods).map(Number));
         const relevantRosters = rosters.filter(r => coursePeriods.has(r.period));
         const allStudents = new Set(relevantRosters.flatMap(r => JSON.parse(r.data).map(s => Number(s.seatCode))));
@@ -4201,7 +4201,7 @@ try {
         }
       }
       const correct = qResponses.filter(r => r.status === 'Correct').length;
-      const other = qResponses.filter(r => r.status !== 'Correct' && r.status !== 'Incorrect' && !r.status.includes('Recorded')).length;
+      const other = qResponses.filter(r => (r.status !== 'Correct') && (r.status !== 'Incorrect') && !r.status.includes('Recorded')).length;
       const waiting = qResponses.filter(r => r.status.includes('Recorded')).length;
       const incorrect = qResponses.filter(r => r.status === 'Incorrect').length;
       const bar = (cls, count) => count ? `<div class="barcount ${cls}" style="width: calc(${count / total} * 100%)">${count}</div>` : '';

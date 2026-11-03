@@ -59,7 +59,7 @@ export default function spawnIsland(element = null, source = null, dataType = 'q
     island.setAttribute('sourceid', String(data.sourceId || ''));
     function _getItemKey(it) {
         if (!it) return '';
-        if (typeof it === 'string' || typeof it === 'number') return String(it);
+        if ((typeof it === 'string') || (typeof it === 'number')) return String(it);
         return String(it.id ?? it.number ?? it.name ?? it.period ?? '');
     }
     var sourceSignature = '';
@@ -125,7 +125,7 @@ export default function spawnIsland(element = null, source = null, dataType = 'q
             if (data.id) html += `<code>${escapeHTML(String(data.id))}</code>`;
             if (data.title) html += `<h4>${escapeHTML(String(data.title))}</h4>`;
             if (data.subtitle) html += `<h6>${data.subtitleLatex ? convertLatexToMarkup(String(data.subtitle)) : escapeHTML(String(data.subtitle))}</h6>`;
-            if ((dataType === 'response' || dataType === 'question') && source2 && Array.isArray(source2)) {
+            if (((dataType === 'response') || (dataType === 'question')) && source2 && Array.isArray(source2)) {
                 try {
                     var qId = String(data.id || '').match(/ID\s*(\d+)/) ? String(data.id || '').match(/ID\s*(\d+)/)[1] : (data.sourceId || null);
                     if (qId) {

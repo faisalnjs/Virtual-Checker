@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite --host",
-    "build": "node build.mjs",
+    "build": "vite build",
     "preview": "vite preview"
   },
   "repository": {

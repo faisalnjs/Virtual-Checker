@@ -12,6 +12,7 @@ class Autocomplete {
     this.suggestion = suggestion;
 
     this.input.addEventListener("keydown", (e) => {
+      if (!e.key) return;
       if (e.key == "Tab" && this.matches.length != 0) {
         e.preventDefault();
         e.target.setRangeText(symbols[this.matches[0]], this.#start, this.#end, "end");

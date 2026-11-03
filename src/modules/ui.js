@@ -246,9 +246,8 @@ export function modal(options) {
     });
 
     document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape") {
-        closeModal();
-      }
+      if (!e.key) return;
+      if (e.key === "Escape") closeModal();
     });
   }
 
@@ -585,15 +584,15 @@ document.querySelectorAll("[data-color-input]").forEach((element) => {
   colorPicker.addEventListener("input", update);
   colorCode.addEventListener("blur", validate);
   colorCode.addEventListener("keydown", (e) => {
-    if (e.key == "Enter") {
-      validate();
-    }
+    if (!e.key) return;
+    if (e.key == "Enter") validate();
   });
   colorPreview.addEventListener("click", () => {
     colorPicker.focus();
   });
   colorPreview.addEventListener("keydown", (e) => {
-    if (e.key == " " || e.key == "Enter") {
+    if (!e.key) return;
+    if ((e.key == " ") || (e.key == "Enter")) {
       e.preventDefault();
       colorPicker.focus();
     }
@@ -806,9 +805,8 @@ export function expandMatrix(matrixString) {
   });
 
   document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") {
-      closeModal();
-    }
+    if (!e.key) return;
+    if (e.key === "Escape") closeModal();
   });
 
   function closeModal() {

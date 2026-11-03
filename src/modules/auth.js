@@ -222,16 +222,16 @@ export async function sync(hideWelcome = true, returnFunction = null) {
                 if (notifications.length > 0) ui.toast(`You have ${notifications.length} unread notification${(notifications.length === 1) ? '' : 's'}.`, 5000, 'info', 'bi bi-bell-fill');
                 const combinedSettings = sortKeys({
                     ...Object.fromEntries(
-                        Object.entries(storage.all()).filter(([key]) => key !== "password" && key !== "code" && key !== "usr" && key !== "pwd" && key !== "history" && key !== "questionsAnswered" && key !== "developer" && key !== "cache" && key !== "lastBulkLoad" && key !== "adminCache" && key !== "lastAdminBulkLoad")
+                        Object.entries(storage.all()).filter(([key]) => (key !== "password") && (key !== "code") && (key !== "usr") && (key !== "pwd") && (key !== "history") && (key !== "questionsAnswered") && (key !== "developer") && (key !== "cache") && (key !== "lastBulkLoad") && (key !== "adminCache") && (key !== "lastAdminBulkLoad"))
                     ),
                     ...Object.fromEntries(
-                        Object.entries(settings).filter(([key]) => key !== "password" && key !== "code" && key !== "usr" && key !== "pwd" && key !== "history" && key !== "questionsAnswered" && key !== "developer" && key !== "cache" && key !== "lastBulkLoad" && key !== "adminCache" && key !== "lastAdminBulkLoad")
+                        Object.entries(settings).filter(([key]) => (key !== "password") && (key !== "code") && (key !== "usr") && (key !== "pwd") && (key !== "history") && (key !== "questionsAnswered") && (key !== "developer") && (key !== "cache") && (key !== "lastBulkLoad") && (key !== "adminCache") && (key !== "lastAdminBulkLoad"))
                     ),
                 });
                 var settingsIsSynced = JSON.stringify(sortKeys(Object.fromEntries(
-                    Object.entries(settings).filter(([key]) => key !== "password" && key !== "code" && key !== "usr" && key !== "pwd" && key !== "history" && key !== "questionsAnswered" && key !== "developer" && key !== "cache" && key !== "lastBulkLoad" && key !== "adminCache" && key !== "lastAdminBulkLoad")
+                    Object.entries(settings).filter(([key]) => (key !== "password") && (key !== "code") && (key !== "usr") && (key !== "pwd") && (key !== "history") && (key !== "questionsAnswered") && (key !== "developer") && (key !== "cache") && (key !== "lastBulkLoad") && (key !== "adminCache") && (key !== "lastAdminBulkLoad"))
                 ))) === JSON.stringify(sortKeys(Object.fromEntries(
-                    Object.entries(storage.all()).filter(([key]) => key !== "password" && key !== "code" && key !== "usr" && key !== "pwd" && key !== "history" && key !== "questionsAnswered" && key !== "developer" && key !== "cache" && key !== "lastBulkLoad" && key !== "adminCache" && key !== "lastAdminBulkLoad")
+                    Object.entries(storage.all()).filter(([key]) => (key !== "password") && (key !== "code") && (key !== "usr") && (key !== "pwd") && (key !== "history") && (key !== "questionsAnswered") && (key !== "developer") && (key !== "cache") && (key !== "lastBulkLoad") && (key !== "adminCache") && (key !== "lastAdminBulkLoad"))
                 )));
                 console.log(`${settingsIsSynced ? '🟢' : '🟡'} Settings is ${!settingsIsSynced ? 'not ' : ''}synced!`);
                 if (settingsIsSynced) {
@@ -270,7 +270,7 @@ export async function sync(hideWelcome = true, returnFunction = null) {
                     .then(async () => {
                         if (Object.keys(settings).length > 0) {
                             Object.entries(settings).forEach(([key, value]) => {
-                                if (key !== "password" && key !== "code" && key !== "usr" && key !== "pwd" && key !== "history" && key !== "questionsAnswered" && key !== "developer" && key !== "cache" && key !== "lastBulkLoad" && key !== "adminCache" && key !== "lastAdminBulkLoad") storage.set(key, value);
+                                if ((key !== "password") && (key !== "code") && (key !== "usr") && (key !== "pwd") && (key !== "history") && (key !== "questionsAnswered") && (key !== "developer") && (key !== "cache") && (key !== "lastBulkLoad") && (key !== "adminCache") && (key !== "lastAdminBulkLoad")) storage.set(key, value);
                             });
                             await themes.syncTheme()
                                 .catch(error => {
@@ -561,7 +561,7 @@ export async function syncManual(hideWelcome = false) {
                                                 body: JSON.stringify({
                                                     "seatCode": storage.get("code"),
                                                     "password": password,
-                                                    "settings": Object.fromEntries(Object.entries(storage.all()).filter(([key]) => key !== "password" && key !== "code" && key !== "usr" && key !== "pwd" && key !== "history" && key !== "questionsAnswered" && key !== "developer" && key !== "cache" && key !== "lastBulkLoad" && key !== "adminCache" && key !== "lastAdminBulkLoad")),
+                                                    "settings": Object.fromEntries(Object.entries(storage.all()).filter(([key]) => (key !== "password") && (key !== "code") && (key !== "usr") && (key !== "pwd") && (key !== "history") && (key !== "questionsAnswered") && (key !== "developer") && (key !== "cache") && (key !== "lastBulkLoad") && (key !== "adminCache") && (key !== "lastAdminBulkLoad"))),
                                                 })
                                             })
                                                 .then(async (r) => {
@@ -608,7 +608,7 @@ export async function syncManual(hideWelcome = false) {
                                     prompt(false, () => {
                                         if (r.settings && Object.keys(r.settings).length > 0) {
                                             Object.entries(r.settings).forEach(([key, value]) => {
-                                                if (key !== "password" && key !== "code" && key !== "usr" && key !== "pwd" && key !== "history" && key !== "questionsAnswered" && key !== "developer" && key !== "cache" && key !== "lastBulkLoad" && key !== "adminCache" && key !== "lastAdminBulkLoad") storage.set(key, value);
+                                                if ((key !== "password") && (key !== "code") && (key !== "usr") && (key !== "pwd") && (key !== "history") && (key !== "questionsAnswered") && (key !== "developer") && (key !== "cache") && (key !== "lastBulkLoad") && (key !== "adminCache") && (key !== "lastAdminBulkLoad")) storage.set(key, value);
                                             });
                                             ui.toast("Settings restored successfully!", 3000, "success", "bi bi-check-circle-fill");
                                             window.location.reload();
@@ -839,9 +839,9 @@ export async function bulkLoad(fields = [], usr = null, pwd = null, isAdmin = fa
         }
         var updatedBulkLoad = {};
         for (const table in fetchedBulkLoad) {
-            if (table === 'asOf' || table === 'syncDeleted') continue;
+            if ((table === 'asOf') || (table === 'syncDeleted')) continue;
             const fetchedTableData = fetchedBulkLoad[table];
-            if (!Array.isArray(fetchedTableData) || (fetchedTableData.length > 0 && (typeof fetchedTableData[0] !== 'object' || Array.isArray(fetchedTableData[0])))) {
+            if (!Array.isArray(fetchedTableData) || (fetchedTableData.length > 0 && ((typeof fetchedTableData[0] !== 'object') || Array.isArray(fetchedTableData[0])))) {
                 updatedBulkLoad[table] = fetchedTableData;
                 continue;
             }
