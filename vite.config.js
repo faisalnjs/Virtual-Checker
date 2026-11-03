@@ -21,6 +21,8 @@ export default {
     }),
   ],
   build: {
+    minify: false,
+    cssMinify: false,
     rollupOptions: {
       input: {
         main: new URL('index.html', import.meta.url).pathname,
