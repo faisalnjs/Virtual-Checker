@@ -213,8 +213,10 @@ export async function sync(hideWelcome = true, returnFunction = null) {
             })
             .then(async r => {
                 ui.stopLoader();
+                r = (r && (typeof r === "object")) ? r : {};
                 var password = storage.get("password");
                 const notifications = Array.isArray(r.notifications) ? r.notifications : [];
+                const settings = (r.settings && (typeof r.settings === "object") && !Array.isArray(r.settings)) ? r.settings : {};
                 if (!hideWelcome) ui.toast("Welcome back!", 3000, "success", "bi bi-key");
                 ui.setNotifications(notifications);
                 if (notifications.length > 0) ui.toast(`You have ${notifications.length} unread notification${(notifications.length === 1) ? '' : 's'}.`, 5000, 'info', 'bi bi-bell-fill');
@@ -223,17 +225,17 @@ export async function sync(hideWelcome = true, returnFunction = null) {
                         Object.entries(storage.all()).filter(([key]) => key !== "password" && key !== "code" && key !== "usr" && key !== "pwd" && key !== "history" && key !== "questionsAnswered" && key !== "developer" && key !== "cache" && key !== "lastBulkLoad" && key !== "adminCache" && key !== "lastAdminBulkLoad")
                     ),
                     ...Object.fromEntries(
-                        Object.entries(r.settings).filter(([key]) => key !== "password" && key !== "code" && key !== "usr" && key !== "pwd" && key !== "history" && key !== "questionsAnswered" && key !== "developer" && key !== "cache" && key !== "lastBulkLoad" && key !== "adminCache" && key !== "lastAdminBulkLoad")
+                        Object.entries(settings).filter(([key]) => key !== "password" && key !== "code" && key !== "usr" && key !== "pwd" && key !== "history" && key !== "questionsAnswered" && key !== "developer" && key !== "cache" && key !== "lastBulkLoad" && key !== "adminCache" && key !== "lastAdminBulkLoad")
                     ),
                 });
                 var settingsIsSynced = JSON.stringify(sortKeys(Object.fromEntries(
-                    Object.entries(r.settings).filter(([key]) => key !== "password" && key !== "code" && key !== "usr" && key !== "pwd" && key !== "history" && key !== "questionsAnswered" && key !== "developer" && key !== "cache" && key !== "lastBulkLoad" && key !== "adminCache" && key !== "lastAdminBulkLoad")
+                    Object.entries(settings).filter(([key]) => key !== "password" && key !== "code" && key !== "usr" && key !== "pwd" && key !== "history" && key !== "questionsAnswered" && key !== "developer" && key !== "cache" && key !== "lastBulkLoad" && key !== "adminCache" && key !== "lastAdminBulkLoad")
                 ))) === JSON.stringify(sortKeys(Object.fromEntries(
                     Object.entries(storage.all()).filter(([key]) => key !== "password" && key !== "code" && key !== "usr" && key !== "pwd" && key !== "history" && key !== "questionsAnswered" && key !== "developer" && key !== "cache" && key !== "lastBulkLoad" && key !== "adminCache" && key !== "lastAdminBulkLoad")
                 )));
                 console.log(`${settingsIsSynced ? '🟢' : '🟡'} Settings is ${!settingsIsSynced ? 'not ' : ''}synced!`);
                 if (settingsIsSynced) {
-                    if (document.querySelector(".checker")) document.querySelector(".checker").classList = 'checker ' + (r.settings['layout'] || '');
+                    if (document.querySelector(".checker")) document.querySelector(".checker").classList = 'checker ' + (settings['layout'] || '');
                     if (returnFunction) returnFunction();
                     return;
                 }
@@ -266,8 +268,8 @@ export async function sync(hideWelcome = true, returnFunction = null) {
                         return await r.json();
                     })
                     .then(async () => {
-                        if (r.settings && Object.keys(r.settings).length > 0) {
-                            Object.entries(r.settings).forEach(([key, value]) => {
+                        if (Object.keys(settings).length > 0) {
+                            Object.entries(settings).forEach(([key, value]) => {
                                 if (key !== "password" && key !== "code" && key !== "usr" && key !== "pwd" && key !== "history" && key !== "questionsAnswered" && key !== "developer" && key !== "cache" && key !== "lastBulkLoad" && key !== "adminCache" && key !== "lastAdminBulkLoad") storage.set(key, value);
                             });
                             await themes.syncTheme()
@@ -278,7 +280,7 @@ export async function sync(hideWelcome = true, returnFunction = null) {
                                         ui.reportBugModal(null, String(error.stack));
                                     }
                                 });
-                            if (document.querySelector(".checker")) document.querySelector(".checker").classList = 'checker ' + (r.settings['layout'] || '');
+                            if (document.querySelector(".checker")) document.querySelector(".checker").classList = 'checker ' + (settings['layout'] || '');
                         }
                         ui.setUnsavedChanges(false);
                         window.location.reload();

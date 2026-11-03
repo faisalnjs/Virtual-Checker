@@ -399,6 +399,7 @@ export function show(dialog, title, buttons, actions, blur, effects = true) {
 }
 
 export function view(path = "", skipAccountSwitcher = false) {
+  path = (typeof path === "string") ? path : "";
   if ((path === 'settings/code') && !skipAccountSwitcher && storage.get('code') && storage.get('password')) {
     openAccountSwitcher();
     return;
@@ -1059,7 +1060,7 @@ export function getNotifications() {
 }
 
 export async function setNotifications(array) {
-  const previousCount = notifications.length;
+  const previousCount = Array.isArray(notifications) ? notifications.length : 0;
   notifications = Array.isArray(array) ? array : [];
   if (notifications.length > 0) {
     document.querySelector('[data-modal-view="history"]')?.classList.add('unread');
@@ -1133,7 +1134,7 @@ export function reportBugModal(event = null, report = null) {
             const fields = {
               "entry.470737118": storage.get("code"),
               "entry.888169052": platform,
-              "entry.689497704": `${report ? '000' : storage.get("code")}:${description}`,
+              "entry.689497704": `${storage.get("code") || '000'}:${description}`,
             };
             const params = new URLSearchParams(fields).toString();
             const url = "https://docs.google.com/forms/d/e/1FAIpQLSdOO9-Y7IG-djY1MVFpr1qR5-vXw6asU--e61w9atFaRVOpNw/formResponse?";
