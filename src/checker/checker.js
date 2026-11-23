@@ -6,6 +6,7 @@ import * as auth from "/src/modules/auth.js";
 import Element from "/src/modules/element.js";
 import extendedSchedule from "/src/periods/extendedSchedule.json";
 import * as themes from "/src/themes/themes.js";
+import * as pets from "/src/modules/pets.js";
 
 import { autocomplete, uniqueSymbols } from "/src/symbols/symbols.js";
 import { unixToString, unixToTimeString } from "/src/modules/time.js";
@@ -380,6 +381,7 @@ try {
         window.scroll(0, 0);
         ui.clearToasts();
         if (typeof r.correct != 'undefined') {
+          pets.playMood(r.correct ? "happy1" : "sad1");
           ui.modeless(`<i class="bi bi-${(r.correct) ? 'check' : 'x'}-lg"></i>`, (r.correct) ? 'Correct' : 'Try Again', r.reason || null);
         } else if (typeof r.error != 'undefined') {
           ui.modeless(`<i class="bi bi-exclamation-triangle"></i>`, 'Error');
