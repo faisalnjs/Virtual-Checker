@@ -120,5 +120,6 @@
   ["tree-frost", "Tree Frost", "tree", 60, [], false, false, false, false, false],
   ["winter-mountain", "Winter Mountain", "snow", 60, [], false, false, false, false, false],
   ["winter-mountain-2", "Winter Mountain 2", "snow", 70, ["winter-mountain"], false, false, false, false, false],
-  ["winter-forest-path", "Winter Forest Path", "snow", 60, [], false, false, false, false, false]
+  ["winter-forest-path", "Winter Forest Path", "snow", 60, [], false, false, false, false, false],
+  ["gta-vi", "GTA VI", "controller", 60, [], false, false, false, false, false]
 ]

@@ -1260,6 +1260,10 @@ body[data-theme="dune-2"] .header > .virtual-checker-logo {
   background: url(https://assets.vssfalcons.com/store/backdrop/winter-forest-path.png) !important;
 }
 
+[data-theme="gta-vi"] {
+  background: url(https://assets.vssfalcons.com/store/backdrop/gta-vi.png) !important;
+}
+
 /* Animated Themes */
 
 [data-theme="waterfall"] {

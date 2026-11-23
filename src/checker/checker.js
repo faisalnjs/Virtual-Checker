@@ -6,6 +6,7 @@ import * as auth from "/src/modules/auth.js";
 import Element from "/src/modules/element.js";
 import extendedSchedule from "/src/periods/extendedSchedule.json";
 import * as themes from "/src/themes/themes.js";
+import * as pets from "/src/modules/pets.js";
 
 import { autocomplete, uniqueSymbols } from "/src/symbols/symbols.js";
 import { unixToString, unixToTimeString } from "/src/modules/time.js";
@@ -380,6 +381,7 @@ try {
         window.scroll(0, 0);
         ui.clearToasts();
         if (typeof r.correct != 'undefined') {
+          pets.playMood(r.correct ? "happy1" : "sad1");
           ui.modeless(`<i class="bi bi-${(r.correct) ? 'check' : 'x'}-lg"></i>`, (r.correct) ? 'Correct' : 'Try Again', r.reason || null);
         } else if (typeof r.error != 'undefined') {
           ui.modeless(`<i class="bi bi-exclamation-triangle"></i>`, 'Error');
@@ -1331,7 +1333,9 @@ try {
       if (r.review_later) button.classList.add('reviewLater');
       var response = `<b>Status:</b> ${r.status.includes('Unknown') ? r.status.split('Unknown, ')[1] : r.status}${(r.reason) ? `</p>\n<p><b>Response:</b> ${r.reason}<br>` : ''}</p>${(String(r.seatCode) === String(storage.get("code"))) ? `<div data-modal-actions style="margin-top: -0.25rem;"><button data-flag-response><i class="bi bi-flag-fill"></i> ${r.flagged ? 'Unflag Response' : 'Report Error'}</button><button data-review-later-response><i class="bi ${r.review_later ? 'bi-bookmark-check-fill' : 'bi-bookmark-plus-fill'}"></i> ${r.review_later ? 'Mark Reviewed' : 'Review Later'}</button></div>` : ''}`;
       var segmentNumber = segmentsArray.find(s => String(s.id) === String(r.segment))?.number || segmentsArray.find(s => JSON.parse(s.question_ids || [])?.find(q => String(q.id) === String(r.question_id)))?.number || null;
-      var questionNumber = JSON.parse(segmentsArray.find(s => String(s.id) === String(r.segment))?.question_ids || '[]').find(q => String(q.id) === String(r.question_id))?.name || questionsArray.find(question => String(question.id) === String(r.question_id)).number;
+      var questionNumber = JSON.parse(segmentsArray.find(s => String(s.id) === String(r.segment))?.question_ids || '[]').find(q => String(q.id) === String(r.question_id))?.name || questionsArray.find(question => String(question.id) === String(r.question_id))?.number;
+      if (!questionNumber) questionNumber = questionsArray.find(question => String(question.stem) === String(r.question_id))?.number;
+      if (!questionNumber) questionNumber = r.question_id;
       switch (r.mode) {
         case 'latex':
           button.innerHTML = `${(String(r.seatCode) !== String(storage.get("code"))) ? `<p><b>${courses.find(c => JSON.parse(c.periods).includes(Number(String(r.seatCode).slice(0, 1))))?.name}</b></p>\n` : ''}<p><b>${segmentNumber ? `Segment ${segmentNumber}` : 'Deleted Segment'} Question #${questionNumber}.</b> ${(new Date().toDateString() === new Date(r.timestamp).toDateString()) ? unixToTimeString(r.timestamp) : unixToString(r.timestamp)} (${r.seatCode})</p>\n${convertLatexToMarkup(r.response)}\n<p class="hint">(Equation may not display properly)</p>\n<p>${response}`;

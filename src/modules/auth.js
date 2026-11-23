@@ -870,6 +870,7 @@ export async function bulkLoad(fields = [], usr = null, pwd = null, isAdmin = fa
         } catch (e) {
             storage.set((isAdmin || isTA) ? "adminCache" : "cache", updatedBulkLoad || fetchedBulkLoad || {});
         }
+        if (!isAdmin && !isTA) window.dispatchEvent(new Event("virtual-bulk-load"));
         const loadTime = ((Date.now() - startTime) / 1000).toFixed(2);
         console.log(`${(loadTime < 1) ? '🟢' : ((loadTime > 5) ? '🔴' : '🟡')} Bulk load fetched in ${loadTime}s`);
         return true;
@@ -915,6 +916,44 @@ export async function buyTheme(theme = null, cost = 0) {
                     } else {
                         throw new Error("API error");
                     }
+                } catch (e) {
+                    throw new Error(e.message || "API error");
+                }
+            }
+            return await r.json();
+        })
+        .catch((e) => {
+            console.error(e);
+            if (!e.message || (e.message && (e.message.includes('NetworkError') || !e.message.includes(".")))) ui.view("api-fail");
+        });
+}
+
+export async function buyPet(pet = null, cost = 0) {
+    if (!pet || !cost || !storage.get("code")) return;
+    return await fetch(domain + '/buy_pet', {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+            "seatCode": storage.get("code"),
+            "password": storage.get("password"),
+            "pet": pet,
+            "cost": cost,
+        })
+    })
+        .then(async (r) => {
+            if (!r.ok) {
+                try {
+                    var re = await r.json();
+                    if (re.error || re.message) {
+                        ui.toast(re.error || re.message, 5000, "error", "bi bi-exclamation-triangle-fill");
+                        if ((re.error === "Access denied.") || (re.message === "Access denied.")) {
+                            if (storage.get("password")) storage.delete("password");
+                        }
+                        throw new Error(re.error || re.message);
+                    }
+                    throw new Error("API error");
                 } catch (e) {
                     throw new Error(e.message || "API error");
                 }

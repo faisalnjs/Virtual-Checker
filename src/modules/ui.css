@@ -1536,3 +1536,109 @@ body > video {
   pointer-events: none;
   z-index: -1;
 }
+
+.mwpet {
+  background: transparent;
+}
+
+.mwpet-body::after,
+.mwpet-speech {
+  display: none;
+}
+
+[data-modal-page="pets"] {
+  gap: 10px;
+  opacity: 1;
+  transition: 0.25s background-color;
+  overflow-x: hidden;
+}
+
+[data-modal-page="pets"]::-webkit-scrollbar {
+  width: 12px !important;
+}
+
+[data-modal-page="pets"]::-moz-scrollbar {
+  width: 28px !important;
+}
+
+[data-modal-page="pets"] > b {
+  margin-top: 5px;
+  margin-bottom: -5px;
+}
+
+[data-modal-page="pets"] .pets-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 10px;
+  padding-top: 10px;
+}
+
+[data-modal-page="pets"] .pets-grid .pet-item {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  color: var(--text-color);
+  padding: 20px 15px;
+  border-radius: 10px;
+  background: var(--background-color);
+  border: 2px solid var(--accent-color);
+  transition: border-right-width 0.25s ease-in-out;
+  overflow: hidden !important;
+}
+
+[data-modal-page="pets"] .pets-grid .pet-item:hover {
+  border-right-width: 15px;
+  transition: border-right-width 0.25s ease-in-out;
+}
+
+[data-modal-page="pets"] .pets-grid .pet-item svg {
+  position: absolute;
+  height: fit-content;
+  width: fit-content;
+  right: 10px;
+  bottom: 10px;
+  max-width: 75px;
+  transition: max-width 0.25s ease-in-out;
+}
+
+[data-modal-page="pets"] .pets-grid .pet-item:hover svg {
+  max-width: 80px;
+  transition: max-width 0.25s ease-in-out;
+}
+
+[data-modal-page="pets"] .pets-grid .pet-item .pet-popularity {
+  display: flex;
+  gap: 2.5px;
+  position: absolute;
+  top: 15px;
+  right: 20px;
+}
+
+[data-modal-page="pets"] .pets-grid .pet-item h5,
+[data-modal-page="pets"] .pets-grid .pet-item p {
+  background: none;
+  text-shadow: 0 0 10px var(--background-color);
+}
+
+[data-modal-page="pets"] .pets-grid .pet-item p {
+  margin-bottom: 5px;
+}
+
+[data-modal-page="pets"] .pets-grid .pet-item button {
+  color: var(--text-color);
+  margin-top: auto;
+  transition: background-color 0.25s ease-in-out;
+}
+
+[data-modal-page="pets"] .pets-grid .pet-item button:hover {
+  color: var(--accent-text-color);
+  transition: background-color 0.25s ease-in-out;
+}
+
+[data-modal-page="pets"] .cost-info {
+  margin-top: 10px;
+}
+
+[data-modal-page="pets"] .cost-info i {
+  margin-left: -20px;
+}
