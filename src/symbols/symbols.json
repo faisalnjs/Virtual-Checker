@@ -43,5 +43,7 @@
   "omegacap": "Ω",
   "ihat": "î",
   "jhat": "ĵ",
-  "khat": "k̂"
+  "khat": "k̂",
+  "times": "×",
+  "cdot": "•"
 }
